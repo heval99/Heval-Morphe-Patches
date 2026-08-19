@@ -1,3 +1,9 @@
+## [1.1.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-08-19)
+
+### ✨ New Features
+
+* add 365Scores, Livescore, IPTV, and FishBuddy patches ([d62d2d3](https://github.com/heval99/Heval-Morphe-Patches/commit/d62d2d3623991b53323399708321a7e8ee24982f))
+
 ## [1.1.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.0.0...v1.1.0-dev.1) (2026-08-19)
 
 ### ✨ New Features

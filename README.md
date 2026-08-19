@@ -11,7 +11,7 @@ and Sofascore), plus the Brave Origin subscription unlock.
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0](https://github.com/heval99/morphe-patches/releases/tag/v1.0.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;20 patches total
+> **[v1.1.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.1.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;20 patches total
 <details open>
 <summary>📦 Sofascore&nbsp;&nbsp;•&nbsp;&nbsp;6 patches</summary>
 <br>
@@ -60,17 +60,18 @@ and Sofascore), plus the Brave Origin subscription unlock.
 </details>
 
 <details open>
-<summary>📦 365Scores&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
+<summary>📦 IPTV&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
 
 **🎯 Supported versions:**
 
-| 14.8.8 |
+| 9.1.25 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Disable ads](#disable-ads) | Disables Google Mobile Ads (AdMob) initialization, blocking banner, interstitial, rewarded, native and mediated ads. |  |
+| [Disable ads](#disable-ads) | Disables Wortise ad SDK initialization, blocking banner, interstitial, native and mediated ads (AppLovin, Yandex, Google Mobile Ads, etc.). |  |
+| [Enable Premium](#enable-premium) | Forces IptvFreeApplication's pro/trial gate to return true, keeping pro features unlocked after the 20-minute trial expires and suppressing the in-app review / buy-pro upsell prompts. |  |
 
 </details>
 
@@ -90,18 +91,17 @@ and Sofascore), plus the Brave Origin subscription unlock.
 </details>
 
 <details open>
-<summary>📦 IPTV&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
+<summary>📦 365Scores&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
 
 **🎯 Supported versions:**
 
-| 9.1.25 |
+| 14.8.8 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Disable ads](#disable-ads) | Disables Wortise ad SDK initialization, blocking banner, interstitial, native and mediated ads (AppLovin, Yandex, Google Mobile Ads, etc.). |  |
-| [Enable Premium](#enable-premium) | Forces IptvFreeApplication's pro/trial gate to return true, keeping pro features unlocked after the 20-minute trial expires and suppressing the in-app review / buy-pro upsell prompts. |  |
+| [Disable ads](#disable-ads) | Disables Google Mobile Ads (AdMob) initialization, blocking banner, interstitial, rewarded, native and mediated ads. |  |
 
 </details>
 
