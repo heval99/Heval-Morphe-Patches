@@ -11,7 +11,7 @@ Origin subscription unlock.
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.1.0-dev.1](https://github.com/heval99/morphe-patches/releases/tag/v1.1.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;15 patches total
+> **[v1.1.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.1.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;15 patches total
 <details open>
 <summary>📦 Sofascore&nbsp;&nbsp;•&nbsp;&nbsp;6 patches</summary>
 <br>
