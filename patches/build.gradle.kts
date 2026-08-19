@@ -1,14 +1,13 @@
 group = "app.template"
 
 patches {
-    // TODO: Update this section with your project details.
     about {
-        name = "heval patches"
+        name = "Heval's Morphe Patches"
         description = "Patches for apps I like"
-        source = "git@github.com:heval99/morphe-patches.git"
+        source = "https://github.com/heval99/morphe-patches"
         author = "heval99"
-        contact = "na"
-        website = "na"
+        contact = "https://github.com/heval99"
+        website = "https://morphe.software/add-source?github=heval99/morphe-patches"
         license = "GPLv3"
     }
 }
@@ -26,6 +25,10 @@ val patchListGeneratorClasspath = configurations.create("patchListGeneratorClass
 dependencies {
     compileOnly(libs.gson)
     patchListGeneratorClasspath(libs.gson)
+
+    // Provides app.morphe.util helpers (returnEarly, findMutableMethodOf, getReference, etc.)
+    // used by patches ported from Heval-Patches.
+    implementation(libs.morphe.patches.library)
 }
 
 tasks {
