@@ -4,10 +4,9 @@ Custom Morphe patches by heval99.
 
 ## ❓ About
 
-Patches for apps I like. Covers ads, telemetry, and premium unlocks for 13 apps (AdGuard,
-BoxBox, CapCut, Clipboard, FishBuddy, Football Chairman Pro 2, FotMob, IPTV Player - Opus,
-MyFitnessPal, OttPlay, Smart Launcher, Sofascore, and 90 Day Challenge), plus a handful of
-universal patches that target common ad/telemetry/root-detection SDKs regardless of app.
+Patches for apps I like. Covers ads, telemetry, and premium unlocks for 7 apps (AnyDesk,
+BoxBox, Brave Browser, FotMob, MyFitnessPal, Saphe Link, and Sofascore), plus the Brave
+Origin subscription unlock.
 
 ## 🩹 Patches list
 

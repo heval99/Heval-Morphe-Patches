@@ -135,3 +135,6 @@ local.properties
 
 # Claude Code workspace
 .claude/
+
+# Kotlin compiler sessions / cache
+.kotlin/
