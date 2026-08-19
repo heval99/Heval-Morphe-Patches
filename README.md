@@ -4,14 +4,14 @@ Custom Morphe patches by heval99.
 
 ## ❓ About
 
-Patches for apps I like. Covers ads, telemetry, and premium unlocks for 7 apps (AnyDesk,
-BoxBox, Brave Browser, FotMob, MyFitnessPal, Saphe Link, and Sofascore), plus the Brave
-Origin subscription unlock.
+Patches for apps I like. Covers ads, telemetry, and premium unlocks for 11 apps (365Scores,
+AnyDesk, BoxBox, Brave Browser, FishBuddy, FotMob, IPTV, Livescore, MyFitnessPal, Saphe Link,
+and Sofascore), plus the Brave Origin subscription unlock.
 
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.1.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.1.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;15 patches total
+> **[v1.0.0](https://github.com/heval99/morphe-patches/releases/tag/v1.0.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;20 patches total
 <details open>
 <summary>📦 Sofascore&nbsp;&nbsp;•&nbsp;&nbsp;6 patches</summary>
 <br>
@@ -60,6 +60,52 @@ Origin subscription unlock.
 </details>
 
 <details open>
+<summary>📦 365Scores&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
+<br>
+
+**🎯 Supported versions:**
+
+| 14.8.8 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Disable ads](#disable-ads) | Disables Google Mobile Ads (AdMob) initialization, blocking banner, interstitial, rewarded, native and mediated ads. |  |
+
+</details>
+
+<details open>
+<summary>📦 Livescore&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
+<br>
+
+**🎯 Supported versions:**
+
+| 9.9.1 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Disable ads](#disable-ads) | Forces AdsRemovalSettings.areAdsDisabled() to return true, disabling banner, interstitial, MPU, hero placement, coverage sponsorship and announcement ads. |  |
+
+</details>
+
+<details open>
+<summary>📦 IPTV&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
+<br>
+
+**🎯 Supported versions:**
+
+| 9.1.25 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Disable ads](#disable-ads) | Disables Wortise ad SDK initialization, blocking banner, interstitial, native and mediated ads (AppLovin, Yandex, Google Mobile Ads, etc.). |  |
+| [Enable Premium](#enable-premium) | Forces IptvFreeApplication's pro/trial gate to return true, keeping pro features unlocked after the 20-minute trial expires and suppressing the in-app review / buy-pro upsell prompts. |  |
+
+</details>
+
+<details open>
 <summary>📦 Saphe Link&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
 
@@ -97,6 +143,21 @@ Origin subscription unlock.
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [Enable Premium](#enable-premium) | Unlocks premium features by patching the Java license wrapper methods in JniAdExt: isFreeLicense returns false (app treats the license as paid), account registration and address book are allowed, and the remove-license option is available in settings. Note: the underlying license validation is native (libanydesk.so) and cannot be patched via bytecode — this patch only affects the Java-layer feature gates. |  |
+
+</details>
+
+<details open>
+<summary>📦 FishBuddy&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
+<br>
+
+**🎯 Supported versions:**
+
+| 11.0.84 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Enable Premium](#enable-premium) | Forces User.hasPremium() to return true, unlocking premium features locked behind the RevenueCat subscription entitlement. |  |
 
 </details>
 

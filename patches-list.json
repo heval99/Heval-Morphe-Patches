@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.1.0-dev.1",
+  "version": "1.0.0",
   "patches": [
     {
       "name": "Block marketing notifications",
@@ -178,6 +178,84 @@
             },
             {
               "version": "26.08.03",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
+      "description": "Disables Google Mobile Ads (AdMob) initialization, blocking banner, interstitial, rewarded, native and mediated ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.scores365",
+          "name": "365Scores",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#FFC107",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "14.8.8",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
+      "description": "Forces AdsRemovalSettings.areAdsDisabled() to return true, disabling banner, interstitial, MPU, hero placement, coverage sponsorship and announcement ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.livescore",
+          "name": "Livescore",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#C8102E",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "9.9.1",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
+      "description": "Disables Wortise ad SDK initialization, blocking banner, interstitial, native and mediated ads (AppLovin, Yandex, Google Mobile Ads, etc.).",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "ru.iptvremote.android.iptv",
+          "name": "IPTV",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#1976D2",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "9.1.25",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -407,6 +485,58 @@
             },
             {
               "version": "26.08.03",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Premium",
+      "description": "Forces IptvFreeApplication's pro/trial gate to return true, keeping pro features unlocked after the 20-minute trial expires and suppressing the in-app review / buy-pro upsell prompts.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "ru.iptvremote.android.iptv",
+          "name": "IPTV",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#1976D2",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "9.1.25",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Premium",
+      "description": "Forces User.hasPremium() to return true, unlocking premium features locked behind the RevenueCat subscription entitlement.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "no.fishbuddy_playground.app",
+          "name": "FishBuddy",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#0288D1",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "11.0.84",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,

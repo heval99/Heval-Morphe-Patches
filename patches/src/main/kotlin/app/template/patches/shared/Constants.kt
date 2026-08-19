@@ -68,6 +68,60 @@ object Constants {
         targets = listOf(AppTarget(version = "8.3.4", versionCode = 80304))
     )
 
+    // Verified 2026-08-19 against 365scores.apkm v14.8.8 (universal, Android 7.0+).
+    // App uses Google Mobile Ads (AdMob) loaded via the Blaze GAM SDK wrapper.
+    // MobileAds.initialize(Landroid/content/Context;)V and the (Context, Listener)
+    // overload are both present unobfuscated in com.google.android.gms.ads.MobileAds.
+    // Ad SDKs observed: Google Mobile Ads, Unity, InMobi, Vungle, Mintegral,
+    // ByteDance Pangle, Meta Audience Network (all GAM-mediated).
+    val COMPATIBILITY_365SCORES = Compatibility(
+        name = "365Scores",
+        packageName = "com.scores365",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xFFC107,
+        targets = listOf(AppTarget(version = "14.8.8", versionCode = 1488))
+    )
+
+    // Verified 2026-08-20 against livescore.apk v9.9.1 (universal, Android 7.0+).
+    // AdsRemovalSettings.areAdsDisabled()Z is the single ad gate checked by
+    // BannerManagerImpl, InterstitialAdsUseCase, MpuAdsConfig, HeroPlacementUseCase,
+    // CoverageSponsorshipSettings and AnnouncementBannerUseCase. Class and method
+    // are un-obfuscated in com.livescore.ads.config.
+    val COMPATIBILITY_LIVESCORE = Compatibility(
+        name = "Livescore",
+        packageName = "com.livescore",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0xC8102E,
+        targets = listOf(AppTarget(version = "9.9.1", versionCode = 2120))
+    )
+
+    // Verified 2026-08-20 against FishBuddy v11.0.84 (universal, Android 7.0+).
+    // Premium gate is User.hasPremium()Z (no.fishbuddy.app.data.models.User),
+    // reads the server-populated `roles` HashMap for the "premium" entitlement.
+    // Subscription managed via RevenueCat (no ad SDKs). Class + method names
+    // un-obfuscated.
+    val COMPATIBILITY_FISHBUDDY = Compatibility(
+        name = "FishBuddy",
+        packageName = "no.fishbuddy_playground.app",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x0288D1,
+        targets = listOf(AppTarget(version = "11.0.84", versionCode = 110084))
+    )
+
+    // Verified 2026-08-20 against ru.iptvremote.android.iptv apkm v9.1.25
+    // (universal, Android 12L+). Free app package; separate Pro app
+    // (ru.iptvremote.android.iptv.pro) unlocks features when installed.
+    // Ad SDK: Wortise mediation (com.wortise.ads.WortiseSdk) wrapping AppLovin,
+    // Yandex Mobile Ads, Google Mobile Ads. Pro/trial gate is
+    // IptvFreeApplication.k()Z (R8-renamed; signature-identified).
+    val COMPATIBILITY_IPTVREMOTE = Compatibility(
+        name = "IPTV",
+        packageName = "ru.iptvremote.android.iptv",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x1976D2,
+        targets = listOf(AppTarget(version = "9.1.25", versionCode = 5010))
+    )
+
     // Verified 2026-08-19 against brave.apkm v1.93.136 (arm64-v8a, Android 12L+).
     // All Brave Origin anchor strings and non-obfuscated classes
     // (BraveOriginPreferences, BraveOriginSettingsLauncherHelper, profiles/Profile)
