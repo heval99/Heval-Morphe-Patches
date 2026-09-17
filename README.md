@@ -10,7 +10,7 @@ list below for the supported apps and versions.
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.1.0](https://github.com/heval99/morphe-patches/releases/tag/v1.1.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;27 patches total
+> **[v1.2.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.2.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;27 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
