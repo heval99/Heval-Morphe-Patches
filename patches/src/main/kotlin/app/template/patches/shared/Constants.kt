@@ -19,11 +19,28 @@ object Constants {
             AppTarget(
                 version = "26.07.27"
             ),
-            // Verified 2026-08-14: getForceAds/getForceHideAds/getHasServerAds/getHasPremium/
-            // getPurchasedAds are all still present unobfuscated on UserAccount in this build,
-            // so the existing fingerprints should still match. Not device-tested.
+            // Verified 2026-09-17 against com.sofascore.results 26.09.07 (versionCode 260907002,
+            // universal, Android 12L+). This build shuffled a lot: the app-level premium gates
+            // the old "Enable Premium" fingerprints targeted (aiInsights/removeAds/PremiumToken/
+            // isPremium) are gone, FirebaseAnalytics.logEvent was removed, Adjust is no longer
+            // bundled and the Facebook/Crashlytics SDK classes are R8-renamed. The patches were
+            // re-anchored:
+            //   - Disable ads: unchanged; UserAccount getForceAds/getForceHideAds/getHasServerAds
+            //     are still unobfuscated.
+            //   - Enable Premium: forces UserAccount.getHasPremium() and ProfileData.getHasPremium(),
+            //     the two boxed-Boolean flags every premium gate reads.
+            //   - Disable telemetry: AppsFlyer Lib subclass logEvent, AppMeasurementSdk.logEvent,
+            //     and Crashlytics (located via its collection-enabled SharedPreferences key).
+            //   - Disable Facebook SDK: FacebookInitProvider / AudienceNetworkContentProvider onCreate.
+            //   - Block marketing notifications: PromotionModal / tennis promo bottom sheet
+            //     onViewCreated dismiss the sheet before it renders.
+            // The "Disable Play Integrity" patch was dropped: this build does not bundle the
+            // Play Integrity classes (the AppsFlyer SDK only references them, behind a catch),
+            // so the patch had nothing to patch.
+            // All 5 patches apply cleanly; SofascoreSmokeTest asserts the emitted bytecode.
             AppTarget(
-                version = "26.08.03"
+                version = "26.09.07",
+                versionCode = 260907002
             )
         )
     )

@@ -11,12 +11,11 @@ and Sofascore), plus the Brave Origin subscription unlock.
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.1.0-dev.2](https://github.com/heval99/morphe-patches/releases/tag/v1.1.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;20 patches total
+> **[v1.1.0-dev.2](https://github.com/heval99/morphe-patches/releases/tag/v1.1.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;22 patches total
 
-**📦 Sofascore** (6)
+**📦 Sofascore** (5)
 - Block marketing notifications
 - Disable Facebook SDK
-- Disable Play Integrity
 - Disable ads
 - Disable telemetry
 - Enable Premium
@@ -27,6 +26,10 @@ and Sofascore), plus the Brave Origin subscription unlock.
 **📦 BoxBox** (3)
 - Disable ads
 - Disable telemetry
+- Enable Premium
+
+**📦 EasyNotes** (2)
+- Disable ads
 - Enable Premium
 
 **📦 IPTV** (2)
@@ -50,6 +53,9 @@ and Sofascore), plus the Brave Origin subscription unlock.
 - Enable Premium
 
 **📦 FishBuddy** (1)
+- Enable Premium
+
+**📦 LibrePods** (1)
 - Enable Premium
 
 **📦 MyFitnessPal** (1)
