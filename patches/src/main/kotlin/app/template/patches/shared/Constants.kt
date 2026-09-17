@@ -19,6 +19,14 @@ object Constants {
             AppTarget(
                 version = "26.07.27"
             ),
+            // Verified 2026-09-17: 26.08.24 (the build users reported failing with a
+            // NullPointerException in Disable telemetry - issue #7) patches cleanly with all
+            // 5 patches. The crash came from returnEarly() being applied to an abstract
+            // AppsFlyerLib.logEvent declaration; the fingerprint now requires an actual
+            // method body, and the emitted bytecode was checked on this version.
+            AppTarget(
+                version = "26.08.24"
+            ),
             // Verified 2026-09-17 against com.sofascore.results 26.09.07 (versionCode 260907002,
             // universal, Android 12L+). This build shuffled a lot: the app-level premium gates
             // the old "Enable Premium" fingerprints targeted (aiInsights/removeAds/PremiumToken/
@@ -45,14 +53,29 @@ object Constants {
         )
     )
 
+    // FotMob phone build. Note the Wear OS build shares the same package and its versions
+    // look like "236.253021660w..."; the APKPure/APKMirror *latest* lookups sometimes return
+    // the watch APK, so always check android.hardware.type.watch before using an APK.
+    // Verified 2026-09-17 against 236.17398.20260827 (versionCode 17398) and
+    // 236.17338.20260822 (the build from issue #8) from APKMirror; both patch cleanly.
+    // The subscription manager is R8-obfuscated; the patch anchors it on the staff-account
+    // email strings and identifies the subscription getter structurally (see
+    // fotmob/plus/Fingerprints.kt), so obfuscated name rotation no longer breaks it.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x00985F,
-        // Drift 2026-09-17: SubscriptionManagerFingerprint no longer matches on
-        // 236.253021660w.20260827; target left open until re-anchored.
-        targets = listOf(AppTarget(version = null))
+        targets = listOf(
+            AppTarget(
+                version = "236.17398.20260827",
+                versionCode = 17398
+            ),
+            AppTarget(
+                version = "236.17338.20260822",
+                versionCode = 17338
+            )
+        )
     )
 
     val COMPATIBILITY_MYFITNESSPAL = Compatibility(
