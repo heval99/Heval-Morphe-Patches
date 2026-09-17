@@ -1,3 +1,9 @@
+## [1.3.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.3.0...v1.3.1) (2026-09-17)
+
+### 🐛 Bug Fixes
+
+* resolve the Sofascore telemetry crash and FotMob+ fingerprint drift ([4a0c918](https://github.com/heval99/Heval-Morphe-Patches/commit/4a0c91824fd97dd1296887ef3f94865e5db659f4)), closes [#7](https://github.com/heval99/Heval-Morphe-Patches/issues/7) [#8](https://github.com/heval99/Heval-Morphe-Patches/issues/8)
+
 ## [1.3.1-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.3.0...v1.3.1-dev.1) (2026-09-17)
 
 ### 🐛 Bug Fixes
