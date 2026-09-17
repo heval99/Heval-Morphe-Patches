@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.1.0...v1.2.0) (2026-09-17)
+
+### ✨ New Features
+
+* add FairEmail, Tasker, Swift Backup, Aqua Mail and Weather Underground patches ([3d636df](https://github.com/heval99/Heval-Morphe-Patches/commit/3d636df0e2b432fa7f0e7dde13b47f9c040d7022))
+
 ## [1.2.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.1.0...v1.2.0-dev.1) (2026-09-17)
 
 ### ✨ New Features
