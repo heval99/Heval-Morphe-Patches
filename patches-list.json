@@ -147,12 +147,12 @@
           "signatures": null,
           "targets": [
             {
-              "version": "1.3.59.0819",
+              "version": "1.3.61.0907",
               "versionCodes": {
-                "ARM64_V8A": 10565,
-                "ARMEABI_V7A": 10565,
-                "X86_64": 10565,
-                "X86": 10565
+                "ARM64_V8A": 10567,
+                "ARMEABI_V7A": 10567,
+                "X86_64": 10567,
+                "X86": 10567
               },
               "isExperimental": false,
               "minSdk": null,
@@ -209,12 +209,12 @@
           "signatures": null,
           "targets": [
             {
-              "version": "9.9.1",
+              "version": "10.1",
               "versionCodes": {
-                "ARM64_V8A": 2120,
-                "ARMEABI_V7A": 2120,
-                "X86_64": 2120,
-                "X86": 2120
+                "ARM64_V8A": 2144,
+                "ARMEABI_V7A": 2144,
+                "X86_64": 2144,
+                "X86": 2144
               },
               "isExperimental": false,
               "minSdk": null,
@@ -240,12 +240,12 @@
           "signatures": null,
           "targets": [
             {
-              "version": "14.8.8",
+              "version": "14.9.4",
               "versionCodes": {
-                "ARM64_V8A": 1488,
-                "ARMEABI_V7A": 1488,
-                "X86_64": 1488,
-                "X86": 1488
+                "ARM64_V8A": 1494,
+                "ARMEABI_V7A": 1494,
+                "X86_64": 1494,
+                "X86": 1494
               },
               "isExperimental": false,
               "minSdk": null,
@@ -335,8 +335,13 @@
           "signatures": null,
           "targets": [
             {
-              "version": "6.5.5",
-              "versionCodes": null,
+              "version": "6.6.0",
+              "versionCodes": {
+                "ARM64_V8A": 212620,
+                "ARMEABI_V7A": 212620,
+                "X86_64": 212620,
+                "X86": 212620
+              },
               "isExperimental": false,
               "minSdk": null,
               "description": null
@@ -458,12 +463,12 @@
           "signatures": null,
           "targets": [
             {
-              "version": "8.3.4",
+              "version": "9.0.0",
               "versionCodes": {
-                "ARM64_V8A": 80304,
-                "ARMEABI_V7A": 80304,
-                "X86_64": 80304,
-                "X86": 80304
+                "ARM64_V8A": 90000,
+                "ARMEABI_V7A": 90000,
+                "X86_64": 90000,
+                "X86": 90000
               },
               "isExperimental": false,
               "minSdk": null,
@@ -546,12 +551,12 @@
           "signatures": null,
           "targets": [
             {
-              "version": "1.3.59.0819",
+              "version": "1.3.61.0907",
               "versionCodes": {
-                "ARM64_V8A": 10565,
-                "ARMEABI_V7A": 10565,
-                "X86_64": 10565,
-                "X86": 10565
+                "ARM64_V8A": 10567,
+                "ARMEABI_V7A": 10567,
+                "X86_64": 10567,
+                "X86": 10567
               },
               "isExperimental": false,
               "minSdk": null,
@@ -577,12 +582,12 @@
           "signatures": null,
           "targets": [
             {
-              "version": "11.0.84",
+              "version": "11.0.101",
               "versionCodes": {
-                "ARM64_V8A": 110084,
-                "ARMEABI_V7A": 110084,
-                "X86_64": 110084,
-                "X86": 110084
+                "ARM64_V8A": 110101,
+                "ARMEABI_V7A": 110101,
+                "X86_64": 110101,
+                "X86": 110101
               },
               "isExperimental": false,
               "minSdk": null,
@@ -657,6 +662,37 @@
     },
     {
       "name": "Enable Premium",
+      "description": "Unlocks the Monefy Pro features.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.monefy.app.lite",
+          "name": "Monefy",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#8BC34A",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.22.11",
+              "versionCodes": {
+                "ARM64_V8A": 2229,
+                "ARMEABI_V7A": 2229,
+                "X86_64": 2229,
+                "X86": 2229
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Premium",
       "description": "Unlocks all features locked behind the Saphe subscription paywall (navigation, car integration, speed limits, voice alarms, roadwork detection, animal nearby, slow-moving traffic, emergency vehicle, etc.).",
       "default": true,
       "dependencies": [],
@@ -670,8 +706,13 @@
           "signatures": null,
           "targets": [
             {
-              "version": "6.5.5",
-              "versionCodes": null,
+              "version": "6.6.0",
+              "versionCodes": {
+                "ARM64_V8A": 212620,
+                "ARMEABI_V7A": 212620,
+                "X86_64": 212620,
+                "X86": 212620
+              },
               "isExperimental": false,
               "minSdk": null,
               "description": null

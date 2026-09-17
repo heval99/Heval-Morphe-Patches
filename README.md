@@ -15,7 +15,7 @@ list below for the supported apps and versions.
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.2.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.2.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;27 patches total
+> **[v1.2.0](https://github.com/heval99/morphe-patches/releases/tag/v1.2.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;28 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
@@ -66,6 +66,9 @@ list below for the supported apps and versions.
 - Enable Premium
 
 **📦 LibrePods** (1)
+- Enable Premium
+
+**📦 Monefy** (1)
 - Enable Premium
 
 **📦 Swift Backup** (1)
