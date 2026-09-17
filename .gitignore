@@ -138,6 +138,3 @@ local.properties
 
 # Kotlin compiler sessions / cache
 .kotlin/
-
-# Local AI workspace / scratch notes
-.workbuddy-ai/

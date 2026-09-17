@@ -95,6 +95,12 @@ Or manually add this repository url as a patch source in Morphe: https://github.
 To build heval patches,
 you can follow the [Morphe documentation](https://github.com/MorpheApp/morphe-documentation).
 
+## 💙 Support
+
+If these patches are useful to you, you can support the work here:
+
+- PayPal: https://paypal.me/HevalXode
+
 ## 📜 License
 
 heval patches are licensed under the [GNU General Public License v3.0](LICENSE)
