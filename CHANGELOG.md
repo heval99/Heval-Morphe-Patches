@@ -1,3 +1,12 @@
+## [1.1.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.0.0...v1.1.0) (2026-09-17)
+
+### ✨ New Features
+
+* add 365Scores, Livescore, IPTV, and FishBuddy patches ([d62d2d3](https://github.com/heval99/Heval-Morphe-Patches/commit/d62d2d3623991b53323399708321a7e8ee24982f))
+* add Brave Origin patch and curate patch set to 7 apps ([278a630](https://github.com/heval99/Heval-Morphe-Patches/commit/278a630bd4425829bc608c07a385b9629853ab3e))
+* add EasyNotes and LibrePods patches with smoke tests ([57dc572](https://github.com/heval99/Heval-Morphe-Patches/commit/57dc572fab187f4991a3acb5aac3f8de551f801b))
+* **sofascore:** re-anchor patches for 26.09.07 ([6924593](https://github.com/heval99/Heval-Morphe-Patches/commit/6924593c81769564193fb051494b97ea73269e96))
+
 ## [1.1.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-09-17)
 
 ### ✨ New Features
