@@ -4,7 +4,8 @@ import app.morphe.patcher.Fingerprint
 
 // AppsFlyer: the public AppsFlyerLib class only declares abstract overloads and the
 // concrete implementation lives in an R8-renamed internal class, so anchor on any
-// subclass of AppsFlyerLib that implements the full logEvent overload.
+// subclass of AppsFlyerLib that implements the full logEvent overload. The implementation
+// check matters: matching an abstract declaration would make returnEarly() crash.
 object AppsFlyerLogEventFingerprint : Fingerprint(
     name = "logEvent",
     parameters = listOf(
@@ -13,7 +14,9 @@ object AppsFlyerLogEventFingerprint : Fingerprint(
         "Ljava/util/Map;",
         "Lcom/appsflyer/share/attribution/AppsFlyerRequestListener;",
     ),
-    custom = { _, classDef -> classDef.superclass == "Lcom/appsflyer/AppsFlyerLib;" },
+    custom = { method, classDef ->
+        classDef.superclass == "Lcom/appsflyer/AppsFlyerLib;" && method.implementation != null
+    },
 )
 
 // Firebase Analytics: in this build FirebaseAnalytics no longer declares logEvent, so
