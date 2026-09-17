@@ -1,1 +1,1 @@
-418718a0c24ffe15c413926668d72a94b6b6d1160fb0d4bcedb1ebe7f9daf50a  patches/build/libs/patches-1.3.0-dev.1.mpp
+5cab4a9314e281d1b38370649396e1e20e9b784f45670fed80e4b39b478bbeb3  patches/build/libs/patches-1.3.0.mpp
