@@ -214,4 +214,63 @@ object Constants {
             )
         )
     )
+
+    // Verified 2026-09-17 against eu.faircode.email 1.2337 (versionCode 2337) from APKPure.
+    // FairEmail is FOSS and not obfuscated: the pro entitlement is a single SharedPreferences
+    // boolean ("pro") read through ActivityBilling.isPro(Context). The billing client rewrites
+    // the pref from Play on launch, so the patch forces the getter instead of the pref.
+    val COMPATIBILITY_FAIREMAIL = Compatibility(
+        name = "FairEmail",
+        packageName = "eu.faircode.email",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x2196F3,
+        targets = listOf(AppTarget(version = "1.2337", versionCode = 2337))
+    )
+
+    // Verified 2026-09-17 against net.dinglisch.android.taskerm 6.6.18 (versionCode 5443)
+    // from APKPure. Paid app: the Play purchase is validated with Google Play LVL plus a
+    // licence server (Patreon keys). The licensing code is R8-obfuscated (rf.a0, rf.w$a),
+    // so the fingerprints pin those names for this version.
+    val COMPATIBILITY_TASKER = Compatibility(
+        name = "Tasker",
+        packageName = "net.dinglisch.android.taskerm",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x4CAF50,
+        targets = listOf(AppTarget(version = "6.6.18", versionCode = 5443))
+    )
+
+    // Verified 2026-09-17 against org.swiftapps.swiftbackup 5.1.0 (versionCode 620) from
+    // APKPure. Premium entitlement is stored in encrypted preferences; every gate reads the
+    // obfuscated singleton org.swiftapps.swiftbackup.common.V, whose getA() is forced true.
+    val COMPATIBILITY_SWIFTBACKUP = Compatibility(
+        name = "Swift Backup",
+        packageName = "org.swiftapps.swiftbackup",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x1E88E5,
+        targets = listOf(AppTarget(version = "5.1.0", versionCode = 620))
+    )
+
+    // Verified 2026-09-17 against org.kman.AquaMail 2.7.0 (versionCode 200700061) from
+    // APKPure. LicenseManager computes a licence level (0 free / 10-20 Pro / 30 migration /
+    // 40 Pro+ subscription) and LockFeatures answers the per-feature locks; both classes and
+    // methods are unobfuscated.
+    val COMPATIBILITY_AQUAMAIL = Compatibility(
+        name = "Aqua Mail",
+        packageName = "org.kman.AquaMail",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x00B0FF,
+        targets = listOf(AppTarget(version = "2.7.0", versionCode = 200700061))
+    )
+
+    // Verified 2026-09-17 against com.wunderground.android.weather 6.20.1
+    // (versionCode 2019070035) from APKPure. The ad-free purchase is evaluated locally by the
+    // Adobe Airlock SDK ("ads.Ad Free" entitlement); the getters in AirlockValueUtil,
+    // PremiumHelper and WUApplication are unobfuscated.
+    val COMPATIBILITY_WUNDERGROUND = Compatibility(
+        name = "Weather Underground",
+        packageName = "com.wunderground.android.weather",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x1565C0,
+        targets = listOf(AppTarget(version = "6.20.1", versionCode = 2019070035))
+    )
 }

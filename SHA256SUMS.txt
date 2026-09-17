@@ -1,1 +1,1 @@
-cc3213cf0f196cb23f3ac3260bacc7a38fcff60f737ac7777bd3364652b1b415  patches/build/libs/patches-1.1.0.mpp
+f25f03d9470c5eb1860647ef760c1fb396ccd0f5ada5cde3613310fb526c11b3  patches/build/libs/patches-1.2.0-dev.1.mpp
