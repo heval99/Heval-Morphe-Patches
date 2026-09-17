@@ -135,4 +135,66 @@ object Constants {
         appIconColor = 0xFF4500,
         targets = listOf(AppTarget(version = "1.93.136"))
     )
+
+    // Verified 2026-08-27 against librepods_1.0.0-rc1-play-63 .apkm from APKMirror
+    // (arm64-v8a + x86, Android 16+ / minSdk 36). App logic is R8-obfuscated into
+    // top-level classes (e.g. PlayBillingProvider -> uo) around native protocol
+    // libs (libbluetooth_socket.so, libl2c_fcr_hook.so). Premium gates all read
+    // PurchaseUiState.isPremium which is fed solely by PlayBillingProvider's
+    // _isPremium StateFlow written in processPurchases(); a FOSS variant of the
+    // provider also ships in this build. In-app product:
+    // "librepods.advanced_features.v2". No license server (upstream GPL-3.0,
+    // github.com/librepods-org/librepods).
+    val COMPATIBILITY_LIBREPODS = Compatibility(
+        name = "LibrePods",
+        packageName = "me.kavishdevar.librepods",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x406C5C,
+        targets = listOf(
+            AppTarget(
+                version = "1.0.0-rc1-play",
+                versionCode = 63
+            )
+        )
+    )
+
+    // Verified 2026-08-30 against easynotes..._1.3.59.0819-10565 .apkm from APKMirror
+    // (arm64-v8a + armeabi-v7a, Android 6.0+ / minSdk 23). App code is NOT obfuscated:
+    // 3,589 readable classes under notes.easy.android.mynotes.
+    //
+    // Entitlement is entirely local — there is no license server. Everything routes through
+    // three public static booleans on notes.easy.android.mynotes.App:
+    //   isVip()Z       38 call sites - master gate for premium assets (fonts, backgrounds,
+    //                  stickers, drawing tools). Per-asset flags such as DrawPatternRes.isVip()
+    //                  are only consulted *inside* an `if (!App.isVip())` check.
+    //   isAdFree()Z    4 call sites  - gates banner loading in utils/AdManager
+    //                  (e.g. the "notes_edit_banner" unit) and App$AppOpenAdManager.
+    //   isGoogleVip()Z drives the "Google VIP" badge only.
+    //
+    // Both isVip() and isGoogleVip() reduce to
+    //   userConfig.getHasBuyed() || userConfig.getHasSubscribe()
+    // with isVip() additionally early-outing on getBillingMonthlyTestOpen() (false) and
+    // isReferralVip() (true). State lives in SharedPreferences via constant/UserConfig
+    // (keys has_buyed, has_subscribe, has_m_subscribe, has_y_subscribe).
+    //
+    // Important: billing/BillingManager runs queryPurchaseState() on startup and its
+    // callbacks (BillingManager$5/$7/$8) write those prefs back from whatever Play reports,
+    // so a non-payer gets them reset to false. That is why we patch the *consumers*
+    // (App.isVip/isAdFree) rather than the writers — forced return values ignore the reset.
+    //
+    // SKUs: BILLING_MONTH / BILLING_YEAR / BILLING_LIFETIME / BILLING_MONTH_TO_YEAR /
+    // BILLING_UP_TO_LIFETIME (analytics suffixes "1m", "1y", "lifetime").
+    // Ad SDKs: Google Mobile Ads (app-open), Meta Audience Network, PubMatic.
+    val COMPATIBILITY_EASYNOTES = Compatibility(
+        name = "EasyNotes",
+        packageName = "easynotes.notes.notepad.notebook.privatenotes.note",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x00ACFF,
+        targets = listOf(
+            AppTarget(
+                version = "1.3.59.0819",
+                versionCode = 10565
+            )
+        )
+    )
 }
