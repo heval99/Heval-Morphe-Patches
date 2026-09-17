@@ -50,6 +50,8 @@ object Constants {
         packageName = "com.mobilefootie.wc2010",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x00985F,
+        // Drift 2026-09-17: SubscriptionManagerFingerprint no longer matches on
+        // 236.253021660w.20260827; target left open until re-anchored.
         targets = listOf(AppTarget(version = null))
     )
 
@@ -58,6 +60,8 @@ object Constants {
         packageName = "com.myfitnesspal.android",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x0072BC,
+        // Drift 2026-09-17: GetPremiumPlusFingerprint no longer matches on 26.36.0;
+        // target left open until re-anchored.
         targets = listOf(AppTarget(version = null))
     )
 
@@ -66,6 +70,8 @@ object Constants {
         packageName = "club.boxbox.android",
         apkFileType = ApkFileType.APK,
         appIconColor = 0xFF0000,
+        // Drift 2026-09-17: on 5.4.15 Disable ads still applies but Disable telemetry
+        // fails to match; target left open until the telemetry fingerprint is re-anchored.
         targets = listOf(AppTarget(version = null))
     )
 
@@ -74,7 +80,7 @@ object Constants {
         packageName = "my.saphelink",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x000000,
-        targets = listOf(AppTarget(version = "6.5.5"))
+        targets = listOf(AppTarget(version = "6.6.0", versionCode = 212620))
     )
 
     val COMPATIBILITY_ANYDESK = Compatibility(
@@ -82,7 +88,7 @@ object Constants {
         packageName = "com.anydesk.anydeskandroid",
         apkFileType = ApkFileType.APK,
         appIconColor = 0xEF443B,
-        targets = listOf(AppTarget(version = "8.3.4", versionCode = 80304))
+        targets = listOf(AppTarget(version = "9.0.0", versionCode = 90000))
     )
 
     // Verified 2026-08-19 against 365scores.apkm v14.8.8 (universal, Android 7.0+).
@@ -91,12 +97,13 @@ object Constants {
     // overload are both present unobfuscated in com.google.android.gms.ads.MobileAds.
     // Ad SDKs observed: Google Mobile Ads, Unity, InMobi, Vungle, Mintegral,
     // ByteDance Pangle, Meta Audience Network (all GAM-mediated).
+    // Re-verified 2026-09-17 on 14.9.4 with morphe-cli -f: Disable ads still applies.
     val COMPATIBILITY_365SCORES = Compatibility(
         name = "365Scores",
         packageName = "com.scores365",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFFC107,
-        targets = listOf(AppTarget(version = "14.8.8", versionCode = 1488))
+        targets = listOf(AppTarget(version = "14.9.4", versionCode = 1494))
     )
 
     // Verified 2026-08-20 against livescore.apk v9.9.1 (universal, Android 7.0+).
@@ -104,12 +111,13 @@ object Constants {
     // BannerManagerImpl, InterstitialAdsUseCase, MpuAdsConfig, HeroPlacementUseCase,
     // CoverageSponsorshipSettings and AnnouncementBannerUseCase. Class and method
     // are un-obfuscated in com.livescore.ads.config.
+    // Re-verified 2026-09-17 on 10.1 with morphe-cli -f: Disable ads still applies.
     val COMPATIBILITY_LIVESCORE = Compatibility(
         name = "Livescore",
         packageName = "com.livescore",
         apkFileType = ApkFileType.APK,
         appIconColor = 0xC8102E,
-        targets = listOf(AppTarget(version = "9.9.1", versionCode = 2120))
+        targets = listOf(AppTarget(version = "10.1", versionCode = 2144))
     )
 
     // Verified 2026-08-20 against FishBuddy v11.0.84 (universal, Android 7.0+).
@@ -117,12 +125,13 @@ object Constants {
     // reads the server-populated `roles` HashMap for the "premium" entitlement.
     // Subscription managed via RevenueCat (no ad SDKs). Class + method names
     // un-obfuscated.
+    // Re-verified 2026-09-17 on 11.0.101 with morphe-cli -f: Enable Premium still applies.
     val COMPATIBILITY_FISHBUDDY = Compatibility(
         name = "FishBuddy",
         packageName = "no.fishbuddy_playground.app",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x0288D1,
-        targets = listOf(AppTarget(version = "11.0.84", versionCode = 110084))
+        targets = listOf(AppTarget(version = "11.0.101", versionCode = 110101))
     )
 
     // Verified 2026-08-20 against ru.iptvremote.android.iptv apkm v9.1.25
@@ -145,6 +154,7 @@ object Constants {
     // are present. Obfuscated class names rotated vs dh6k's v1.92.140 target
     // (v42 -> ei2, d72 -> hk2, b12 -> ke2, lf2 -> rs2, pc2 -> vp2, lv1 -> t82),
     // but every fingerprint is string-based so resolves at patch time.
+    // Drift 2026-09-17: v1.95.101 fails to match and is not listed.
     val COMPATIBILITY_BRAVE = Compatibility(
         name = "Brave Browser",
         packageName = "com.brave.browser",
@@ -202,6 +212,7 @@ object Constants {
     // SKUs: BILLING_MONTH / BILLING_YEAR / BILLING_LIFETIME / BILLING_MONTH_TO_YEAR /
     // BILLING_UP_TO_LIFETIME (analytics suffixes "1m", "1y", "lifetime").
     // Ad SDKs: Google Mobile Ads (app-open), Meta Audience Network, PubMatic.
+    // Re-verified 2026-09-17 on 1.3.61.0907 with morphe-cli -f: both patches still apply.
     val COMPATIBILITY_EASYNOTES = Compatibility(
         name = "EasyNotes",
         packageName = "easynotes.notes.notepad.notebook.privatenotes.note",
@@ -209,8 +220,8 @@ object Constants {
         appIconColor = 0x00ACFF,
         targets = listOf(
             AppTarget(
-                version = "1.3.59.0819",
-                versionCode = 10565
+                version = "1.3.61.0907",
+                versionCode = 10567
             )
         )
     )
@@ -272,5 +283,18 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1565C0,
         targets = listOf(AppTarget(version = "6.20.1", versionCode = 2019070035))
+    )
+
+    // Verified 2026-09-17 against com.monefy.app.lite 1.22.11 (versionCode 2229) from APKPure.
+    // The app code is R8-obfuscated but the entitlement helpers are readable:
+    // ClearCashApplication.o() is the master pro check (pro-app package id or cached IAP flag),
+    // GeneralSettingsProvider.F() reads the cached "MONEFY_PRO_IN_APP_BOUGHT" pref that the
+    // RevenueCat callback writes, and zt.p() reports the subscription-expired state.
+    val COMPATIBILITY_MONEFY = Compatibility(
+        name = "Monefy",
+        packageName = "com.monefy.app.lite",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x8BC34A,
+        targets = listOf(AppTarget(version = "1.22.11", versionCode = 2229))
     )
 }

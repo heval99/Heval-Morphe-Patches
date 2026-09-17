@@ -1,3 +1,9 @@
+## [1.3.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.2.0...v1.3.0-dev.1) (2026-09-17)
+
+### ✨ New Features
+
+* **monefy:** add Enable Premium patch and bump supported versions ([332cdb9](https://github.com/heval99/Heval-Morphe-Patches/commit/332cdb9c3b1bdf0b0c9fdf6e6bc2402cfdf3e23f))
+
 ## [1.2.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.1.0...v1.2.0) (2026-09-17)
 
 ### ✨ New Features
