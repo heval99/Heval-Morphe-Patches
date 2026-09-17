@@ -1,3 +1,10 @@
+## [1.1.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-09-17)
+
+### ✨ New Features
+
+* add EasyNotes and LibrePods patches with smoke tests ([57dc572](https://github.com/heval99/Heval-Morphe-Patches/commit/57dc572fab187f4991a3acb5aac3f8de551f801b))
+* **sofascore:** re-anchor patches for 26.09.07 ([6924593](https://github.com/heval99/Heval-Morphe-Patches/commit/6924593c81769564193fb051494b97ea73269e96))
+
 ## [1.1.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-08-19)
 
 ### ✨ New Features
