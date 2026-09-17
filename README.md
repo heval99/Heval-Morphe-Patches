@@ -4,28 +4,62 @@ Custom Morphe patches by heval99.
 
 ## ❓ About
 
-Patches for apps I like. Currently includes a patch for Sofascore that disables all ads
-(banners, interstitials, feed, native, preroll and rewarded ads).
+Patches for apps I like. Covers ads, telemetry, and premium unlocks for 11 apps (365Scores,
+AnyDesk, BoxBox, Brave Browser, FishBuddy, FotMob, IPTV, Livescore, MyFitnessPal, Saphe Link,
+and Sofascore), plus the Brave Origin subscription unlock.
 
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0](https://github.com/heval99/morphe-patches/releases/tag/v1.0.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;1 patches total
-<details open>
-<summary>📦 Sofascore&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
-<br>
+> **[v1.1.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.1.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;22 patches total
 
-**🎯 Supported versions:**
+**📦 Sofascore** (5)
+- Block marketing notifications
+- Disable Facebook SDK
+- Disable ads
+- Disable telemetry
+- Enable Premium
 
-| 26.07.27 |
-| :---: |
+**📦 Brave Browser** (1)
+- Brave Origin
 
-| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
-|----------|----------------|-----------|
-| [Disable ads](#disable-ads) | Disables banner, interstitial, feed, native, preroll and rewarded ads. |  |
+**📦 BoxBox** (3)
+- Disable ads
+- Disable telemetry
+- Enable Premium
 
-</details>
+**📦 EasyNotes** (2)
+- Disable ads
+- Enable Premium
 
+**📦 IPTV** (2)
+- Disable ads
+- Enable Premium
+
+**📦 Livescore** (1)
+- Disable ads
+
+**📦 365Scores** (1)
+- Disable ads
+
+**📦 Saphe Link** (2)
+- Disable telemetry
+- Enable Premium
+
+**📦 FotMob** (1)
+- Enable FotMob+
+
+**📦 AnyDesk** (1)
+- Enable Premium
+
+**📦 FishBuddy** (1)
+- Enable Premium
+
+**📦 LibrePods** (1)
+- Enable Premium
+
+**📦 MyFitnessPal** (1)
+- Enable Premium+
 <!-- PATCHES_END -->
 
 #### How to use these patches
