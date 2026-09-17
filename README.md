@@ -4,14 +4,13 @@ Custom Morphe patches by heval99.
 
 ## ❓ About
 
-Patches for apps I like. Covers ads, telemetry, and premium unlocks for 11 apps (365Scores,
-AnyDesk, BoxBox, Brave Browser, FishBuddy, FotMob, IPTV, Livescore, MyFitnessPal, Saphe Link,
-and Sofascore), plus the Brave Origin subscription unlock.
+Patches for apps I like. Covers ads, telemetry, and premium/licence unlocks — see the patch
+list below for the supported apps and versions.
 
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.1.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.1.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;22 patches total
+> **[v1.1.0](https://github.com/heval99/morphe-patches/releases/tag/v1.1.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;27 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
@@ -49,7 +48,13 @@ and Sofascore), plus the Brave Origin subscription unlock.
 **📦 FotMob** (1)
 - Enable FotMob+
 
+**📦 Tasker** (1)
+- Enable Full Version
+
 **📦 AnyDesk** (1)
+- Enable Premium
+
+**📦 Aqua Mail** (1)
 - Enable Premium
 
 **📦 FishBuddy** (1)
@@ -58,8 +63,17 @@ and Sofascore), plus the Brave Origin subscription unlock.
 **📦 LibrePods** (1)
 - Enable Premium
 
+**📦 Swift Backup** (1)
+- Enable Premium
+
 **📦 MyFitnessPal** (1)
 - Enable Premium+
+
+**📦 FairEmail** (1)
+- Enable Pro
+
+**📦 Weather Underground** (1)
+- Remove ads
 <!-- PATCHES_END -->
 
 #### How to use these patches

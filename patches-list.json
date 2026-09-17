@@ -413,6 +413,37 @@
       "options": []
     },
     {
+      "name": "Enable Full Version",
+      "description": "Bypasses the Play license check so the paid app runs as licensed.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "net.dinglisch.android.taskerm",
+          "name": "Tasker",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#4CAF50",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "6.6.18",
+              "versionCodes": {
+                "ARM64_V8A": 5443,
+                "ARMEABI_V7A": 5443,
+                "X86_64": 5443,
+                "X86": 5443
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Enable Premium",
       "description": "Unlocks premium features by patching the Java license wrapper methods in JniAdExt: isFreeLicense returns false (app treats the license as paid), account registration and address book are allowed, and the remove-license option is available in settings. Note: the underlying license validation is native (libanydesk.so) and cannot be patched via bytecode — this patch only affects the Java-layer feature gates.",
       "default": true,
@@ -433,6 +464,37 @@
                 "ARMEABI_V7A": 80304,
                 "X86_64": 80304,
                 "X86": 80304
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Premium",
+      "description": "Unlocks the Pro/Premium features and lifts the free-version feature locks.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "org.kman.AquaMail",
+          "name": "Aqua Mail",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#00B0FF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "2.7.0",
+              "versionCodes": {
+                "ARM64_V8A": 200700061,
+                "ARMEABI_V7A": 200700061,
+                "X86_64": 200700061,
+                "X86": 200700061
               },
               "isExperimental": false,
               "minSdk": null,
@@ -658,6 +720,37 @@
       "options": []
     },
     {
+      "name": "Enable Premium",
+      "description": "Unlocks the premium features.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "org.swiftapps.swiftbackup",
+          "name": "Swift Backup",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#1E88E5",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.1.0",
+              "versionCodes": {
+                "ARM64_V8A": 620,
+                "ARMEABI_V7A": 620,
+                "X86_64": 620,
+                "X86": 620
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Enable Premium+",
       "description": "Enables app features locked behind the subscription paywall.",
       "default": true,
@@ -674,6 +767,68 @@
             {
               "version": null,
               "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Pro",
+      "description": "Unlocks the FairEmail pro features.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "eu.faircode.email",
+          "name": "FairEmail",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#2196F3",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.2337",
+              "versionCodes": {
+                "ARM64_V8A": 2337,
+                "ARMEABI_V7A": 2337,
+                "X86_64": 2337,
+                "X86": 2337
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Remove ads",
+      "description": "Unlocks the ad-free purchase.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.wunderground.android.weather",
+          "name": "Weather Underground",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#1565C0",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "6.20.1",
+              "versionCodes": {
+                "ARM64_V8A": 2019070035,
+                "ARMEABI_V7A": 2019070035,
+                "X86_64": 2019070035,
+                "X86": 2019070035
+              },
               "isExperimental": false,
               "minSdk": null,
               "description": null
