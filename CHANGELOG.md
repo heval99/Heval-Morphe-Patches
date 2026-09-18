@@ -1,3 +1,9 @@
+## [1.4.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-09-18)
+
+### 🐛 Bug Fixes
+
+* **fotmob:** support 237.17536.20260911 by anchoring the getter on shape ([373b294](https://github.com/heval99/Heval-Morphe-Patches/commit/373b2948096dc3330ea15fa5d5ceb3d1404921c5))
+
 ## [1.4.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.3.2-dev.1...v1.4.0-dev.1) (2026-09-18)
 
 ### ✨ New Features
