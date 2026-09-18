@@ -1,3 +1,9 @@
+## [1.3.2-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.3.1...v1.3.2-dev.1) (2026-09-18)
+
+### 🐛 Bug Fixes
+
+* make Aqua Mail premium apply and drop the unusable Swift Backup patch ([e3aa817](https://github.com/heval99/Heval-Morphe-Patches/commit/e3aa817688dec1f89e0fc51e5180c5f231df1529)), closes [#16](https://github.com/heval99/Heval-Morphe-Patches/issues/16) [#18](https://github.com/heval99/Heval-Morphe-Patches/issues/18) [swiftapps.org/issues#piracy](https://github.com/swiftapps.org/issues/issues/piracy) [#17](https://github.com/heval99/Heval-Morphe-Patches/issues/17)
+
 ## [1.3.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.3.0...v1.3.1) (2026-09-17)
 
 ### 🐛 Bug Fixes
