@@ -15,7 +15,7 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.3.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.3.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;28 patches total
+> **[v1.4.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.4.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;31 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
@@ -36,11 +36,17 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 - Disable ads
 - Enable Premium
 
+**📦 Flashscore** (1)
+- Disable ads
+
 **📦 IPTV** (2)
 - Disable ads
 - Enable Premium
 
 **📦 Livescore** (1)
+- Disable ads
+
+**📦 OneFootball** (1)
 - Disable ads
 
 **📦 365Scores** (1)
@@ -62,6 +68,9 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 **📦 Aqua Mail** (1)
 - Enable Premium
 
+**📦 Bluecoins** (1)
+- Enable Premium
+
 **📦 FishBuddy** (1)
 - Enable Premium
 
@@ -71,7 +80,7 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 **📦 Monefy** (1)
 - Enable Premium
 
-**📦 Swift Backup** (1)
+**📦 OsmAnd** (1)
 - Enable Premium
 
 **📦 MyFitnessPal** (1)
