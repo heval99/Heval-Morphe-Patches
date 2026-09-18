@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.4.0-dev.2",
+  "version": "1.4.0-dev.3",
   "patches": [
     {
       "name": "Block marketing notifications",
@@ -64,7 +64,7 @@
           "signatures": null,
           "targets": [
             {
-              "version": "1.93.136",
+              "version": "1.95.104",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -122,7 +122,7 @@
     },
     {
       "name": "Disable ads",
-      "description": "Prevents AppLovin interstitial ads from loading and showing.",
+      "description": "Disables AppLovin interstitial ads.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
@@ -135,8 +135,13 @@
           "signatures": null,
           "targets": [
             {
-              "version": null,
-              "versionCodes": null,
+              "version": "5.4.9",
+              "versionCodes": {
+                "ARM64_V8A": 251,
+                "ARMEABI_V7A": 251,
+                "X86_64": 251,
+                "X86": 251
+              },
               "isExperimental": false,
               "minSdk": null,
               "description": null
@@ -392,8 +397,13 @@
           "signatures": null,
           "targets": [
             {
-              "version": null,
-              "versionCodes": null,
+              "version": "5.4.9",
+              "versionCodes": {
+                "ARM64_V8A": 251,
+                "ARMEABI_V7A": 251,
+                "X86_64": 251,
+                "X86": 251
+              },
               "isExperimental": false,
               "minSdk": null,
               "description": null
@@ -569,7 +579,7 @@
     },
     {
       "name": "Enable Premium",
-      "description": "Unlocks premium features by patching the Java license wrapper methods in JniAdExt: isFreeLicense returns false (app treats the license as paid), account registration and address book are allowed, and the remove-license option is available in settings. Note: the underlying license validation is native (libanydesk.so) and cannot be patched via bytecode — this patch only affects the Java-layer feature gates.",
+      "description": "Enables premium features by making the app treat the free license as paid.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
@@ -675,8 +685,13 @@
           "signatures": null,
           "targets": [
             {
-              "version": null,
-              "versionCodes": null,
+              "version": "5.4.9",
+              "versionCodes": {
+                "ARM64_V8A": 251,
+                "ARMEABI_V7A": 251,
+                "X86_64": 251,
+                "X86": 251
+              },
               "isExperimental": false,
               "minSdk": null,
               "description": null
@@ -963,8 +978,13 @@
           "signatures": null,
           "targets": [
             {
-              "version": null,
-              "versionCodes": null,
+              "version": "26.37.0",
+              "versionCodes": {
+                "ARM64_V8A": 51401,
+                "ARMEABI_V7A": 51401,
+                "X86_64": 51401,
+                "X86": 51401
+              },
               "isExperimental": false,
               "minSdk": null,
               "description": null

@@ -1,3 +1,9 @@
+## [1.4.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.4.0-dev.2...v1.4.0-dev.3) (2026-09-18)
+
+### 🐛 Bug Fixes
+
+* re-verify every app against the latest builds and re-anchor four broken patches ([6921988](https://github.com/heval99/Heval-Morphe-Patches/commit/692198890d8a07d816d57e54d71131231f919b48))
+
 ## [1.4.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-09-18)
 
 ### 🐛 Bug Fixes
