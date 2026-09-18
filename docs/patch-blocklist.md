@@ -59,10 +59,11 @@ morphe-patches.software, September 2026):
 | App | Last good | Failing on |
 |---|---|---|
 | Brave Origin | 1.93.136 | 1.95.101 |
-| FotMob | 236.17398.20260827 / 236.17338.20260822 (fixed 2026-09-17) | older builds before the fix |
 | MyFitnessPal | unknown | 26.36.0 (`GetPremiumPlusFingerprint`) |
 | BoxBox | unknown | 5.4.15 (`Disable telemetry`; `Disable ads` still works) |
 | LibrePods | 1.0.0-rc1-play-63 | no store mirror carries the pinned Play build; GitHub ships FOSS builds only |
+
+FotMob was re-anchored on 2026-09-17 and is no longer drifting.
 
 ## Package-name traps (avoid downloading the wrong app)
 
