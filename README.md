@@ -15,7 +15,7 @@ list below for the supported apps and versions.
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.3.2-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.3.2-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;27 patches total
+> **[v1.4.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.4.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;31 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
@@ -36,11 +36,17 @@ list below for the supported apps and versions.
 - Disable ads
 - Enable Premium
 
+**📦 Flashscore** (1)
+- Disable ads
+
 **📦 IPTV** (2)
 - Disable ads
 - Enable Premium
 
 **📦 Livescore** (1)
+- Disable ads
+
+**📦 OneFootball** (1)
 - Disable ads
 
 **📦 365Scores** (1)
@@ -62,6 +68,9 @@ list below for the supported apps and versions.
 **📦 Aqua Mail** (1)
 - Enable Premium
 
+**📦 Bluecoins** (1)
+- Enable Premium
+
 **📦 FishBuddy** (1)
 - Enable Premium
 
@@ -69,6 +78,9 @@ list below for the supported apps and versions.
 - Enable Premium
 
 **📦 Monefy** (1)
+- Enable Premium
+
+**📦 OsmAnd** (1)
 - Enable Premium
 
 **📦 MyFitnessPal** (1)

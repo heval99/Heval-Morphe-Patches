@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.3.2-dev.1",
+  "version": "1.4.0-dev.1",
   "patches": [
     {
       "name": "Block marketing notifications",
@@ -179,6 +179,37 @@
     },
     {
       "name": "Disable ads",
+      "description": "Disables banner, interstitial, native, app-open and rewarded ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "eu.livesport.FlashScore_com",
+          "name": "Flashscore",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#1E88E5",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "26.9.2",
+              "versionCodes": {
+                "ARM64_V8A": 517,
+                "ARMEABI_V7A": 517,
+                "X86_64": 517,
+                "X86": 517
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
       "description": "Disables Wortise ad SDK initialization, blocking banner, interstitial, native and mediated ads (AppLovin, Yandex, Google Mobile Ads, etc.).",
       "default": true,
       "dependencies": [],
@@ -229,6 +260,37 @@
                 "ARMEABI_V7A": 2144,
                 "X86_64": 2144,
                 "X86": 2144
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
+      "description": "Disables banner, interstitial, native, app-open and rewarded ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "de.motain.iliga",
+          "name": "OneFootball",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#00C853",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "15.142.0",
+              "versionCodes": {
+                "ARM64_V8A": 1044958885,
+                "ARMEABI_V7A": 1044958885,
+                "X86_64": 1044958885,
+                "X86": 1044958885
               },
               "isExperimental": false,
               "minSdk": null,
@@ -557,6 +619,37 @@
     },
     {
       "name": "Enable Premium",
+      "description": "Unlocks the premium version (removes ads and lifts premium limits).",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.rammigsoftware.bluecoins",
+          "name": "Bluecoins",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#2979FF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "13.1.79",
+              "versionCodes": {
+                "ARM64_V8A": 33145,
+                "ARMEABI_V7A": 33145,
+                "X86_64": 33145,
+                "X86": 33145
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Premium",
       "description": "Unlocks premium features by bypassing RevenueCat subscription checks.",
       "default": true,
       "dependencies": [],
@@ -726,6 +819,37 @@
                 "ARMEABI_V7A": 2229,
                 "X86_64": 2229,
                 "X86": 2229
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Premium",
+      "description": "Unlocks OsmAnd Pro, Maps+ and live updates.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "net.osmand",
+          "name": "OsmAnd",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#7CB342",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.4.5",
+              "versionCodes": {
+                "ARM64_V8A": 5405,
+                "ARMEABI_V7A": 5405,
+                "X86_64": 5405,
+                "X86": 5405
               },
               "isExperimental": false,
               "minSdk": null,

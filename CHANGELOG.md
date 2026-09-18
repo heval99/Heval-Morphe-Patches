@@ -1,3 +1,9 @@
+## [1.4.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.3.2-dev.1...v1.4.0-dev.1) (2026-09-18)
+
+### ✨ New Features
+
+* add Bluecoins, Flashscore, OneFootball and OsmAnd patches ([9a9e26f](https://github.com/heval99/Heval-Morphe-Patches/commit/9a9e26f453efe5db31d0636695c13f4a98cf9f2b))
+
 ## [1.3.2-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.3.1...v1.3.2-dev.1) (2026-09-18)
 
 ### 🐛 Bug Fixes
