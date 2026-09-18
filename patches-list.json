@@ -813,37 +813,6 @@
       "options": []
     },
     {
-      "name": "Enable Premium",
-      "description": "Unlocks the premium features.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "org.swiftapps.swiftbackup",
-          "name": "Swift Backup",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#1E88E5",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "5.1.0",
-              "versionCodes": {
-                "ARM64_V8A": 620,
-                "ARMEABI_V7A": 620,
-                "X86_64": 620,
-                "X86": 620
-              },
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Enable Premium+",
       "description": "Enables app features locked behind the subscription paywall.",
       "default": true,

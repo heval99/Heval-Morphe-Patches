@@ -253,6 +253,10 @@ object Constants {
     // FairEmail is FOSS and not obfuscated: the pro entitlement is a single SharedPreferences
     // boolean ("pro") read through ActivityBilling.isPro(Context). The billing client rewrites
     // the pref from Play on launch, so the patch forces the getter instead of the pref.
+    // Note: Gmail OAuth cannot work on a re-signed build. FairEmail gets Gmail tokens through
+    // AccountManager and Google only issues them to packages signed with the certificates
+    // registered for the OAuth client (the Play/GitHub builds). For Gmail accounts use an app
+    // password instead (Gmail requires 2FA for that); non-Google accounts are unaffected.
     val COMPATIBILITY_FAIREMAIL = Compatibility(
         name = "FairEmail",
         packageName = "eu.faircode.email",
@@ -273,21 +277,11 @@ object Constants {
         targets = listOf(AppTarget(version = "6.6.18", versionCode = 5443))
     )
 
-    // Verified 2026-09-17 against org.swiftapps.swiftbackup 5.1.0 (versionCode 620) from
-    // APKPure. Premium entitlement is stored in encrypted preferences; every gate reads the
-    // obfuscated singleton org.swiftapps.swiftbackup.common.V, whose getA() is forced true.
-    val COMPATIBILITY_SWIFTBACKUP = Compatibility(
-        name = "Swift Backup",
-        packageName = "org.swiftapps.swiftbackup",
-        apkFileType = ApkFileType.APK,
-        appIconColor = 0x1E88E5,
-        targets = listOf(AppTarget(version = "5.1.0", versionCode = 620))
-    )
-
     // Verified 2026-09-17 against org.kman.AquaMail 2.7.0 (versionCode 200700061) from
     // APKPure. LicenseManager computes a licence level (0 free / 10-20 Pro / 30 migration /
     // 40 Pro+ subscription) and LockFeatures answers the per-feature locks; both classes and
-    // methods are unobfuscated.
+    // methods are unobfuscated. The UI reads getLicenseLevel() directly, so the patch forces
+    // the level to 40 as well as the derived booleans.
     val COMPATIBILITY_AQUAMAIL = Compatibility(
         name = "Aqua Mail",
         packageName = "org.kman.AquaMail",

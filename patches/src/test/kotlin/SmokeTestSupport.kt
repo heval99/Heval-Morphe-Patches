@@ -12,6 +12,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertNull
@@ -85,6 +86,39 @@ fun assertReturnsLicensedEnum(method: Method, label: String, diagnostics: String
     assertTrue(
         insns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT,
         "$label does not return immediately; second instruction is ${insns.getOrNull(1)?.opcode}\n$diagnostics"
+    )
+}
+
+fun assertReturnsInt(method: Method, expected: Int, label: String, diagnostics: String = "") {
+    val insns = method.instructions()
+    val first = insns.getOrNull(0)
+    assertTrue(
+        first is NarrowLiteralInstruction && first.narrowLiteral.toInt() == expected,
+        "$label was not forced to $expected; first instruction is ${first?.opcode}\n$diagnostics"
+    )
+    assertTrue(
+        insns.getOrNull(1)?.opcode == Opcode.RETURN,
+        "$label does not return immediately; second instruction is ${insns.getOrNull(1)?.opcode}\n$diagnostics"
+    )
+}
+
+fun assertReturnsMethodCall(
+    method: Method,
+    targetClass: String,
+    targetName: String,
+    label: String,
+    diagnostics: String = "",
+) {
+    val insns = method.instructions()
+    val first = insns.getOrNull(0) as? ReferenceInstruction
+    val ref = first?.reference as? MethodReference
+    assertTrue(
+        ref != null && ref.definingClass == targetClass && ref.name == targetName,
+        "$label does not call $targetClass.$targetName first; first instruction is ${first?.opcode} ${ref}\n$diagnostics"
+    )
+    assertTrue(
+        insns.getOrNull(2)?.opcode == Opcode.RETURN_OBJECT,
+        "$label does not return the call result; third instruction is ${insns.getOrNull(2)?.opcode}\n$diagnostics"
     )
 }
 
