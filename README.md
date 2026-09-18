@@ -6,7 +6,7 @@ Custom Morphe patches by heval99.
 
 Patches for apps I like. Covers ads, telemetry, and premium/licence unlocks — see the patch
 list below for the supported apps and versions.
-
+If you have requests feel free to message me via hevalomevalo@gmail.com
 > **AI-generated patches.** Every patch in this repo is written with AI assistance: the
 > fingerprint analysis, patch code and smoke tests are AI-generated, then verified by
 > applying the patches to the real APKs (see `patches/src/test/`) before release. Review
