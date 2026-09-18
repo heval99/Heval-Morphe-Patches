@@ -61,12 +61,21 @@ object Constants {
     // The subscription manager is R8-obfuscated; the patch anchors it on the staff-account
     // email strings and identifies the subscription getter structurally (see
     // fotmob/plus/Fingerprints.kt), so obfuscated name rotation no longer breaks it.
+    // Verified 2026-09-18 against 237.17536.20260911 (versionCode 17536, the current APKMirror
+    // phone build). This release swapped the storage layer under the getter (236 read
+    // SharedPreferencesRepository.get(Z), 237 goes through a settings holder), so the getter
+    // search is now storage-agnostic: the manager's only non-constant no-arg boolean method
+    // that does not hold the staff email. Both old 236 targets were re-checked and still pass.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x00985F,
         targets = listOf(
+            AppTarget(
+                version = "237.17536.20260911",
+                versionCode = 17536
+            ),
             AppTarget(
                 version = "236.17398.20260827",
                 versionCode = 17398
