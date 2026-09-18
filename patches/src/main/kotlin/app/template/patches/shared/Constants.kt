@@ -87,24 +87,32 @@ object Constants {
         )
     )
 
+    // Verified 2026-09-18 against com.myfitnesspal.android 26.37.0 (versionCode 51401) from
+    // APKPure. 26.37.0 removed the old local `SubscriptionPreferences.getPremiumPlusEnabled`
+    // gate; premium is now server-driven through queryenvoy `FeatureState` objects
+    // (feature + entitlement + tier). The patch overrides the two enum-companion parsers
+    // (Entitlement -> Entitled, Tier -> PremiumPlus), which is the single conversion point
+    // for every feature state deserialized from the server.
     val COMPATIBILITY_MYFITNESSPAL = Compatibility(
         name = "MyFitnessPal",
         packageName = "com.myfitnesspal.android",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x0072BC,
-        // Drift 2026-09-17: GetPremiumPlusFingerprint no longer matches on 26.36.0;
-        // target left open until re-anchored.
-        targets = listOf(AppTarget(version = null))
+        targets = listOf(AppTarget(version = "26.37.0", versionCode = 51401))
     )
 
+    // Verified 2026-09-18 against club.boxbox.android 5.4.9 (versionCode 251, the current
+    // APKMirror build) from APKMirror. The telemetry and interstitial patches used to call
+    // returnEarly() on the first fingerprint match only - on 5.4.9 that hit an abstract
+    // AppsFlyer declaration (patcher NPE) and the overridden showAd overload, leaving the
+    // terminal showAd(String, String, Activity) alive. Both now patch every concrete match
+    // by class scan; bytecode-verified in BoxBoxSmokeTest.
     val COMPATIBILITY_BOXBOX = Compatibility(
         name = "BoxBox",
         packageName = "club.boxbox.android",
         apkFileType = ApkFileType.APK,
         appIconColor = 0xFF0000,
-        // Drift 2026-09-17: on 5.4.15 Disable ads still applies but Disable telemetry
-        // fails to match; target left open until the telemetry fingerprint is re-anchored.
-        targets = listOf(AppTarget(version = null))
+        targets = listOf(AppTarget(version = "5.4.9", versionCode = 251))
     )
 
     val COMPATIBILITY_SAPHELINK = Compatibility(
@@ -112,6 +120,11 @@ object Constants {
         packageName = "my.saphelink",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x000000,
+        // Verified 2026-09-18 against 6.6.0 (versionCode 212620) from APKPure. The old
+        // secondary SubscriptionManager.isPremium fingerprint does not exist in this build
+        // and was removed; the primary FeatureToggleRouterImpl.userHasFeature gate is
+        // mandatory now (no methodOrNull), so a future rename fails loudly and is
+        // bytecode-verified in SapheLinkSmokeTest.
         targets = listOf(AppTarget(version = "6.6.0", versionCode = 212620))
     )
 
@@ -120,6 +133,11 @@ object Constants {
         packageName = "com.anydesk.anydeskandroid",
         apkFileType = ApkFileType.APK,
         appIconColor = 0xEF443B,
+        // Verified 2026-09-18 against 9.0.0 (versionCode 90000) from APKMirror. The old
+        // fingerprints pinned R8 wrapper names (r3/a2/b2/Q1) that rotated - on 9.0.0 they
+        // point at unrelated helpers and the patch silently no-opped. The patch now anchors
+        // on the stable native jniIsFreeLicense/jniDoesLicenseAllow*/jniCanRemoveLicense
+        // calls and forces every wrapper; bytecode-verified in AnyDeskSmokeTest.
         targets = listOf(AppTarget(version = "9.0.0", versionCode = 90000))
     )
 
@@ -180,19 +198,21 @@ object Constants {
         targets = listOf(AppTarget(version = "9.1.25", versionCode = 5010))
     )
 
-    // Verified 2026-08-19 against brave.apkm v1.93.136 (arm64-v8a, Android 12L+).
-    // All Brave Origin anchor strings and non-obfuscated classes
-    // (BraveOriginPreferences, BraveOriginSettingsLauncherHelper, profiles/Profile)
-    // are present. Obfuscated class names rotated vs dh6k's v1.92.140 target
-    // (v42 -> ei2, d72 -> hk2, b12 -> ke2, lf2 -> rs2, pc2 -> vp2, lv1 -> t82),
-    // but every fingerprint is string-based so resolves at patch time.
-    // Drift 2026-09-17: v1.95.101 fails to match and is not listed.
+    // Verified 2026-08-19 against brave.apkm v1.93.136, re-anchored 2026-09-18 against
+    // v1.95.104 (versionCode 429510404, the current APKMirror build). All Brave Origin
+    // anchor strings and non-obfuscated classes (BraveOriginPreferences,
+    // BraveOriginSettingsLauncherHelper, profiles/Profile) are present. Obfuscated class
+    // names rotate between versions, but every fingerprint is string/shape-based so it
+    // resolves at patch time. 1.95.104 swapped the parameter order of the package/product
+    // pref writer from (Profile, String) to (String, Profile), which broke the fingerprint
+    // pinning v1.93.136; the patch matches the new order and is bytecode-verified in
+    // BraveSmokeTest.
     val COMPATIBILITY_BRAVE = Compatibility(
         name = "Brave Browser",
         packageName = "com.brave.browser",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFF4500,
-        targets = listOf(AppTarget(version = "1.93.136"))
+        targets = listOf(AppTarget(version = "1.95.104"))
     )
 
     // Verified 2026-08-27 against librepods_1.0.0-rc1-play-63 .apkm from APKMirror
