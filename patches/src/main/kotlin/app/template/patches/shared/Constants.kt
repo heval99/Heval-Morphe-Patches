@@ -314,4 +314,58 @@ object Constants {
         appIconColor = 0x8BC34A,
         targets = listOf(AppTarget(version = "1.22.11", versionCode = 2229))
     )
+
+    // Verified 2026-09-18 against com.rammigsoftware.bluecoins 13.1.79 (versionCode 33145)
+    // from APKMirror. The app is not obfuscated: every premium check collects
+    // BillingDomain.isPremiumVersionFlow(), whose only implementation is BillingDomainManager.
+    // The manager delegates to an encrypted "premiumKey" preference; the patch returns a
+    // constant flow of true instead, so all screens see premium without touching the
+    // encrypted storage or the billing client.
+    val COMPATIBILITY_BLUECOINS = Compatibility(
+        name = "Bluecoins",
+        packageName = "com.rammigsoftware.bluecoins",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x2979FF,
+        targets = listOf(AppTarget(version = "13.1.79", versionCode = 33145))
+    )
+
+    // Verified 2026-09-18 against Flashscore 26.9.2 (versionCode 517) supplied from
+    // apks/flashscore. The app is obfuscated, but ads all go through Google's next-generation
+    // Mobile Ads SDK (com.google.android.libraries.ads.mobile.sdk), whose class and method
+    // names are stable library API; the "Disable ads" patch hooks that surface. There is no
+    // Play Billing client at all - the subscription is validated server-side
+    // (/api/v2/android/validate_subscription_v2), so premium cannot be unlocked client-side.
+    val COMPATIBILITY_FLASHSCORE = Compatibility(
+        name = "Flashscore",
+        packageName = "eu.livesport.FlashScore_com",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x1E88E5,
+        targets = listOf(AppTarget(version = "26.9.2", versionCode = 517))
+    )
+
+    // Verified 2026-09-18 against OneFootball 15.142.0 (versionCode 1044958885) from APKMirror.
+    // The app code is obfuscated; all ads run through Google Mobile Ads
+    // (com.google.android.gms.ads), so the "Disable ads" patch hooks that stable library
+    // surface (initialize, every load/loadAd and the app-open preloader). No premium tier
+    // was found in the readable code - the patch targets ads only.
+    val COMPATIBILITY_ONEFOOTBALL = Compatibility(
+        name = "OneFootball",
+        packageName = "de.motain.iliga",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x00C853,
+        targets = listOf(AppTarget(version = "15.142.0", versionCode = 1044958885))
+    )
+
+    // Verified 2026-09-18 against net.osmand 5.4.5 (versionCode 5405) from APKMirror.
+    // Not obfuscated: InAppPurchaseHelper.isPurchased(String) walks the purchase list and
+    // InAppPurchaseHelperImpl answers the cached local entitlement getters. applyPurchases()
+    // derives the OSMAND_PRO_PURCHASED / OSMAND_MAPS_PURCHASED / LIVE_UPDATES_PURCHASED
+    // settings from those same getters, so forcing them also stops the writer resetting them.
+    val COMPATIBILITY_OSMAND = Compatibility(
+        name = "OsmAnd",
+        packageName = "net.osmand",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x7CB342,
+        targets = listOf(AppTarget(version = "5.4.5", versionCode = 5405))
+    )
 }

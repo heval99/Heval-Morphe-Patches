@@ -122,6 +122,43 @@ fun assertReturnsMethodCall(
     )
 }
 
+/** Asserts the method was replaced by an immediate `return-void`. */
+fun assertReturnsEarlyVoid(method: Method, label: String, diagnostics: String = "") {
+    assertTrue(
+        method.instructions().firstOrNull()?.opcode == Opcode.RETURN_VOID,
+        "$label does not return immediately; first instruction is ${method.instructions().firstOrNull()?.opcode}\n$diagnostics"
+    )
+}
+
+/** Asserts the method was replaced by `return FlowKt.flowOf(Boolean.TRUE)`. */
+fun assertReturnsTrueFlow(method: Method, label: String, diagnostics: String = "") {
+    val insns = method.instructions()
+    val first = insns.getOrNull(0) as? ReferenceInstruction
+    val field = first?.reference as? FieldReference
+    assertTrue(
+        first?.opcode == Opcode.SGET_OBJECT &&
+            field?.definingClass == "Ljava/lang/Boolean;" &&
+            field.name == "TRUE",
+        "$label does not start with Boolean.TRUE; first instruction is ${first?.opcode} ${field}\n$diagnostics"
+    )
+    val second = insns.getOrNull(1) as? ReferenceInstruction
+    val call = second?.reference as? MethodReference
+    assertTrue(
+        second?.opcode == Opcode.INVOKE_STATIC &&
+            call?.definingClass == "Lkotlinx/coroutines/flow/FlowKt;" &&
+            call.name == "flowOf",
+        "$label does not call FlowKt.flowOf; second instruction is ${second?.opcode} ${call}\n$diagnostics"
+    )
+    assertTrue(
+        insns.getOrNull(2)?.opcode == Opcode.MOVE_RESULT_OBJECT,
+        "$label does not move the flow result; third instruction is ${insns.getOrNull(2)?.opcode}\n$diagnostics"
+    )
+    assertTrue(
+        insns.getOrNull(3)?.opcode == Opcode.RETURN_OBJECT,
+        "$label does not return the flow; fourth instruction is ${insns.getOrNull(3)?.opcode}\n$diagnostics"
+    )
+}
+
 /**
  * Applies [patchNames] (filtered to patches compatible with [pkg]) to [apk] and returns every
  * class from the emitted dex files.
