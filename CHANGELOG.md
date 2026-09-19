@@ -1,3 +1,9 @@
+## [1.5.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.4.0...v1.5.0-dev.1) (2026-09-19)
+
+### ✨ New Features
+
+* add Textra, jetAudio and Unified Remote patches ([2226983](https://github.com/heval99/Heval-Morphe-Patches/commit/22269830ef70d7886c1c337d3501dfa59c8704c2))
+
 ## [1.4.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.3.1...v1.4.0) (2026-09-18)
 
 ### 🐛 Bug Fixes
