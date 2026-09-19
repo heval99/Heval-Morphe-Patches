@@ -397,4 +397,46 @@ object Constants {
         appIconColor = 0x7CB342,
         targets = listOf(AppTarget(version = "5.4.5", versionCode = 5405))
     )
+
+    // Verified 2026-09-19 against com.textra 4.85 (versionCode 48561) from APKMirror.
+    // Textra app code is R8-obfuscated. Purchase state is a single integer preference
+    // (key "lc": -1 unknown, 0 free, 1 licensed) owned by a dedicated obfuscated class.
+    // That class is the only one in the whole app declaring all four methods
+    // g()Ljava/lang/Integer;, i(Ljava/lang/Integer;)V, k()Z and l()Z, so the patch finds
+    // it structurally (no obfuscated names) and forces l() -> true (licensed) and
+    // k() -> false (state 1). Every gate reads those: ad placement, settings visibility
+    // and upgrade prompts.
+    val COMPATIBILITY_TEXTRA = Compatibility(
+        name = "Textra",
+        packageName = "com.textra",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x5C6BC0,
+        targets = listOf(AppTarget(version = "4.85", versionCode = 48561))
+    )
+
+    // Verified 2026-09-19 against com.jetappfactory.jetaudio 13.1.2 (versionCode 261320)
+    // from APKMirror. Purchase state lives in one obfuscated class (default-package "uy",
+    // compiled from JInAppInfo.java) holding per-plugin static booleans. The class is
+    // located by its unique inline literal (IAB: QueryInventory info: ...) instead of its rotating
+    // name. Leaf boolean getters (no args or a Context) are forced true; the compound
+    // getters and the inverted upsell check OR those leaves and flip by themselves.
+    val COMPATIBILITY_JETAUDIO = Compatibility(
+        name = "jetAudio",
+        packageName = "com.jetappfactory.jetaudio",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0xFF6D00,
+        targets = listOf(AppTarget(version = "13.1.2", versionCode = 261320))
+    )
+
+    // Verified 2026-09-19 against com.Relmtech.Remote 3.25.1 (versionCode 325001) from
+    // APKMirror. The app code is obfuscated, but "Full" is a RevenueCat entitlement, and
+    // every premium check ends at the stable library class
+    // com.revenuecat.purchases.EntitlementInfo.isActive() - forced true.
+    val COMPATIBILITY_UNIFIEDREMOTE = Compatibility(
+        name = "Unified Remote",
+        packageName = "com.Relmtech.Remote",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x2962FF,
+        targets = listOf(AppTarget(version = "3.25.1", versionCode = 325001))
+    )
 }
