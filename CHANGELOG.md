@@ -1,3 +1,9 @@
+## [1.5.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.5.0-dev.3...v1.5.0-dev.4) (2026-09-27)
+
+### ✨ New Features
+
+* add Pocket Color Wheel Disable ads patch ([1d004f8](https://github.com/heval99/Heval-Morphe-Patches/commit/1d004f8d0d0597c2621b2c662f83c2beb35cdc1c))
+
 ## [1.5.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.5.0-dev.2...v1.5.0-dev.3) (2026-09-27)
 
 ### ✨ New Features
