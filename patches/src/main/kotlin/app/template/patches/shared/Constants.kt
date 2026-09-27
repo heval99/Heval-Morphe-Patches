@@ -443,4 +443,19 @@ object Constants {
         appIconColor = 0x2962FF,
         targets = listOf(AppTarget(version = "3.25.1", versionCode = 325001))
     )
+
+    // Verified 2026-09-27 against com.futbin 27.02 (versionCode 7002, user-supplied
+    // APKPure APK). The app code is obfuscated, but all ads run through Google Mobile
+    // Ads (the app's own `x.cv3` ad manager only calls the GMA surface, and the Nimbus
+    // mediation SDK renders AdMob through it), so the "Disable ads" patch hooks that
+    // stable library surface (initialize, every load/loadAd and the app-open
+    // preloader). Futbin+ premium is account-linked (Play purchase is linked to the
+    // Futbin account server-side), so premium is out of reach - ads only.
+    val COMPATIBILITY_FUTBIN = Compatibility(
+        name = "Futbin",
+        packageName = "com.futbin",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x26A69A,
+        targets = listOf(AppTarget(version = "27.02", versionCode = 7002))
+    )
 }
