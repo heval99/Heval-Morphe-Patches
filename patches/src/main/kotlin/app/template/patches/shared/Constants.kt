@@ -428,10 +428,14 @@ object Constants {
         targets = listOf(AppTarget(version = "13.1.2", versionCode = 261320))
     )
 
-    // Verified 2026-09-19 against com.Relmtech.Remote 3.25.1 (versionCode 325001) from
-    // APKMirror. The app code is obfuscated, but "Full" is a RevenueCat entitlement, and
-    // every premium check ends at the stable library class
-    // com.revenuecat.purchases.EntitlementInfo.isActive() - forced true.
+// Verified 2026-09-19 against com.Relmtech.Remote 3.25.1 (versionCode 325001) from
+// APKMirror. The app code is R8-obfuscated (`bh0` here); "Full" is a
+// `License.Status` SharedPreferences int (0 = Free, 1 = Locked, 2 = Full) and the
+// canonical Full check is the single `Z(Context)` method that reads it through the
+// same-class `I(Context)` getter - called from ~20 feature sites. The patch locates
+// that class by the unique "License.Status" literal and forces the check true.
+// (RevenueCat only feeds the paywall UI for actual buyers - non-buyers get an empty
+// entitlements map, so an `isActive()` force can never unlock anything here.)
     val COMPATIBILITY_UNIFIEDREMOTE = Compatibility(
         name = "Unified Remote",
         packageName = "com.Relmtech.Remote",
