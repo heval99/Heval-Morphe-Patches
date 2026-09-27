@@ -1,3 +1,9 @@
+## [1.5.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.5.0-dev.1...v1.5.0-dev.2) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* **unifiedremote:** force the local License.Status gate instead of RevenueCat ([1e5126d](https://github.com/heval99/Heval-Morphe-Patches/commit/1e5126de6048080929ab06ddcef83e2c1dbbf487)), closes [#21](https://github.com/heval99/Heval-Morphe-Patches/issues/21)
+
 ## [1.5.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.4.0...v1.5.0-dev.1) (2026-09-19)
 
 ### ✨ New Features
