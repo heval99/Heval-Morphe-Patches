@@ -1,3 +1,9 @@
+## [1.5.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.5.0-dev.2...v1.5.0-dev.3) (2026-09-27)
+
+### ✨ New Features
+
+* add Futbin Disable ads patch ([169259c](https://github.com/heval99/Heval-Morphe-Patches/commit/169259cd2ab22084fee9adbbe2842069cce03201))
+
 ## [1.5.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.5.0-dev.1...v1.5.0-dev.2) (2026-09-27)
 
 ### 🐛 Bug Fixes

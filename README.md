@@ -15,7 +15,7 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.5.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.5.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;34 patches total
+> **[v1.5.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.5.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;35 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
@@ -37,6 +37,9 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 - Enable Premium
 
 **📦 Flashscore** (1)
+- Disable ads
+
+**📦 Futbin** (1)
 - Disable ads
 
 **📦 IPTV** (2)

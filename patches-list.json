@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.5.0-dev.2",
+  "version": "1.5.0-dev.3",
   "patches": [
     {
       "name": "Block marketing notifications",
@@ -203,6 +203,37 @@
                 "ARMEABI_V7A": 517,
                 "X86_64": 517,
                 "X86": 517
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
+      "description": "Disables banner, interstitial, native, app-open and rewarded ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.futbin",
+          "name": "Futbin",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#26A69A",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "27.02",
+              "versionCodes": {
+                "ARM64_V8A": 7002,
+                "ARMEABI_V7A": 7002,
+                "X86_64": 7002,
+                "X86": 7002
               },
               "isExperimental": false,
               "minSdk": null,
