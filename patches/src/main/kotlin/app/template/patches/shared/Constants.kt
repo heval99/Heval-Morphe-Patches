@@ -458,4 +458,20 @@ object Constants {
         appIconColor = 0x26A69A,
         targets = listOf(AppTarget(version = "27.02", versionCode = 7002))
     )
+
+    // Verified 2026-09-27 against com.pocketcolorwheel.PCW 3.26 (versionCode 57,
+    // user-supplied APKPure APK). The free app has no premium gate: no billing client,
+    // no license checks and no references to the separate Pro package - it monetizes
+    // purely through Google Mobile Ads initialized from `ApplicationClass.onCreate`.
+    // The "Disable ads" patch hooks that stable library surface (initialize, every
+    // load/loadAd and the app-open preloader). The Pro app
+    // (com.pocketcolorwheelpro.pro) is a standalone paid listing that mirrors do not
+    // serve, so there is nothing to verify against it.
+    val COMPATIBILITY_PCW = Compatibility(
+        name = "Pocket Color Wheel",
+        packageName = "com.pocketcolorwheel.PCW",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x9C27B0,
+        targets = listOf(AppTarget(version = "3.26", versionCode = 57))
+    )
 }
