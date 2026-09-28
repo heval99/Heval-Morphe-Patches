@@ -1,3 +1,9 @@
+## [1.5.1-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.5.0...v1.5.1-dev.1) (2026-09-28)
+
+### 🐛 Bug Fixes
+
+* verify Sofascore, MyFitnessPal and 365Scores patches on their latest builds ([92837ff](https://github.com/heval99/Heval-Morphe-Patches/commit/92837ff977c12ed8f6b6e70a8adbb3505bf5663d))
+
 ## [1.5.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.4.0...v1.5.0) (2026-09-28)
 
 ### 🐛 Bug Fixes
