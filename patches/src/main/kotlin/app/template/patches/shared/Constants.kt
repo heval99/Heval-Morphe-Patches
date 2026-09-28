@@ -46,9 +46,16 @@ object Constants {
             // Play Integrity classes (the AppsFlyer SDK only references them, behind a catch),
             // so the patch had nothing to patch.
             // All 5 patches apply cleanly; SofascoreSmokeTest asserts the emitted bytecode.
+            // Re-verified 2026-09-28 against 26.09.14 (versionCode 260914002, from
+            // APKMirror): all 5 patches apply unchanged and the decompiled output shows
+            // the same forced values (getHasPremium -> TRUE, ad flags false).
             AppTarget(
                 version = "26.09.07",
                 versionCode = 260907002
+            ),
+            AppTarget(
+                version = "26.09.14",
+                versionCode = 260914002
             )
         )
     )
@@ -93,12 +100,17 @@ object Constants {
     // (feature + entitlement + tier). The patch overrides the two enum-companion parsers
     // (Entitlement -> Entitled, Tier -> PremiumPlus), which is the single conversion point
     // for every feature state deserialized from the server.
+    // Re-verified 2026-09-28 against 26.38.0 (versionCode 51448) from APKPure: the same
+    // companion parsers still match and the patched output returns Entitled/PremiumPlus.
     val COMPATIBILITY_MYFITNESSPAL = Compatibility(
         name = "MyFitnessPal",
         packageName = "com.myfitnesspal.android",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x0072BC,
-        targets = listOf(AppTarget(version = "26.37.0", versionCode = 51401))
+        targets = listOf(
+            AppTarget(version = "26.37.0", versionCode = 51401),
+            AppTarget(version = "26.38.0", versionCode = 51448)
+        )
     )
 
     // Verified 2026-09-18 against club.boxbox.android 5.4.9 (versionCode 251, the current
@@ -148,12 +160,17 @@ object Constants {
     // Ad SDKs observed: Google Mobile Ads, Unity, InMobi, Vungle, Mintegral,
     // ByteDance Pangle, Meta Audience Network (all GAM-mediated).
     // Re-verified 2026-09-17 on 14.9.4 with morphe-cli -f: Disable ads still applies.
+    // Re-verified 2026-09-28 on 14.9.5 (versionCode 1495, APKPure): both initialize
+    // overloads are empty in the decompiled output.
     val COMPATIBILITY_365SCORES = Compatibility(
         name = "365Scores",
         packageName = "com.scores365",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFFC107,
-        targets = listOf(AppTarget(version = "14.9.4", versionCode = 1494))
+        targets = listOf(
+            AppTarget(version = "14.9.4", versionCode = 1494),
+            AppTarget(version = "14.9.5", versionCode = 1495)
+        )
     )
 
     // Verified 2026-08-20 against livescore.apk v9.9.1 (universal, Android 7.0+).
