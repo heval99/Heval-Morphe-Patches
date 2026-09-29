@@ -496,4 +496,18 @@ object Constants {
         appIconColor = 0x9C27B0,
         targets = listOf(AppTarget(version = "3.26", versionCode = 57))
     )
+
+    // Verified 2026-09-28 against com.camerasideas.trimmer 1.716.1222 (versionCode 1222)
+    // from APKMirror. The billing code keeps readable names: the central subscribed
+    // check is `store/billing/c.d(Context)`, which reads the "SubscribePro" preference
+    // and falls back to the "com.camerasideas.trimmer.vip" purchase flag. It gates the
+    // export/watermark flow, template unlocks, the ads manager and the paywall, so
+    // forcing it true unlocks Pro everywhere including watermark-free export.
+    val COMPATIBILITY_YOUCUT = Compatibility(
+        name = "YouCut",
+        packageName = "com.camerasideas.trimmer",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xFF5722,
+        targets = listOf(AppTarget(version = "1.716.1222", versionCode = 1222))
+    )
 }
