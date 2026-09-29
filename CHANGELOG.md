@@ -1,3 +1,9 @@
+## [1.6.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.6.0-dev.1...v1.6.0-dev.2) (2026-09-29)
+
+### ✨ New Features
+
+* add Simple Radio and WiFi Analyzer patches ([831f00b](https://github.com/heval99/Heval-Morphe-Patches/commit/831f00b6d0c8b344f4ed38cea30b63d62d5192cf))
+
 ## [1.6.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.5.1-dev.2...v1.6.0-dev.1) (2026-09-29)
 
 ### ✨ New Features
