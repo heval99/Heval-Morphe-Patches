@@ -15,7 +15,7 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.5.1-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.5.1-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;36 patches total
+> **[v1.6.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.6.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;37 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
@@ -102,6 +102,9 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 - Enable Pro
 
 **📦 Unified Remote** (1)
+- Enable Pro
+
+**📦 YouCut** (1)
 - Enable Pro
 
 **📦 Weather Underground** (1)

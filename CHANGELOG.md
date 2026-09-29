@@ -1,3 +1,9 @@
+## [1.6.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.5.1-dev.2...v1.6.0-dev.1) (2026-09-29)
+
+### ✨ New Features
+
+* add YouCut Enable Pro patch ([889ca6a](https://github.com/heval99/Heval-Morphe-Patches/commit/889ca6a80c010162a9c614dfd7842e51f05c455a))
+
 ## [1.5.1-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.5.1-dev.1...v1.5.1-dev.2) (2026-09-29)
 
 ### 🐛 Bug Fixes
