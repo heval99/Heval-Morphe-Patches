@@ -1,5 +1,11 @@
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.io.TempDir
@@ -55,5 +61,59 @@ class AnyDeskSmokeTest {
                 label = "$JNI wrapper of $native()",
             )
         }
+
+        val jni = classes.firstOrNull { it.type == JNI }
+            ?: error("$JNI not found in emitted dexes")
+
+        // The patch fails loudly if it cannot find these wrappers, so here we only
+        // assert the effect: the banner type is forced to the paid value (hides the
+        // free banner) and the license name to the paid label. (The native calls are
+        // gone from the patched bodies, so these are located by their forced values.)
+        val bannerType = jni.methods.firstOrNull { method ->
+            method.implementation != null &&
+                method.returnType == "I" &&
+                method.parameterTypes.isEmpty() &&
+                isForcedInt(method, 1)
+        } ?: error("no no-arg int wrapper forced to 1 in $JNI")
+        assertReturnsInt(bannerType, expected = 1, label = "$JNI banner type")
+
+        val licenseName = jni.methods.firstOrNull { method ->
+            method.implementation != null &&
+                method.returnType == "Ljava/lang/String;" &&
+                method.parameterTypes.isEmpty() &&
+                returnsString(method, "Professional")
+        } ?: error("no no-arg string wrapper returning \"Professional\" in $JNI")
+        assertReturnsString(licenseName, expected = "Professional", label = "$JNI license name")
+    }
+
+    private fun isForcedInt(method: Method, expected: Int): Boolean {
+        val insns = method.instructions()
+        val first = insns.getOrNull(0) as? NarrowLiteralInstruction
+        return first != null && first.narrowLiteral.toInt() == expected &&
+            insns.getOrNull(1)?.opcode == Opcode.RETURN
+    }
+
+    private fun returnsString(method: Method, expected: String): Boolean {
+        val insns = method.instructions()
+        val first = insns.getOrNull(0) as? ReferenceInstruction
+        val ref = first?.reference as? StringReference
+        return first != null && first.opcode == Opcode.CONST_STRING &&
+            ref != null && ref.string == expected &&
+            insns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT
+    }
+
+    private fun assertReturnsString(method: Method, expected: String, label: String) {
+        val insns = method.instructions()
+        val first = insns.getOrNull(0) as? ReferenceInstruction
+        val ref = first?.reference as? StringReference
+        assertTrue(
+            first != null && first.opcode == Opcode.CONST_STRING &&
+                ref != null && ref.string == expected,
+            "$label does not return \"$expected\"; first instruction is ${first?.opcode} $ref",
+        )
+        assertTrue(
+            insns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT,
+            "$label does not return immediately; second instruction is ${insns.getOrNull(1)?.opcode}",
+        )
     }
 }

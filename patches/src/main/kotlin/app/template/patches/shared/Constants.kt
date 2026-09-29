@@ -149,6 +149,11 @@ object Constants {
         // fingerprints pinned R8 wrapper names (r3/a2/b2/Q1) that rotated - on 9.0.0 they
         // point at unrelated helpers and the patch silently no-opped. The patch now anchors
         // on the stable native jniIsFreeLicense/jniDoesLicenseAllow*/jniCanRemoveLicense
+        // calls and forces every wrapper. Updated 2026-09-27 (issue #21): forcing the
+        // feature gates was not enough, because the About label ("License: <name>") and
+        // the free banner read the native license state directly - so the patch also
+        // forces the banner-type wrapper to the paid value 1 and the license-name
+        // wrapper to "Professional".
         // calls and forces every wrapper; bytecode-verified in AnyDeskSmokeTest.
         targets = listOf(AppTarget(version = "9.0.0", versionCode = 90000))
     )
