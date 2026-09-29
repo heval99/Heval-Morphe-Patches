@@ -510,4 +510,34 @@ object Constants {
         appIconColor = 0xFF5722,
         targets = listOf(AppTarget(version = "1.716.1222", versionCode = 1222))
     )
+
+    // Verified 2026-09-29 against com.streema.simpleradio 6.2.0 (versionCode 872,
+    // APKPure universal). App code is not obfuscated. Premium state is entirely local:
+    // SimpleRadioBaseActivity.isPremium() returns mIabService.isInitialized() &&
+    // mIabService.c(), and the IAB service (b9/j) answers c() from SharedPreferences
+    // ("iab_premium" boolean OR "iab_subscription_date_end" timestamp in the future).
+    // Ads run through AppLovin MAX mediation (the SDK init key is inline) plus Google
+    // Mobile Ads (AdMob native/interstitial), so "Disable ads" hooks those stable
+    // library surfaces (MobileAds.initialize overloads, MaxInterstitialAd loadAd/showAd).
+    val COMPATIBILITY_SIMPLERADIO = Compatibility(
+        name = "Simple Radio",
+        packageName = "com.streema.simpleradio",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0xFF6D00,
+        targets = listOf(AppTarget(version = "6.2.0", versionCode = 872))
+    )
+
+    // Verified 2026-09-29 against com.farproc.wifi.analyzer 3.10.5-L (versionCode 999,
+    // APKPure). Tiny single-dex app, not obfuscated. Banner ads are gated by
+    // Settings.a(Context), which reads the "next_show_ad_time_millisec" preference and
+    // returns true once the hide-until date passes; MainScreen.N() shows the legacy
+    // AdMob banner (com.google.android.gms.ads.e) only when the gate is true. Forcing
+    // the gate false hides the banner everywhere.
+    val COMPATIBILITY_WIFIANALYZER = Compatibility(
+        name = "WiFi Analyzer",
+        packageName = "com.farproc.wifi.analyzer",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x00ACC1,
+        targets = listOf(AppTarget(version = "3.10.5-L", versionCode = 999))
+    )
 }
