@@ -1,3 +1,9 @@
+## [1.5.1-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.5.1-dev.1...v1.5.1-dev.2) (2026-09-29)
+
+### 🐛 Bug Fixes
+
+* **anydesk:** also force the license name and banner type (issue [#21](https://github.com/heval99/Heval-Morphe-Patches/issues/21)) ([f809b50](https://github.com/heval99/Heval-Morphe-Patches/commit/f809b50398100f9bdba74d4ddbe83c043b86716c))
+
 ## [1.5.1-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.5.0...v1.5.1-dev.1) (2026-09-28)
 
 ### 🐛 Bug Fixes
