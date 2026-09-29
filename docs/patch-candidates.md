@@ -29,7 +29,7 @@ test + decompile-verify.
 
 | App | Package | Latest seen | Notes |
 |---|---|---|---|
-| Device Info HW | `ru.andr7e.deviceinfohw` | 5.26.1 | Small app, one Pro boolean, near-zero risk |
+| Device Info HW | `ru.andr7e.deviceinfohw` | 5.27.1 | **Blocked 2026-09-29** - no Pro boolean exists in this build; see blocklist |
 | Xplore File Manager | `com.lonelycatgames.Xplore` | 4.49.10 | Pro features via its own license scheme - needs triage |
 
 ## Not suggested (checked, rejected or deferred)
