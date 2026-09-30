@@ -540,4 +540,23 @@ object Constants {
         appIconColor = 0x00ACC1,
         targets = listOf(AppTarget(version = "3.10.5-L", versionCode = 999))
     )
+
+    // Verified 2026-09-29 against com.Project100Pi.themusicplayer 3.2.0.0_release_2
+    // (versionCode 32001, APKPure universal). Premium state is a static boolean flag
+    // plus a 5-element purchase list in an R8-obfuscated holder class (`v7/g` here):
+    // a() checks the list size, b() returns flag && a(), and ~20 call sites read the
+    // flag field directly. Purchases (remove_ads / combo SKUs) set the flag via c(Z);
+    // a temp-ad-free resetter clears it when the trial timestamp expires. The patch
+    // forces a()/b() true, neuters the resetter and seeds the flag true in <clinit>,
+    // so every consumer sees premium without touching Play Billing.
+    // Ads run through AppLovin MAX mediation plus Google Mobile Ads, so "Disable ads"
+    // hooks those stable library surfaces (MobileAds.initialize overloads, GMA loads,
+    // MaxInterstitialAd loadAd/showAd).
+    val COMPATIBILITY_PIMUSICPLAYER = Compatibility(
+        name = "Pi Music Player",
+        packageName = "com.Project100Pi.themusicplayer",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x3F51B5,
+        targets = listOf(AppTarget(version = "3.2.0.0_release_2", versionCode = 32001))
+    )
 }
