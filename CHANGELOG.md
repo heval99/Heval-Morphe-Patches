@@ -1,3 +1,9 @@
+## [1.6.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.6.0-dev.2...v1.6.0-dev.3) (2026-09-30)
+
+### ✨ New Features
+
+* add Pi Music Player patches ([653855c](https://github.com/heval99/Heval-Morphe-Patches/commit/653855ca2e5a8474febc5fbdf1660aa5849e24e4))
+
 ## [1.6.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.6.0-dev.1...v1.6.0-dev.2) (2026-09-29)
 
 ### ✨ New Features
