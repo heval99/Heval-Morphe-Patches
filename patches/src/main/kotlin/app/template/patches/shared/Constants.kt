@@ -39,7 +39,11 @@ object Constants {
             //     the two boxed-Boolean flags every premium gate reads.
             //   - Disable telemetry: AppsFlyer Lib subclass logEvent, AppMeasurementSdk.logEvent,
             //     and Crashlytics (located via its collection-enabled SharedPreferences key).
-            //   - Disable Facebook SDK: FacebookInitProvider / AudienceNetworkContentProvider onCreate.
+            //   - Disable Facebook SDK: AudienceNetworkContentProvider onCreate only, plus
+            //     manifest flags disabling FB auto-log/advertiser-ID. FacebookInitProvider
+            //     must NOT be killed: the login screen builds FB Login handlers and crashes
+            //     with "SDK has not been initialized" without sdkInitialize() (issue #24,
+            //     fixed 2026-09-30; verified on 26.09.14).
             //   - Block marketing notifications: PromotionModal / tennis promo bottom sheet
             //     onViewCreated dismiss the sheet before it renders.
             // The "Disable Play Integrity" patch was dropped: this build does not bundle the
