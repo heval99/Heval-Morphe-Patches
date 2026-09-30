@@ -1,3 +1,9 @@
+## [1.6.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.6.0-dev.3...v1.6.0-dev.4) (2026-09-30)
+
+### 🐛 Bug Fixes
+
+* **sofascore:** keep Facebook SDK initialized so login works (issue [#24](https://github.com/heval99/Heval-Morphe-Patches/issues/24)) ([f2d5544](https://github.com/heval99/Heval-Morphe-Patches/commit/f2d5544168a33a0255febfbff37c409658952582))
+
 ## [1.6.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.6.0-dev.2...v1.6.0-dev.3) (2026-09-30)
 
 ### ✨ New Features
