@@ -50,7 +50,10 @@ private fun MutableMethod.invokesNative(name: String): Boolean =
 @Suppress("unused")
 val enablePremiumPatch = bytecodePatch(
     name = "Enable Premium",
-    description = "Enables premium features by making the app treat the free license as paid."
+    description = "Unlocks the Java-layer premium features (address book, account " +
+        "registration, hides the free banner, Professional label) by making the app " +
+        "treat the free license as paid. Session time limits are enforced by the " +
+        "native core and servers and cannot be lifted by this patch."
 ) {
     compatibleWith(COMPATIBILITY_ANYDESK)
 
