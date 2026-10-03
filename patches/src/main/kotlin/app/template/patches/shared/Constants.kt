@@ -563,4 +563,20 @@ object Constants {
         appIconColor = 0x3F51B5,
         targets = listOf(AppTarget(version = "3.2.0.0_release_2", versionCode = 32001))
     )
+
+    // Verified 2026-10-03 against net.zedge.android 9.38.3 (versionCode 93800300,
+    // APKPure universal). Ads run through a heavy mediation stack (GMA, AppLovin MAX,
+    // Meta Audience Network, InMobi, Vungle, Pangle, ironSource, Fyber, BidMachine via
+    // Etermax XMedia), so "Disable ads" hooks those stable library surfaces.
+    // No premium patch: the subscription is server-validated and 9.38.3 ships no local
+    // ad-free gate. A circulating "(Premium)" mod of this version grafts a whole newer
+    // net.zedge.subscription module (CheckAdFreeUseCase et al, absent from stock) and
+    // deletes ad SDK classes - neither technique ports to a bytecodePatch.
+    val COMPATIBILITY_ZEDGE = Compatibility(
+        name = "Zedge",
+        packageName = "net.zedge.android",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x673AB7,
+        targets = listOf(AppTarget(version = "9.38.3", versionCode = 93800300))
+    )
 }
