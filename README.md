@@ -15,7 +15,7 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.6.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.6.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;43 patches total
+> **[v1.6.0-dev.5](https://github.com/heval99/morphe-patches/releases/tag/v1.6.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;42 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
@@ -81,9 +81,6 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 
 **📦 Tasker** (1)
 - Enable Full Version
-
-**📦 AnyDesk** (1)
-- Enable Premium
 
 **📦 Aqua Mail** (1)
 - Enable Premium

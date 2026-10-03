@@ -144,24 +144,6 @@ object Constants {
         targets = listOf(AppTarget(version = "6.6.0", versionCode = 212620))
     )
 
-    val COMPATIBILITY_ANYDESK = Compatibility(
-        name = "AnyDesk",
-        packageName = "com.anydesk.anydeskandroid",
-        apkFileType = ApkFileType.APK,
-        appIconColor = 0xEF443B,
-        // Verified 2026-09-18 against 9.0.0 (versionCode 90000) from APKMirror. The old
-        // fingerprints pinned R8 wrapper names (r3/a2/b2/Q1) that rotated - on 9.0.0 they
-        // point at unrelated helpers and the patch silently no-opped. The patch now anchors
-        // on the stable native jniIsFreeLicense/jniDoesLicenseAllow*/jniCanRemoveLicense
-        // calls and forces every wrapper. Updated 2026-09-27 (issue #21): forcing the
-        // feature gates was not enough, because the About label ("License: <name>") and
-        // the free banner read the native license state directly - so the patch also
-        // forces the banner-type wrapper to the paid value 1 and the license-name
-        // wrapper to "Professional".
-        // calls and forces every wrapper; bytecode-verified in AnyDeskSmokeTest.
-        targets = listOf(AppTarget(version = "9.0.0", versionCode = 90000))
-    )
-
     // Verified 2026-08-19 against 365scores.apkm v14.8.8 (universal, Android 7.0+).
     // App uses Google Mobile Ads (AdMob) loaded via the Blaze GAM SDK wrapper.
     // MobileAds.initialize(Landroid/content/Context;)V and the (Context, Listener)

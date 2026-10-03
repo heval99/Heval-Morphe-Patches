@@ -827,37 +827,6 @@
     },
     {
       "name": "Enable Premium",
-      "description": "Enables premium features by making the app treat the free license as paid.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.anydesk.anydeskandroid",
-          "name": "AnyDesk",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#EF443B",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "9.0.0",
-              "versionCodes": {
-                "ARM64_V8A": 90000,
-                "ARMEABI_V7A": 90000,
-                "X86_64": 90000,
-                "X86": 90000
-              },
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Enable Premium",
       "description": "Unlocks the Pro/Premium features and lifts the free-version feature locks.",
       "default": true,
       "dependencies": [],
