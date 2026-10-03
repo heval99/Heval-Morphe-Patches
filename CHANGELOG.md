@@ -1,3 +1,9 @@
+## [1.7.1-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.7.0...v1.7.1-dev.1) (2026-10-03)
+
+### 🐛 Bug Fixes
+
+* **sofascore:** remove Block marketing notifications patch (issue [#25](https://github.com/heval99/Heval-Morphe-Patches/issues/25)) ([fffeab7](https://github.com/heval99/Heval-Morphe-Patches/commit/fffeab758abb8cf27ee8fbfb9f657502d8974dc9))
+
 ## [1.7.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.6.0...v1.7.0) (2026-10-03)
 
 ### ⚠ BREAKING CHANGES
