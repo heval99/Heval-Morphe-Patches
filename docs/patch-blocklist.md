@@ -23,6 +23,7 @@ Keep entries short; link the blocker, not the story.
 | Carrot Weather | `com.grailr.carrotweather` | Subscription validated by `verifySubscriptionWithGoogle` before entitlements apply. |
 | EasyExpense | `com.easyexpense` | React Native + Hermes bytecode; RevenueCat with trusted entitlements. Research-grade, not worth it. |
 | TOD TV | `com.todtv.tod` | Irdeto OTT DRM + Widevine and IP-based region locking; React Native + Hermes. Content decrypts only when the server issues a license; nothing client-side to flip. |
+| AnyDesk | `com.anydesk.anydeskandroid` | Removed 2026-10-03 (issue #23). The Java license wrappers can be forced (label shows Professional, banner hidden, address book/registration open), but session time limits are enforced by the native core and session broker servers - the close-reason dispatcher only displays what the session layer reports and no client-side timer exists to patch. Shipping a patch that looks like premium but keeps time limits only generates support load. |
 
 ## Nothing to patch
 
