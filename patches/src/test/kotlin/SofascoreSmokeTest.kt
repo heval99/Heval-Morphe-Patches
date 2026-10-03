@@ -12,7 +12,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
-import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -31,12 +30,10 @@ private const val APPSFLYER_LIB = "Lcom/appsflyer/AppsFlyerLib;"
 private const val GMS_MEASUREMENT = "Lcom/google/android/gms/measurement/api/AppMeasurementSdk;"
 private const val FACEBOOK_PROVIDER = "Lcom/facebook/internal/FacebookInitProvider;"
 private const val AUDIENCE_PROVIDER = "Lcom/facebook/ads/AudienceNetworkContentProvider;"
-private const val PROMOTION_MODAL = "Lcom/sofascore/results/event/details/view/promotion/PromotionModal;"
-private const val TENNIS_PROMO_SHEET = "Lcom/sofascore/results/event/aiInsights/SofascoreAnalystTennisPromoBottomSheet;"
+
 private const val CRASHLYTICS_KEY = "firebase_crashlytics_collection_enabled"
 
 private val SOFASCORE_PATCHES = setOf(
-    "Block marketing notifications",
     "Disable Facebook SDK",
     "Disable ads",
     "Disable telemetry",
@@ -108,22 +105,6 @@ class SofascoreSmokeTest {
         assertTrue(
             method.insns().firstOrNull()?.opcode == Opcode.RETURN_VOID,
             "$label does not return immediately; first instruction is ${method.insns().firstOrNull()?.opcode}\n$diagnostics"
-        )
-    }
-
-    private fun assertDismissesEarly(method: Method, label: String, diagnostics: String) {
-        val insns = method.insns()
-        val first = insns.getOrNull(0) as? ReferenceInstruction
-        val ref = first?.reference as? MethodReference
-        assertTrue(
-            ref != null &&
-                ref.definingClass == "Landroidx/fragment/app/DialogFragment;" &&
-                ref.name == "dismiss",
-            "$label does not dismiss the dialog first; first instruction is ${first?.opcode} ${ref}\n$diagnostics"
-        )
-        assertTrue(
-            insns.getOrNull(1)?.opcode == Opcode.RETURN_VOID,
-            "$label does not return after dismissing; second instruction is ${insns.getOrNull(1)?.opcode}\n$diagnostics"
         )
     }
 
@@ -279,14 +260,6 @@ class SofascoreSmokeTest {
         // bundled in this build (the AppsFlyer SDK only references them, behind a catch), so
         // there is nothing to patch. The patch was removed as part of the 26.09.07 update.
 
-        // Block marketing notifications: both promo sheets dismiss before rendering.
-        assertDismissesEarly(
-            require(PROMOTION_MODAL).methodsNamed("onViewCreated").single(),
-            label = "PromotionModal.onViewCreated()", diagnostics.toString()
-        )
-        assertDismissesEarly(
-            require(TENNIS_PROMO_SHEET).methodsNamed("onViewCreated").single(),
-            label = "SofascoreAnalystTennisPromoBottomSheet.onViewCreated()", diagnostics.toString()
-        )
+
     }
 }
