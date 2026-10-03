@@ -1,3 +1,17 @@
+## [1.7.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.6.0...v1.7.0) (2026-10-03)
+
+### ⚠ BREAKING CHANGES
+
+* **anydesk:** remove Enable Premium patch (issue #23)
+
+### 🐛 Bug Fixes
+
+* **anydesk:** remove Enable Premium patch (issue [#23](https://github.com/heval99/Heval-Morphe-Patches/issues/23)) ([9643e03](https://github.com/heval99/Heval-Morphe-Patches/commit/9643e030623a54dd242df199e2fabc58dcfbfe09))
+
+### ✨ New Features
+
+* add Zedge Disable ads patch ([92ee853](https://github.com/heval99/Heval-Morphe-Patches/commit/92ee8533fd71e784228a713ae77406a232b5bc78))
+
 ## [1.6.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.6.0-dev.4...v1.6.0-dev.5) (2026-10-03)
 
 ### ✨ New Features
