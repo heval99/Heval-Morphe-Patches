@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.6.0-dev.4",
+  "version": "1.6.0-dev.5",
   "patches": [
     {
       "name": "Block marketing notifications",
@@ -577,6 +577,37 @@
                 "ARMEABI_V7A": 999,
                 "X86_64": 999,
                 "X86": 999
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
+      "description": "Disables banner, interstitial, native, app-open and rewarded ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "net.zedge.android",
+          "name": "Zedge",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#673AB7",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "9.38.3",
+              "versionCodes": {
+                "ARM64_V8A": 93800300,
+                "ARMEABI_V7A": 93800300,
+                "X86_64": 93800300,
+                "X86": 93800300
               },
               "isExperimental": false,
               "minSdk": null,

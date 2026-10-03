@@ -1,3 +1,9 @@
+## [1.6.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.6.0-dev.4...v1.6.0-dev.5) (2026-10-03)
+
+### ✨ New Features
+
+* add Zedge Disable ads patch ([92ee853](https://github.com/heval99/Heval-Morphe-Patches/commit/92ee8533fd71e784228a713ae77406a232b5bc78))
+
 ## [1.6.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.6.0-dev.3...v1.6.0-dev.4) (2026-09-30)
 
 ### 🐛 Bug Fixes
