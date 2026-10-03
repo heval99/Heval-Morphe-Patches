@@ -30,6 +30,7 @@ Keep entries short; link the blocker, not the story.
 |---|---|---|
 | ZArchiver | `ru.zdevs.zarchiver` | 1.0.10 has no ad SDK and no billing/pro path in the dex. |
 | Retro Music | `code.name.monkey.retromusic` | FOSS: no ads, no paid tier. |
+| Device Info HW | `ru.andr7e.deviceinfohw` | 5.27.1 free has no ad SDK (zero ad strings in the dex), no billing client and no pro gate: no license checker, no pro preference, no pro-package presence check. Pro is a separate paid listing (`ru.andr7e.deviceinfohw.pro`) with its own build; the free build's only "pro" surfaces are an upsell menu item (Play Store link) and a stubbed report button. |
 
 ## Parked — possible but needs an app-specific deep dive
 
