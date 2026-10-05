@@ -179,6 +179,37 @@
     },
     {
       "name": "Disable ads",
+      "description": "Disables banner, interstitial, native, app-open and rewarded ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "fm.castbox.audiobook.radio.podcast",
+          "name": "Castbox",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#F44336",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "11.26.1",
+              "versionCodes": {
+                "ARM64_V8A": 260915290,
+                "ARMEABI_V7A": 260915290,
+                "X86_64": 260915290,
+                "X86": 260915290
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
       "description": "Removes the 'notes_edit_banner' unit from utils/AdManager and the app-open ad from App$AppOpenAdManager. Both are gated on the single App.isAdFree() check, which normally depends on a VIP subscription.",
       "default": true,
       "dependencies": [],

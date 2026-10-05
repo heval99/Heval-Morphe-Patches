@@ -2,6 +2,14 @@
 
 ### ✨ New Features
 
+* add Castbox Disable ads patch ([ceab050](https://github.com/heval99/Heval-Morphe-Patches/commit/ceab0508ed0dfb687eb95be1dd97615545982838))
+* add Podcast Republic Disable ads patch ([773abd2](https://github.com/heval99/Heval-Morphe-Patches/commit/773abd20f8e43d9be3c13dfcea8faaac8c7a7e8d))
+* add Shazam Disable telemetry patch ([65420aa](https://github.com/heval99/Heval-Morphe-Patches/commit/65420aaf544317237b5c4024f9fae352d46978ae))
+
+## [1.9.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.8.0...v1.9.0-dev.1) (2026-10-05)
+
+### ✨ New Features
+
 * add Podcast Republic Disable ads patch ([773abd2](https://github.com/heval99/Heval-Morphe-Patches/commit/773abd20f8e43d9be3c13dfcea8faaac8c7a7e8d))
 * add Shazam Disable telemetry patch ([65420aa](https://github.com/heval99/Heval-Morphe-Patches/commit/65420aaf544317237b5c4024f9fae352d46978ae))
 
