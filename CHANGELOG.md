@@ -1,3 +1,9 @@
+## [1.9.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.8.0...v1.9.0-dev.1) (2026-10-05)
+
+### ✨ New Features
+
+* add Shazam Disable telemetry patch ([65420aa](https://github.com/heval99/Heval-Morphe-Patches/commit/65420aaf544317237b5c4024f9fae352d46978ae))
+
 ## [1.8.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.7.0...v1.8.0) (2026-10-05)
 
 ### ⚠ BREAKING CHANGES
