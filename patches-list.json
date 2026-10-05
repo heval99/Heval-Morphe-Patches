@@ -531,37 +531,6 @@
       "options": []
     },
     {
-      "name": "Disable ads",
-      "description": "Disables banner, interstitial, native, app-open and rewarded ads.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "net.zedge.android",
-          "name": "Zedge",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#673AB7",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "9.38.3",
-              "versionCodes": {
-                "ARM64_V8A": 93800300,
-                "ARMEABI_V7A": 93800300,
-                "X86_64": 93800300,
-                "X86": 93800300
-              },
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Disable telemetry",
       "description": "Disables AppsFlyer, Firebase Analytics and Crashlytics event logging.",
       "default": true,
