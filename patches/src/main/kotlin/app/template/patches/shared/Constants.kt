@@ -549,4 +549,18 @@ object Constants {
         appIconColor = 0x3F51B5,
         targets = listOf(AppTarget(version = "3.2.0.0_release_2", versionCode = 32001))
     )
+
+    // Verified 2026-10-05 against com.shazam.android 16.62.0 (versionCode 1606200,
+    // APKPure universal). No ad SDK, no billing client, no shields in the dex, so
+    // the only patchable surface is telemetry: FirebaseAnalytics.logEvent(String,
+    // Bundle) is public and concrete, and FirebaseCrashlytics is fully public
+    // (isCrashlyticsCollectionEnabled/recordException/log). No premium gate exists
+    // (Apple-owned free app), so telemetry-only.
+    val COMPATIBILITY_SHAZAM = Compatibility(
+        name = "Shazam",
+        packageName = "com.shazam.android",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x0088FF,
+        targets = listOf(AppTarget(version = "16.62.0", versionCode = 1606200))
+    )
 }
