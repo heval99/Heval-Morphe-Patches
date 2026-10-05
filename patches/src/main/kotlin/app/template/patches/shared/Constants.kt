@@ -563,4 +563,20 @@ object Constants {
         appIconColor = 0x0088FF,
         targets = listOf(AppTarget(version = "16.62.0", versionCode = 1606200))
     )
+
+    // Verified 2026-10-05 against com.podcast.podcasts 9.17.0 (versionCode 260909124,
+    // APKPure universal). The app code is partly obfuscated; all ads run through a
+    // heavy mediation stack (GMA, AppLovin MAX, Meta Audience Network, InMobi, Vungle
+    // strings, Pangle, Huawei), so "Disable ads" hooks those stable library surfaces
+    // (initialize/init, every load/loadAd and the MAX terminal showAd overload).
+    // No premium patch: the only ad-free path is Firebase invite referral state
+    // (server-driven); no local purchase gate was found (no queryPurchases /
+    // onPurchasesUpdated in app code).
+    val COMPATIBILITY_PODCASTREPUBLIC = Compatibility(
+        name = "Podcast Republic",
+        packageName = "com.podcast.podcasts",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0xFF5722,
+        targets = listOf(AppTarget(version = "9.17.0", versionCode = 260909124))
+    )
 }
