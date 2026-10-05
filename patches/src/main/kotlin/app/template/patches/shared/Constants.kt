@@ -44,10 +44,10 @@ object Constants {
             //     must NOT be killed: the login screen builds FB Login handlers and crashes
             //     with "SDK has not been initialized" without sdkInitialize() (issue #24,
             //     fixed 2026-09-30; verified on 26.09.14).
-            // The "Block marketing notifications" patch was removed 2026-10-03 while
-            // triaging issue #25 (missing match alerts): it only dismissed two in-app
-            // promo sheets and could not affect push, but removing it eliminates the
-            // variable while the cause is chased.
+            // The "Block marketing notifications" patch dismisses two in-app promo
+            // sheets only; it cannot affect push. Missing match alerts on re-signed
+            // builds traced to push delivery itself (issue #25): without Play Services,
+            // FCM registration needs MicroG integration + signature spoofing.
             //   - Block marketing notifications: PromotionModal / tennis promo bottom sheet
             //     onViewCreated dismiss the sheet before it renders.
             // The "Disable Play Integrity" patch was dropped: this build does not bundle the

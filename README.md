@@ -15,16 +15,17 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.7.1-dev.1](https://github.com/heval99/morphe-patches/releases/tag/v1.7.1-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;40 patches total
+> **[v1.7.1-dev.1](https://github.com/heval99/morphe-patches/releases/tag/v1.7.1-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;41 patches total
 
-**📦 Brave Browser** (1)
-- Brave Origin
-
-**📦 Sofascore** (4)
+**📦 Sofascore** (5)
+- Block marketing notifications
 - Disable Facebook SDK
 - Disable ads
 - Disable telemetry
 - Enable Premium
+
+**📦 Brave Browser** (1)
+- Brave Origin
 
 **📦 BoxBox** (3)
 - Disable ads
