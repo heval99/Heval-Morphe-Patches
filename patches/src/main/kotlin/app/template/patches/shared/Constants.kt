@@ -579,4 +579,21 @@ object Constants {
         appIconColor = 0xFF5722,
         targets = listOf(AppTarget(version = "9.17.0", versionCode = 260909124))
     )
+
+    // Verified 2026-10-05 against fm.castbox.audiobook.radio.podcast 11.26.1
+    // (versionCode 260915290, APKPure universal). App code is not obfuscated. All ads
+    // run through a heavy mediation stack (GMA, AppLovin MAX, Meta Audience Network,
+    // InMobi, Vungle strings, Pangle, Huawei), so "Disable ads" hooks those stable
+    // library surfaces (initialize/init, every load/loadAd and the MAX terminal
+    // showAd overload).
+    // No premium patch: premium reads server-synced vip lists (UserProperties filled
+    // from the account backend) and local purchases are RSA-verified in
+    // BillingRepository, so there is no client-side gate to force.
+    val COMPATIBILITY_CASTBOX = Compatibility(
+        name = "Castbox",
+        packageName = "fm.castbox.audiobook.radio.podcast",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0xF44336,
+        targets = listOf(AppTarget(version = "11.26.1", versionCode = 260915290))
+    )
 }
