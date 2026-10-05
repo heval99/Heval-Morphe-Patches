@@ -427,6 +427,37 @@
     },
     {
       "name": "Disable ads",
+      "description": "Disables banner, interstitial, native, app-open and rewarded ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.podcast.podcasts",
+          "name": "Podcast Republic",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FF5722",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "9.17.0",
+              "versionCodes": {
+                "ARM64_V8A": 260909124,
+                "ARMEABI_V7A": 260909124,
+                "X86_64": 260909124,
+                "X86": 260909124
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
       "description": "Disables Google Mobile Ads (AdMob) initialization, blocking banner, interstitial, rewarded, native and mediated ads.",
       "default": true,
       "dependencies": [],
