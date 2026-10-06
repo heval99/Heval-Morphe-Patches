@@ -1,3 +1,9 @@
+## [1.9.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.9.0-dev.2...v1.9.0-dev.3) (2026-10-06)
+
+### 🐛 Bug Fixes
+
+* **aquamail:** return a licensed snapshot from getLicenseData (issue [#16](https://github.com/heval99/Heval-Morphe-Patches/issues/16)) ([be33ed5](https://github.com/heval99/Heval-Morphe-Patches/commit/be33ed5c55f2537b9dcceb2fad1330a6abec812f))
+
 ## [1.9.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.9.0-dev.1...v1.9.0-dev.2) (2026-10-06)
 
 ### ✨ New Features
