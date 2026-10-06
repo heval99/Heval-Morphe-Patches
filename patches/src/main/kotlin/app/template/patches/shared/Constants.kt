@@ -323,6 +323,14 @@ object Constants {
     // 40 Pro+ subscription) and LockFeatures answers the per-feature locks; both classes and
     // methods are unobfuscated. The UI reads getLicenseLevel() directly, so the patch forces
     // the level to 40 as well as the derived booleans.
+    // Issue #16 (reported against bundle 1.3.1, the free version still displayed): the
+    // account list, the prefs license line and the account-limit logic all gate on
+    // getLicenseData() != null, which is null on a free install, so the forced getters
+    // were never consulted past that gate. getLicenseData() now returns a licensed
+    // snapshot instead (state licensed, confirm deadline + expiry far future; the
+    // snapshot's R8-renamed fields are discovered structurally from the licensed checks
+    // themselves). Re-verified against the same APK on 2026-10-06 - AquaMailSmokeTest
+    // asserts the snapshot prefix in the emitted bytecode.
     val COMPATIBILITY_AQUAMAIL = Compatibility(
         name = "Aqua Mail",
         packageName = "org.kman.AquaMail",
