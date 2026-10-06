@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-10-06T13:07:51",
-  "description": "## [1.9.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.8.0...v1.9.0-dev.1) (2026-10-06)\n\n### ✨ New Features\n\n* add Castbox Disable ads patch ([ceab050](https://github.com/heval99/Heval-Morphe-Patches/commit/ceab0508ed0dfb687eb95be1dd97615545982838))\n* add Podcast Republic Disable ads patch ([773abd2](https://github.com/heval99/Heval-Morphe-Patches/commit/773abd20f8e43d9be3c13dfcea8faaac8c7a7e8d))\n* add Shazam Disable telemetry patch ([65420aa](https://github.com/heval99/Heval-Morphe-Patches/commit/65420aaf544317237b5c4024f9fae352d46978ae))",
-  "download_url": "https://github.com/heval99/Heval-Morphe-Patches/releases/download/v1.9.0-dev.1/patches-1.9.0-dev.1.mpp",
+  "created_at": "2026-10-06T13:31:14",
+  "description": "## [1.9.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.9.0-dev.1...v1.9.0-dev.2) (2026-10-06)\n\n### ✨ New Features\n\n* add Moon+ Reader Disable ads patch ([96080a7](https://github.com/heval99/Heval-Morphe-Patches/commit/96080a70ee1ac4b520f17c864dbcd8da81db6d00))",
+  "download_url": "https://github.com/heval99/Heval-Morphe-Patches/releases/download/v1.9.0-dev.2/patches-1.9.0-dev.2.mpp",
   "signature_download_url": "",
-  "version": "1.9.0-dev.1"
+  "version": "1.9.0-dev.2"
 }

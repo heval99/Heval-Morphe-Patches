@@ -1,3 +1,9 @@
+## [1.9.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.9.0-dev.1...v1.9.0-dev.2) (2026-10-06)
+
+### ✨ New Features
+
+* add Moon+ Reader Disable ads patch ([96080a7](https://github.com/heval99/Heval-Morphe-Patches/commit/96080a70ee1ac4b520f17c864dbcd8da81db6d00))
+
 ## [1.9.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.8.0...v1.9.0-dev.1) (2026-10-06)
 
 ### ✨ New Features
