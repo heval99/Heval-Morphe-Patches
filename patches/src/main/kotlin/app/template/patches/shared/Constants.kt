@@ -501,7 +501,26 @@ object Constants {
         targets = listOf(AppTarget(version = "1.716.1222", versionCode = 1222))
     )
 
+    // Verified 2026-10-06 against com.flyersoft.moonreader 10.7 (versionCode 1007000,
+    // universal APK from APKPure). All ads run through the app's own unobfuscated ad
+    // manager com.flyersoft.components.MrAd, whose private static no-arg boolean
+    // disableAds() gates every ad path: the MrAd constructor returns before
+    // initializing the ad SDK (AdMob + Facebook Audience Network) when it is true,
+    // and the interstitial/exit/rewarded show paths consult it first. MrAd is the
+    // only app class that touches the ad SDK, so forcing that one consumer true
+    // disables banner, interstitial, exit and native ads. isProVersion only
+    // distinguishes the separate paid Pro listing (backup suffixes .mrpro/.mrstd),
+    // so there is no in-app premium gate; ads-only.
+    val COMPATIBILITY_MOONREADER = Compatibility(
+        name = "Moon+ Reader",
+        packageName = "com.flyersoft.moonreader",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x283593,
+        targets = listOf(AppTarget(version = "10.7", versionCode = 1007000))
+    )
+
     // Verified 2026-09-29 against com.streema.simpleradio 6.2.0 (versionCode 872,
+
     // APKPure universal). App code is not obfuscated. Premium state is entirely local:
     // SimpleRadioBaseActivity.isPremium() returns mIabService.isInitialized() &&
     // mIabService.c(), and the IAB service (b9/j) answers c() from SharedPreferences
