@@ -260,7 +260,33 @@ object Constants {
             // profile is null or destroyed"), which broke the full-string anchors; both now
             // match by prefix. All other anchors (pref keys, policy strings, Origin
             // preferences shape) were unchanged. BraveSmokeTest passes on 1.95.104 and 1.96.61.
+            // Also 2026-10-07: the Origin "Privacy preserving analytics" and "Statistics
+            // reporting" switches only wrote a SharedPreferences key nothing read (P3A and the
+            // usage ping are native). The listener now also writes brave.p3a.enabled /
+            // brave.stats.reporting_enabled through LocalStatePrefs + PrefService (real class
+            // names, shape-matched methods). CLI-applied and decompile-checked on 1.95.104 and
+            // 1.96.61; runtime-checked on 1.96.61 (switch flips the native pref).
             AppTarget(version = "1.96.61"),
+        )
+    )
+
+    // Same app, used only by the experimental Brave patches (Disable telemetry, Disable ads,
+    // Hide promotional prompts), so Morphe Manager flags them as experimental. Researched
+    // 2026-10-07 against 1.96.61 (versionCode 429606104): smoke-tested, CLI-applied and
+    // decompile-checked, and runtime-checked on the emulator with the x86_64 1.96.61 build
+    // (no crashes; P3A/usage ping off, crash consent false, no promoCode, normal NTP). Anchors
+    // are unobfuscated (JNI/manifest-kept) class names, pref keys and method shape. Not yet
+    // field-tested by users.
+    val COMPATIBILITY_BRAVE_EXPERIMENTAL = Compatibility(
+        name = "Brave Browser",
+        packageName = "com.brave.browser",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xFF4500,
+        targets = listOf(
+            AppTarget(
+                version = "1.96.61",
+                isExperimental = true,
+            ),
         )
     )
 

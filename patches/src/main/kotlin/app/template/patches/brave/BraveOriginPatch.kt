@@ -259,6 +259,11 @@ val braveOriginPatch = bytecodePatch(
             .getInstruction<ReferenceInstruction>()
             .reference as MethodReference
 
+        // P3A and the usage ping have no Java gatekeeper (they are native services), so for
+        // those two switches the listener also writes the native local-state pref they read.
+        val localStateGetter = LocalStatePrefsGetterFingerprint.originalMethod
+        val prefSetBoolean = PrefServiceSetBooleanFingerprint.originalMethod
+
         d1Fingerprint.method.apply {
             removeInstructions(0, implementation!!.instructions.count())
             addInstructionsWithLabels(
@@ -295,6 +300,25 @@ val braveOriginPatch = bytecodePatch(
                     move-result-object v2
                     :write_done
                     invoke-interface {v2}, Landroid/content/SharedPreferences${'$'}Editor;->apply()V
+                    const-string v2, "BraveP3AEnabled"
+                    invoke-virtual {v2, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                    move-result v2
+                    if-eqz v2, :check_stats
+                    const-string v3, "$P3A_ENABLED_PREF"
+                    goto :write_native
+                    :check_stats
+                    const-string v2, "BraveStatsPingEnabled"
+                    invoke-virtual {v2, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                    move-result v2
+                    if-eqz v2, :native_done
+                    const-string v3, "$STATS_REPORTING_ENABLED_PREF"
+                    :write_native
+                    invoke-static {}, ${localStateGetter.definingClass}->${localStateGetter.name}()${localStateGetter.returnType}
+                    move-result-object v2
+                    if-eqz v2, :native_done
+                    xor-int/lit8 v1, v1, 0x1
+                    invoke-virtual {v2, v3, v1}, ${prefSetBoolean.definingClass}->${prefSetBoolean.name}(Ljava/lang/String;Z)V
+                    :native_done
                     invoke-virtual {p0}, ${restartPromptMethod.definingClass}->${restartPromptMethod.name}()V
                     :no_key
                     const/4 v0, 0x1
