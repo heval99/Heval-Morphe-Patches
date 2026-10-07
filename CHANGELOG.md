@@ -1,3 +1,9 @@
+## [1.11.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.10.0...v1.11.0) (2026-10-07)
+
+### ✨ New Features
+
+* add #Notepad Enable Premium and Disable ads patches ([accb309](https://github.com/heval99/Heval-Morphe-Patches/commit/accb309a271cc4b0e0305287c6030f57cfb01bfa)), closes [#Notepad](https://github.com/heval99/Heval-Morphe-Patches/issues/Notepad) [#Notepad](https://github.com/heval99/Heval-Morphe-Patches/issues/Notepad)
+
 ## [1.11.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.10.0...v1.11.0-dev.1) (2026-10-07)
 
 ### ✨ New Features
