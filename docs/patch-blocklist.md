@@ -16,6 +16,8 @@ not the story.
 | EasyExpense | `com.easyexpense` | React Native + Hermes bytecode; RevenueCat with trusted entitlements. Research-grade, not worth it. |
 | TOD TV | `com.todtv.tod` | Irdeto OTT DRM + Widevine and IP-based region locking; React Native + Hermes. Content decrypts only when the server issues a license; nothing client-side to flip. |
 | AnyDesk | `com.anydesk.anydeskandroid` | Removed 2026-10-03 (issue #23). The Java license wrappers can be forced (label shows Professional, banner hidden, address book/registration open), but session time limits are enforced by the native core and session broker servers - the close-reason dispatcher only displays what the session layer reports and no client-side timer exists to patch. Shipping a patch that looks like premium but keeps time limits only generates support load. |
+| Brave VPN | `com.brave.browser` | Checked 2026-10-07 on 1.96.61. The WireGuard peer (`mapped-ipv4-address`, `server-public-key`) only comes back from Guardian (`connect-api.guardianapp.com`) after the Play purchase token passes `verify-purchase-token` and a `subscriber-credential` is issued; forcing the local `brave_vpn_subscription_purchase` flag only fakes the UI. |
+| Brave Leo Premium | `com.brave.browser` | Checked 2026-10-07 on 1.96.61. Premium models and limits need a server-signed SKU credential (blind-signed time-limited credential from the `/v1/orders/receipt` order), sent as the `__Secure-sku#brave-leo-premium` cookie to `ai-chat-premium.bsg`; `brave.ai_chat.subscription_active_android` only drives the settings UI. |
 
 ## Nothing to patch
 
@@ -23,6 +25,7 @@ not the story.
 |---|---|---|
 | ZArchiver | `ru.zdevs.zarchiver` | 1.0.10 has no ad SDK and no billing/pro path in the dex. |
 | Retro Music | `code.name.monkey.retromusic` | FOSS: no ads, no paid tier. |
+| Brave (Playlist, News, Wallet, Search, Talk) | `com.brave.browser` | Checked 2026-10-07 on 1.96.61: no paywall code in the app; Search and Talk premium are web-account features. Brave Origin is the only premium-style Brave patch; ads, telemetry and promo prompts ship as experimental patches. |
 | Device Info HW | `ru.andr7e.deviceinfohw` | 5.27.1 free has no ad SDK (zero ad strings in the dex), no billing client and no pro gate: no license checker, no pro preference, no pro-package presence check. Pro is a separate paid listing (`ru.andr7e.deviceinfohw.pro`) with its own build; the free build's only "pro" surfaces are an upsell menu item (Play Store link) and a stubbed report button. |
 
 ## Parked — possible but needs an app-specific deep dive
@@ -46,6 +49,9 @@ Re-anchored and bytecode-verified on 2026-09-18 (removed from this table):
 - Brave Origin 1.95.104 (the subscription writer swapped its parameter order)
 - MyFitnessPal 26.37.0 (premium moved to queryenvoy enum parsers)
 - BoxBox 5.4.9 (telemetry and interstitial overloads now patched by class scan)
+
+Re-anchored and bytecode-verified on 2026-10-07:
+- Brave Origin 1.96.61 (two reworded log anchors now matched by prefix)
 
 ## Package-name traps (avoid downloading the wrong app)
 
