@@ -34,7 +34,6 @@ not the story.
 | FX Explorer | `nextapp.fx` | Plus state is hidden behind its plugin registry. |
 | Cronometer | `com.cronometer.android` | APKMirror keeps returning Cloudflare 403 for our IP; likely RevenueCat/server-side anyway. |
 | RadarScope | `com.basevelocity.radarscope` | Paid app, not published on APKMirror — cannot obtain a base APK from our source. |
-| BeSoccer | `com.besoccer` | APKMirror slug lookup failed; package ID may be wrong. |
 
 ## Known fingerprint drift (re-anchor later, app stays supported)
 
