@@ -169,6 +169,14 @@ Or manually add this repository url as a patch source in Morphe: https://github.
 To build heval patches,
 you can follow the [Morphe documentation](https://github.com/MorpheApp/morphe-documentation).
 
+## 🔗 Other projects
+
+- **[Sideport](https://github.com/heval99/Sideport)**: a userscript that adds a **Get APK**
+  button to every Google Play app page. It downloads directly from 6 sources with live
+  availability checks and shows when Morphe patches exist for the app. No tracking.
+  [Install it](https://github.com/heval99/sideport/raw/main/sideport.user.js) with
+  Tampermonkey or Violentmonkey.
+
 ## 💙 Support
 
 If these patches are useful to you, you can support the work here:
