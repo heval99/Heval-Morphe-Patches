@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.9.0-dev.4",
+  "version": "1.9.0-dev.5",
   "patches": [
     {
       "name": "Block marketing notifications",
@@ -865,9 +865,7 @@
       "name": "Enable FotMob+",
       "description": "Enables app features locked behind the subscription paywall.",
       "default": true,
-      "dependencies": [
-        "BytecodePatch"
-      ],
+      "dependencies": [],
       "compatiblePackages": [
         {
           "packageName": "com.mobilefootie.wc2010",

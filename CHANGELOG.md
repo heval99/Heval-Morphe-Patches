@@ -1,3 +1,9 @@
+## [1.9.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.9.0-dev.4...v1.9.0-dev.5) (2026-10-07)
+
+### 🐛 Bug Fixes
+
+* fail loudly when required patch anchors stop matching ([df36e95](https://github.com/heval99/Heval-Morphe-Patches/commit/df36e950237eabee2c4ecc4b6906234dc36832a9))
+
 ## [1.9.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.9.0-dev.3...v1.9.0-dev.4) (2026-10-07)
 
 ### ✨ New Features
