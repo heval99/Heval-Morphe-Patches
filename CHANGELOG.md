@@ -1,3 +1,9 @@
+## [1.12.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.11.1-dev.1...v1.12.0-dev.1) (2026-10-07)
+
+### ✨ New Features
+
+* **brave:** add experimental Disable telemetry, Disable ads and Hide promotional prompts patches ([e12fc36](https://github.com/heval99/Heval-Morphe-Patches/commit/e12fc369543df1a009ecdcc40b4147a7f05df15e))
+
 ## [1.11.1-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.11.0...v1.11.1-dev.1) (2026-10-07)
 
 ### 🐛 Bug Fixes
