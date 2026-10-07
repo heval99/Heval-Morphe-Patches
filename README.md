@@ -1,5 +1,7 @@
 # 👋🧩 heval patches
 
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/HevalXode)
+
 Custom Morphe patches by heval99.
 
 ## ❓ About
@@ -165,6 +167,8 @@ you can follow the [Morphe documentation](https://github.com/MorpheApp/morphe-do
 ## 💙 Support
 
 If these patches are useful to you, you can support the work here:
+
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white&style=for-the-badge)](https://paypal.me/HevalXode)
 
 - PayPal: https://paypal.me/HevalXode
 
