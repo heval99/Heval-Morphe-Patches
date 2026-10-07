@@ -1,3 +1,9 @@
+## [1.9.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.9.0-dev.3...v1.9.0-dev.4) (2026-10-07)
+
+### ✨ New Features
+
+* add SoundHound Disable ads patch ([acc4fc2](https://github.com/heval99/Heval-Morphe-Patches/commit/acc4fc2bd5f968c71b47c410d1767ff92f4a103c))
+
 ## [1.9.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.9.0-dev.2...v1.9.0-dev.3) (2026-10-06)
 
 ### 🐛 Bug Fixes
