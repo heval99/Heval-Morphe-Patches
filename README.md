@@ -1,5 +1,13 @@
 # 👋🧩 heval patches
 
+<p align="center">
+  <a href="https://morphe.software/add-source?github=heval99/Heval-Morphe-Patches">
+    <img src="https://img.shields.io/badge/%E2%9E%95%20%20Add%20to%20Morphe-1E5AA8?style=for-the-badge" height="46" alt="Add to Morphe">
+  </a>
+  <br>
+  <sub>One tap adds this patch source to Morphe Manager</sub>
+</p>
+
 [![Support me on Ko-fi](https://img.shields.io/badge/Support%20me%20on-Ko--fi-72a4f2?logo=ko-fi&logoColor=white)](https://ko-fi.com/heval99)
 [![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/HevalXode)
 
@@ -10,6 +18,9 @@ Custom Morphe patches by heval99.
 Patches for apps I like. Covers ads, telemetry, and premium/licence unlocks — see the patch
 list below for the supported apps and versions.
 If you have requests feel free to message me via hevalomevalo@gmail.com
+
+Click here to add these patches to Morphe:
+https://morphe.software/add-source?github=heval99/Heval-Morphe-Patches
 > **AI-generated patches.** Every patch in this repo is written with AI assistance: the
 > fingerprint analysis, patch code and smoke tests are AI-generated, then verified by
 > applying the patches to the real APKs (see `patches/src/test/`) before release. Review
