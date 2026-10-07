@@ -323,6 +323,14 @@ object Constants {
     // 40 Pro+ subscription) and LockFeatures answers the per-feature locks; both classes and
     // methods are unobfuscated. The UI reads getLicenseLevel() directly, so the patch forces
     // the level to 40 as well as the derived booleans.
+    // Issue #16 (reported against bundle 1.3.1, the free version still displayed): the
+    // account list, the prefs license line and the account-limit logic all gate on
+    // getLicenseData() != null, which is null on a free install, so the forced getters
+    // were never consulted past that gate. getLicenseData() now returns a licensed
+    // snapshot instead (state licensed, confirm deadline + expiry far future; the
+    // snapshot's R8-renamed fields are discovered structurally from the licensed checks
+    // themselves). Re-verified against the same APK on 2026-10-06 - AquaMailSmokeTest
+    // asserts the snapshot prefix in the emitted bytecode.
     val COMPATIBILITY_AQUAMAIL = Compatibility(
         name = "Aqua Mail",
         packageName = "org.kman.AquaMail",
@@ -501,7 +509,26 @@ object Constants {
         targets = listOf(AppTarget(version = "1.716.1222", versionCode = 1222))
     )
 
+    // Verified 2026-10-06 against com.flyersoft.moonreader 10.7 (versionCode 1007000,
+    // universal APK from APKPure). All ads run through the app's own unobfuscated ad
+    // manager com.flyersoft.components.MrAd, whose private static no-arg boolean
+    // disableAds() gates every ad path: the MrAd constructor returns before
+    // initializing the ad SDK (AdMob + Facebook Audience Network) when it is true,
+    // and the interstitial/exit/rewarded show paths consult it first. MrAd is the
+    // only app class that touches the ad SDK, so forcing that one consumer true
+    // disables banner, interstitial, exit and native ads. isProVersion only
+    // distinguishes the separate paid Pro listing (backup suffixes .mrpro/.mrstd),
+    // so there is no in-app premium gate; ads-only.
+    val COMPATIBILITY_MOONREADER = Compatibility(
+        name = "Moon+ Reader",
+        packageName = "com.flyersoft.moonreader",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x283593,
+        targets = listOf(AppTarget(version = "10.7", versionCode = 1007000))
+    )
+
     // Verified 2026-09-29 against com.streema.simpleradio 6.2.0 (versionCode 872,
+
     // APKPure universal). App code is not obfuscated. Premium state is entirely local:
     // SimpleRadioBaseActivity.isPremium() returns mIabService.isInitialized() &&
     // mIabService.c(), and the IAB service (b9/j) answers c() from SharedPreferences
@@ -548,5 +575,72 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x3F51B5,
         targets = listOf(AppTarget(version = "3.2.0.0_release_2", versionCode = 32001))
+    )
+
+    // Verified 2026-10-05 against com.shazam.android 16.62.0 (versionCode 1606200,
+    // APKPure universal). No ad SDK, no billing client, no shields in the dex, so
+    // the only patchable surface is telemetry: FirebaseAnalytics.logEvent(String,
+    // Bundle) is public and concrete, and FirebaseCrashlytics is fully public
+    // (isCrashlyticsCollectionEnabled/recordException/log). No premium gate exists
+    // (Apple-owned free app), so telemetry-only.
+    val COMPATIBILITY_SHAZAM = Compatibility(
+        name = "Shazam",
+        packageName = "com.shazam.android",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x0088FF,
+        targets = listOf(AppTarget(version = "16.62.0", versionCode = 1606200))
+    )
+
+    // Verified 2026-10-05 against com.podcast.podcasts 9.17.0 (versionCode 260909124,
+    // APKPure universal). The app code is partly obfuscated; all ads run through a
+    // heavy mediation stack (GMA, AppLovin MAX, Meta Audience Network, InMobi, Vungle
+    // strings, Pangle, Huawei), so "Disable ads" hooks those stable library surfaces
+    // (initialize/init, every load/loadAd and the MAX terminal showAd overload).
+    // No premium patch: the only ad-free path is Firebase invite referral state
+    // (server-driven); no local purchase gate was found (no queryPurchases /
+    // onPurchasesUpdated in app code).
+    val COMPATIBILITY_PODCASTREPUBLIC = Compatibility(
+        name = "Podcast Republic",
+        packageName = "com.podcast.podcasts",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0xFF5722,
+        targets = listOf(AppTarget(version = "9.17.0", versionCode = 260909124))
+    )
+
+    // Verified 2026-10-05 against fm.castbox.audiobook.radio.podcast 11.26.1
+    // (versionCode 260915290, APKPure universal). App code is not obfuscated. All ads
+    // run through a heavy mediation stack (GMA, AppLovin MAX, Meta Audience Network,
+    // InMobi, Vungle strings, Pangle, Huawei), so "Disable ads" hooks those stable
+    // library surfaces (initialize/init, every load/loadAd and the MAX terminal
+    // showAd overload).
+    // No premium patch: premium reads server-synced vip lists (UserProperties filled
+    // from the account backend) and local purchases are RSA-verified in
+    // BillingRepository, so there is no client-side gate to force.
+    val COMPATIBILITY_CASTBOX = Compatibility(
+        name = "Castbox",
+        packageName = "fm.castbox.audiobook.radio.podcast",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0xF44336,
+        targets = listOf(AppTarget(version = "11.26.1", versionCode = 260915290))
+    )
+
+    // Verified 2026-10-07 against com.melodis.midomiMusicIdentifier.freemium 10.5.8
+    // (versionCode 21134, APKPure universal). NOTE the package: the free app is
+    // com.melodis.midomiMusicIdentifier.freemium - the com.melodis.soundhound.android
+    // name the candidates doc previously guessed does not exist. The app code is
+    // R8-obfuscated, but every ad runs through the full public Google Mobile Ads API
+    // (banner AdView, native AdLoader, interstitial, rewarded, rewarded-interstitial,
+    // app-open, Ad Manager banner/interstitial, GMA preloading) plus Meta Audience
+    // Network, so the patch hooks those stable library surfaces: the SDKs never
+    // initialize, preload never starts and every load/loadAd/loadAds becomes a no-op.
+    // No PairIP or other shields in the dex. Play Billing is present for the Pro
+    // subscription but the premium gates are obfuscated; premium deep-dive parked -
+    // ads only.
+    val COMPATIBILITY_SOUNDHOUND = Compatibility(
+        name = "SoundHound",
+        packageName = "com.melodis.midomiMusicIdentifier.freemium",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x000000,
+        targets = listOf(AppTarget(version = "10.5.8", versionCode = 21134))
     )
 }

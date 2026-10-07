@@ -15,7 +15,7 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.8.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.8.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;41 patches total
+> **[v1.9.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.9.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;46 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
@@ -31,6 +31,9 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 - Disable ads
 - Disable telemetry
 - Enable Premium
+
+**📦 Castbox** (1)
+- Disable ads
 
 **📦 EasyNotes** (2)
 - Disable ads
@@ -49,6 +52,9 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 **📦 Livescore** (1)
 - Disable ads
 
+**📦 Moon+ Reader** (1)
+- Disable ads
+
 **📦 OneFootball** (1)
 - Disable ads
 
@@ -59,6 +65,9 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 - Disable ads
 - Enable Premium
 
+**📦 Podcast Republic** (1)
+- Disable ads
+
 **📦 365Scores** (1)
 - Disable ads
 
@@ -66,12 +75,18 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 - Disable ads
 - Enable Premium
 
+**📦 SoundHound** (1)
+- Disable ads
+
 **📦 WiFi Analyzer** (1)
 - Disable ads
 
 **📦 Saphe Link** (2)
 - Disable telemetry
 - Enable Premium
+
+**📦 Shazam** (1)
+- Disable telemetry
 
 **📦 FotMob** (1)
 - Enable FotMob+

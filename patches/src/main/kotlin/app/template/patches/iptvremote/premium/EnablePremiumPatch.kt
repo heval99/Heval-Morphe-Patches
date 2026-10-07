@@ -14,6 +14,6 @@ val enablePremiumPatch = bytecodePatch(
     compatibleWith(COMPATIBILITY_IPTVREMOTE)
 
     execute {
-        IptvFreeApplicationIsProFingerprint.methodOrNull?.returnEarly(value = true)
+        IptvFreeApplicationIsProFingerprint.method.returnEarly(value = true)
     }
 }

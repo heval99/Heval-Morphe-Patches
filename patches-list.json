@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.8.0",
+  "version": "1.9.0-dev.5",
   "patches": [
     {
       "name": "Block marketing notifications",
@@ -179,6 +179,37 @@
     },
     {
       "name": "Disable ads",
+      "description": "Disables banner, interstitial, native, app-open and rewarded ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "fm.castbox.audiobook.radio.podcast",
+          "name": "Castbox",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#F44336",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "11.26.1",
+              "versionCodes": {
+                "ARM64_V8A": 260915290,
+                "ARMEABI_V7A": 260915290,
+                "X86_64": 260915290,
+                "X86": 260915290
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
       "description": "Removes the 'notes_edit_banner' unit from utils/AdManager and the app-open ad from App$AppOpenAdManager. Both are gated on the single App.isAdFree() check, which normally depends on a VIP subscription.",
       "default": true,
       "dependencies": [],
@@ -334,6 +365,37 @@
     },
     {
       "name": "Disable ads",
+      "description": "Disables Moon+ Reader's banner, interstitial, exit and native ads by forcing the central ad gate to always report ads as disabled.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.flyersoft.moonreader",
+          "name": "Moon+ Reader",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#283593",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "10.7",
+              "versionCodes": {
+                "ARM64_V8A": 1007000,
+                "ARMEABI_V7A": 1007000,
+                "X86_64": 1007000,
+                "X86": 1007000
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
       "description": "Disables banner, interstitial, native, app-open and rewarded ads.",
       "default": true,
       "dependencies": [],
@@ -415,6 +477,37 @@
                 "ARMEABI_V7A": 32001,
                 "X86_64": 32001,
                 "X86": 32001
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
+      "description": "Disables banner, interstitial, native, app-open and rewarded ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.podcast.podcasts",
+          "name": "Podcast Republic",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FF5722",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "9.17.0",
+              "versionCodes": {
+                "ARM64_V8A": 260909124,
+                "ARMEABI_V7A": 260909124,
+                "X86_64": 260909124,
+                "X86": 260909124
               },
               "isExperimental": false,
               "minSdk": null,
@@ -558,6 +651,37 @@
     },
     {
       "name": "Disable ads",
+      "description": "Disables banner, interstitial, native, app-open and rewarded ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.melodis.midomiMusicIdentifier.freemium",
+          "name": "SoundHound",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#000000",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "10.5.8",
+              "versionCodes": {
+                "ARM64_V8A": 21134,
+                "ARMEABI_V7A": 21134,
+                "X86_64": 21134,
+                "X86": 21134
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
       "description": "Disables the banner ad.",
       "default": true,
       "dependencies": [],
@@ -651,6 +775,37 @@
     },
     {
       "name": "Disable telemetry",
+      "description": "Disables Firebase Analytics event logging and Crashlytics crash reporting.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.shazam.android",
+          "name": "Shazam",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#0088FF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "16.62.0",
+              "versionCodes": {
+                "ARM64_V8A": 1606200,
+                "ARMEABI_V7A": 1606200,
+                "X86_64": 1606200,
+                "X86": 1606200
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable telemetry",
       "description": "Disables AppsFlyer and Firebase Analytics event logging, plus Crashlytics crash reporting.",
       "default": true,
       "dependencies": [],
@@ -710,9 +865,7 @@
       "name": "Enable FotMob+",
       "description": "Enables app features locked behind the subscription paywall.",
       "default": true,
-      "dependencies": [
-        "BytecodePatch"
-      ],
+      "dependencies": [],
       "compatiblePackages": [
         {
           "packageName": "com.mobilefootie.wc2010",

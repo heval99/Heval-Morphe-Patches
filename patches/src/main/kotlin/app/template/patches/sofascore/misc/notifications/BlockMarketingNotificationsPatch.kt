@@ -22,7 +22,7 @@ val blockMarketingNotificationsPatch = bytecodePatch(
             return-void
         """.trimIndent()
 
-        PromotionModalFingerprint.methodOrNull?.addInstructions(0, dismissEarly)
-        TennisPromoSheetFingerprint.methodOrNull?.addInstructions(0, dismissEarly)
+        PromotionModalFingerprint.method.addInstructions(0, dismissEarly)
+        TennisPromoSheetFingerprint.method.addInstructions(0, dismissEarly)
     }
 }
