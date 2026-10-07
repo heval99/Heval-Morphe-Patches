@@ -1,5 +1,7 @@
 # 👋🧩 heval patches
 
+[![Add to Morphe](https://img.shields.io/badge/Add%20to-Morphe-5B3CC4?style=for-the-badge)](https://morphe.software/add-source?github=heval99/Heval-Morphe-Patches)
+
 [![Support me on Ko-fi](https://img.shields.io/badge/Support%20me%20on-Ko--fi-72a4f2?logo=ko-fi&logoColor=white)](https://ko-fi.com/heval99)
 [![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/HevalXode)
 
