@@ -15,7 +15,7 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.9.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.9.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;53 patches total
+> **[v1.9.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.9.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;46 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
@@ -26,10 +26,6 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 
 **📦 Brave Browser** (1)
 - Brave Origin
-
-**📦 BeSoccer** (2)
-- Disable ads
-- Disable license check
 
 **📦 BoxBox** (3)
 - Disable ads
@@ -59,9 +55,6 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 **📦 Moon+ Reader** (1)
 - Disable ads
 
-**📦 OneCricket** (1)
-- Disable ads
-
 **📦 OneFootball** (1)
 - Disable ads
 
@@ -88,10 +81,6 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 **📦 WiFi Analyzer** (1)
 - Disable ads
 
-**📦 Native Camera** (2)
-- Disable license check
-- Enable Premium
-
 **📦 Saphe Link** (2)
 - Disable telemetry
 - Enable Premium
@@ -105,9 +94,6 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 **📦 Tasker** (1)
 - Enable Full Version
 
-**📦 AiScore** (1)
-- Enable Premium
-
 **📦 Aqua Mail** (1)
 - Enable Premium
 
@@ -115,9 +101,6 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 - Enable Premium
 
 **📦 FishBuddy** (1)
-- Enable Premium
-
-**📦 Fishing Points** (1)
 - Enable Premium
 
 **📦 LibrePods** (1)
