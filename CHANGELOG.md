@@ -1,3 +1,9 @@
+## [1.11.1-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.11.0...v1.11.1-dev.1) (2026-10-07)
+
+### 🐛 Bug Fixes
+
+* **brave:** support Brave 1.96.61 ([5403b28](https://github.com/heval99/Heval-Morphe-Patches/commit/5403b28b0903429e93268622a545b635c5b346c9))
+
 ## [1.11.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.10.0...v1.11.0) (2026-10-07)
 
 ### ✨ New Features
