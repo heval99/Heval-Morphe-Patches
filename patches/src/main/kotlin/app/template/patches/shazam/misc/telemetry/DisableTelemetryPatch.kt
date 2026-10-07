@@ -22,13 +22,13 @@ val disableTelemetryPatch = bytecodePatch(
 
     execute {
         // Firebase Analytics event logging.
-        FirebaseAnalyticsLogEventFingerprint.methodOrNull?.returnEarlyIfImplemented()
+        FirebaseAnalyticsLogEventFingerprint.method.returnEarlyIfImplemented()
 
         // Crashlytics: disable collection and neuter every concrete reporting
         // entry point (recordException has two overloads - patch all matches,
         // not just the first).
-        CrashlyticsCollectionEnabledFingerprint.methodOrNull
-            ?.takeIf { it.implementation != null }?.returnEarly(false)
+        CrashlyticsCollectionEnabledFingerprint.method
+            .takeIf { it.implementation != null }?.returnEarly(false)
         mutableClassDefByOrNull("Lcom/google/firebase/crashlytics/FirebaseCrashlytics;")
             ?.methods.orEmpty()
             .filter { it.implementation != null }

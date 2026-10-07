@@ -14,7 +14,7 @@ val disableAdsPatch = bytecodePatch(
     compatibleWith(COMPATIBILITY_IPTVREMOTE)
 
     execute {
-        WortiseSdkInitializeFingerprint.methodOrNull?.returnEarly()
-        WortiseSdkInitializeWithListenerFingerprint.methodOrNull?.returnEarly()
+        WortiseSdkInitializeFingerprint.method.returnEarly()
+        WortiseSdkInitializeWithListenerFingerprint.method.returnEarly()
     }
 }

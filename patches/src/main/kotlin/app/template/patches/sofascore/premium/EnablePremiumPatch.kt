@@ -13,9 +13,9 @@ val enablePremiumPatch = bytecodePatch(
 
     execute {
         // Session premium flag (UserAccount) - read by the feature gates.
-        UserAccountHasPremiumFingerprint.methodOrNull?.returnBoxedBooleanEarly(true)
+        UserAccountHasPremiumFingerprint.method.returnBoxedBooleanEarly(true)
 
         // Server profile premium flag (ProfileData) - read by the profile/subscription UI.
-        ProfileDataHasPremiumFingerprint.methodOrNull?.returnBoxedBooleanEarly(true)
+        ProfileDataHasPremiumFingerprint.method.returnBoxedBooleanEarly(true)
     }
 }
