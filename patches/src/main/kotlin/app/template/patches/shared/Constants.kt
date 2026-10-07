@@ -723,4 +723,19 @@ object Constants {
         appIconColor = 0x2E7D32,
         targets = listOf(AppTarget(version = "6.6.0", versionCode = 23005536))
     )
+
+    // Verified 2026-10-07 against com.rawcam.app 1.4.3 (versionCode 55, APKPure split bundle
+    // merged). Method adapted from the WaggBR and franticg33k Native Camera patches (GPL-3.0,
+    // last targeting 1.4.2): premium is the local "is_premium" flag in "rawcam_prefs". 1.4.3
+    // moved the read/write into shared helpers o()/p(SharedPreferences, String, Z), so the
+    // patch persists true right before the CameraViewModel constructor reads the flag (instead
+    // of flipping the read's default register, which R8 may reuse) and forces the setter's
+    // argument true. PairIP license check only (Application wrapper, no VM shield). No ads.
+    val COMPATIBILITY_NATIVECAMERA = Compatibility(
+        name = "Native Camera",
+        packageName = "com.rawcam.app",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xD0BCFF,
+        targets = listOf(AppTarget(version = "1.4.3", versionCode = 55))
+    )
 }
