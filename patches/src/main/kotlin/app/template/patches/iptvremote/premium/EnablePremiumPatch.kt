@@ -11,6 +11,8 @@ private const val STUB_PACKAGE = "ru.iptvremote.android.iptv.preference."
 private const val PRO_PREFERENCE_STUB = STUB_PACKAGE + "ProPreferenceStub"
 private const val PRO_CHECKBOX_STUB = STUB_PACKAGE + "ProCheckBoxPreferenceStub"
 private const val RESET_PIN_KEY = "access_control_reset_parental_control_pin_code"
+private const val PLAYLISTS_ACTIVITY = "ru.iptvremote.android.iptv.PlaylistsActivity"
+private const val PLAYLISTS_SCREEN_KEY = "screen_playlists"
 private const val RESET_PIN_PREFERENCE =
     "ru.iptvremote.android.iptv.common.preference.ResetAccessControlPreference"
 
@@ -48,6 +50,27 @@ private val accessControlResourcePatch = resourcePatch {
             }
         }
         if (replaced == 0) throw PatchException("No Pro stubs found in ${target.name}")
+
+        // "Lock playlist settings" works by attaching a PIN locker to the main settings entry
+        // keyed "screen_playlists" (AbstractSettingsFragment.setupAccessControlScreen), but the
+        // free build ships that entry without a key, so the lock was never enforced. Give the
+        // entry that opens PlaylistsActivity the key the app looks up.
+        val settings = get("res/xml").listFiles()
+            ?.filter { it.extension == "xml" }
+            ?.firstOrNull { it.readText().let { text -> text.contains(PLAYLISTS_ACTIVITY) && text.contains("screen_access_control") } }
+            ?: throw PatchException("Main settings screen not found")
+        var keyed = false
+        document(settings.absolutePath).use { doc ->
+            val intents = doc.getElementsByTagName("intent")
+            for (i in 0 until intents.length) {
+                val intent = intents.item(i) as? Element ?: continue
+                if (intent.getAttribute("android:targetClass") != PLAYLISTS_ACTIVITY) continue
+                val screen = intent.parentNode as? Element ?: continue
+                if (screen.getAttribute("android:key").isEmpty()) screen.setAttribute("android:key", PLAYLISTS_SCREEN_KEY)
+                keyed = screen.getAttribute("android:key") == PLAYLISTS_SCREEN_KEY
+            }
+        }
+        if (!keyed) throw PatchException("Could not key the Playlists settings entry")
     }
 }
 

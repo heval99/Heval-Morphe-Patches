@@ -115,5 +115,16 @@ class IptvSmokeTest {
             "${screen.name} does not use ResetAccessControlPreference:\n$xml")
         assertTrue(xml.contains("<CheckBoxPreference"),
             "${screen.name} has no real CheckBoxPreference:\n$xml")
+
+        // The Playlists entry carries the key the "Lock playlist settings" locker looks up.
+        val settings = workDir.walkTopDown()
+            .firstOrNull {
+                it.isFile && it.extension == "xml" &&
+                    it.readText().let { text -> text.contains("ru.iptvremote.android.iptv.PlaylistsActivity") && text.contains("screen_access_control") }
+            } ?: error("decoded main settings XML not found under $workDir")
+        val playlistsEntry = Regex("<PreferenceScreen[^>]*>\\s*<intent[^>]*PlaylistsActivity", RegexOption.DOT_MATCHES_ALL)
+            .find(settings.readText())?.value ?: error("Playlists entry not found in ${settings.name}")
+        assertTrue(playlistsEntry.contains("android:key=\"screen_playlists\""),
+            "Playlists settings entry has no screen_playlists key:\n$playlistsEntry")
     }
 }
