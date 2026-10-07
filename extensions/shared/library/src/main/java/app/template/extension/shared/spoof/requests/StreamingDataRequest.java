@@ -28,7 +28,6 @@ import java.util.concurrent.TimeoutException;
 import app.template.extension.shared.ByteTrieSearch;
 import app.template.extension.shared.Logger;
 import app.template.extension.shared.Utils;
-import app.template.extension.shared.oauth2.requests.OAuth2Requester;
 import app.template.extension.shared.settings.BaseSettings;
 import app.template.extension.shared.spoof.ClientType;
 
@@ -173,21 +172,7 @@ public class StreamingDataRequest {
 
                 if (value != null) {
                     if (key.equals(AUTHORIZATION_HEADER)) {
-                        if (clientType.supportsOAuth2) {
-                            String authorization = OAuth2Requester.getAndUpdateAccessTokenIfNeeded();
-                            if (authorization.isEmpty()) {
-                                // Access token is empty, the user has not signed in to VR.
-                                // YouTube/YouTube Music access tokens cannot be used with YouTube VR.
-                                // Do not set the header.
-                                Logger.printDebug(() -> "Not including request header: " + key);
-                                continue;
-                            } else {
-                                // Access token is not empty, the user has signed in to VR.
-                                // Set the header.
-                                value = authorization;
-                                authHeadersOverrides = true;
-                            }
-                        } else if (!clientType.canLogin) {
+                        if (!clientType.canLogin) {
                             Logger.printDebug(() -> "Not including request header: " + key);
                             continue;
                         }
