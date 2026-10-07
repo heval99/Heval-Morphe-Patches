@@ -1,3 +1,18 @@
+## [1.9.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.8.0...v1.9.0) (2026-10-07)
+
+### 🐛 Bug Fixes
+
+* **aquamail:** return a licensed snapshot from getLicenseData (issue [#16](https://github.com/heval99/Heval-Morphe-Patches/issues/16)) ([be33ed5](https://github.com/heval99/Heval-Morphe-Patches/commit/be33ed5c55f2537b9dcceb2fad1330a6abec812f))
+* fail loudly when required patch anchors stop matching ([df36e95](https://github.com/heval99/Heval-Morphe-Patches/commit/df36e950237eabee2c4ecc4b6906234dc36832a9))
+
+### ✨ New Features
+
+* add Castbox Disable ads patch ([ceab050](https://github.com/heval99/Heval-Morphe-Patches/commit/ceab0508ed0dfb687eb95be1dd97615545982838))
+* add Moon+ Reader Disable ads patch ([96080a7](https://github.com/heval99/Heval-Morphe-Patches/commit/96080a70ee1ac4b520f17c864dbcd8da81db6d00))
+* add Podcast Republic Disable ads patch ([773abd2](https://github.com/heval99/Heval-Morphe-Patches/commit/773abd20f8e43d9be3c13dfcea8faaac8c7a7e8d))
+* add Shazam Disable telemetry patch ([65420aa](https://github.com/heval99/Heval-Morphe-Patches/commit/65420aaf544317237b5c4024f9fae352d46978ae))
+* add SoundHound Disable ads patch ([acc4fc2](https://github.com/heval99/Heval-Morphe-Patches/commit/acc4fc2bd5f968c71b47c410d1767ff92f4a103c))
+
 ## [1.9.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.9.0-dev.4...v1.9.0-dev.5) (2026-10-07)
 
 ### 🐛 Bug Fixes
