@@ -197,11 +197,22 @@ object Constants {
     )
 
     // Verified 2026-08-20 against ru.iptvremote.android.iptv apkm v9.1.25
-    // (universal, Android 12L+). Free app package; separate Pro app
-    // (ru.iptvremote.android.iptv.pro) unlocks features when installed.
-    // Ad SDK: Wortise mediation (com.wortise.ads.WortiseSdk) wrapping AppLovin,
-    // Yandex Mobile Ads, Google Mobile Ads. Pro/trial gate is
-    // IptvFreeApplication.k()Z (R8-renamed; signature-identified).
+    // (universal, Android 12L+). Free app package; Pro is a separate paid app
+    // (ru.iptvremote.android.iptv.pro) with its own build.
+    // Re-anchored 2026-10-07 on the same 9.1.25 build (still APKPure latest) for issue #35,
+    // where both patches were found to be ineffective:
+    //   - Disable ads: killing WortiseSdk.initialize left Yandex banners/instream running.
+    //     Ads go through an in-app mediation provider (b4, located by its
+    //     "instream_preload_lead_sec" remote-config getter); every override now delegates
+    //     to the app's built-in no-ads sibling provider (i5), found structurally.
+    //   - Enable Premium: IptvFreeApplication.k()Z was never a Pro/trial gate (it is a
+    //     20-minute ad-closed cooldown that only suppresses the review prompt). Pro features
+    //     are XML stub preferences linking to the Pro listing; the access-control (parental
+    //     PIN) feature ships in the free app and is unlocked by swapping its stubs for the
+    //     real preference classes. Start on boot / autoplay last channel have no code in the
+    //     free build and stay locked.
+    // IptvSmokeTest asserts the delegation and the rewritten XML; the CLI-patched APK was
+    // decompiled to confirm both. Not runtime-tested on a device.
     val COMPATIBILITY_IPTVREMOTE = Compatibility(
         name = "IPTV",
         packageName = "ru.iptvremote.android.iptv",
