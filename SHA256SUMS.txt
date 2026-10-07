@@ -1,1 +1,1 @@
-b26a8d562bd4b9e51afc965fa3a7b266c5db75929e32ef96e29389255579eab8  patches/build/libs/patches-1.9.0.mpp
+96531936d66371ed18370b94ba52297f8b47cfb992824da5c6ea512f95bc4ec3  patches/build/libs/patches-1.10.0-dev.1.mpp
