@@ -1,6 +1,7 @@
 package app.template.patches.brave
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.StringComparisonType
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -88,13 +89,14 @@ val braveOriginPatch = bytecodePatch(
 
     execute {
         // ── 1. ei2.c(Profile) → true (subscription active) ────────────────────────────
+        // The log message is reworded between releases ("profile is null" in 1.95,
+        // "prefs are unavailable" in 1.96); only its method-name prefix is stable. The prefix
+        // also keeps this from matching the token check (step 2), which reads the same pref key.
         Fingerprint(
             returnType = "Z",
             parameters = listOf("Lorg/chromium/chrome/browser/profiles/Profile;"),
-            strings = listOf(
-                "getIsSubscriptionActive profile is null",
-                "brave.origin.subscription_active_android",
-            ),
+            strings = listOf("brave.origin.subscription_active_android"),
+            filters = listOf(string("getIsSubscriptionActive", StringComparisonType.STARTS_WITH)),
         ).method.returnEarly(true)
 
         // ── 2. ei2.d(Profile) → true (has valid subscription tokens) ─────────────────
@@ -139,16 +141,16 @@ val braveOriginPatch = bytecodePatch(
         ).method.returnEarly()
 
         // ── 5. ei2.f(Profile, Callback) → fire TRUE immediately ─────────────────────
+        // 1.96 reworded the null-profile log ("... profile is null or destroyed") and moved it
+        // after the SkusService check, so match it by prefix and in any position.
         Fingerprint(
             returnType = "V",
             parameters = listOf(
                 "Lorg/chromium/chrome/browser/profiles/Profile;",
                 "Lorg/chromium/base/Callback;",
             ),
-            strings = listOf(
-                "requestCredentialSummary profile is null",
-                "SkusService is null, cannot request credential summary",
-            ),
+            strings = listOf("SkusService is null, cannot request credential summary"),
+            filters = listOf(string("requestCredentialSummary profile is null", StringComparisonType.STARTS_WITH)),
         ).method.addInstructions(
             0,
             """

@@ -252,7 +252,16 @@ object Constants {
         packageName = "com.brave.browser",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFF4500,
-        targets = listOf(AppTarget(version = "1.95.104"))
+        targets = listOf(
+            AppTarget(version = "1.95.104"),
+            // Verified 2026-10-07 against com.brave.browser 1.96.61 (versionCode 429606104,
+            // APKMirror bundle merged with APKEditor). Two Origin log messages were reworded
+            // ("getIsSubscriptionActive prefs are unavailable", "requestCredentialSummary
+            // profile is null or destroyed"), which broke the full-string anchors; both now
+            // match by prefix. All other anchors (pref keys, policy strings, Origin
+            // preferences shape) were unchanged. BraveSmokeTest passes on 1.95.104 and 1.96.61.
+            AppTarget(version = "1.96.61"),
+        )
     )
 
     // Verified 2026-08-27 against librepods_1.0.0-rc1-play-63 .apkm from APKMirror

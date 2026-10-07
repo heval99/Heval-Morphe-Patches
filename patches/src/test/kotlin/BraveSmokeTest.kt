@@ -1,7 +1,9 @@
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -41,7 +43,7 @@ class BraveSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "1.95.104",
+            version = "1.96.61",
             patchNames = setOf("Brave Origin"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -52,9 +54,16 @@ class BraveSmokeTest {
             method.implementation?.instructions?.any { it.referencesString(value) } == true
         } ?: error("no method references string '$value'")
 
+        fun methodWithStringPrefix(prefix: String): Method = allMethods.firstOrNull { method ->
+            method.instructions().any { insn ->
+                val ref = (insn as? ReferenceInstruction)?.reference
+                ref is StringReference && ref.string.startsWith(prefix)
+            }
+        } ?: error("no method references a string starting with '$prefix'")
+
         // The credentials/subscription predicates are forced true.
         assertForcedBoolean(
-            methodWithString("getIsSubscriptionActive profile is null"),
+            methodWithStringPrefix("getIsSubscriptionActive"),
             expected = true,
             label = "isSubscriptionActive(Profile)",
         )
@@ -67,6 +76,18 @@ class BraveSmokeTest {
             methodWithString("brave_origin_credential_summary_cached"),
             expected = true,
             label = "credential summary cached",
+        )
+
+        // The credential summary request answers TRUE before reaching the SKUs service.
+        val summaryRequest = methodWithString("SkusService is null, cannot request credential summary")
+        val summaryHead = summaryRequest.instructions().take(3)
+        assertTrue(
+            summaryHead.map { it.opcode } ==
+                listOf(Opcode.SGET_OBJECT, Opcode.INVOKE_INTERFACE, Opcode.RETURN_VOID) &&
+                ((summaryHead[0] as ReferenceInstruction).reference as FieldReference).name == "TRUE" &&
+                summaryHead[1].referencesMethod("Lorg/chromium/base/Callback;", "onResult"),
+            "requestCredentialSummary does not fire Boolean.TRUE immediately; head is " +
+                summaryHead.map { it.opcode },
         )
 
         // The package/product writer is a no-op.
