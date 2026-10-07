@@ -1,3 +1,16 @@
+## [1.10.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.9.0...v1.10.0) (2026-10-07)
+
+### 🐛 Bug Fixes
+
+* **iptv:** enforce the playlist-settings lock ([0c1c591](https://github.com/heval99/Heval-Morphe-Patches/commit/0c1c5914cabee6ae2f924f78f7ba8199796bab70))
+* **iptv:** switch ads to the built-in no-ads provider and unlock access control (issue [#35](https://github.com/heval99/Heval-Morphe-Patches/issues/35)) ([d44fd2c](https://github.com/heval99/Heval-Morphe-Patches/commit/d44fd2ce70c22820df576561484bdf5eb34fdb1b))
+* **sofascore:** support 26.09.28 and hide promotion banners ([e26784f](https://github.com/heval99/Heval-Morphe-Patches/commit/e26784fd96e57dc7835a719f0b29260232732906)), closes [#32](https://github.com/heval99/Heval-Morphe-Patches/issues/32)
+
+### ✨ New Features
+
+* add Native Camera Enable Premium and license check patches ([c616948](https://github.com/heval99/Heval-Morphe-Patches/commit/c6169480ae33d8f39e472abfbce2d0160d2980f7))
+* add OneCricket, Fishing Points, AiScore and BeSoccer patches ([9587518](https://github.com/heval99/Heval-Morphe-Patches/commit/9587518e20ea108e7a33dad23cf794abe140cad6))
+
 ## [1.10.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.10.0-dev.1...v1.10.0-dev.2) (2026-10-07)
 
 ### 🐛 Bug Fixes
