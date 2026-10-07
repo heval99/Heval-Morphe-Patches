@@ -64,6 +64,17 @@ object Constants {
             AppTarget(
                 version = "26.09.14",
                 versionCode = 260914002
+            ),
+            // Verified 2026-10-07 against 26.09.28 (versionCode 260928002, APKPure bundle
+            // merged). The tennis AI-insights promo sheet was removed in this build, so Block
+            // marketing notifications treats it as optional (PromotionModal stays required)
+            // and now also keeps the PromotionBannerView / PromotionalOffersBannerView
+            // promotion banners GONE. The other four patches apply unchanged. Enable Premium's
+            // description now states that server-served premium content (AI insights) is
+            // not unlocked (issue #32).
+            AppTarget(
+                version = "26.09.28",
+                versionCode = 260928002
             )
         )
     )

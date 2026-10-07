@@ -1,6 +1,7 @@
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -21,6 +22,10 @@ private const val AUDIENCE_PROVIDER = "Lcom/facebook/ads/AudienceNetworkContentP
 private const val PROMOTION_MODAL = "Lcom/sofascore/results/event/details/view/promotion/PromotionModal;"
 private const val TENNIS_PROMO_SHEET = "Lcom/sofascore/results/event/aiInsights/SofascoreAnalystTennisPromoBottomSheet;"
 private const val CRASHLYTICS_KEY = "firebase_crashlytics_collection_enabled"
+private val PROMO_BANNERS = listOf(
+    "Lcom/sofascore/results/event/details/view/promotion/PromotionBannerView;",
+    "Lcom/sofascore/results/featuredtournament/view/PromotionalOffersBannerView;",
+)
 
 private val SOFASCORE_PATCHES = setOf(
     "Block marketing notifications",
@@ -188,9 +193,20 @@ class SofascoreSmokeTest {
             require(PROMOTION_MODAL).methodsNamed("onViewCreated").single(),
             label = "PromotionModal.onViewCreated()", diagnostics
         )
-        assertDismissesEarly(
-            require(TENNIS_PROMO_SHEET).methodsNamed("onViewCreated").single(),
-            label = "SofascoreAnalystTennisPromoBottomSheet.onViewCreated()", diagnostics
-        )
+        // The tennis promo sheet was removed in 26.09.28; assert it only where it exists.
+        byType[TENNIS_PROMO_SHEET]?.let { sheet ->
+            assertDismissesEarly(
+                sheet.methodsNamed("onViewCreated").single(),
+                label = "SofascoreAnalystTennisPromoBottomSheet.onViewCreated()", diagnostics
+            )
+        }
+        // Promotion banners stay GONE.
+        for (banner in PROMO_BANNERS) {
+            val first = require(banner).method("setVisibility", listOf("I")).instructions().firstOrNull()
+            assertTrue(
+                first is NarrowLiteralInstruction && first.narrowLiteral == 8,
+                "$banner.setVisibility does not force GONE; first instruction is ${first?.opcode}\n$diagnostics"
+            )
+        }
     }
 }
