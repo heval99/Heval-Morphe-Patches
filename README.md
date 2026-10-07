@@ -1,5 +1,8 @@
 # 👋🧩 heval patches
 
+[![Support me on Ko-fi](https://img.shields.io/badge/Support%20me%20on-Ko--fi-72a4f2?logo=ko-fi&logoColor=white)](https://ko-fi.com/heval47)
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/HevalXode)
+
 Custom Morphe patches by heval99.
 
 ## ❓ About
@@ -15,7 +18,7 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.10.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.10.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;53 patches total
+> **[v1.11.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.11.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;55 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
@@ -87,6 +90,10 @@ If you have requests feel free to message me via hevalomevalo@gmail.com
 
 **📦 WiFi Analyzer** (1)
 - Disable ads
+
+**📦 #Notepad** (2)
+- Disable ads
+- Enable Premium
 
 **📦 Native Camera** (2)
 - Disable license check
@@ -166,6 +173,10 @@ you can follow the [Morphe documentation](https://github.com/MorpheApp/morphe-do
 
 If these patches are useful to you, you can support the work here:
 
+[![Support me on Ko-fi](https://img.shields.io/badge/Support%20me%20on-Ko--fi-72a4f2?logo=ko-fi&logoColor=white&style=for-the-badge)](https://ko-fi.com/heval47)
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white&style=for-the-badge)](https://paypal.me/HevalXode)
+
+- Ko-fi: https://ko-fi.com/heval47
 - PayPal: https://paypal.me/HevalXode
 
 ## 📜 License

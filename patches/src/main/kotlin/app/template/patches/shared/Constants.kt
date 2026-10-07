@@ -753,4 +753,19 @@ object Constants {
         appIconColor = 0xD0BCFF,
         targets = listOf(AppTarget(version = "1.4.3", versionCode = 55))
     )
+
+    // Verified 2026-10-07 against com.ztnstudio.notepad 5.4.3.19019 (versionCode 19019,
+    // APKPure split bundle merged). App classes keep their names, methods are R8-renamed.
+    // Premium: every gate reads UserPremiumData's premium getter (b() here, found by shape)
+    // and some also BuyAdFreePreferenceHelper's "isPurchased" getter. Ads: the bundled
+    // Calldorado SDK (in-app ad manager started unconditionally, plus the after-call screen);
+    // its public start/startInAppAdManager entry points are neutralised. RevenueCat + Play
+    // Billing handle purchases. No PairIP.
+    val COMPATIBILITY_ZTNNOTEPAD = Compatibility(
+        name = "#Notepad",
+        packageName = "com.ztnstudio.notepad",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xFFC107,
+        targets = listOf(AppTarget(version = "5.4.3.19019", versionCode = 19019))
+    )
 }
