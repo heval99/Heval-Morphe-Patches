@@ -731,6 +731,10 @@ object Constants {
     // patch persists true right before the CameraViewModel constructor reads the flag (instead
     // of flipping the read's default register, which R8 may reuse) and forces the setter's
     // argument true. PairIP license check only (Application wrapper, no VM shield). No ads.
+    // Device-tested 2026-10-07 by the owner on a Galaxy S25 Ultra (Android 17, arm64-only;
+    // Play Store 1.4.3 base + splits, base patched, all re-signed): app starts without the
+    // license wall and all premium features work. Note APKPure's bundle only carries the
+    // armeabi-v7a split, which arm64-only phones cannot install.
     val COMPATIBILITY_NATIVECAMERA = Compatibility(
         name = "Native Camera",
         packageName = "com.rawcam.app",
