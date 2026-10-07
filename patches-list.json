@@ -1,10 +1,10 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.10.0-dev.1",
+  "version": "1.10.0-dev.2",
   "patches": [
     {
       "name": "Block marketing notifications",
-      "description": "Blocks promotional and marketing prompts and modals. Note: this only affects in-app promo sheets. Match-alert push delivery on re-signed builds needs working push delivery - use MicroG integration + signature spoofing where Play Services is absent (issue #25).",
+      "description": "Blocks in-app promotional prompts, modals and promotion banners. Note: this only affects in-app promotions. Match-alert push delivery on re-signed builds needs working push delivery - use MicroG integration + signature spoofing where Play Services is absent (issue #25).",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
@@ -49,6 +49,18 @@
                 "ARMEABI_V7A": 260914002,
                 "X86_64": 260914002,
                 "X86": 260914002
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": "26.09.28",
+              "versionCodes": {
+                "ARM64_V8A": 260928002,
+                "ARMEABI_V7A": 260928002,
+                "X86_64": 260928002,
+                "X86": 260928002
               },
               "isExperimental": false,
               "minSdk": null,
@@ -136,6 +148,18 @@
                 "ARMEABI_V7A": 260914002,
                 "X86_64": 260914002,
                 "X86": 260914002
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": "26.09.28",
+              "versionCodes": {
+                "ARM64_V8A": 260928002,
+                "ARMEABI_V7A": 260928002,
+                "X86_64": 260928002,
+                "X86": 260928002
               },
               "isExperimental": false,
               "minSdk": null,
@@ -707,6 +731,18 @@
               "isExperimental": false,
               "minSdk": null,
               "description": null
+            },
+            {
+              "version": "26.09.28",
+              "versionCodes": {
+                "ARM64_V8A": 260928002,
+                "ARMEABI_V7A": 260928002,
+                "X86_64": 260928002,
+                "X86": 260928002
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
             }
           ]
         }
@@ -977,6 +1013,18 @@
                 "ARMEABI_V7A": 260914002,
                 "X86_64": 260914002,
                 "X86": 260914002
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": "26.09.28",
+              "versionCodes": {
+                "ARM64_V8A": 260928002,
+                "ARMEABI_V7A": 260928002,
+                "X86_64": 260928002,
+                "X86": 260928002
               },
               "isExperimental": false,
               "minSdk": null,
@@ -1544,7 +1592,7 @@
     },
     {
       "name": "Enable Premium",
-      "description": "Unlocks AI insights and premium features locked behind the Sofascore Plus/Pro subscription.",
+      "description": "Marks the account as premium in the app. Note: AI insights and other premium content are served by Sofascore's servers for paying accounts and are not unlocked; use \"Disable ads\" for an ad-free app.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
@@ -1589,6 +1637,18 @@
                 "ARMEABI_V7A": 260914002,
                 "X86_64": 260914002,
                 "X86": 260914002
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": "26.09.28",
+              "versionCodes": {
+                "ARM64_V8A": 260928002,
+                "ARMEABI_V7A": 260928002,
+                "X86_64": 260928002,
+                "X86": 260928002
               },
               "isExperimental": false,
               "minSdk": null,

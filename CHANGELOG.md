@@ -1,3 +1,9 @@
+## [1.10.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.10.0-dev.1...v1.10.0-dev.2) (2026-10-07)
+
+### 🐛 Bug Fixes
+
+* **sofascore:** support 26.09.28 and hide promotion banners ([e26784f](https://github.com/heval99/Heval-Morphe-Patches/commit/e26784fd96e57dc7835a719f0b29260232732906)), closes [#32](https://github.com/heval99/Heval-Morphe-Patches/issues/32)
+
 ## [1.10.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.9.0...v1.10.0-dev.1) (2026-10-07)
 
 ### 🐛 Bug Fixes
