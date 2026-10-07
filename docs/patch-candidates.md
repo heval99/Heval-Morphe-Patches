@@ -16,11 +16,9 @@ test + decompile-verify.
 | Shazam | `com.shazam.android` | 16.62.0 | **Shipped 2026-10-05** - "Disable telemetry" (FirebaseAnalytics.logEvent + public Crashlytics surface). No ad SDK, billing or shields in the dex; no premium gate (free app) |
 | Simple Radio | `com.streema.simpleradio` | 6.2.0 | **Shipped 2026-09-29** - "Enable Premium" (local `iab_premium` pref gate + `isPremium()`) and "Disable ads" (GMA init + MAX interstitial load/show) |
 | WiFi Analyzer | `com.farproc.wifi.analyzer` | 3.10.5-L | **Shipped 2026-09-29** - "Disable ads" (single `Settings` show-ad gate on the `next_show_ad_time_millisec` pref) |
-| Flud Torrent | `com.delphic.flud` | ? | Free version ad-supported, paid listing is the same app ad-free - classic ad-kill. Uncovered 2026-10-06 |
-| Moon+ Reader | `com.flyersoft.moonreader` | 9.9 | The classic: very requested app; still uncovered 2026-10-06. Ads in the free version are killable; if the Pro gate is only a separate paid listing, ship ads-only |
-| SoundHound | `com.melodis.soundhound.android` | ? | Sister app to our Shazam patch; ads in the free tier. Uncovered 2026-10-06 |
-| Dictionary.com | `com.dictionary` | ? | Ad-heavy free version. Uncovered 2026-10-06 |
-| CX File Explorer | `com.cx.fileexplorer` | ? | Popular, ad-supported. Uncovered 2026-10-06 |
+| SoundHound | `com.melodis.midomiMusicIdentifier.freemium` | 10.5.8 | **Shipped 2026-10-07** - "Disable ads" (GMA init + startPreload, every load/loadAd/loadAds on banner/native/interstitial/rewarded/app-open/Ad Manager classes, Meta AN init). NOTE the package: the earlier `com.melodis.soundhound.android` guess does not exist. Premium (Play Billing, obfuscated) parked |
+| Dictionary.com | `com.dictionary` | 12.1.3 | **Parked 2026-10-07, needs deep dive.** Package/version verified against the APK (677). No IAP surface in app code (the billingclient bytes come from AppsFlyer's SDK). Ads are the problem: R8 stripped/inlined the GMA lite wrappers - only `MobileAds` + `nativead.NativeAd` remain public; banner/native/interstitial load through an R8-renamed Amazon-APS pipeline (Q4.d slots, P5.i/M5 flows, Q5.b placement enum with `/1027916/ANDROID_*` GAM units) and the readable `com.dictionary.foundation.ads.AdInitializer` bootstrap only covers the startup path, not the on-demand composable path (Q6.v). Candidate anchors for a future attempt: AdInitializer.b(Context) preamble, P5.i.b(Q5.a), GMA ClientApi located by its creator strings |
+| Moon+ Reader | `com.flyersoft.moonreader` | 10.7 | **Shipped 2026-10-06** - "Disable ads" (MrAd.disableAds() forced true; the only app class touching the ad SDK) |
 
 ## Tier 2 - ads + local Pro/Premium
 
@@ -49,6 +47,12 @@ test + decompile-verify.
 MacroDroid (3 bundles), Pocket Casts, Hevy, CapCut, InShot, VN Video Editor, PicsArt,
 Photomath, MX Player (`.ad`), AccuWeather, Alarmy, Strong, Lifesum, ReadEra, Automate,
 Poweramp, Twitch (6 bundles), Stremio. Re-check before starting any app on this list.
+
+Checked 2026-10-07 against the 926-package rebuild:
+- Flud (`com.delphicoder.flud`, not the earlier `com.delphic.flud` guess) - Morning
+  Entree ("Flud Ad-Free & Bypasses"), rushiranpise and shaun-the-sheep ("Remove Ads")
+- CX File Explorer (`com.cxinventor.file.explorer`) - hxreborn/morphe-patches
+  ("Unlock premium" + themes)
 
 ## Not suggested (checked, rejected or deferred)
 

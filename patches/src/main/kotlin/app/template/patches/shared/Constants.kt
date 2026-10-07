@@ -623,4 +623,24 @@ object Constants {
         appIconColor = 0xF44336,
         targets = listOf(AppTarget(version = "11.26.1", versionCode = 260915290))
     )
+
+    // Verified 2026-10-07 against com.melodis.midomiMusicIdentifier.freemium 10.5.8
+    // (versionCode 21134, APKPure universal). NOTE the package: the free app is
+    // com.melodis.midomiMusicIdentifier.freemium - the com.melodis.soundhound.android
+    // name the candidates doc previously guessed does not exist. The app code is
+    // R8-obfuscated, but every ad runs through the full public Google Mobile Ads API
+    // (banner AdView, native AdLoader, interstitial, rewarded, rewarded-interstitial,
+    // app-open, Ad Manager banner/interstitial, GMA preloading) plus Meta Audience
+    // Network, so the patch hooks those stable library surfaces: the SDKs never
+    // initialize, preload never starts and every load/loadAd/loadAds becomes a no-op.
+    // No PairIP or other shields in the dex. Play Billing is present for the Pro
+    // subscription but the premium gates are obfuscated; premium deep-dive parked -
+    // ads only.
+    val COMPATIBILITY_SOUNDHOUND = Compatibility(
+        name = "SoundHound",
+        packageName = "com.melodis.midomiMusicIdentifier.freemium",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x000000,
+        targets = listOf(AppTarget(version = "10.5.8", versionCode = 21134))
+    )
 }
