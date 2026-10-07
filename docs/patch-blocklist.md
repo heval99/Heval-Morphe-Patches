@@ -34,21 +34,6 @@ not the story.
 | FX Explorer | `nextapp.fx` | Plus state is hidden behind its plugin registry. |
 | Cronometer | `com.cronometer.android` | APKMirror keeps returning Cloudflare 403 for our IP; likely RevenueCat/server-side anyway. |
 | RadarScope | `com.basevelocity.radarscope` | Paid app, not published on APKMirror — cannot obtain a base APK from our source. |
-| BeSoccer | `com.besoccer` | APKMirror slug lookup failed; package ID may be wrong. |
-
-## Already covered by community bundles — do not duplicate
-
-These are patchable by other Morphe bundles (checked against the 777-package aggregate of
-morphe-patches.software, September 2026):
-
-- SD Maid SE (`eu.darken.sdmse`) — Doom's patches, Paresh patches
-- Poweramp — Hooman's patches
-- Solid Explorer — Xtra patches, Hoodles patches
-- Podcast Addict, Windy — Hoodles patches
-- Hermit — Lain patches
-- Calimoto, Windy — Doom's patches
-- Nova Launcher, Sleep as Android — Doom's / Hoodles / Morning Entree patches
-- MiXplorer — FTL patches
 
 ## Known fingerprint drift (re-anchor later, app stays supported)
 

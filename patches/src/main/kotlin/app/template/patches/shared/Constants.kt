@@ -64,6 +64,17 @@ object Constants {
             AppTarget(
                 version = "26.09.14",
                 versionCode = 260914002
+            ),
+            // Verified 2026-10-07 against 26.09.28 (versionCode 260928002, APKPure bundle
+            // merged). The tennis AI-insights promo sheet was removed in this build, so Block
+            // marketing notifications treats it as optional (PromotionModal stays required)
+            // and now also keeps the PromotionBannerView / PromotionalOffersBannerView
+            // promotion banners GONE. The other four patches apply unchanged. Enable Premium's
+            // description now states that server-served premium content (AI insights) is
+            // not unlocked (issue #32).
+            AppTarget(
+                version = "26.09.28",
+                versionCode = 260928002
             )
         )
     )
@@ -197,11 +208,28 @@ object Constants {
     )
 
     // Verified 2026-08-20 against ru.iptvremote.android.iptv apkm v9.1.25
-    // (universal, Android 12L+). Free app package; separate Pro app
-    // (ru.iptvremote.android.iptv.pro) unlocks features when installed.
-    // Ad SDK: Wortise mediation (com.wortise.ads.WortiseSdk) wrapping AppLovin,
-    // Yandex Mobile Ads, Google Mobile Ads. Pro/trial gate is
-    // IptvFreeApplication.k()Z (R8-renamed; signature-identified).
+    // (universal, Android 12L+). Free app package; Pro is a separate paid app
+    // (ru.iptvremote.android.iptv.pro) with its own build.
+    // Re-anchored 2026-10-07 on the same 9.1.25 build (still APKPure latest) for issue #35,
+    // where both patches were found to be ineffective:
+    //   - Disable ads: killing WortiseSdk.initialize left Yandex banners/instream running.
+    //     Ads go through an in-app mediation provider (b4, located by its
+    //     "instream_preload_lead_sec" remote-config getter); every override now delegates
+    //     to the app's built-in no-ads sibling provider (i5), found structurally.
+    //   - Enable Premium: IptvFreeApplication.k()Z was never a Pro/trial gate (it is a
+    //     20-minute ad-closed cooldown that only suppresses the review prompt). Pro features
+    //     are XML stub preferences linking to the Pro listing; the access-control (parental
+    //     PIN) feature ships in the free app and is unlocked by swapping its stubs for the
+    //     real preference classes. Start on boot / autoplay last channel have no code in the
+    //     free build and stay locked.
+    //     The free build's main-settings Playlists entry has no key, so "Lock playlist
+    //     settings" (a PIN locker attached to "screen_playlists") was never enforced; the
+    //     resource patch adds that key.
+    // IptvSmokeTest asserts the delegation and the rewritten XML; the CLI-patched APK was
+    // decompiled to confirm both. Runtime-tested 2026-10-07 on an Android 35 emulator (full
+    // APKMirror bundle, merged): app starts, PIN can be set, the playlist lock prompts for it
+    // and the correct PIN lets the user through (the app needs a second tap afterwards, which
+    // is its own behaviour for intent-based entries).
     val COMPATIBILITY_IPTVREMOTE = Compatibility(
         name = "IPTV",
         packageName = "ru.iptvremote.android.iptv",
@@ -642,5 +670,87 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x000000,
         targets = listOf(AppTarget(version = "10.5.8", versionCode = 21134))
+    )
+
+    // Verified 2026-10-07 against one.cricket.app 26.08.01 (versionCode 90, APKPure base
+    // split). The app ships as a split bundle: libnative-lib.so (loaded by the ad loaders'
+    // static initializers and by MyApplication for its API URLs) lives in the ABI split,
+    // so users must patch the full APKM/XAPK. App classes keep their names but R8 renames
+    // their methods, so the ad wrappers (one/cricket/app/ads/*) are matched by class +
+    // parameter shape; AppOpenManager.onStart keeps its name (@OnLifecycleEvent). The
+    // other bundled networks (Mintegral, IronSource, Vungle, ...) are only reached via
+    // AdMob mediation, so the AdMob loads are the backstop. No premium tier exists (no
+    // billing code). No PairIP.
+    val COMPATIBILITY_ONECRICKET = Compatibility(
+        name = "OneCricket",
+        packageName = "one.cricket.app",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x0D47A1,
+        targets = listOf(AppTarget(version = "26.08.01", versionCode = 90))
+    )
+
+    // Verified 2026-10-07 against com.gregacucnik.fishingpoints 4.7.3 (versionCode 410,
+    // APKPure). Premium is client-side: RevenueCat entitlements are pushed into four tier
+    // flags on AppClass (the Application, name kept), and every gate plus the ad manager
+    // reads aggregate getters that OR those flags (A/B/K in this build, R8-renamed, found by
+    // shape). The forecast/weather API sends no entitlement, so the unlock is real. Ads
+    // (AdMob + Pangle/Meta mediation) are skipped for premium users. Play Integrity is only
+    // the Billing library's transitive dependency and gates nothing. No PairIP.
+    val COMPATIBILITY_FISHINGPOINTS = Compatibility(
+        name = "Fishing Points",
+        packageName = "com.gregacucnik.fishingpoints",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x1565C0,
+        targets = listOf(AppTarget(version = "4.7.3", versionCode = 410))
+    )
+
+    // Verified 2026-10-07 against com.onesports.score 4.3.1 (versionCode 296, APKPure split
+    // bundle merged). VIP is server-authoritative but cached: the server's vip int/expiry are
+    // written to MMKV and every client gate reads UserPreference (name kept): a "logged in AND
+    // vip == 1" getter and the raw vip int getter, both R8-renamed and found by shape. Forcing
+    // them unlocks the VIP UI and removes ads (ad fragments hide for VIP). Premium data the
+    // server delivers (predictions, dropping odds) is validated server-side and stays gated.
+    // Also covered by rushiranpise/morphe-patches (coverage is informational only).
+    val COMPATIBILITY_AISCORE = Compatibility(
+        name = "AiScore",
+        packageName = "com.onesports.score",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x00C853,
+        targets = listOf(AppTarget(version = "4.3.1", versionCode = 296))
+    )
+
+    // Verified 2026-10-07 against com.resultadosfutbol.mobile 6.6.0 (versionCode 23005536,
+    // APKPure). The blocklist previously had this app under the wrong package
+    // (com.besoccer). PairIP license check only (no VM shield): the manifest Application is
+    // com.pairip.application.Application, whose attachBaseContext only calls
+    // LicenseClient.checkLicense, so that one call is neutralised for re-signed builds. The
+    // ad-free subscription is server-validated (backend returns an empty AdsConfig for
+    // subscribers) and the app's ad engine is obfuscated, so ads are removed at the mediation
+    // SDKs' init (AppLovin MAX, Unity, Meta, Vungle; AdMob has no initialize in this build).
+    val COMPATIBILITY_BESOCCER = Compatibility(
+        name = "BeSoccer",
+        packageName = "com.resultadosfutbol.mobile",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x2E7D32,
+        targets = listOf(AppTarget(version = "6.6.0", versionCode = 23005536))
+    )
+
+    // Verified 2026-10-07 against com.rawcam.app 1.4.3 (versionCode 55, APKPure split bundle
+    // merged). Method adapted from the WaggBR and franticg33k Native Camera patches (GPL-3.0,
+    // last targeting 1.4.2): premium is the local "is_premium" flag in "rawcam_prefs". 1.4.3
+    // moved the read/write into shared helpers o()/p(SharedPreferences, String, Z), so the
+    // patch persists true right before the CameraViewModel constructor reads the flag (instead
+    // of flipping the read's default register, which R8 may reuse) and forces the setter's
+    // argument true. PairIP license check only (Application wrapper, no VM shield). No ads.
+    // Device-tested 2026-10-07 by the owner on a Galaxy S25 Ultra (Android 17, arm64-only;
+    // Play Store 1.4.3 base + splits, base patched, all re-signed): app starts without the
+    // license wall and all premium features work. Note APKPure's bundle only carries the
+    // armeabi-v7a split, which arm64-only phones cannot install.
+    val COMPATIBILITY_NATIVECAMERA = Compatibility(
+        name = "Native Camera",
+        packageName = "com.rawcam.app",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xD0BCFF,
+        targets = listOf(AppTarget(version = "1.4.3", versionCode = 55))
     )
 }

@@ -3,7 +3,8 @@
 Shortlist of apps worth patching next, re-checked 2026-10-06 against the 926-package /
 215-bundle community aggregate (`community_coverage.json`, rebuilt from
 morphe-patches.software's `data/bundles.json`). None of the open candidates below are
-covered by other bundles, and none are on `docs/patch-blocklist.md`.
+on `docs/patch-blocklist.md`. Community coverage is informational only (owner decision
+2026-10-07): an app covered by another bundle is still fair game.
 
 Before starting one, follow the normal workflow in `AGENTS.md`: download the latest APK,
 triage for PairIP/shields/server-side gates, find a stable anchor, then patch + smoke
@@ -42,17 +43,21 @@ test + decompile-verify.
 | Device Info HW | `ru.andr7e.deviceinfohw` | 5.27.1 | **Blocked 2026-09-29** - no Pro boolean exists in this build; see blocklist |
 | Xplore File Manager | `com.lonelycatgames.Xplore` | 4.49.10 | Pro features via its own license scheme - needs triage. Still uncovered 2026-10-06 |
 
-## Now covered by community bundles (checked 2026-10-06 - do not duplicate)
+## Also covered by other bundles (informational, not a blocker)
 
 MacroDroid (3 bundles), Pocket Casts, Hevy, CapCut, InShot, VN Video Editor, PicsArt,
 Photomath, MX Player (`.ad`), AccuWeather, Alarmy, Strong, Lifesum, ReadEra, Automate,
-Poweramp, Twitch (6 bundles), Stremio. Re-check before starting any app on this list.
+Poweramp, Twitch (6 bundles), Stremio.
 
 Checked 2026-10-07 against the 926-package rebuild:
 - Flud (`com.delphicoder.flud`, not the earlier `com.delphic.flud` guess) - Morning
   Entree ("Flud Ad-Free & Bypasses"), rushiranpise and shaun-the-sheep ("Remove Ads")
 - CX File Explorer (`com.cxinventor.file.explorer`) - hxreborn/morphe-patches
   ("Unlock premium" + themes)
+
+Moved from the blocklist on 2026-10-07 (checked against the 777-package aggregate,
+September 2026): SD Maid SE (`eu.darken.sdmse`), Poweramp, Solid Explorer, Podcast
+Addict, Windy, Hermit, Calimoto, Nova Launcher, Sleep as Android, MiXplorer.
 
 ## Not suggested (checked, rejected or deferred)
 
