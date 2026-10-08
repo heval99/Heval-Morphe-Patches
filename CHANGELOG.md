@@ -1,3 +1,9 @@
+## [1.12.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.12.0-dev.1...v1.12.0-dev.2) (2026-10-08)
+
+### 🐛 Bug Fixes
+
+* support latest app versions, re-anchor YouCut, Bluecoins and BoxBox, remove Saphe Link ([1bc82ef](https://github.com/heval99/Heval-Morphe-Patches/commit/1bc82ef890513b742b0f5238535f2fcca256dd52))
+
 ## [1.12.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.11.1-dev.1...v1.12.0-dev.1) (2026-10-07)
 
 ### ✨ New Features
