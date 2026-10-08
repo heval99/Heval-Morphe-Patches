@@ -29,7 +29,7 @@ https://morphe.software/add-source?github=heval99/Heval-Morphe-Patches
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.12.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.12.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;56 patches total
+> **[v1.12.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.12.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;56 patches total
 
 **📦 Sofascore** (5)
 - Block marketing notifications
