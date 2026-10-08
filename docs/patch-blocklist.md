@@ -37,12 +37,19 @@ not the story.
 | FX Explorer | `nextapp.fx` | Plus state is hidden behind its plugin registry. |
 | Cronometer | `com.cronometer.android` | APKMirror keeps returning Cloudflare 403 for our IP; likely RevenueCat/server-side anyway. |
 | RadarScope | `com.basevelocity.radarscope` | Paid app, not published on APKMirror — cannot obtain a base APK from our source. |
+| FC Pro 2 | `com.undergroundcreative.footballchairmanpro2` | Attempt failed (v1.2.2, 2026-09-19). Commercial app shield: game logic is encrypted web assets (`www/js/min-122.js`) decrypted by a native loader the shield extracts at runtime, strings are natively encrypted, a re-signed build dies in the native integrity check before any dex patch runs, and live updates can replace local code. Unpacking the shield is a research project. |
+
+## Removed at the owner's request
+
+| App | Package | Why |
+|---|---|---|
+| Saphe Link | `my.saphelink` | Removed 2026-10-07 at the owner's request. Last verified 6.6.0. |
 
 ## Known fingerprint drift (re-anchor later, app stays supported)
 
 | App | Last good | Failing on |
 |---|---|---|
-| LibrePods | 1.0.0-rc1-play-63 | no store mirror carries the pinned Play build; GitHub ships FOSS builds only |
+| LibrePods | 1.0.0-rc1-play-63 | no store mirror carries the pinned Play build; GitHub ships FOSS builds only (still true for v1.0.1-rc1, 2026-10-07) |
 
 Re-anchored and bytecode-verified on 2026-09-18 (removed from this table):
 - FotMob 237.17536.20260911 (storage-agnostic getter search)
@@ -52,6 +59,9 @@ Re-anchored and bytecode-verified on 2026-09-18 (removed from this table):
 
 Re-anchored and bytecode-verified on 2026-10-07:
 - Brave Origin 1.96.61 (two reworded log anchors now matched by prefix)
+- YouCut 1.721.1224 (R8 swapped the billing classes; gate now found by shape + "SubscribePro"/"com.camerasideas.trimmer.vip" strings)
+- Bluecoins 13.1.149 (fully R8-obfuscated, BillingDomainManager and kotlinx flow names gone; premium flow now forced at the "Startup: Encryption: Premium is" emit and the Google Play version-override combine)
+- BoxBox 5.4.16 (dead launchBillingFlow step removed; Firebase Analytics kill re-anchored on the measurement logEvent(String,String,Bundle,Z,Z,J) shape — both steps had silently matched nothing since 5.4.9)
 
 ## Package-name traps (avoid downloading the wrong app)
 
@@ -60,6 +70,9 @@ Re-anchored and bytecode-verified on 2026-10-07:
 - SD Maid SE is `eu.darken.sdmse`, **not** `eu.thedarken.sdm.se`.
 - The FotMob Wear OS build shares `com.mobilefootie.wc2010`; its versions end in `w`
   (e.g. `236.253021660w.20260827`). Check `android.hardware.type.watch` on any download.
+- WiFi Analyzer: APKMirror's "3.11.1-L" is a different package, `com.farproc.wifi.analyzer.classic`.
+  The supported `com.farproc.wifi.analyzer` line's newer 3.11.x builds have a lower versionCode
+  (138) than 3.10.5-L (999), so 3.10.5-L is still the current build of the supported package.
 
 ## Patch limitations worth remembering
 
