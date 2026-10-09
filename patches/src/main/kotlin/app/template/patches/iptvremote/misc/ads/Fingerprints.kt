@@ -1,6 +1,8 @@
 package app.template.patches.iptvremote.misc.ads
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.StringComparisonType
+import app.morphe.patcher.string
 
 // IPTV runs its own ad mediation layer: an abstract provider (R8-renamed, `a4` in 9.1.25)
 // with two concrete subclasses. The ad-supported one (`b4`) rotates Yandex Mobile Ads,
@@ -13,4 +15,17 @@ object AdProviderInstreamLeadFingerprint : Fingerprint(
     returnType = "J",
     parameters = listOf("Landroid/content/Context;"),
     strings = listOf("instream_preload_lead_sec"),
+)
+
+// The ad consent gate (`e4` in 9.1.25) defers every ad action (SDK consent setup, the idle
+// placement preloader, Yandex/Wortise interstitial loads, instream preload) until UMP/Yandex
+// consent is resolved. Its "consent resolved" method replays the queued actions and logs
+// failures under this tag; the patch then neuters the sibling enqueue-or-run method.
+object AdConsentGateFingerprint : Fingerprint(
+    returnType = "V",
+    parameters = listOf("Landroid/content/Context;"),
+    filters = listOf(
+        string("AdConsentGate"),
+        string("Deferred consent action", StringComparisonType.STARTS_WITH),
+    ),
 )

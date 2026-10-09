@@ -28,7 +28,7 @@ class IptvSmokeTest {
         Triple(name, parameterTypes.map(CharSequence::toString), returnType)
 
     @Test
-    fun `ads switch to the no-ads provider and access control is unlocked`() {
+    fun `ads are switched off without breaking the placement factory and access control is unlocked`() {
         val root = repoRoot()
         val apk = File(root, "apks/iptv/base.apk")
 
@@ -78,7 +78,37 @@ class IptvSmokeTest {
         // Placements, activity helper, interstitials, instream page/mode/devices, waterfall.
         assertTrue(overrides.size >= 6, "expected >= 6 provider overrides, found ${overrides.map { it.name }}")
 
-        for (method in overrides) {
+        // The placement view factory must keep its own body: the no-ads sibling's version throws
+        // (empty composite), which crashed launch in 9.1.25 (issue #35, 2026-10-09).
+        val context = "Landroid/content/Context;"
+        val placementFactory = overrides.single {
+            it.parameterTypes.size == 2 && it.parameterTypes[0].toString() == context
+        }
+        assertTrue(
+            placementFactory.instructions().none {
+                ((it as? ReferenceInstruction)?.reference as? TypeReference)?.type == noAds.type
+            },
+            "${provider.type}.${placementFactory.name} must not delegate to ${noAds.type}"
+        )
+
+        // Banner gate (`!isTv`) forced false, so no banner fragment is ever added.
+        val bannerGate = provider.methods.single {
+            AccessFlags.STATIC.isSet(it.accessFlags) && it.returnType == "Z" &&
+                it.parameterTypes.map(CharSequence::toString) == listOf(context)
+        }
+        assertForcedBoolean(bannerGate, expected = false, label = "${provider.type}.${bannerGate.name}(Context)")
+
+        // Consent gate drops deferred ad actions (preloader, interstitial/instream loads).
+        val consentGate = classes.single { cls ->
+            cls.methods.any { it.referencesString("AdConsentGate") }
+        }
+        val deferAction = consentGate.methods.single {
+            AccessFlags.STATIC.isSet(it.accessFlags) && it.returnType == "V" &&
+                it.parameterTypes.map(CharSequence::toString) == listOf(context, "Ljava/lang/Runnable;")
+        }
+        assertReturnsEarlyVoid(deferAction, label = "${consentGate.type}.${deferAction.name}(Context, Runnable)")
+
+        for (method in overrides - placementFactory) {
             val insns = method.instructions()
             val label = "${provider.type}.${method.name}"
             val newInstance = (insns.getOrNull(0) as? ReferenceInstruction)?.reference as? TypeReference

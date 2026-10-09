@@ -238,8 +238,9 @@ object Constants {
     // where both patches were found to be ineffective:
     //   - Disable ads: killing WortiseSdk.initialize left Yandex banners/instream running.
     //     Ads go through an in-app mediation provider (b4, located by its
-    //     "instream_preload_lead_sec" remote-config getter); every override now delegates
-    //     to the app's built-in no-ads sibling provider (i5), found structurally.
+    //     "instream_preload_lead_sec" remote-config getter); every override was delegated
+    //     to the app's built-in no-ads sibling provider (i5), found structurally (narrowed
+    //     on 2026-10-09, see below).
     //   - Enable Premium: IptvFreeApplication.k()Z was never a Pro/trial gate (it is a
     //     20-minute ad-closed cooldown that only suppresses the review prompt). Pro features
     //     are XML stub preferences linking to the Pro listing; the access-control (parental
@@ -253,7 +254,19 @@ object Constants {
     // decompiled to confirm both. Runtime-tested 2026-10-07 on an Android 35 emulator (full
     // APKMirror bundle, merged): app starts, PIN can be set, the playlist lock prompts for it
     // and the correct PIN lets the user through (the app needs a second tap afterwards, which
-    // is its own behaviour for intent-based entries).
+    // is its own behaviour for intent-based entries). That runtime pass covered Enable Premium
+    // only.
+    // 2026-10-09 (same 9.1.25 build, issue #35 follow-up): the 2026-10-07 runtime claim did not
+    // hold for Disable ads. With it applied, the app crashed on launch: the banner fragment's
+    // onAttach asked the provider for a placement view, which was delegated to i5.a, and i5.a
+    // wraps Collections.EMPTY_LIST in a composite (bv) whose constructor throws when the list is
+    // empty. The placement factory (the only (Context, placement) override) is no longer
+    // delegated. Its callers are cut off instead: the provider's static "banners allowed"
+    // check (!isTv, its only static (Context)Z) returns false, and the ad consent gate (found
+    // by its "AdConsentGate" / "Deferred consent action..." log in the replay method) drops
+    // deferred ad actions, which stops the idle placement preloader, interstitial loads and
+    // instream preload. The other overrides still delegate to i5; each caller handles the
+    // value it returns. IptvSmokeTest asserts all of this. Runtime re-test pending.
     val COMPATIBILITY_IPTVREMOTE = Compatibility(
         name = "IPTV",
         packageName = "ru.iptvremote.android.iptv",
