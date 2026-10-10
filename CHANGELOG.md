@@ -1,3 +1,9 @@
+## [1.13.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.13.0-dev.1...v1.13.0-dev.2) (2026-10-10)
+
+### ✨ New Features
+
+* **alarmclock:** add Disable ads patch for Alarm Clock Xtreme ([4bc592d](https://github.com/heval99/Heval-Morphe-Patches/commit/4bc592dbaf2807464ecbe671841b44cbb8c2462d))
+
 ## [1.13.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.12.1-dev.2...v1.13.0-dev.1) (2026-10-10)
 
 ### ✨ New Features
