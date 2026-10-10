@@ -688,6 +688,20 @@ object Constants {
         targets = listOf(AppTarget(version = "9.4.20", versionCode = 7175))
     )
 
+    // Verified 2026-10-10 against com.alarmclock.xtreme.free 26.06.0 (versionCode 70004221) from
+    // APKPure. Split base (requiredSplitTypes), so the bundle is APKM. No PairIP. The ad-free
+    // entitlement is ShopFeature AD_FREE, read through the shop data's d(ShopFeature) check
+    // (the implementation takes the "feature" argument and returns Z). Ad SDKs: GMS ads, Vungle,
+    // Facebook Audience Network and Unity Ads. Only the AD_FREE entitlement is forced true, so the
+    // paid all-in-one and other shop features are not unlocked.
+    val COMPATIBILITY_ALARMCLOCK = Compatibility(
+        name = "Alarm Clock Xtreme",
+        packageName = "com.alarmclock.xtreme.free",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xF44336,
+        targets = listOf(AppTarget(version = "26.06.0", versionCode = 70004221))
+    )
+
     // Verified 2026-09-29 against com.streema.simpleradio 6.2.0 (versionCode 872,
 
     // APKPure universal). App code is not obfuscated. Premium state is entirely local:
