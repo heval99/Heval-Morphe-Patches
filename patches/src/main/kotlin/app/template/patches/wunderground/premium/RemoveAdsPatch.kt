@@ -15,5 +15,6 @@ val removeAdsPatch = bytecodePatch(
         AdFreePurchasedFingerprint.method.returnEarly(true)
         IsAdsFreePurchasedFingerprint.method.returnEarly(true)
         IsAdsFreeV2UserFingerprint.method.returnEarly(true)
+        InitAdManagersFingerprint.method.returnEarly()
     }
 }

@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.12.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.12.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;**40** apps&nbsp;&nbsp;•&nbsp;&nbsp;**56** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-08
+> **[v1.13.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.13.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**42** apps&nbsp;&nbsp;•&nbsp;&nbsp;**58** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-10
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -48,11 +48,13 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 |:-:|---|---|---|:-:|
 | <img src="https://img.shields.io/badge/-%20-FFC107?style=flat-square" height="14" alt=""> | **365Scores** | 🚫 1 | `14.9.6` <sub>+2 older</sub> | APKM |
 | <img src="https://img.shields.io/badge/-%20-00C853?style=flat-square" height="14" alt=""> | **AiScore** | 💎 1 | `4.3.1` | APKM |
+| <img src="https://img.shields.io/badge/-%20-F44336?style=flat-square" height="14" alt=""> | **Alarm Clock Xtreme** | 🚫 1 | `26.06.0` | APKM |
 | <img src="https://img.shields.io/badge/-%20-00B0FF?style=flat-square" height="14" alt=""> | **Aqua Mail** | 💎 1 | `2.7.0` | APK |
 | <img src="https://img.shields.io/badge/-%20-2E7D32?style=flat-square" height="14" alt=""> | **BeSoccer** | 🚫 🔑 2 | `6.6.0` | APKM |
 | <img src="https://img.shields.io/badge/-%20-2979FF?style=flat-square" height="14" alt=""> | **Bluecoins** | 💎 1 | `13.1.149` <sub>+1 older</sub> | APK |
 | <img src="https://img.shields.io/badge/-%20-FF0000?style=flat-square" height="14" alt=""> | **BoxBox** | 🚫 🛡️ 💎 3 | `5.4.16` <sub>+1 older</sub> | APKM |
 | <img src="https://img.shields.io/badge/-%20-FF4500?style=flat-square" height="14" alt=""> | **Brave Browser** | 🚫 🛡️ 💎 🔕 🧪 4 | `1.97.56` <sub>+2 older</sub> | APKM |
+| <img src="https://img.shields.io/badge/-%20-009688?style=flat-square" height="14" alt=""> | **Business Calendar 2** | 🚫 1 | `2.55.5` | APK |
 | <img src="https://img.shields.io/badge/-%20-F44336?style=flat-square" height="14" alt=""> | **Castbox** | 🚫 1 | `11.26.1` | APK |
 | <img src="https://img.shields.io/badge/-%20-00ACFF?style=flat-square" height="14" alt=""> | **EasyNotes** | 🚫 💎 2 | `1.3.63.0921` <sub>+1 older</sub> | APKM |
 | <img src="https://img.shields.io/badge/-%20-2196F3?style=flat-square" height="14" alt=""> | **FairEmail** | 💎 1 | `1.2338` <sub>+1 older</sub> | APK |
@@ -64,6 +66,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-1976D2?style=flat-square" height="14" alt=""> | **IPTV** | 🚫 💎 2 | `9.1.25` | APKM |
 | <img src="https://img.shields.io/badge/-%20-FF6D00?style=flat-square" height="14" alt=""> | **jetAudio** | 💎 1 | `13.1.2` | APK |
 | <img src="https://img.shields.io/badge/-%20-406C5C?style=flat-square" height="14" alt=""> | **LibrePods** | 💎 1 | `1.0.0-rc1-play` | APKM |
+| <img src="https://img.shields.io/badge/-%20-1E88E5?style=flat-square" height="14" alt=""> | **Librera** | 🚫 1 | `9.4.20` | APK |
 | <img src="https://img.shields.io/badge/-%20-C8102E?style=flat-square" height="14" alt=""> | **Livescore** | 🚫 1 | `10.2.1` <sub>+1 older</sub> | APK |
 | <img src="https://img.shields.io/badge/-%20-8BC34A?style=flat-square" height="14" alt=""> | **Monefy** | 💎 1 | `1.22.11` | APK |
 | <img src="https://img.shields.io/badge/-%20-283593?style=flat-square" height="14" alt=""> | **Moon+ Reader** | 🚫 1 | `10.7` | APK |
@@ -85,7 +88,6 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-2962FF?style=flat-square" height="14" alt=""> | **Unified Remote** | 💎 1 | `3.25.1` | APK |
 | <img src="https://img.shields.io/badge/-%20-1565C0?style=flat-square" height="14" alt=""> | **Weather Underground** | 🚫 1 | `6.20.1` | APK |
 | <img src="https://img.shields.io/badge/-%20-00ACC1?style=flat-square" height="14" alt=""> | **WiFi Analyzer** | 🚫 1 | `3.10.5-L` | APK |
-| <img src="https://img.shields.io/badge/-%20-FF5722?style=flat-square" height="14" alt=""> | **YouCut** | 💎 1 | `1.721.1224` <sub>+1 older</sub> | APKM |
 
 ### 🔍 Patch details
 
@@ -107,6 +109,16 @@ Verified on: `4.3.1`
 | Patch | What it does | Default |
 |---|---|:-:|
 | 💎 **Enable Premium** | Unlocks the VIP interface and removes ads. Premium data the AiScore server delivers (e.g. predictions, dropping odds) is validated server-side and is not unlocked. | ✅ |
+
+</details>
+<details>
+<summary><b>Alarm Clock Xtreme</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.alarmclock.xtreme.free</code></summary>
+
+Verified on: `26.06.0`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Turns on the ad-free entitlement so Alarm Clock Xtreme shows no banner, interstitial or consent ads. Only the ad-free feature is changed; the other shop features keep their purchase state. | ✅ |
 
 </details>
 <details>
@@ -163,6 +175,16 @@ Verified on: `1.97.56`, `1.96.61`, `1.95.104`
 | 🚫 **Disable ads** 🧪 | Experimental: hides sponsored new tab images (including full-page takeovers) and the "Earn BAT for viewing ads" Rewards signup popup. | ➖ |
 | 🛡️ **Disable telemetry** 🧪 | Experimental: turns off P3A analytics and the usage ping on every start (overriding the in-app switches), stops crash report uploads and drops the install-referrer attribution code. | ➖ |
 | 🔕 **Hide promotional prompts** 🧪 | Experimental: stops the recurring "Set Brave as default browser" dialog, the "Rate Brave" dialog and card, retention and Rewards promo notifications, the search widget promo and the VPN card in Settings. | ➖ |
+
+</details>
+<details>
+<summary><b>Business Calendar 2</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.appgenix.bizcal</code></summary>
+
+Verified on: `2.55.5`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Turns off Business Calendar 2's ad-serving gate, so the mediation SDKs never start and no interstitial is shown. Pro features are not changed. | ✅ |
 
 </details>
 <details>
@@ -275,6 +297,16 @@ Verified on: `1.0.0-rc1-play`
 | Patch | What it does | Default |
 |---|---|:-:|
 | 💎 **Enable Premium** | Unlocks the 'Advanced device settings' features (Personalized Volume, Adaptive Audio, accessibility configs, hearing protection, etc.) that LibrePods gates behind the Play Store 'Unlock advanced features' one-time purchase. The patch forces the premium entitlement (PlayBillingProvider's _isPremium StateFlow) to always be true. | ✅ |
+
+</details>
+<details>
+<summary><b>Librera</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.foobnix.pdf.reader</code></summary>
+
+Verified on: `9.4.20`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Disables Librera's banner, interstitial and rewarded ads by reporting ads as switched off and the reward window as open, so the Google Mobile Ads SDK never starts. | ✅ |
 
 </details>
 <details>
@@ -493,16 +525,6 @@ Verified on: `3.10.5-L`
 | Patch | What it does | Default |
 |---|---|:-:|
 | 🚫 **Disable ads** | Disables the banner ad. | ✅ |
-
-</details>
-<details>
-<summary><b>YouCut</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.camerasideas.trimmer</code></summary>
-
-Verified on: `1.721.1224`, `1.716.1222`
-
-| Patch | What it does | Default |
-|---|---|:-:|
-| 💎 **Enable Pro** | Unlocks YouCut Pro: watermark-free export and all paid features. | ✅ |
 
 </details>
 

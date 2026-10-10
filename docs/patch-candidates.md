@@ -41,7 +41,7 @@ test + decompile-verify.
 | App | Package | Latest seen | Notes |
 |---|---|---|---|
 | Device Info HW | `ru.andr7e.deviceinfohw` | 5.27.1 | **Blocked 2026-09-29** - no Pro boolean exists in this build; see blocklist |
-| Xplore File Manager | `com.lonelycatgames.Xplore` | 4.49.10 | Pro features via its own license scheme - needs triage. Still uncovered 2026-10-06 |
+| Xplore File Manager | `com.lonelycatgames.Xplore` | 4.49.10 | **Blocked 2026-10-10** - PairIP VM + native tamper check; see blocklist |
 
 ## Also covered by other bundles (informational, not a blocker)
 
@@ -90,5 +90,5 @@ Tier 1 progress, all checked against the latest APKMirror builds:
 | ACR Phone | Parked - readable billing prefs bridge but the premium computation is obfuscated and a periodic purchase-refresh worker can overwrite cached state |
 | Car Scanner ELM OBD2 | Parked - fully obfuscated app code, no RevenueCat; billing path not located yet |
 | JuiceSSH | Parked - purchases stored in an ORMLite `purchase` table, premium gate in obfuscated code |
-| Business Calendar 2 | Parked - obfuscated app code; premium check not located yet |
+| Business Calendar 2 | **Patched 2026-10-11** - "Disable ads" (readable app code; `AdsUtil.showAdsForUser(Context)` gates the mediation SDK start and interstitials). Pro untouched |
 

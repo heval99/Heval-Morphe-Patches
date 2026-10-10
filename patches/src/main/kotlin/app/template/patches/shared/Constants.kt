@@ -238,8 +238,9 @@ object Constants {
     // where both patches were found to be ineffective:
     //   - Disable ads: killing WortiseSdk.initialize left Yandex banners/instream running.
     //     Ads go through an in-app mediation provider (b4, located by its
-    //     "instream_preload_lead_sec" remote-config getter); every override now delegates
-    //     to the app's built-in no-ads sibling provider (i5), found structurally.
+    //     "instream_preload_lead_sec" remote-config getter); every override was delegated
+    //     to the app's built-in no-ads sibling provider (i5), found structurally (narrowed
+    //     on 2026-10-09, see below).
     //   - Enable Premium: IptvFreeApplication.k()Z was never a Pro/trial gate (it is a
     //     20-minute ad-closed cooldown that only suppresses the review prompt). Pro features
     //     are XML stub preferences linking to the Pro listing; the access-control (parental
@@ -253,7 +254,19 @@ object Constants {
     // decompiled to confirm both. Runtime-tested 2026-10-07 on an Android 35 emulator (full
     // APKMirror bundle, merged): app starts, PIN can be set, the playlist lock prompts for it
     // and the correct PIN lets the user through (the app needs a second tap afterwards, which
-    // is its own behaviour for intent-based entries).
+    // is its own behaviour for intent-based entries). That runtime pass covered Enable Premium
+    // only.
+    // 2026-10-09 (same 9.1.25 build, issue #35 follow-up): the 2026-10-07 runtime claim did not
+    // hold for Disable ads. With it applied, the app crashed on launch: the banner fragment's
+    // onAttach asked the provider for a placement view, which was delegated to i5.a, and i5.a
+    // wraps Collections.EMPTY_LIST in a composite (bv) whose constructor throws when the list is
+    // empty. The placement factory (the only (Context, placement) override) is no longer
+    // delegated. Its callers are cut off instead: the provider's static "banners allowed"
+    // check (!isTv, its only static (Context)Z) returns false, and the ad consent gate (found
+    // by its "AdConsentGate" / "Deferred consent action..." log in the replay method) drops
+    // deferred ad actions, which stops the idle placement preloader, interstitial loads and
+    // instream preload. The other overrides still delegate to i5; each caller handles the
+    // value it returns. IptvSmokeTest asserts all of this. Runtime re-test pending.
     val COMPATIBILITY_IPTVREMOTE = Compatibility(
         name = "IPTV",
         packageName = "ru.iptvremote.android.iptv",
@@ -450,7 +463,9 @@ object Constants {
     // Verified 2026-09-17 against com.wunderground.android.weather 6.20.1
     // (versionCode 2019070035) from APKPure. The ad-free purchase is evaluated locally by the
     // Adobe Airlock SDK ("ads.Ad Free" entitlement); the getters in AirlockValueUtil,
-    // PremiumHelper and WUApplication are unobfuscated.
+    // PremiumHelper and WUApplication are unobfuscated. FeatureManager.initAdManagers() reads the
+    // raw Airlock feature and starts the ad SDKs, so it is also neutered (2026-10-10, issue #45:
+    // ads came back after a few launches when only the getters were forced).
     val COMPATIBILITY_WUNDERGROUND = Compatibility(
         name = "Weather Underground",
         packageName = "com.wunderground.android.weather",
@@ -636,28 +651,11 @@ object Constants {
         targets = listOf(AppTarget(version = "3.26", versionCode = 57))
     )
 
-    // Verified 2026-09-28 against com.camerasideas.trimmer 1.716.1222 (versionCode 1222)
-    // from APKMirror. The billing code keeps readable names: the central subscribed
-    // check is `store/billing/c.d(Context)`, which reads the "SubscribePro" preference
-    // and falls back to the "com.camerasideas.trimmer.vip" purchase flag. It gates the
-    // export/watermark flow, template unlocks, the ads manager and the paywall, so
-    // forcing it true unlocks Pro everywhere including watermark-free export.
-    // Re-anchored 2026-10-07 for 1.721.1224 (versionCode 1224): R8 moved the check to
-    // `store/billing/d.d(Context)` (BillingPreferences), which broke the old class+name pin.
-    // The fingerprint now matches by shape only - public static (Context)Z holding both the
-    // "SubscribePro" and "com.camerasideas.trimmer.vip" keys - which resolves to exactly one
-    // method in both 1.716.1222 and 1.721.1224 (smali checked). 1.721 adds fup/redeem and
-    // Huawei checks to the body, but any hit still returns true, so returnEarly(true) holds.
-    val COMPATIBILITY_YOUCUT = Compatibility(
-        name = "YouCut",
-        packageName = "com.camerasideas.trimmer",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0xFF5722,
-        targets = listOf(
-            AppTarget(version = "1.716.1222", versionCode = 1222),
-            AppTarget(version = "1.721.1224", versionCode = 1224),
-        )
-    )
+    // YouCut (com.camerasideas.trimmer) removed 2026-10-09 (issue #44): see
+    // docs/patch-blocklist.md. The Pro gate is client-side and forceable, but every
+    // re-signed build self-kills via a native signing-cert + anti-debug SIGKILL gate in
+    // libisvideoengine.so JNI_OnLoad, which a bytecode/resource patch cannot neutralise.
+    // Revisit only if the engine gains native-lib patching.
 
     // Verified 2026-10-06 against com.flyersoft.moonreader 10.7 (versionCode 1007000,
     // universal APK from APKPure). All ads run through the app's own unobfuscated ad
@@ -675,6 +673,46 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x283593,
         targets = listOf(AppTarget(version = "10.7", versionCode = 1007000))
+    )
+
+    // Verified 2026-10-10 against com.foobnix.pdf.reader 9.4.20 (versionCode 7175) from APKPure.
+    // No PairIP and no billing library in the free app. Ads are Google Mobile Ads, gated by
+    // AppsConfig.isShowAdsInApp(Context) (MobileAds init, interstitial/banner/reward checks) and
+    // ADS.isRewardActivated() (the interstitial, banner and reward show paths). The Pro build is a
+    // separate paid listing, so this patch is ads-only.
+    val COMPATIBILITY_LIBRERA = Compatibility(
+        name = "Librera",
+        packageName = "com.foobnix.pdf.reader",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x1E88E5,
+        targets = listOf(AppTarget(version = "9.4.20", versionCode = 7175))
+    )
+
+    // Verified 2026-10-10 against com.alarmclock.xtreme.free 26.06.0 (versionCode 70004221) from
+    // APKPure. Split base (requiredSplitTypes), so the bundle is APKM. No PairIP. The ad-free
+    // entitlement is ShopFeature AD_FREE, read through the shop data's d(ShopFeature) check
+    // (the implementation takes the "feature" argument and returns Z). Ad SDKs: GMS ads, Vungle,
+    // Facebook Audience Network and Unity Ads. Only the AD_FREE entitlement is forced true, so the
+    // paid all-in-one and other shop features are not unlocked.
+    val COMPATIBILITY_ALARMCLOCK = Compatibility(
+        name = "Alarm Clock Xtreme",
+        packageName = "com.alarmclock.xtreme.free",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xF44336,
+        targets = listOf(AppTarget(version = "26.06.0", versionCode = 70004221))
+    )
+
+    // Verified 2026-10-11 against com.appgenix.bizcal 2.55.5 (versionCode 255501) from the
+    // existing apks/bizcal/base.apk. Single APK, no PairIP. The app's own code is readable.
+    // AdsUtil.showAdsForUser(Context) is the one user-level ad gate: it guards the mediation SDK
+    // start (StoreUtil.initializeMobileAds, Fyber/Chartboost/AppLovin/Vungle/Facebook/InMobi/Unity)
+    // and the interstitial preload and show path. Pro (ProUtil) is untouched: ads only.
+    val COMPATIBILITY_BUSINESSCALENDAR = Compatibility(
+        name = "Business Calendar 2",
+        packageName = "com.appgenix.bizcal",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x009688,
+        targets = listOf(AppTarget(version = "2.55.5", versionCode = 255501))
     )
 
     // Verified 2026-09-29 against com.streema.simpleradio 6.2.0 (versionCode 872,

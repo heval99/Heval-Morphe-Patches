@@ -1,3 +1,34 @@
+## [1.13.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.13.0-dev.2...v1.13.0-dev.3) (2026-10-10)
+
+### ✨ New Features
+
+* **bizcal:** add Disable ads patch for Business Calendar 2 ([0609468](https://github.com/heval99/Heval-Morphe-Patches/commit/060946866387952240802930d89d80ea241d1063))
+
+## [1.13.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.13.0-dev.1...v1.13.0-dev.2) (2026-10-10)
+
+### ✨ New Features
+
+* **alarmclock:** add Disable ads patch for Alarm Clock Xtreme ([4bc592d](https://github.com/heval99/Heval-Morphe-Patches/commit/4bc592dbaf2807464ecbe671841b44cbb8c2462d))
+
+## [1.13.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.12.1-dev.2...v1.13.0-dev.1) (2026-10-10)
+
+### ✨ New Features
+
+* **librera:** add Disable ads patch ([f1c4655](https://github.com/heval99/Heval-Morphe-Patches/commit/f1c4655a6e130084fe46fb1eaaaae2e84d697eee))
+
+## [1.12.1-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.12.1-dev.1...v1.12.1-dev.2) (2026-10-10)
+
+### 🐛 Bug Fixes
+
+* **wunderground:** stop ads returning after a few launches (issue [#45](https://github.com/heval99/Heval-Morphe-Patches/issues/45)) ([32c6094](https://github.com/heval99/Heval-Morphe-Patches/commit/32c60944c5083c23e31da3c153019b963a090a50))
+
+## [1.12.1-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.12.0...v1.12.1-dev.1) (2026-10-10)
+
+### 🐛 Bug Fixes
+
+* **iptv:** stop Disable ads crashing on launch (issue [#35](https://github.com/heval99/Heval-Morphe-Patches/issues/35)) ([404d909](https://github.com/heval99/Heval-Morphe-Patches/commit/404d909f4c8fb7d976c8182bb8592f62f537021c))
+* **youcut:** drop patch — native integrity kill-gate is unpatchable (issue [#44](https://github.com/heval99/Heval-Morphe-Patches/issues/44)) ([f4dd4c9](https://github.com/heval99/Heval-Morphe-Patches/commit/f4dd4c9926253be605dcbab2fad2408e6e145a46))
+
 ## [1.12.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.11.0...v1.12.0) (2026-10-08)
 
 ### 🐛 Bug Fixes

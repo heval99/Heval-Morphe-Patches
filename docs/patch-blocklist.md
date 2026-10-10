@@ -25,6 +25,7 @@ not the story.
 |---|---|---|
 | ZArchiver | `ru.zdevs.zarchiver` | 1.0.10 has no ad SDK and no billing/pro path in the dex. |
 | Retro Music | `code.name.monkey.retromusic` | FOSS: no ads, no paid tier. |
+| Infinity for Reddit (free) | `ml.docilealligator.infinityforreddit` | Checked 2026-10-11 on 7.4.1 (split base). No PairIP and no ad SDK in the dex (no GMA, AppLovin, Unity, Vungle, Facebook or InMobi). The "Subscribe" classes are Reddit subreddit subscriptions. Only 9 Play Billing references and no readable Plus gate. Paid Infinity+ is the separate `.plus` listing, which another bundle covers. |
 | Brave (Playlist, News, Wallet, Search, Talk) | `com.brave.browser` | Checked 2026-10-07 on 1.96.61: no paywall code in the app; Search and Talk premium are web-account features. Brave Origin is the only premium-style Brave patch; ads, telemetry and promo prompts ship as experimental patches. |
 | Device Info HW | `ru.andr7e.deviceinfohw` | 5.27.1 free has no ad SDK (zero ad strings in the dex), no billing client and no pro gate: no license checker, no pro preference, no pro-package presence check. Pro is a separate paid listing (`ru.andr7e.deviceinfohw.pro`) with its own build; the free build's only "pro" surfaces are an upsell menu item (Play Store link) and a stubbed report button. |
 
@@ -38,7 +39,20 @@ not the story.
 | Cronometer | `com.cronometer.android` | APKMirror keeps returning Cloudflare 403 for our IP; likely RevenueCat/server-side anyway. |
 | RadarScope | `com.basevelocity.radarscope` | Paid app, not published on APKMirror — cannot obtain a base APK from our source. |
 | Google Maps | `com.google.android.apps.maps` | Skipped 2026-10-08 after research on 26.39.06. UI cleanup is client-side and anchorable (home category chips via `"AssistiveShortcutsRowLayout"`, Contribute tab via `id/contribute_tab_strip_button`, settings defaults via the `GmmSettings` boolean getter; promoted pins come from a separate `ListPromotedPinAds` RPC). The blocker: every backend call sends the API key with the runtime signing-cert SHA-1 (`X-Android-Cert`) plus DroidGuard/PO-token attestation, and sign-in uses first-party OAuth scopes, so a re-signed build is expected to lose search/directions/data. Other bundles get around this by sending Google's own certificate, which this bundle won't do. Not runtime-tested. |
+| CCleaner | `com.piriform.ccleaner` | Checked 2026-10-10 on 26.16.1. No PairIP. Ads come from ~15 SDKs (ironSource, AppLovin, Unity, GMA, Vungle and more). The Pro state lives in the obfuscated Avast Cleaner code (4,052 app methods, most renamed `o.?`) with Play Billing and Avast account strings, and no clear local getter has been found. Deep dive needed. |
+| Sygic | `com.sygic.aura` | Checked 2026-10-10 on 26.6.1 (split base). No PairIP. The dex has one app class, so the navigation logic is native and the ad and premium checks are not in Java. Native deep dive needed. |
+| iHeartRadio | `com.clearchannel.iheartradio.controller` | Checked 2026-10-10 on 10.67.0. No PairIP. Ships a native anti-tamper library (`libairshield_light_mbed_jni`). Premium is subscription-based. Likely blocked. |
+| Flipboard | `flipboard.app` | Checked 2026-10-10 on 4.3.65 (split base). No PairIP. Ads arrive inside the server feed (`FeedItem.isNativeAd`, `isPromoted`, and similar), not behind one client gate. Needs feed filtering. |
 | FC Pro 2 | `com.undergroundcreative.footballchairmanpro2` | Attempt failed (v1.2.2, 2026-09-19). Commercial app shield: game logic is encrypted web assets (`www/js/min-122.js`) decrypted by a native loader the shield extracts at runtime, strings are natively encrypted, a re-signed build dies in the native integrity check before any dex patch runs, and live updates can replace local code. Unpacking the shield is a research project. |
+| YouCut | `com.camerasideas.trimmer` | Issue #44, 2026-10-09. The Pro gate IS client-side and forceable (`store/billing/d.d(Context)Z`, holds "SubscribePro"/"com.camerasideas.trimmer.vip" → `returnEarly(true)`), but any re-signed build self-kills: `libisvideoengine.so` `JNI_OnLoad` (@arm64 `0x633f8`) calls a gate (`0x6f744`) that runs `kill(getpid(), 9)` unless a native signing-cert verify (`0x70d1c`, uses `android/content/pm/Signature`, `CertificateFactory`) and an anti-debug check (`0x714f8`, `xposed.isDebug`/`VMDebug`) both pass. Fires at library load on any main-page action that loads the video engine (gear/new project/templates/AI) — SIGKILL, no Java exception, confirmed on the re-signed STOCK (unpatched) build too. Decoys: `check_package_name` returns 1 (dead code), and `com.cer.CerChecker`/`libcer` is unrelated (forcing its wrappers to 0 did nothing). Only fix is a native `.so` patch (NOP the single `bl kill@plt` @arm64 `0x6f79c` in both arm64-v8a and armeabi-v7a), which Morphe's bytecodePatch/resourcePatch model can't emit. Revisit if the engine gains native-lib patching. The prior shipped "Enable Pro" patch was bytecode-verified only, never runtime-tested, so it crashed from the start. |
+
+## Blocked by PairIP VM and native tamper check (2026-10-10)
+
+| App | Package | Why |
+|---|---|---|
+| Zedge | `net.zedge.android` | 9.40.1 (APKPure XAPK, full split set). PairIP with `LicenseClient`, `StartupLauncher` → `VMRunner`, `SignatureCheck.verifyIntegrity` (signing-cert hash check) and 67 encrypted VM assets. Public bypasses either cover only the license layer (`pairip-disabler` exits on `VMRunner`) or need the `libpairipcore` tamper check and the zip-CRC step, which a bytecode patch can't emit. Same blocker as AZ Screen Recorder. |
+| Xplore File Manager | `com.lonelycatgames.Xplore` | 4.49.10. PairIP `VMRunner` + `libpairipcore.so` + 183 encrypted assets. App and Pro-gate names are obfuscated and the gate was not located. Same blocker as Zedge. |
+| Lose It! | `com.fitnow.loseit` | 18.5.401 (APKPure, split base). Full PairIP stack: `LicenseClient`, `StartupLauncher` → `VMRunner`, `SignatureCheck`, `VmDecryptor`, 1,069 encrypted assets. RevenueCat entitlements on top. Same blocker as Zedge. |
 
 ## Removed at the owner's request
 
@@ -60,7 +74,6 @@ Re-anchored and bytecode-verified on 2026-09-18 (removed from this table):
 
 Re-anchored and bytecode-verified on 2026-10-07:
 - Brave Origin 1.96.61 (two reworded log anchors now matched by prefix)
-- YouCut 1.721.1224 (R8 swapped the billing classes; gate now found by shape + "SubscribePro"/"com.camerasideas.trimmer.vip" strings)
 - Bluecoins 13.1.149 (fully R8-obfuscated, BillingDomainManager and kotlinx flow names gone; premium flow now forced at the "Startup: Encryption: Premium is" emit and the Google Play version-override combine)
 - BoxBox 5.4.16 (dead launchBillingFlow step removed; Firebase Analytics kill re-anchored on the measurement logEvent(String,String,Bundle,Z,Z,J) shape — both steps had silently matched nothing since 5.4.9)
 

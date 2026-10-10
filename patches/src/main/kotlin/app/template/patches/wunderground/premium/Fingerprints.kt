@@ -19,3 +19,12 @@ object IsAdsFreeV2UserFingerprint : Fingerprint(
     definingClass = "Lcom/wunderground/android/weather/app/WUApplication;",
     name = "isAdsFreeV2User",
 )
+
+// FeatureManager reads the raw Airlock feature "ads.Ad Free" (not the getters above) to decide
+// whether to start the ad SDKs (AdsManager, AdSlotsConfigurationManager, Amazon preloader). Airlock
+// recalculates that feature on every launch from the billing state, so without this gate the ads
+// return after a few opens.
+object InitAdManagersFingerprint : Fingerprint(
+    definingClass = "Lcom/wunderground/android/weather/app/features/FeatureManager;",
+    name = "initAdManagers",
+)

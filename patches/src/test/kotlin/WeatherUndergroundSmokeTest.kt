@@ -43,5 +43,9 @@ class WeatherUndergroundSmokeTest {
             klass("Lcom/wunderground/android/weather/app/WUApplication;").method("isAdsFreeV2User"),
             expected = true, label = "WUApplication.isAdsFreeV2User()",
         )
+        assertReturnsEarlyVoid(
+            klass("Lcom/wunderground/android/weather/app/features/FeatureManager;").method("initAdManagers"),
+            label = "FeatureManager.initAdManagers()",
+        )
     }
 }
