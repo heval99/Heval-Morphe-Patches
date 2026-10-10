@@ -1,3 +1,9 @@
+## [1.13.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.13.0-dev.2...v1.13.0-dev.3) (2026-10-10)
+
+### ✨ New Features
+
+* **bizcal:** add Disable ads patch for Business Calendar 2 ([0609468](https://github.com/heval99/Heval-Morphe-Patches/commit/060946866387952240802930d89d80ea241d1063))
+
 ## [1.13.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.13.0-dev.1...v1.13.0-dev.2) (2026-10-10)
 
 ### ✨ New Features

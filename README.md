@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.13.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.13.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**41** apps&nbsp;&nbsp;•&nbsp;&nbsp;**57** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-10
+> **[v1.13.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.13.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**42** apps&nbsp;&nbsp;•&nbsp;&nbsp;**58** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-10
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -54,6 +54,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-2979FF?style=flat-square" height="14" alt=""> | **Bluecoins** | 💎 1 | `13.1.149` <sub>+1 older</sub> | APK |
 | <img src="https://img.shields.io/badge/-%20-FF0000?style=flat-square" height="14" alt=""> | **BoxBox** | 🚫 🛡️ 💎 3 | `5.4.16` <sub>+1 older</sub> | APKM |
 | <img src="https://img.shields.io/badge/-%20-FF4500?style=flat-square" height="14" alt=""> | **Brave Browser** | 🚫 🛡️ 💎 🔕 🧪 4 | `1.97.56` <sub>+2 older</sub> | APKM |
+| <img src="https://img.shields.io/badge/-%20-009688?style=flat-square" height="14" alt=""> | **Business Calendar 2** | 🚫 1 | `2.55.5` | APK |
 | <img src="https://img.shields.io/badge/-%20-F44336?style=flat-square" height="14" alt=""> | **Castbox** | 🚫 1 | `11.26.1` | APK |
 | <img src="https://img.shields.io/badge/-%20-00ACFF?style=flat-square" height="14" alt=""> | **EasyNotes** | 🚫 💎 2 | `1.3.63.0921` <sub>+1 older</sub> | APKM |
 | <img src="https://img.shields.io/badge/-%20-2196F3?style=flat-square" height="14" alt=""> | **FairEmail** | 💎 1 | `1.2338` <sub>+1 older</sub> | APK |
@@ -174,6 +175,16 @@ Verified on: `1.97.56`, `1.96.61`, `1.95.104`
 | 🚫 **Disable ads** 🧪 | Experimental: hides sponsored new tab images (including full-page takeovers) and the "Earn BAT for viewing ads" Rewards signup popup. | ➖ |
 | 🛡️ **Disable telemetry** 🧪 | Experimental: turns off P3A analytics and the usage ping on every start (overriding the in-app switches), stops crash report uploads and drops the install-referrer attribution code. | ➖ |
 | 🔕 **Hide promotional prompts** 🧪 | Experimental: stops the recurring "Set Brave as default browser" dialog, the "Rate Brave" dialog and card, retention and Rewards promo notifications, the search widget promo and the VPN card in Settings. | ➖ |
+
+</details>
+<details>
+<summary><b>Business Calendar 2</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.appgenix.bizcal</code></summary>
+
+Verified on: `2.55.5`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Turns off Business Calendar 2's ad-serving gate, so the mediation SDKs never start and no interstitial is shown. Pro features are not changed. | ✅ |
 
 </details>
 <details>
