@@ -25,6 +25,7 @@ not the story.
 |---|---|---|
 | ZArchiver | `ru.zdevs.zarchiver` | 1.0.10 has no ad SDK and no billing/pro path in the dex. |
 | Retro Music | `code.name.monkey.retromusic` | FOSS: no ads, no paid tier. |
+| Infinity for Reddit (free) | `ml.docilealligator.infinityforreddit` | Checked 2026-10-11 on 7.4.1 (split base). No PairIP and no ad SDK in the dex (no GMA, AppLovin, Unity, Vungle, Facebook or InMobi). The "Subscribe" classes are Reddit subreddit subscriptions. Only 9 Play Billing references and no readable Plus gate. Paid Infinity+ is the separate `.plus` listing, which another bundle covers. |
 | Brave (Playlist, News, Wallet, Search, Talk) | `com.brave.browser` | Checked 2026-10-07 on 1.96.61: no paywall code in the app; Search and Talk premium are web-account features. Brave Origin is the only premium-style Brave patch; ads, telemetry and promo prompts ship as experimental patches. |
 | Device Info HW | `ru.andr7e.deviceinfohw` | 5.27.1 free has no ad SDK (zero ad strings in the dex), no billing client and no pro gate: no license checker, no pro preference, no pro-package presence check. Pro is a separate paid listing (`ru.andr7e.deviceinfohw.pro`) with its own build; the free build's only "pro" surfaces are an upsell menu item (Play Store link) and a stubbed report button. |
 
