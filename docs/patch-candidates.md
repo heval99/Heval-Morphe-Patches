@@ -90,5 +90,5 @@ Tier 1 progress, all checked against the latest APKMirror builds:
 | ACR Phone | Parked - readable billing prefs bridge but the premium computation is obfuscated and a periodic purchase-refresh worker can overwrite cached state |
 | Car Scanner ELM OBD2 | Parked - fully obfuscated app code, no RevenueCat; billing path not located yet |
 | JuiceSSH | Parked - purchases stored in an ORMLite `purchase` table, premium gate in obfuscated code |
-| Business Calendar 2 | Parked - obfuscated app code; premium check not located yet |
+| Business Calendar 2 | **Patched 2026-10-11** - "Disable ads" (readable app code; `AdsUtil.showAdsForUser(Context)` gates the mediation SDK start and interstitials). Pro untouched |
 
