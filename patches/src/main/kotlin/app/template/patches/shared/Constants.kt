@@ -675,6 +675,19 @@ object Constants {
         targets = listOf(AppTarget(version = "10.7", versionCode = 1007000))
     )
 
+    // Verified 2026-10-10 against com.foobnix.pdf.reader 9.4.20 (versionCode 7175) from APKPure.
+    // No PairIP and no billing library in the free app. Ads are Google Mobile Ads, gated by
+    // AppsConfig.isShowAdsInApp(Context) (MobileAds init, interstitial/banner/reward checks) and
+    // ADS.isRewardActivated() (the interstitial, banner and reward show paths). The Pro build is a
+    // separate paid listing, so this patch is ads-only.
+    val COMPATIBILITY_LIBRERA = Compatibility(
+        name = "Librera",
+        packageName = "com.foobnix.pdf.reader",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x1E88E5,
+        targets = listOf(AppTarget(version = "9.4.20", versionCode = 7175))
+    )
+
     // Verified 2026-09-29 against com.streema.simpleradio 6.2.0 (versionCode 872,
 
     // APKPure universal). App code is not obfuscated. Premium state is entirely local:
