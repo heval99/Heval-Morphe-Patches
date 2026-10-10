@@ -636,28 +636,11 @@ object Constants {
         targets = listOf(AppTarget(version = "3.26", versionCode = 57))
     )
 
-    // Verified 2026-09-28 against com.camerasideas.trimmer 1.716.1222 (versionCode 1222)
-    // from APKMirror. The billing code keeps readable names: the central subscribed
-    // check is `store/billing/c.d(Context)`, which reads the "SubscribePro" preference
-    // and falls back to the "com.camerasideas.trimmer.vip" purchase flag. It gates the
-    // export/watermark flow, template unlocks, the ads manager and the paywall, so
-    // forcing it true unlocks Pro everywhere including watermark-free export.
-    // Re-anchored 2026-10-07 for 1.721.1224 (versionCode 1224): R8 moved the check to
-    // `store/billing/d.d(Context)` (BillingPreferences), which broke the old class+name pin.
-    // The fingerprint now matches by shape only - public static (Context)Z holding both the
-    // "SubscribePro" and "com.camerasideas.trimmer.vip" keys - which resolves to exactly one
-    // method in both 1.716.1222 and 1.721.1224 (smali checked). 1.721 adds fup/redeem and
-    // Huawei checks to the body, but any hit still returns true, so returnEarly(true) holds.
-    val COMPATIBILITY_YOUCUT = Compatibility(
-        name = "YouCut",
-        packageName = "com.camerasideas.trimmer",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0xFF5722,
-        targets = listOf(
-            AppTarget(version = "1.716.1222", versionCode = 1222),
-            AppTarget(version = "1.721.1224", versionCode = 1224),
-        )
-    )
+    // YouCut (com.camerasideas.trimmer) removed 2026-10-09 (issue #44): see
+    // docs/patch-blocklist.md. The Pro gate is client-side and forceable, but every
+    // re-signed build self-kills via a native signing-cert + anti-debug SIGKILL gate in
+    // libisvideoengine.so JNI_OnLoad, which a bytecode/resource patch cannot neutralise.
+    // Revisit only if the engine gains native-lib patching.
 
     // Verified 2026-10-06 against com.flyersoft.moonreader 10.7 (versionCode 1007000,
     // universal APK from APKPure). All ads run through the app's own unobfuscated ad
