@@ -1,3 +1,9 @@
+## [1.12.1-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.12.1-dev.1...v1.12.1-dev.2) (2026-10-10)
+
+### 🐛 Bug Fixes
+
+* **wunderground:** stop ads returning after a few launches (issue [#45](https://github.com/heval99/Heval-Morphe-Patches/issues/45)) ([32c6094](https://github.com/heval99/Heval-Morphe-Patches/commit/32c60944c5083c23e31da3c153019b963a090a50))
+
 ## [1.12.1-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.12.0...v1.12.1-dev.1) (2026-10-10)
 
 ### 🐛 Bug Fixes
