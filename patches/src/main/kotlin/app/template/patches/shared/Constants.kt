@@ -702,6 +702,19 @@ object Constants {
         targets = listOf(AppTarget(version = "26.06.0", versionCode = 70004221))
     )
 
+    // Verified 2026-10-11 against com.appgenix.bizcal 2.55.5 (versionCode 255501) from the
+    // existing apks/bizcal/base.apk. Single APK, no PairIP. The app's own code is readable.
+    // AdsUtil.showAdsForUser(Context) is the one user-level ad gate: it guards the mediation SDK
+    // start (StoreUtil.initializeMobileAds, Fyber/Chartboost/AppLovin/Vungle/Facebook/InMobi/Unity)
+    // and the interstitial preload and show path. Pro (ProUtil) is untouched: ads only.
+    val COMPATIBILITY_BUSINESSCALENDAR = Compatibility(
+        name = "Business Calendar 2",
+        packageName = "com.appgenix.bizcal",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x009688,
+        targets = listOf(AppTarget(version = "2.55.5", versionCode = 255501))
+    )
+
     // Verified 2026-09-29 against com.streema.simpleradio 6.2.0 (versionCode 872,
 
     // APKPure universal). App code is not obfuscated. Premium state is entirely local:
