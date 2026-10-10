@@ -463,7 +463,9 @@ object Constants {
     // Verified 2026-09-17 against com.wunderground.android.weather 6.20.1
     // (versionCode 2019070035) from APKPure. The ad-free purchase is evaluated locally by the
     // Adobe Airlock SDK ("ads.Ad Free" entitlement); the getters in AirlockValueUtil,
-    // PremiumHelper and WUApplication are unobfuscated.
+    // PremiumHelper and WUApplication are unobfuscated. FeatureManager.initAdManagers() reads the
+    // raw Airlock feature and starts the ad SDKs, so it is also neutered (2026-10-10, issue #45:
+    // ads came back after a few launches when only the getters were forced).
     val COMPATIBILITY_WUNDERGROUND = Compatibility(
         name = "Weather Underground",
         packageName = "com.wunderground.android.weather",
