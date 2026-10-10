@@ -1,3 +1,10 @@
+## [1.12.1-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.12.0...v1.12.1-dev.1) (2026-10-10)
+
+### 🐛 Bug Fixes
+
+* **iptv:** stop Disable ads crashing on launch (issue [#35](https://github.com/heval99/Heval-Morphe-Patches/issues/35)) ([404d909](https://github.com/heval99/Heval-Morphe-Patches/commit/404d909f4c8fb7d976c8182bb8592f62f537021c))
+* **youcut:** drop patch — native integrity kill-gate is unpatchable (issue [#44](https://github.com/heval99/Heval-Morphe-Patches/issues/44)) ([f4dd4c9](https://github.com/heval99/Heval-Morphe-Patches/commit/f4dd4c9926253be605dcbab2fad2408e6e145a46))
+
 ## [1.12.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.11.0...v1.12.0) (2026-10-08)
 
 ### 🐛 Bug Fixes

@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.12.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.12.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;**40** apps&nbsp;&nbsp;•&nbsp;&nbsp;**56** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-08
+> **[v1.12.1-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.12.1-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**39** apps&nbsp;&nbsp;•&nbsp;&nbsp;**55** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-10
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -85,7 +85,6 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-2962FF?style=flat-square" height="14" alt=""> | **Unified Remote** | 💎 1 | `3.25.1` | APK |
 | <img src="https://img.shields.io/badge/-%20-1565C0?style=flat-square" height="14" alt=""> | **Weather Underground** | 🚫 1 | `6.20.1` | APK |
 | <img src="https://img.shields.io/badge/-%20-00ACC1?style=flat-square" height="14" alt=""> | **WiFi Analyzer** | 🚫 1 | `3.10.5-L` | APK |
-| <img src="https://img.shields.io/badge/-%20-FF5722?style=flat-square" height="14" alt=""> | **YouCut** | 💎 1 | `1.721.1224` <sub>+1 older</sub> | APKM |
 
 ### 🔍 Patch details
 
@@ -493,16 +492,6 @@ Verified on: `3.10.5-L`
 | Patch | What it does | Default |
 |---|---|:-:|
 | 🚫 **Disable ads** | Disables the banner ad. | ✅ |
-
-</details>
-<details>
-<summary><b>YouCut</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.camerasideas.trimmer</code></summary>
-
-Verified on: `1.721.1224`, `1.716.1222`
-
-| Patch | What it does | Default |
-|---|---|:-:|
-| 💎 **Enable Pro** | Unlocks YouCut Pro: watermark-free export and all paid features. | ✅ |
 
 </details>
 
