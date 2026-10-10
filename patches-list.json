@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.12.1-dev.2",
+  "version": "1.13.0-dev.1",
   "patches": [
     {
       "name": "Block marketing notifications",
@@ -462,6 +462,37 @@
                 "ARMEABI_V7A": 5010,
                 "X86_64": 5010,
                 "X86": 5010
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
+      "description": "Disables Librera's banner, interstitial and rewarded ads by reporting ads as switched off and the reward window as open, so the Google Mobile Ads SDK never starts.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.foobnix.pdf.reader",
+          "name": "Librera",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#1E88E5",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "9.4.20",
+              "versionCodes": {
+                "ARM64_V8A": 7175,
+                "ARMEABI_V7A": 7175,
+                "X86_64": 7175,
+                "X86": 7175
               },
               "isExperimental": false,
               "minSdk": null,

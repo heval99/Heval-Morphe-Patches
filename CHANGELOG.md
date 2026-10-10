@@ -1,3 +1,9 @@
+## [1.13.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.12.1-dev.2...v1.13.0-dev.1) (2026-10-10)
+
+### ✨ New Features
+
+* **librera:** add Disable ads patch ([f1c4655](https://github.com/heval99/Heval-Morphe-Patches/commit/f1c4655a6e130084fe46fb1eaaaae2e84d697eee))
+
 ## [1.12.1-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.12.1-dev.1...v1.12.1-dev.2) (2026-10-10)
 
 ### 🐛 Bug Fixes

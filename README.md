@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.12.1-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.12.1-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**39** apps&nbsp;&nbsp;•&nbsp;&nbsp;**55** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-10
+> **[v1.13.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.13.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**40** apps&nbsp;&nbsp;•&nbsp;&nbsp;**56** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-10
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -64,6 +64,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-1976D2?style=flat-square" height="14" alt=""> | **IPTV** | 🚫 💎 2 | `9.1.25` | APKM |
 | <img src="https://img.shields.io/badge/-%20-FF6D00?style=flat-square" height="14" alt=""> | **jetAudio** | 💎 1 | `13.1.2` | APK |
 | <img src="https://img.shields.io/badge/-%20-406C5C?style=flat-square" height="14" alt=""> | **LibrePods** | 💎 1 | `1.0.0-rc1-play` | APKM |
+| <img src="https://img.shields.io/badge/-%20-1E88E5?style=flat-square" height="14" alt=""> | **Librera** | 🚫 1 | `9.4.20` | APK |
 | <img src="https://img.shields.io/badge/-%20-C8102E?style=flat-square" height="14" alt=""> | **Livescore** | 🚫 1 | `10.2.1` <sub>+1 older</sub> | APK |
 | <img src="https://img.shields.io/badge/-%20-8BC34A?style=flat-square" height="14" alt=""> | **Monefy** | 💎 1 | `1.22.11` | APK |
 | <img src="https://img.shields.io/badge/-%20-283593?style=flat-square" height="14" alt=""> | **Moon+ Reader** | 🚫 1 | `10.7` | APK |
@@ -274,6 +275,16 @@ Verified on: `1.0.0-rc1-play`
 | Patch | What it does | Default |
 |---|---|:-:|
 | 💎 **Enable Premium** | Unlocks the 'Advanced device settings' features (Personalized Volume, Adaptive Audio, accessibility configs, hearing protection, etc.) that LibrePods gates behind the Play Store 'Unlock advanced features' one-time purchase. The patch forces the premium entitlement (PlayBillingProvider's _isPremium StateFlow) to always be true. | ✅ |
+
+</details>
+<details>
+<summary><b>Librera</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.foobnix.pdf.reader</code></summary>
+
+Verified on: `9.4.20`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Disables Librera's banner, interstitial and rewarded ads by reporting ads as switched off and the reward window as open, so the Google Mobile Ads SDK never starts. | ✅ |
 
 </details>
 <details>
