@@ -41,7 +41,7 @@ test + decompile-verify.
 | App | Package | Latest seen | Notes |
 |---|---|---|---|
 | Device Info HW | `ru.andr7e.deviceinfohw` | 5.27.1 | **Blocked 2026-09-29** - no Pro boolean exists in this build; see blocklist |
-| Xplore File Manager | `com.lonelycatgames.Xplore` | 4.49.10 | Pro features via its own license scheme - needs triage. Still uncovered 2026-10-06 |
+| Xplore File Manager | `com.lonelycatgames.Xplore` | 4.49.10 | **Blocked 2026-10-10** - PairIP VM + native tamper check; see blocklist |
 
 ## Also covered by other bundles (informational, not a blocker)
 
