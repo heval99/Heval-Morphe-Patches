@@ -1,9 +1,9 @@
 package app.template.patches.easylauncher.misc.reminder
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.template.patches.shared.Constants.COMPATIBILITY_EASYLAUNCHER
+import app.template.patches.shared.addInstructionsChecked
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -54,7 +54,7 @@ val disableDefaultLauncherReminderPatch = bytecodePatch(
             val moveResult = instructions.getOrNull(check + 1)
                 ?.takeIf { it.opcode == Opcode.MOVE_RESULT } as? OneRegisterInstruction
                 ?: throw PatchException("The role-held check in $definingClass.$name is not followed by move-result")
-            addInstructions(check + 2, "const/4 v${moveResult.registerA}, 0x1")
+            addInstructionsChecked(check + 2, "const/4 v${moveResult.registerA}, 0x1")
         }
     }
 }

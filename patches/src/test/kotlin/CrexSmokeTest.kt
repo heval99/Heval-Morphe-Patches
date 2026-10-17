@@ -36,7 +36,7 @@ class CrexSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.10.06",
+            version = "26.10.07",
             patchNames = setOf("Enable Premium", "Disable ads"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )

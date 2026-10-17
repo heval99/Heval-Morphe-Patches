@@ -185,7 +185,23 @@ fun gmsCoreSupportPatch(
                 )
             }
             googlePlayUtility?.returnEarly(0)
-            ServiceCheckFingerprint.methodOrNull?.returnEarly()
+            // Same rule for the ensurePlayServicesAvailable helper: optional, but a void method
+            // holding its message means the library has it, so a miss fails instead of no-opping
+            // (the old shape missed it in Sofascore and 365Scores without a sound).
+            val serviceCheck = ServiceCheckFingerprint.methodOrNull
+            if (serviceCheck == null && classDefByStrings(SERVICE_CHECK_MESSAGE).any { classDef ->
+                    classDef.methods.any { method ->
+                        method.returnType == "V" && method.implementation?.instructions?.any {
+                            ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == SERVICE_CHECK_MESSAGE
+                        } == true
+                    }
+                }
+            ) {
+                throw PatchException(
+                    "play-services-basement is present but ensurePlayServicesAvailable(Context[, int]) was not found",
+                )
+            }
+            serviceCheck?.returnEarly()
 
             disableFrameworkCredentialProvider()
             routeGoogleIdRequestsToBeginSignIn()

@@ -1,13 +1,13 @@
 package app.template.patches.truecaller.premium
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_TRUECALLER
+import app.template.patches.shared.addInstructionsWithLabelsChecked
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
@@ -55,7 +55,7 @@ val enablePremiumPatch = bytecodePatch(
         }
         FeatureAvailableFingerprint.method.apply {
             // p1 is the feature; v0 is a local the method writes before reading.
-            addInstructionsWithLabels(
+            addInstructionsWithLabelsChecked(
                 0,
                 SERVER_BACKED_FEATURES.joinToString("\n") { feature ->
                     """

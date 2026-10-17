@@ -6,6 +6,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_EASYLAUNCHER
+import app.template.patches.shared.addInstructionsChecked
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -111,7 +112,7 @@ val disableTelemetryPatch = bytecodePatch(
             if (moveResult == null || guard == null || guard.registerA != moveResult.registerA) {
                 throw PatchException("$definingClass.<init> no longer guards on the write key length")
             }
-            addInstructions(lengthCall + 2, "const/4 v${moveResult.registerA}, 0x0")
+            addInstructionsChecked(lengthCall + 2, "const/4 v${moveResult.registerA}, 0x0")
         }
 
         // 4. Singular: init reports failure without starting the SDK. The caller only logs the

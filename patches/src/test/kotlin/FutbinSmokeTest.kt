@@ -38,7 +38,7 @@ class FutbinSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "27.06",
+            version = "27.08",
             patchNames = setOf("Disable ads"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )

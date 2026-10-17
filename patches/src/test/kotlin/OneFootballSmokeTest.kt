@@ -25,7 +25,7 @@ class OneFootballSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "15.145.0",
+            version = "15.146.0",
             patchNames = setOf("Disable ads"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )

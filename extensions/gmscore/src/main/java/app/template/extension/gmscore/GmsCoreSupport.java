@@ -77,8 +77,8 @@ public final class GmsCoreSupport {
                 Log.i(TAG, "MicroG RE is not installed or disabled");
 
                 String message = isInstalledAndEnabled(packageManager, VANCED_MICROG_PACKAGE)
-                        ? "This patched app needs MicroG RE for Google sign-in. Vanced MicroG does not work with it."
-                        : "MicroG RE is not installed. This patched app needs it for Google sign-in.";
+                        ? "This patched app needs MicroG RE for Google sign-in and notifications. Vanced MicroG does not work with it."
+                        : "MicroG RE is not installed. This patched app needs it for Google sign-in and notifications.";
                 // A toast, not a dialog: it still shows if the app fails to finish starting.
                 Toast.makeText(activity.getApplicationContext(), message, Toast.LENGTH_LONG).show();
                 runDelayed(() -> openDownloadPage(activity));
@@ -122,8 +122,8 @@ public final class GmsCoreSupport {
 
             new AlertDialog.Builder(activity)
                     .setTitle("MicroG RE")
-                    .setMessage("MicroG RE is restricted by battery optimisation, so Google sign-in "
-                            + "and sync can fail in the background. Allow MicroG RE to run "
+                    .setMessage("MicroG RE is restricted by battery optimisation, so Google sign-in, "
+                            + "sync and notifications can fail in the background. Allow MicroG RE to run "
                             + "without restrictions?")
                     .setPositiveButton("Continue", (dialog, which) -> openBatteryOptimizationSettings(activity))
                     .setNegativeButton("Not now", null)

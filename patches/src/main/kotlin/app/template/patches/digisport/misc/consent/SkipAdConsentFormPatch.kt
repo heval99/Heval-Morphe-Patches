@@ -4,6 +4,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.template.patches.shared.Constants.COMPATIBILITY_DIGISPORT
+import app.template.patches.shared.addInstructionsChecked
 
 // The binding's root field: data binding stores bindings[0] (the include's root view) as mboundView0.
 private const val ROOT_FIELD = "mboundView0"
@@ -44,7 +45,7 @@ val skipAdConsentFormPatch = bytecodePatch(
         val executeBindings = UserDataAdsExecuteBindingsFingerprint.method
         val root = UserDataAdsExecuteBindingsFingerprint.classDef.fields.singleOrNull { it.name == ROOT_FIELD }
             ?: throw PatchException("Skip ad consent form: $USER_DATA_ADS_BINDING has no $ROOT_FIELD field")
-        executeBindings.addInstructions(
+        executeBindings.addInstructionsChecked(
             0,
             """
                 iget-object v0, p0, $USER_DATA_ADS_BINDING->$ROOT_FIELD:${root.type}

@@ -14,6 +14,7 @@ import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_BRAVE
+import app.template.patches.shared.addInstructionsChecked
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -180,7 +181,7 @@ val braveOriginPatch = bytecodePatch(
         val validCheckIndex = q4Fingerprint.instructionMatches.first().index
         val resultReg = q4Fingerprint.method
             .getInstruction<OneRegisterInstruction>(validCheckIndex + 1).registerA
-        q4Fingerprint.method.addInstructions(validCheckIndex + 2, "const/4 v$resultReg, 0x0")
+        q4Fingerprint.method.addInstructionsChecked(validCheckIndex + 2, "const/4 v$resultReg, 0x0")
 
         // ── 6b. Origin preferences setup: disable restart prompt loop ────────────────
         val q4RestartPromptFingerprint = Fingerprint(

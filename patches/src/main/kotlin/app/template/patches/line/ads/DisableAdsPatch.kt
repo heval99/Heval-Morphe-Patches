@@ -11,6 +11,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.getReference
 import app.template.patches.shared.Constants.COMPATIBILITY_LINE
+import app.template.patches.shared.addInstructionsChecked
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -52,7 +53,7 @@ val disableAdsPatch = bytecodePatch(
                     throw PatchException("$operation receive branch has no op-name string")
                 }
                 val register = (name as OneRegisterInstruction).registerA
-                addInstructions(
+                addInstructionsChecked(
                     nameIndex + 1,
                     """
                         const/4 v$register, 0x0

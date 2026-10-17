@@ -32,7 +32,7 @@ class Scores365SmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "14.9.6",
+            version = "14.9.7",
             patchNames = setOf(
                 "Disable ads", "Enable Premium", "Disable update prompts", "GmsCore support", "Spoof signature",
             ),

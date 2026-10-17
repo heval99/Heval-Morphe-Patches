@@ -42,11 +42,25 @@ internal object GooglePlayUtilityFingerprint : Fingerprint(
     },
 )
 
-// A static (Context, int) helper that throws "Google Play Services not available" when the
-// availability check fails. Present in Google's own apps; returned early when found. No access
-// flags, for the same R8 reason as above.
+// GooglePlayServicesUtilLight.ensurePlayServicesAvailable(Context, int): throws "Google Play
+// Services not available" when the availability check fails; returned early. Upstream expects
+// (Context, int), but R8 reorders or drops the constant version parameter: Truecaller 26.40.5 and
+// Gmail keep (Context, int), 365Scores 14.9.6 has "a(int, Context)" and Sofascore 26.09.28 and
+// 26.10.05 have "a(Context)" with the version inlined. The old (L, I) shape missed the last two, so
+// the hook silently did nothing there (2026-10-17). Any of the three shapes matches now. No access
+// flags, for the same R8 reason as above. Gmail also holds the message in a non-void
+// ListenableFuture method, which the return type excludes.
+internal const val SERVICE_CHECK_MESSAGE = "Google Play Services not available"
+
+/** True for (Context), (Context, int) and (int, Context). */
+internal fun isServiceCheckParameters(parameterTypes: List<CharSequence>) =
+    parameterTypes.map(CharSequence::toString).sorted() in listOf(
+        listOf("Landroid/content/Context;"),
+        listOf("I", "Landroid/content/Context;"),
+    )
+
 internal object ServiceCheckFingerprint : Fingerprint(
     returnType = "V",
-    parameters = listOf("L", "I"),
-    strings = listOf("Google Play Services not available"),
+    strings = listOf(SERVICE_CHECK_MESSAGE),
+    custom = { method, _ -> isServiceCheckParameters(method.parameterTypes) },
 )

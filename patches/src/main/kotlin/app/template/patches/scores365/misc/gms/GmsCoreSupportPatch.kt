@@ -14,7 +14,7 @@ import app.template.patches.shared.misc.gms.gmsCoreSupportPatch
 val gmsCoreSupportPatch = gmsCoreSupportPatch(
     fromPackageName = "com.scores365",
     // SHA-1 of the Play Store signing certificate, read from the v2/v3 signature block of the
-    // APKMirror 14.9.6 bundle (the merged APK's block no longer verifies, the certificate is intact).
+    // APKMirror 14.9.6 and 14.9.7 bundles (the merged APK's block no longer verifies, the certificate is intact).
     spoofedPackageSignature = "47f994bd2eac89f4aeea0aa1d95cb3ba3ec3f1a1",
     mainActivityOnCreateFingerprint = SplashOnCreateFingerprint,
     compatibility = COMPATIBILITY_365SCORES,

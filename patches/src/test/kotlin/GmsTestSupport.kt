@@ -1,4 +1,6 @@
 import app.template.patches.shared.misc.gms.GOOGLE_SIGNATURE_INVALID_WARNING
+import app.template.patches.shared.misc.gms.SERVICE_CHECK_MESSAGE
+import app.template.patches.shared.misc.gms.isServiceCheckParameters
 import app.template.patches.shared.misc.gms.gmsContentUriReplacement
 import app.template.patches.shared.misc.gms.gmsStringReplacements
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -73,6 +75,15 @@ internal fun assertGmsCoreSupport(
     check(availability.size == 1) { "expected one isGooglePlayServicesAvailable, found ${availability.map { (c, m) -> "${c.type}.${m.name}" }}" }
     val (availabilityClass, availabilityMethod) = availability.single()
     assertReturnsInt(availabilityMethod, 0, "${availabilityClass.type}.${availabilityMethod.name} (isGooglePlayServicesAvailable)")
+
+    // ensurePlayServicesAvailable ((Context), (Context, int) or (int, Context)) returns at once.
+    val serviceChecks = classes.flatMap { cls -> cls.methods.map { cls to it } }.filter { (_, m) ->
+        m.returnType == "V" && isServiceCheckParameters(m.parameterTypes) &&
+            SERVICE_CHECK_MESSAGE in m.instructions().mapNotNull { it.stringOrNull() }
+    }
+    check(serviceChecks.size == 1) { "expected one ensurePlayServicesAvailable, found ${serviceChecks.map { (c, m) -> "${c.type}.${m.name}" }}" }
+    val (serviceCheckClass, serviceCheckMethod) = serviceChecks.single()
+    assertReturnsEarlyVoid(serviceCheckMethod, "${serviceCheckClass.type}.${serviceCheckMethod.name} (ensurePlayServicesAvailable)")
 
     // No GMS package / action / authority constant is left, and the ad SDK is untouched.
     val replacements = gmsStringReplacements()

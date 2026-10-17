@@ -10,6 +10,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutab
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.template.patches.shared.Constants.COMPATIBILITY_TRUECALLER
+import app.template.patches.shared.addInstructionsWithLabelsChecked
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
@@ -57,7 +58,7 @@ val hideMessagesTabPatch = bytecodePatch(
         SelectTabFingerprint.method.apply {
             // v0 is a local: the method has registers besides this, the type and the flag.
             if (implementation!!.registerCount <= 3) throw PatchException("$definingClass.$name has no local register")
-            addInstructionsWithLabels(
+            addInstructionsWithLabelsChecked(
                 0,
                 """
                     sget-object v0, $MESSAGES

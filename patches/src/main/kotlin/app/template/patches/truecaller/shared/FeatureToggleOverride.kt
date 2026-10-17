@@ -1,11 +1,11 @@
 package app.template.patches.truecaller.shared
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.methodCall
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.template.patches.shared.addInstructionsWithLabelsChecked
 
 private const val FEATURE_STATE = "Lcom/truecaller/featuretoggles/FeatureState;"
 
@@ -28,7 +28,7 @@ internal object FeatureToggleResolverFingerprint : Fingerprint(
 internal fun BytecodePatchContext.overrideFeatureToggle(key: String, value: Boolean) {
     FeatureToggleResolverFingerprint.method.apply {
         // p1 is the key (compared null-safely); v0 is a local the method writes before reading.
-        addInstructionsWithLabels(
+        addInstructionsWithLabelsChecked(
             0,
             """
                 const-string v0, "$key"

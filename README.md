@@ -40,29 +40,32 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.16.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.16.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;**67** apps&nbsp;&nbsp;•&nbsp;&nbsp;**165** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-17
+> **[v1.17.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.17.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**71** apps&nbsp;&nbsp;•&nbsp;&nbsp;**177** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-17
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
 ⚽ Sports & scores · 📰 News & finance · 💬 Messaging, email & calls · 🎵 Music, podcasts & radio · 📺 Video & TV · 📚 Books & reading · 🏋️ Health & fitness · 🗺️ Maps, weather & outdoors · 📝 Productivity & notes · 🌐 Browsers · 🏠 Launchers · 🛠️ Tools & utilities
 
-#### ⚽ Sports & scores <sub>14 apps</sub>
+#### ⚽ Sports & scores <sub>17 apps</sub>
 
 | | App | Patches | Latest verified | Type |
 |:-:|---|---|---|:-:|
-| <img src="https://img.shields.io/badge/-%20-FFC107?style=flat-square" height="14" alt=""> | **365Scores** | 🚫 💎 🔕 🧩 5 | `14.9.6` | APKM |
+| <img src="https://img.shields.io/badge/-%20-FFC107?style=flat-square" height="14" alt=""> | **365Scores** | 🚫 💎 🔕 🧩 5 | `14.9.7` | APKM |
+| <img src="https://img.shields.io/badge/-%20-F1FF00?style=flat-square" height="14" alt=""> | **433** | 🚫 🛡️ 🧪 2 | `2.3.548` | APKM |
 | <img src="https://img.shields.io/badge/-%20-00C853?style=flat-square" height="14" alt=""> | **AiScore** | 💎 🧩 2 | `4.3.2` | APKM |
 | <img src="https://img.shields.io/badge/-%20-2E7D32?style=flat-square" height="14" alt=""> | **BeSoccer** | 🚫 🔑 2 | `6.6.0` | APKM |
 | <img src="https://img.shields.io/badge/-%20-FF0000?style=flat-square" height="14" alt=""> | **BoxBox** | 🚫 🛡️ 💎 3 | `5.4.17` <sub>+2 older</sub> | APKM |
-| <img src="https://img.shields.io/badge/-%20-262626?style=flat-square" height="14" alt=""> | **CREX** | 🚫 💎 2 | `26.10.06` | APKM |
+| <img src="https://img.shields.io/badge/-%20-262626?style=flat-square" height="14" alt=""> | **CREX** | 🚫 💎 2 | `26.10.07` | APKM |
 | <img src="https://img.shields.io/badge/-%20-1D56A8?style=flat-square" height="14" alt=""> | **Digi Sport** | 🚫 🛡️ 💎 🔕 🧩 🧪 8 | `1.1.15` | APK |
+| <img src="https://img.shields.io/badge/-%20-000000?style=flat-square" height="14" alt=""> | **Eurosport** | 🚫 🛡️ 💎 3 | `8.33.0` | APKM |
 | <img src="https://img.shields.io/badge/-%20-1E88E5?style=flat-square" height="14" alt=""> | **Flashscore** | 🚫 🛡️ 🔕 🧩 6 | `26.10.2` | APKS |
 | <img src="https://img.shields.io/badge/-%20-00985F?style=flat-square" height="14" alt=""> | **FotMob** | 💎 1 | `238.17794.20261012` <sub>+4 older</sub> | APKM |
-| <img src="https://img.shields.io/badge/-%20-26A69A?style=flat-square" height="14" alt=""> | **Futbin** | 🚫 1 | `27.06` | APK |
-| <img src="https://img.shields.io/badge/-%20-C8102E?style=flat-square" height="14" alt=""> | **Livescore** | 🚫 1 | `10.3.1` | APK |
+| <img src="https://img.shields.io/badge/-%20-26A69A?style=flat-square" height="14" alt=""> | **Futbin** | 🚫 1 | `27.08` | APK |
+| <img src="https://img.shields.io/badge/-%20-0A1E32?style=flat-square" height="14" alt=""> | **L'Équipe** | 🚫 🧪 1 | `10.69.1` | APKM |
+| <img src="https://img.shields.io/badge/-%20-C8102E?style=flat-square" height="14" alt=""> | **Livescore** | 🚫 1 | `10.3.2` | APK |
 | <img src="https://img.shields.io/badge/-%20-0D47A1?style=flat-square" height="14" alt=""> | **OneCricket** | 🚫 1 | `26.08.01` | APKM |
-| <img src="https://img.shields.io/badge/-%20-00C853?style=flat-square" height="14" alt=""> | **OneFootball** | 🚫 1 | `15.145.0` <sub>+1 older</sub> | APKM |
-| <img src="https://img.shields.io/badge/-%20-384CF4?style=flat-square" height="14" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 7 | `26.09.28` | APKM |
+| <img src="https://img.shields.io/badge/-%20-00C853?style=flat-square" height="14" alt=""> | **OneFootball** | 🚫 1 | `15.146.0` | APKM |
+| <img src="https://img.shields.io/badge/-%20-384CF4?style=flat-square" height="14" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 9 | `26.10.05` | APKM |
 | <img src="https://img.shields.io/badge/-%20-6001D2?style=flat-square" height="14" alt=""> | **Yahoo Sports** | 🚫 💎 2 | `12.10.3` | APKM |
 
 #### 📰 News & finance <sub>5 apps</sub>
@@ -75,7 +78,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-052962?style=flat-square" height="14" alt=""> | **The Guardian** | 🚫 🛡️ 🧩 3 | `6.238.23405` | APKM |
 | <img src="https://img.shields.io/badge/-%20-000000?style=flat-square" height="14" alt=""> | **The Wall Street Journal** | 🚫 1 | `6.43.0.33886` | APK |
 
-#### 💬 Messaging, email & calls <sub>7 apps</sub>
+#### 💬 Messaging, email & calls <sub>8 apps</sub>
 
 | | App | Patches | Latest verified | Type |
 |:-:|---|---|---|:-:|
@@ -84,6 +87,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-2196F3?style=flat-square" height="14" alt=""> | **FairEmail** | 💎 1 | `1.2338` <sub>+1 older</sub> | APK |
 | <img src="https://img.shields.io/badge/-%20-FEE500?style=flat-square" height="14" alt=""> | **KakaoTalk** | 🚫 🛡️ 💎 🧩 11 | `26.8.3` | APKM |
 | <img src="https://img.shields.io/badge/-%20-06C755?style=flat-square" height="14" alt=""> | **LINE** | 🚫 🔕 🧩 17 | `26.15.1` | APKM |
+| <img src="https://img.shields.io/badge/-%20-283167?style=flat-square" height="14" alt=""> | **mail.com** | 🚫 🛡️ 🔕 🧩 4 | `9.18.3` | APKM |
 | <img src="https://img.shields.io/badge/-%20-5C6BC0?style=flat-square" height="14" alt=""> | **Textra** | 💎 1 | `4.87` <sub>+1 older</sub> | APKM |
 | <img src="https://img.shields.io/badge/-%20-0087FF?style=flat-square" height="14" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 16 | `26.40.5` | APKM |
 
@@ -180,7 +184,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 <details>
 <summary><b>365Scores</b> &nbsp;·&nbsp; 5 patches &nbsp;·&nbsp; <code>com.scores365</code></summary>
 
-Verified on: `14.9.6`
+Verified on: `14.9.7`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -189,6 +193,17 @@ Verified on: `14.9.6`
 | 💎 **Enable Premium** | Unlocks 365Scores premium features (ad-free, tipster, plus, delayed notifications and notification sounds). | ✅ |
 | 🧩 **GmsCore support** | Makes Google sign-in and Google APIs work in the patched app by using MicroG RE instead of Google Play services. Requires MicroG RE to be installed. | ➖ |
 | 🧩 **Spoof signature** | Makes the app report its original signing certificate to itself, so Firebase and Google APIs restricted to the original app keep working. | ➖ |
+
+</details>
+<details>
+<summary><b>433</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.football433</code></summary>
+
+Verified on: `2.3.548`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Removes banner, native, interstitial, rewarded and app-open ads. | ✅ |
+| 🛡️ **Disable telemetry** 🧪 | Disables Sentry crash and performance reports, UXCam session recording, Airship analytics and Branch attribution tracking. Push notifications and Branch deep links keep working; Airship in-app messages triggered by app events no longer show. | ✅ |
 
 </details>
 <details>
@@ -228,7 +243,7 @@ Verified on: `5.4.17`, `5.4.16`, `5.4.9`
 <details>
 <summary><b>CREX</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>in.cricketexchange.app.cricketexchange</code></summary>
 
-Verified on: `26.10.06`
+Verified on: `26.10.07`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -251,6 +266,18 @@ Verified on: `1.1.15`
 | 💎 **Hide promotions** | Hides the cross-promotion articles from other RCS&RDS apps below articles and the "Exclusive online · live" bar on Home. | ✅ |
 | 🧩 **Hide sponsored articles** | Hides sponsored articles in section listings and in the article widgets below an article. | ✅ |
 | 🧩 **Skip ad consent form** | Skips Google's ad consent form at startup and in the GDPR screens, and hides the then empty ad consent section in Settings. Use it together with Disable ads. | ✅ |
+
+</details>
+<details>
+<summary><b>Eurosport</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>com.eurosport</code></summary>
+
+Verified on: `8.33.0`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Removes the banner and in-feed ads, the ads in the Stories and Clips players and the pre-roll ads on free videos. Ads inserted into live and premium streams are part of the stream and stay. | ✅ |
+| 🛡️ **Disable telemetry** | Disables Adobe Analytics, AppsFlyer, Apptentive, Chartbeat, Comscore, Crashlytics, Firebase Analytics, MediaMelon, Mux, New Relic, Permutive and Storyteller tracking. AppsFlyer deep links may stop opening the app on the right page. Push notifications keep working. | ✅ |
+| 💎 **Hide partner promotions** | Hides the "Watch on" banners that link to streaming partners. This also hides the links to HBO Max and discovery+ that open the event you are reading about. | ➖ |
 
 </details>
 <details>
@@ -281,7 +308,7 @@ Verified on: `238.17794.20261012`, `238.17666.20260928`, `237.17536.20260911`, `
 <details>
 <summary><b>Futbin</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.futbin</code></summary>
 
-Verified on: `27.06`
+Verified on: `27.08`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -289,9 +316,19 @@ Verified on: `27.06`
 
 </details>
 <details>
+<summary><b>L'Équipe</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>lequipe.fr</code></summary>
+
+Verified on: `10.69.1`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** 🧪 | Stops every Google Mobile Ads banner, interstitial, native, rewarded and app-open ad from loading, including the Teads and Equativ ads it mediates. Taboola sponsored content and ads inside web pages are not removed. | ✅ |
+
+</details>
+<details>
 <summary><b>Livescore</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.livescore</code></summary>
 
-Verified on: `10.3.1`
+Verified on: `10.3.2`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -311,7 +348,7 @@ Verified on: `26.08.01`
 <details>
 <summary><b>OneFootball</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>de.motain.iliga</code></summary>
 
-Verified on: `15.145.0`, `15.142.0`
+Verified on: `15.146.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -319,18 +356,20 @@ Verified on: `15.145.0`, `15.142.0`
 
 </details>
 <details>
-<summary><b>Sofascore</b> &nbsp;·&nbsp; 7 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
+<summary><b>Sofascore</b> &nbsp;·&nbsp; 9 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
 
-Verified on: `26.09.28`
+Verified on: `26.10.05`
 
 | Patch | What it does | Default |
 |---|---|:-:|
 | 🔕 **Block marketing notifications** | Blocks in-app promotional prompts, modals, promotion banners and Firebase In-App Messaging popups. Note: this only affects in-app promotions. Match-alert push delivery on re-signed builds needs "GmsCore support" with MicroG RE (issue #25). | ✅ |
 | 🛡️ **Disable Facebook SDK** | Blocks Facebook Audience Network ads and disables Facebook event tracking while keeping Facebook Login working. | ✅ |
 | 🚫 **Disable ads** | Disables banner, interstitial, feed, native, preroll and rewarded ads. | ✅ |
+| 🔕 **Disable rating prompts** | Stops the in-app rating dialog that opens after repeated app starts. | ✅ |
 | 🛡️ **Disable telemetry** | Disables AppsFlyer and Firebase Analytics event logging, plus Crashlytics crash reporting. | ✅ |
 | 💎 **Enable Premium** | Marks the account as premium in the app. Note: AI insights and other premium content are served by Sofascore's servers for paying accounts and are not unlocked; use "Disable ads" for an ad-free app. | ✅ |
 | 🧩 **GmsCore support** | Makes Google sign-in and Google APIs work in the patched app by using MicroG RE instead of Google Play services. Requires MicroG RE to be installed. | ➖ |
+| 🧩 **Hide betting content** | Hides odds, bookmaker links and betting offers: odds in lists and match pages, the Odds tabs, Bet365 sign-up links and the promotions for streaming, tickets and betting. | ➖ |
 | 🧩 **Spoof signature** | Makes the app report its original signing certificate to itself, so Firebase and Google APIs restricted to the original app keep working. | ➖ |
 
 </details>
@@ -477,6 +516,19 @@ Verified on: `26.15.1`
 | 🧩 **Open links in external browser** | Opens web links in your default browser instead of LINE's in-app browser. LINE links and LIFF mini apps stay in LINE. | ➖ |
 | 🔕 **Read notifications without receipt** | Opening a 1:1 or group chat from a message notification no longer marks it read or sends a read receipt while it is open, and the chat stays unread. | ➖ |
 | 🧩 **Read without receipt** | Adds "Read without receipt" to the long-press menu of 1:1 and group chats in the chat list. The chat opens without marking it read or sending a read receipt while it is open, and stays unread. | ➖ |
+
+</details>
+<details>
+<summary><b>mail.com</b> &nbsp;·&nbsp; 4 patches &nbsp;·&nbsp; <code>com.mail.mobile.android.mail</code></summary>
+
+Verified on: `9.18.3`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Turns off the inbox ads, banners, native ads and interstitials and stops the ad tracking pixels. The promotional cards the server places in the inbox (storage and eSIM hints, for example) go away with them. | ✅ |
+| 🔕 **Disable rating prompts** | Stops the Google Play rating request that opens after a mail is sent. | ✅ |
+| 🛡️ **Disable telemetry** | Disables the app's usage tracking (Tracking2, Brain), INFOnline audience measurement, app monitoring and Sentry crash reporting. Push notifications keep working. | ✅ |
+| 🧩 **Hide upsells** | Hides the upgrade offer that appears after swiping away ads. The upgrade entries in Settings and the side menu stay. | ✅ |
 
 </details>
 <details>

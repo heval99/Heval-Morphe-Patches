@@ -1,11 +1,11 @@
 package app.template.patches.blescanner.ads
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.methodCall
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_BLE_SCANNER
+import app.template.patches.shared.addInstructionsChecked
 
 /**
  * BLE Scanner shows next-gen GMA banners through AdmobBanner and one interstitial through
@@ -23,7 +23,7 @@ val disableAdsPatch = bytecodePatch(
 
     execute {
         // 1. Every banner container hides itself and no banner is requested (6 screens).
-        AdmobBannerLoadFingerprint.method.addInstructions(
+        AdmobBannerLoadFingerprint.method.addInstructionsChecked(
             0,
             """
                 const/16 v0, 0x8

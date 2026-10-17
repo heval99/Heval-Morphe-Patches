@@ -1,11 +1,14 @@
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
@@ -27,6 +30,11 @@ private val PROMO_BANNERS = listOf(
     "Lcom/sofascore/results/featuredtournament/view/PromotionalOffersBannerView;",
 )
 
+private const val CONTEXT = "Landroid/content/Context;"
+private const val SHARED_PREFERENCES = "Landroid/content/SharedPreferences;"
+private const val EVENT_HEAD_FLAGS = "Lcom/sofascore/model/mvvm/model/EventHeadFlags;"
+private const val BET365_SIGN_UP_PREFIX = "https://www.bet365.com/olp/open-account?affiliate="
+
 private const val START_ACTIVITY = "Lcom/sofascore/results/main/start/StartActivity;"
 private const val SIGNATURE_SHA1 = "e235776bc0ad3837b01359177c438658b1424d23"
 
@@ -34,9 +42,11 @@ private val SOFASCORE_PATCHES = setOf(
     "Block marketing notifications",
     "Disable Facebook SDK",
     "Disable ads",
+    "Disable rating prompts",
     "Disable telemetry",
     "Enable Premium",
     "GmsCore support",
+    "Hide betting content",
     "Spoof signature",
 )
 
@@ -88,6 +98,53 @@ class SofascoreSmokeTest {
         )
     }
 
+    private fun Method.strings(): List<String> =
+        instructions().mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string }
+
+    private fun Method.isStatic() = AccessFlags.STATIC.isSet(accessFlags)
+
+    private fun Method.params() = parameterTypes.map(CharSequence::toString)
+
+    /** The modal-queue predicate, found like sofascore/shared/ModalQueue.kt finds it. */
+    private fun modalPredicate(classes: List<ClassDef>, modalName: String, anchor: String, diagnostics: String): Method {
+        val byType = classes.associateBy { it.type }
+        val descriptor = classes.filter { cls ->
+            cls.methods.any { it.name == "<clinit>" && modalName in it.strings() }
+        }.singleOrNull() ?: error("no single modal descriptor named \"$modalName\"\n$diagnostics")
+        val created = descriptor.methods.single { it.name == "<clinit>" }.instructions()
+            .filter { it.opcode == Opcode.NEW_INSTANCE }
+            .map { ((it as ReferenceInstruction).reference as TypeReference).type }
+        return created.mapNotNull { byType[it] }
+            .filter { "Lkotlin/jvm/functions/Function1;" in it.interfaces }
+            .mapNotNull { cls -> cls.methods.firstOrNull { it.name == "invoke" && anchor in it.strings() } }
+            .singleOrNull() ?: error("no single \"$modalName\" predicate holding \"$anchor\"\n$diagnostics")
+    }
+
+    /** The call [call] selects (exactly one) is followed by move-result vX, then const vX, [expected]. */
+    private fun assertCallResultForced(
+        method: Method,
+        expected: Boolean,
+        label: String,
+        diagnostics: String,
+        call: (MethodReference, Int) -> Boolean,
+    ) {
+        val insns = method.instructions()
+        val index = insns.indices.singleOrNull { i ->
+            val ref = (insns[i] as? ReferenceInstruction)?.reference as? MethodReference
+            ref != null && call(ref, i) // only invoke-* carry a MethodReference
+        } ?: error("$label: call not found exactly once\n$diagnostics")
+        val moveResult = insns.getOrNull(index + 1) as? OneRegisterInstruction
+        val forced = insns.getOrNull(index + 2)
+        assertTrue(
+            insns.getOrNull(index + 1)?.opcode == Opcode.MOVE_RESULT && moveResult != null &&
+                forced is NarrowLiteralInstruction && forced is OneRegisterInstruction &&
+                (forced.opcode == Opcode.CONST_4 || forced.opcode == Opcode.CONST_16) &&
+                forced.registerA == moveResult.registerA &&
+                forced.narrowLiteral == if (expected) 1 else 0,
+            "$label is not forced to $expected after its move-result; got ${forced?.opcode}\n$diagnostics"
+        )
+    }
+
     @Test
     fun `all Sofascore patches apply and mutate the expected bytecode`() {
         val root = repoRoot()
@@ -101,7 +158,7 @@ class SofascoreSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.09.28",
+            version = "26.10.05",
             patchNames = SOFASCORE_PATCHES,
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -226,7 +283,66 @@ class SofascoreSmokeTest {
             )
         }
 
-        // GmsCore support + Spoof signature (MicroG RE push and Google login).
+        // Disable ads: the "Active subscription" upgrade sheet's queue predicate reads
+        // getHasServerAds() as true, so the sheet is not queued for everyone.
+        assertCallResultForced(
+            modalPredicate(classes, "Active subscription", "PR_XAIST", diagnostics),
+            expected = true, label = "Active subscription predicate getHasServerAds()", diagnostics
+        ) { ref, _ -> ref.definingClass == USER_ACCOUNT && ref.name == "getHasServerAds" }
+
+        // Disable rating prompts: the "Rating Info" predicate reads "ask_review_v3" as false.
+        val ratingPredicate = modalPredicate(classes, "Rating Info", "ask_review_v3", diagnostics)
+        val ratingInsns = ratingPredicate.instructions()
+        val askReviewLoad = ratingInsns.indexOfFirst {
+            ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == "ask_review_v3"
+        }
+        val askReviewCall = (askReviewLoad + 1 until ratingInsns.size).first {
+            (ratingInsns[it] as? ReferenceInstruction)?.reference is MethodReference
+        }
+        assertCallResultForced(
+            ratingPredicate, expected = false, label = "Rating Info predicate getBoolean(\"ask_review_v3\")", diagnostics
+        ) { ref, i -> i == askReviewCall && ref.name == "getBoolean" }
+
+        // Hide betting content. The helpers are R8-renamed; find them by key plus shape, like
+        // the fingerprints, and check each shape is unique.
+        fun staticWith(returnType: String, params: List<String>, string: (String) -> Boolean): Method {
+            val found = classes.flatMap { it.methods }.filter { m ->
+                m.isStatic() && m.returnType == returnType && m.params() == params && m.strings().any(string)
+            }
+            assertTrue(found.size == 1, "expected one static ($params)$returnType, found ${found.size}\n$diagnostics")
+            return found.single()
+        }
+        assertForcedBoolean(
+            staticWith("Z", listOf(CONTEXT, SHARED_PREFERENCES)) { it == "PREF_PROVIDER_ODDS_ENABLE" },
+            expected = false, label = "odds decision (PREF_PROVIDER_ODDS_ENABLE)", diagnostics
+        )
+        for (getter in listOf("getAdditionalOdds", "getAdditionalOddsComparison", "getRecommendedPrematchOdds")) {
+            assertForcedBoolean(
+                require(EVENT_HEAD_FLAGS).method(getter, emptyList()),
+                expected = false, label = "EventHeadFlags.$getter()", diagnostics
+            )
+        }
+        val signUpLink = staticWith("Ljava/lang/String;", listOf(CONTEXT)) { it.startsWith(BET365_SIGN_UP_PREFIX) }
+        val linkInsns = signUpLink.instructions()
+        assertTrue(
+            (linkInsns.getOrNull(0) as? NarrowLiteralInstruction)?.narrowLiteral == 0 &&
+                linkInsns[0].opcode == Opcode.CONST_4 &&
+                linkInsns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT &&
+                (linkInsns[0] as OneRegisterInstruction).registerA ==
+                (linkInsns[1] as OneRegisterInstruction).registerA,
+            "Bet365 sign-up link does not return null first; got ${linkInsns.getOrNull(0)?.opcode}\n$diagnostics"
+        )
+        assertForcedBoolean(
+            staticWith("Z", listOf(CONTEXT)) { it == "PREF_PROMOTIONS_ENABLE" },
+            expected = false, label = "promotions setting (PREF_PROMOTIONS_ENABLE)", diagnostics
+        )
+        assertForcedBoolean(
+            staticWith("Z", listOf(CONTEXT)) { it == "ODDS_PROVIDERS_DISABLED" },
+            expected = true, label = "odds providers disabled (ODDS_PROVIDERS_DISABLED)", diagnostics
+        )
+
+        // GmsCore support + Spoof signature (MicroG RE push and Google login). The shared
+        // assertion also checks ensurePlayServicesAvailable, here a(Context)V.
         assertGmsCoreSupport(classes, workDir, PKG, START_ACTIVITY, SIGNATURE_SHA1, expectCredentialRouting = true)
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
     }

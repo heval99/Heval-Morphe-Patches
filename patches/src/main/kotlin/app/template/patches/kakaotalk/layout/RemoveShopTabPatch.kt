@@ -6,12 +6,12 @@
 
 package app.template.patches.kakaotalk.layout
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.getReference
 import app.template.patches.shared.Constants.COMPATIBILITY_KAKAOTALK
+import app.template.patches.shared.addInstructionsWithLabelsChecked
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -49,7 +49,7 @@ val removeShopTabPatch = bytecodePatch(
 
             // Before the put: a SHOPPING_TAB result becomes null, which the final filterNotNull
             // drops. The key register is borrowed for the comparison and then rebuilt.
-            addInstructionsWithLabels(
+            addInstructionsWithLabelsChecked(
                 slot + 5,
                 """
                     sget-object v$key, $TAB_INFO->SHOPPING_TAB:$TAB_INFO

@@ -1,3 +1,22 @@
+## [1.17.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.16.0...v1.17.0-dev.1) (2026-10-17)
+
+### 🐛 Bug Fixes
+
+* **crex:** updated to version 26.10.07 ([03ce448](https://github.com/heval99/Heval-Morphe-Patches/commit/03ce4481f36d885af07c99dc587c98728506259a))
+* **futbin:** updated to version 27.08 ([18891a8](https://github.com/heval99/Heval-Morphe-Patches/commit/18891a89d5196e009ac737d6eb3d19a1db44ff86))
+* **livescore:** updated to version 10.3.2 ([d33304a](https://github.com/heval99/Heval-Morphe-Patches/commit/d33304a967d821433cbf43f1a69992efa5a90aa2))
+* **onefootball:** updated to version 15.146.0 ([81026ec](https://github.com/heval99/Heval-Morphe-Patches/commit/81026ec1ba3440bc46e923c6ddd0a806af052b23))
+* refuse injected smali that the patcher silently drops ([0469352](https://github.com/heval99/Heval-Morphe-Patches/commit/046935268ae452fd2e810c82b11221cc33ceec76))
+* **scores365:** updated to version 14.9.7 ([8fbd146](https://github.com/heval99/Heval-Morphe-Patches/commit/8fbd1467b89722569e6c4cfd543927a7f70d2e14))
+
+### ✨ New Features
+
+* **433:** add 433 2.3.548 patches ([1268c8e](https://github.com/heval99/Heval-Morphe-Patches/commit/1268c8e8c4c31b680a9a2fff3fac8a7b8c81fd4b))
+* **eurosport:** add Eurosport 8.33.0 patches ([62ef667](https://github.com/heval99/Heval-Morphe-Patches/commit/62ef6672b8655aa57b6154d372c9527cf8118ce0))
+* **lequipe:** add L'Équipe 10.69.1 Disable ads (experimental) ([ee97422](https://github.com/heval99/Heval-Morphe-Patches/commit/ee97422cc98cab6441a92ac7948c989211bbe7dd))
+* **mailcom:** add mail.com 9.18.3 patches ([4c3bff6](https://github.com/heval99/Heval-Morphe-Patches/commit/4c3bff67dc6d7936d9a0fc3e42a1e7f3f4c210ee))
+* **sofascore:** updated to version 26.10.05, add Hide betting content and Disable rating prompts ([cc02918](https://github.com/heval99/Heval-Morphe-Patches/commit/cc029181a92039ee94b16200aea7075c4f6e93bb))
+
 ## [1.16.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.15.0...v1.16.0) (2026-10-17)
 
 ### 🐛 Bug Fixes

@@ -5,7 +5,7 @@ import app.template.patches.shared.misc.signature.spoofSignaturePatch
 
 // The Play Store signing certificate (CN=Roe Aharoni, OU=Development, O=365 Scores, SHA-1
 // 47f994bd2eac89f4aeea0aa1d95cb3ba3ec3f1a1), DER as base64, read from the v2/v3 signing block of
-// the APKMirror 14.9.6 bundle. 365Scores' Firebase API key only accepts this certificate:
+// the APKMirror 14.9.6 and 14.9.7 bundles. 365Scores' Firebase API key only accepts this certificate:
 // re-signed, Firebase Installations fails with 403 API_KEY_ANDROID_APP_BLOCKED, so FCM never
 // gets a token and match alerts never arrive.
 internal const val SCORES365_CERTIFICATE =

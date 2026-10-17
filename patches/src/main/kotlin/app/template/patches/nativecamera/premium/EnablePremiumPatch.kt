@@ -6,6 +6,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.template.patches.nativecamera.misc.license.disableLicenseCheckPatch
 import app.template.patches.shared.Constants.COMPATIBILITY_NATIVECAMERA
+import app.template.patches.shared.addInstructionsChecked
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
@@ -76,6 +77,6 @@ val enablePremiumPatch = bytecodePatch(
         )
 
         // Later billing results can never downgrade the entitlement (or reset premium features).
-        setter.addInstructions(0, "const/4 p1, 0x1")
+        setter.addInstructionsChecked(0, "const/4 p1, 0x1")
     }
 }

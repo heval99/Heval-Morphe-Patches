@@ -18,7 +18,10 @@
         "one.cricket.app",
         "de.motain.iliga",
         "com.sofascore.results",
-        "com.yahoo.mobile.client.android.sportacular"
+        "com.yahoo.mobile.client.android.sportacular",
+        "com.football433",
+        "com.eurosport",
+        "lequipe.fr"
       ]
     },
     {
@@ -42,7 +45,8 @@
         "com.kakao.talk",
         "jp.naver.line.android",
         "com.textra",
-        "com.truecaller"
+        "com.truecaller",
+        "com.mail.mobile.android.mail"
       ]
     },
     {

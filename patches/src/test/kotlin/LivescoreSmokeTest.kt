@@ -23,7 +23,7 @@ class LivescoreSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "10.3.1",
+            version = "10.3.2",
             patchNames = setOf("Disable ads"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
