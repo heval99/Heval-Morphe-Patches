@@ -1325,8 +1325,7 @@ object Constants {
     // "com.shazam.android", and Apple's AMS kit pairs "com.shazam.android" with its
     // signing-certificate allowlist), so a clone takes broken paths.
     // 2026-10-19: older targets 16.62.1-261006, 16.62.0-261001 dropped (latest version only,
-    // owner); ShazamSmokeTest runs against 16.63.0-261008, the only version the 2026-10-18
-    // patches were verified on.
+    // owner); ShazamSmokeTest ran against 16.63.0-261008 then (now 16.64.0-261015, see the target).
     // 2026-10-19 (issue #62, reporter's video): Spotify's login page no longer works in the SDK
     // 1.2.3 WebView dialog (the email step resets, Facebook lands on the account page instead of
     // redirecting with ?code=, Google refuses WebViews). Spoof signature's Spotify part now hooks
@@ -1347,7 +1346,12 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0088FF,
         targets = listOf(
-            AppTarget(version = "16.63.0-261008", versionCode = 1606300),
+            // 2026-10-23: updated to version 16.64.0-261015 (versionCode 1606400; APKMirror bundle;
+            // signer CN=Tony Miller / Shazam Entertainment Ltd., cert SHA-256
+            // bffeb14903fbc92fffe6404a3654098a3f85c81a3513afd5dceac121cd678d1c, SHA-1 b804e188...d8b6,
+            // unchanged). The real matcher resolves all 11 Shazam fingerprints uniquely (4 R8
+            // renames only) and ShazamSmokeTest passes; 16.63.0 dropped (latest verified only).
+            AppTarget(version = "16.64.0-261015", versionCode = 1606400),
         )
     )
 
