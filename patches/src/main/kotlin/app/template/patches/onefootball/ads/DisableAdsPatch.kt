@@ -17,7 +17,7 @@ private const val GMA = "Lcom/google/android/gms/ads/"
 private val LOAD_NAMES = setOf("load", "loadAd", "loadAds")
 
 // Every concrete void load/loadAd/loadAds of these classes is neutered. The value lists the
-// loads each class is known to declare (15.146.0): the class and those methods must be there, so a
+// loads each class is known to declare (15.147.0): the class and those methods must be there, so a
 // drifted SDK fails the patch instead of leaving a format loading. AdLoader has the batch
 // loadAds(AdRequest, int) next to loadAd. AdView declares no load of its own (it inherits
 // BaseAdView's), so no method is required there; an override would still be neutered.

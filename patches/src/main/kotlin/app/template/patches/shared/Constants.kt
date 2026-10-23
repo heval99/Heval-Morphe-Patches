@@ -890,13 +890,22 @@ object Constants {
     // Stock and patched both crash at start in native code (JuceInvocationHandler, the same pc)
     // under ARM translation, so ads and push were not checked at runtime. Airship registered a
     // channel on both re-signed builds; whether Firebase push needs Spoof signature is still open.
+    // (Superseded 2026-10-23: 15.147.0 starts fine on the emulator, stock and patched; see below.)
     val COMPATIBILITY_ONEFOOTBALL = Compatibility(
         name = "OneFootball",
         packageName = "de.motain.iliga",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00C853,
         targets = listOf(
-            AppTarget(version = "15.146.0", versionCode = 1045009496)
+            // 2026-10-23: updated to version 15.147.0 (versionCode 1045019512; APKMirror bundle,
+            // every ABI; signer CN=Appsolute OU=SD, cert SHA-256
+            // 5099231f83f0f6d011f15287f37fe37b6392f97b9908f6f44ea6cb86d44356ab, confirmed by APKPure).
+            // All GMA load/init hooks are unchanged (dexindex diff vs 15.146.0) and
+            // OneFootballSmokeTest passes; 15.146.0 dropped (latest verified version only).
+            // Emulator (stock control): no crash; the Home banner ad and all GMA traffic are gone,
+            // but the in-feed "Ad Break" slot (home and match page) stays as an empty skeleton box
+            // instead of collapsing - a cosmetic follow-up, the ad itself never loads.
+            AppTarget(version = "15.147.0", versionCode = 1045019512)
         )
     )
 
