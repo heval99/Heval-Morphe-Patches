@@ -1,3 +1,13 @@
+## [1.19.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0-dev.1...v1.19.0-dev.2) (2026-10-23)
+
+### 🐛 Bug Fixes
+
+* match partial fingerprint strings by prefix or substring ([015c619](https://github.com/heval99/Heval-Morphe-Patches/commit/015c6191e1b2ba12c37b6f47e60d361f2655fb99))
+
+### ✨ New Features
+
+* **truecaller:** add Show caller number in call log ([2c4b44a](https://github.com/heval99/Heval-Morphe-Patches/commit/2c4b44aef5ff712f8a709c564b2465ea24a4adc3)), closes [#71](https://github.com/heval99/Heval-Morphe-Patches/issues/71)
+
 ## [1.19.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.18.0...v1.19.0-dev.1) (2026-10-23)
 
 ### 🐛 Bug Fixes

@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.19.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.19.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**74** apps&nbsp;&nbsp;•&nbsp;&nbsp;**184** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-23
+> **[v1.19.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.19.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**74** apps&nbsp;&nbsp;•&nbsp;&nbsp;**185** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-23
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -89,7 +89,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-2196F3?style=flat-square" height="14" alt=""> | **FairEmail** | 💎 1 | `1.2338` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
 | <img src="https://img.shields.io/badge/-%20-283167?style=flat-square" height="14" alt=""> | **mail.com** | 🚫 🛡️ 🔕 🧩 4 | `9.18.3` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mail.mobile.android.mail) |
 | <img src="https://img.shields.io/badge/-%20-5C6BC0?style=flat-square" height="14" alt=""> | **Textra** | 💎 1 | `4.87` | APKM | [Play](https://play.google.com/store/apps/details?id=com.textra) |
-| <img src="https://img.shields.io/badge/-%20-0087FF?style=flat-square" height="14" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 22 | `26.41.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
+| <img src="https://img.shields.io/badge/-%20-0087FF?style=flat-square" height="14" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 23 | `26.41.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
 
 #### 🎵 Music, podcasts & radio <sub>7 apps</sub>
 
@@ -529,7 +529,7 @@ Verified on: `4.87`
 
 </details>
 <details>
-<summary><b>Truecaller</b> &nbsp;·&nbsp; 22 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
+<summary><b>Truecaller</b> &nbsp;·&nbsp; 23 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
 
 Verified on: `26.41.5`
 
@@ -555,6 +555,7 @@ Verified on: `26.41.5`
 | 🧩 **Hide family button** | Turns off Family Protection and hides its button. | ➖ |
 | 🧩 **Hide promotions** | Hides promo banners, referral offers and Who viewed me promos. | ✅ |
 | 🧩 **Restore classic call log** | Experimental: restores the classic call log. | ➖ |
+| 🧩 **Show caller number in call log** | Shows the caller's number in the new call log for callers who aren't in your contacts. | ➖ |
 | 🧩 **Spoof signature** | Fixes Google features that check the app's original signature. | ✅ |
 | 🧩 **Use SMS for verification codes** | Reads the verification code from SMS. Verification can still fail on patched apps. | ➖ |
 
