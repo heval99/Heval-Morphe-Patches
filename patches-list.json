@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.19.0-dev.3",
+  "version": "1.19.0-dev.4",
   "patches": [
     {
       "name": "Add-on support",
@@ -1731,12 +1731,12 @@
           "signatures": null,
           "targets": [
             {
-              "version": "12.10.3",
+              "version": "12.26.1",
               "versionCodes": {
-                "ARM64_V8A": 11166823,
-                "ARMEABI_V7A": 11166823,
-                "X86_64": 11166823,
-                "X86": 11166823
+                "ARM64_V8A": 11168590,
+                "ARMEABI_V7A": 11168590,
+                "X86_64": 11168590,
+                "X86": 11168590
               },
               "isExperimental": false,
               "minSdk": null,
@@ -4795,12 +4795,12 @@
           "signatures": null,
           "targets": [
             {
-              "version": "12.10.3",
+              "version": "12.26.1",
               "versionCodes": {
-                "ARM64_V8A": 11166823,
-                "ARMEABI_V7A": 11166823,
-                "X86_64": 11166823,
-                "X86": 11166823
+                "ARM64_V8A": 11168590,
+                "ARMEABI_V7A": 11168590,
+                "X86_64": 11168590,
+                "X86": 11168590
               },
               "isExperimental": false,
               "minSdk": null,

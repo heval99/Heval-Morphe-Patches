@@ -1,3 +1,9 @@
+## [1.19.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0-dev.3...v1.19.0-dev.4) (2026-10-23)
+
+### 🐛 Bug Fixes
+
+* **yahoosports:** updated to version 12.26.1 ([e152d3f](https://github.com/heval99/Heval-Morphe-Patches/commit/e152d3fb2d60c08bcc7a7ffc11c899b60668cca8))
+
 ## [1.19.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0-dev.2...v1.19.0-dev.3) (2026-10-23)
 
 ### 🐛 Bug Fixes

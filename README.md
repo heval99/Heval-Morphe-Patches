@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.19.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.19.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**183** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-23
+> **[v1.19.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.19.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**183** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-23
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -68,7 +68,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-00C853?style=flat-square" height="14" alt=""> | **OneFootball** | 🚫 1 | `15.146.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
 | <img src="https://img.shields.io/badge/-%20-384CF4?style=flat-square" height="14" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 9 | `26.10.12` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
 | <img src="https://img.shields.io/badge/-%20-001AA3?style=flat-square" height="14" alt=""> | **Transfermarkt** | 🚫 🛡️ 2 | `4.3.2` | APKM | [Play](https://play.google.com/store/apps/details?id=de.transfermarkt.v2) |
-| <img src="https://img.shields.io/badge/-%20-6001D2?style=flat-square" height="14" alt=""> | **Yahoo Sports** | 🚫 🧩 2 | `12.10.3` | APKM | [Play](https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.sportacular) |
+| <img src="https://img.shields.io/badge/-%20-6001D2?style=flat-square" height="14" alt=""> | **Yahoo Sports** | 🚫 🧩 2 | `12.26.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.sportacular) |
 
 #### 📰 News & finance <sub>5 apps</sub>
 
@@ -408,7 +408,7 @@ Verified on: `4.3.2`
 <details>
 <summary><b>Yahoo Sports</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.yahoo.mobile.client.android.sportacular</code></summary>
 
-Verified on: `12.10.3`
+Verified on: `12.26.1`
 
 | Patch | What it does | Default |
 |---|---|:-:|
