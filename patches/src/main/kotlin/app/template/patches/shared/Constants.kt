@@ -1881,6 +1881,22 @@ object Constants {
     //   (recording, video, WhatsApp, screening, voicemail) stay as they are, without the number.
     //   An Exception in the helper keeps the stock label. Only the revamped call log uses this
     //   mapper; "Restore classic call log" shows the classic list instead.
+    // 2026-10-23 (#77, 26.41.5; TruecallerSmokeTest + FingerprintProbe, the 3 new fingerprints
+    //   OK-unique; NOT runtime-tested, the Premium tab needs SMS registration): Enable Premium crashed
+    //   the app on opening the Premium tab. Cause: the tab's view model (PremiumUserTabPaywallViewModel,
+    //   amx here) picks its screen in a suspend state chooser (amx.L) that reads isPremium (forced true
+    //   by step 2), then the "isSubscriptionOnHoldOrPaused" pref and a PremiumLaunchContext.Static
+    //   constant; premium and not paused built the Entitled state (toString "Entitled(subscriptionFetchResult="),
+    //   whose subscription management view model expects a real purchase and threw in an unhandled
+    //   viewModelScope launch on the server's FREE data. Fix (owner's choice), Enable Premium step 8:
+    //   only in that chooser (strings "isSubscriptionOnHoldOrPaused" + an sget of the kept
+    //   PremiumLaunchContext$Static; the patch also requires it to build the Entitled and the Paywall
+    //   ("Paywall(subscriptionFetchResult=") states and to call the step 2 getter exactly once) the
+    //   isPremium result is overwritten with false right after its move-result, so the tab builds the
+    //   Paywall state (the plans) as on a stock free account. No other premium input decides the
+    //   screen. All other isPremium readers keep the forced true. Side effect: a real subscriber who
+    //   also enables Enable Premium sees the plans screen in the Premium tab instead of their
+    //   subscription screen; managing the subscription in the Play Store still works.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",

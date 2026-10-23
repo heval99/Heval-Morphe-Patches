@@ -275,6 +275,43 @@ class TruecallerSmokeTest {
         check(ret?.opcode == Opcode.RETURN_OBJECT && (ret as OneRegisterInstruction).registerA == (unit as OneRegisterInstruction).registerA) {
             "${writerClass.type}.${writer.name} does not return Unit at once"
         }
+
+        // 8. Premium tab (#77): the tab's state chooser (builds the Entitled and Paywall states, reads
+        // "isSubscriptionOnHoldOrPaused" and a PremiumLaunchContext.Static constant) overwrites its one
+        // isPremium result with false right after the move-result, before the branch that reads it,
+        // so the tab shows the plans. The isPremium getter itself stays forced true (step 2).
+        fun stateType(prefix: String) = classes.single { cls ->
+            cls.methods.any { m -> m.name == "toString" && m.strings().any { it.startsWith(prefix) } }
+        }.type
+        val states = listOf(stateType("Entitled(subscriptionFetchResult="), stateType("Paywall(subscriptionFetchResult="))
+        val (chooserClass, chooser) = classes.singleMethod("Premium tab state chooser") { _, m ->
+            m.returnType == "Ljava/lang/Object;" && m.parameterTypes.size == 1 && "isSubscriptionOnHoldOrPaused" in m.strings() &&
+                m.instructions().any {
+                    it.opcode == Opcode.SGET_OBJECT && it.field()?.type == "Lcom/truecaller/premium/PremiumLaunchContext\$Static;"
+                } &&
+                states.all { state ->
+                    m.instructions().any { it.opcode == Opcode.NEW_INSTANCE && ((it as ReferenceInstruction).reference as TypeReference).type == state }
+                }
+        }
+        val chooserLabel = "${chooserClass.type}.${chooser.name} (Premium tab state chooser)"
+        val chooserInsns = chooser.instructions()
+        val premiumReads = chooserInsns.indices.filter { index ->
+            chooserInsns[index].call()?.let { it.definingClass == store.type && it.name == isPremium.name && it.parameterTypes.isEmpty() } == true
+        }
+        check(premiumReads.size == 1) { "$chooserLabel reads isPremium ${premiumReads.size} times, expected 1" }
+        val read = premiumReads.single()
+        val premiumResult = chooserInsns[read + 1]
+        check(premiumResult.opcode == Opcode.MOVE_RESULT) { "$chooserLabel: no move-result after isPremium; got ${premiumResult.opcode}" }
+        val premiumRegister = (premiumResult as OneRegisterInstruction).registerA
+        val notPremium = chooserInsns.getOrNull(read + 2)
+        check(notPremium?.opcode == Opcode.CONST_16 && (notPremium as OneRegisterInstruction).registerA == premiumRegister &&
+            (notPremium as NarrowLiteralInstruction).narrowLiteral == 0) {
+            "$chooserLabel does not overwrite the isPremium result v$premiumRegister with false; got ${notPremium?.opcode}"
+        }
+        val decision = chooserInsns.getOrNull(read + 3)
+        check(decision?.opcode == Opcode.IF_EQZ && (decision as OneRegisterInstruction).registerA == premiumRegister) {
+            "$chooserLabel: the isPremium branch does not follow the forced false; got ${decision?.opcode}"
+        }
     }
 
     private fun assertDisableAds(classes: List<ClassDef>, byType: Map<String, ClassDef>) {
