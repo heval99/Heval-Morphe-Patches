@@ -84,7 +84,7 @@ class TruecallerSmokeTest {
     }
 
     @Test
-    fun `Truecaller patches unlock premium, remove ads, telemetry, contact upload, update prompts and optional UI, and route GMS to MicroG RE`() {
+    fun `Truecaller patches unlock premium, remove ads, telemetry, contact upload, update prompts, auto-launch, nags, promotions and optional UI, and route GMS to MicroG RE`() {
         val root = repoRoot()
         val apk = File(root, "apks/truecaller/base.apk")
 
@@ -103,7 +103,7 @@ class TruecallerSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.40.5",
+            version = "26.41.5",
             patchNames = setOf(
                 "Enable Premium",
                 "Disable ads",
@@ -121,6 +121,10 @@ class TruecallerSmokeTest {
                 "Hide Wear OS settings",
                 "Hide business media",
                 "Disable contact upload",
+                "Disable auto-launch",
+                "Disable nags",
+                "Hide promotions",
+                "Hide after-call screen for contacts",
                 "GmsCore support",
                 "Spoof signature",
             ),
@@ -667,14 +671,13 @@ class TruecallerSmokeTest {
         // block per override, each falling through to the next and finally to the stock code.
         // Hide family button and Restore classic call log add one each, Disable ads five (incl. the
         // Offer Hub), Hide business media the seven verified business campaign toggles, Disable
-        // contact upload the Call Assistant number sync and the contact editor name suggestion.
+        // contact upload the Call Assistant number sync and the contact editor name suggestion,
+        // Disable auto-launch one, Disable nags nine, Hide promotions four and Hide after-call
+        // screen for contacts two.
         val (cls, resolver) = classes.singleMethod("feature toggle resolver") { _, m ->
             m.returnType == "Z" && m.params() == listOf("Ljava/lang/String;", FEATURE_STATE) &&
                 m.instructions().any { it.call()?.definingClass == "Landroid/content/SharedPreferences;" && it.call()?.name == "getBoolean" }
         }
-        val label = "${cls.type}.${resolver.name}(String, FeatureState)"
-        val insns = resolver.instructions()
-        val keyRegister = resolver.implementation!!.registerCount - 2 // this + key + state
         val expected = mapOf(
             "featureFamilyProtect" to 0,
             "featureCallLogRevamp" to 0,
@@ -692,7 +695,70 @@ class TruecallerSmokeTest {
             "featureBizVerifiedCampaignsDV3" to 0,
             "featureCallAssistantNumberSync" to 0,
             "featureContactEditorNameSuggestion" to 0,
+            "featureAutoAppLaunchPassive" to 0,
+            "featureDefaultDialerInterstitial" to 0,
+            "featureDefaultDialerPermanentSpace" to 0,
+            "featureNotificationsPermissionBanner" to 0,
+            "featureDOOABanner" to 0,
+            "featureDisableBatteryOptimizationBanner" to 0,
+            "featurePeriodicallyCheckPermissions" to 0,
+            "featureRatingsAndReviewsSurveys" to 0,
+            "featureBlockSurveyFlow" to 0,
+            "featureFeedbackSurvey" to 0,
+            "featurePersonalSafetyPromo" to 0,
+            "featureAcsWhoViewedMeBanner" to 0,
+            "featureReferralNavDrawer" to 0,
+            "featureRedeemPromo" to 0,
+            "featureShowACSAllIncoming" to 0,
+            "featureShowACSAllOutgoing" to 0,
         )
+        assertOverrideBlocks(cls, resolver, expected)
+        assertResolverReads(classes, cls, resolver, expected.keys)
+
+        // Hide promotions: the Firebase experiment resolver (same signature, asks an interface
+        // (String, Z)Z store, no SharedPreferences) answers true for the Who-viewed-me
+        // notification switch; it is still read there.
+        val (firebaseClass, firebase) = classes.singleMethod("Firebase toggle resolver") { _, m ->
+            m.returnType == "Z" && m.params() == listOf("Ljava/lang/String;", FEATURE_STATE) && m.implementation != null &&
+                m.instructions().any {
+                    it.opcode == Opcode.INVOKE_INTERFACE && it.call()?.returnType == "Z" &&
+                        it.call()?.parameterTypes?.map(CharSequence::toString) == listOf("Ljava/lang/String;", "Z")
+                } &&
+                m.instructions().none {
+                    it.call()?.definingClass == "Landroid/content/SharedPreferences;" ||
+                        ((it as? ReferenceInstruction)?.reference as? TypeReference)?.type == "Landroid/content/SharedPreferences;"
+                }
+        }
+        val firebaseExpected = mapOf("DisableWVMNotifications_65487" to 1)
+        assertOverrideBlocks(firebaseClass, firebase, firebaseExpected)
+        assertResolverReads(classes, firebaseClass, firebase, firebaseExpected.keys)
+    }
+
+    /** Some method other than the resolver loads each key and later calls the resolver with it. */
+    private fun assertResolverReads(classes: List<ClassDef>, cls: ClassDef, resolver: Method, keys: Set<String>) {
+        val label = "${cls.type}.${resolver.name}(String, FeatureState)"
+        fun Instruction.isResolverCall() = call()?.let {
+            it.definingClass == cls.type && it.name == resolver.name && it.returnType == "Z" &&
+                it.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", FEATURE_STATE)
+        } == true
+        val callers = classes.methodsWhere { _, m -> m.implementation != null && m.instructions().any { it.isResolverCall() } }
+        for (key in keys) {
+            check(callers.any { (_, m) ->
+                val insns = m.instructions()
+                val load = insns.indexOfFirst { it.stringOrNull() == key }
+                load >= 0 && insns.drop(load + 1).any { it.isResolverCall() }
+            }) { "no method passes $key to $label" }
+        }
+    }
+
+    /**
+     * The [resolver] starts with exactly one "key.equals(p1) -> return value" block per entry of
+     * [expected], each falling through to the next and finally to the stock code.
+     */
+    private fun assertOverrideBlocks(cls: ClassDef, resolver: Method, expected: Map<String, Int>) {
+        val label = "${cls.type}.${resolver.name}(String, FeatureState)"
+        val insns = resolver.instructions()
+        val keyRegister = resolver.implementation!!.registerCount - 2 // this + key + state
         val overrides = mutableMapOf<String, Int>()
         for (block in expected.keys.indices) {
             val start = block * 6

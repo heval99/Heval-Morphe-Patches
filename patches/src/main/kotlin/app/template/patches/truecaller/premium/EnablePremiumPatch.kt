@@ -18,9 +18,7 @@ private val SERVER_BACKED_FEATURES = listOf("CALL_ASSISTANT", "FAMILY_SHARING")
 @Suppress("unused")
 val enablePremiumPatch = bytecodePatch(
     name = "Enable Premium",
-    description = "Unlocks the Premium interface and the Premium features that are checked on " +
-        "the device. Features backed by Truecaller's servers (Call Assistant, family sharing, Who viewed / searched for me data, Identify AI, " +
-        "cloud call recording, fraud insurance, the verified badge) are reported as unavailable.",
+    description = "Unlocks premium features. Server features like Who viewed me stay locked.",
 ) {
     compatibleWith(COMPATIBILITY_TRUECALLER)
 

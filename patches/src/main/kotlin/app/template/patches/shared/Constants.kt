@@ -1829,12 +1829,49 @@ object Constants {
     //     hides the checkbox, and both save paths (lec, z20) enqueue the upload only when it is
     //     visible and checked. MOBILE_CLIENT and SURVEY suggestions, local contacts, T9, caller ID
     //     (/v2/search, /v2/bulk), backup and PhonebookSyncWorker are untouched.
+    // 2026-10-22: updated to 26.41.5 (versionCode 2641005, signer CN=truecaller SHA-1
+    // 0ac1169a...1f25e31 as above; replaces 26.40.5). All 36 existing fingerprints resolve with the
+    // real matcher (33 unique, 3 multi-match by design); the toggle resolver is lmo.a now. Four new
+    // patches, all toggle overrides at the start of a resolver, each key first required to be read
+    // there (the patch fails otherwise). Verified by TruecallerSmokeTest, FingerprintProbe (all
+    // 37 fingerprints resolve) and a CLI decompile check (all 22 patches Applied without -f; the
+    // Internal resolver starts with 32 key blocks, the Firebase one with 1; 378 changed methods,
+    // all explained). Emulator: cold start of stock and patched to the registration screen, no
+    // crash; the new patches' effects were not observed, because the Calls, after-call and home UI
+    // need SMS registration, which the emulator cannot do. Without MicroG RE, GmsCore support makes
+    // "Get started" fail with "Age verification failed" (stock reaches the dialer-role prompt).
+    //   - Disable auto-launch (default on): "featureAutoAppLaunchPassive" off. That server
+    //     experiment opens the app (VIEW deep link, FLAG_ACTIVITY_NEW_TASK) while the screen is off
+    //     for passive users after N inactive days; off keeps everyone in the control group.
+    //   - Disable nags (default on), off: featureDefaultDialerInterstitial,
+    //     featureDefaultDialerPermanentSpace, featureNotificationsPermissionBanner (3 reads),
+    //     featureDOOABanner, featureDisableBatteryOptimizationBanner,
+    //     featurePeriodicallyCheckPermissions, featureRatingsAndReviewsSurveys,
+    //     featureBlockSurveyFlow, featureFeedbackSurvey (Family Protection). featureReduceValueForNonDd
+    //     is deliberately left out.
+    //   - Hide promotions (default on), off: featurePersonalSafetyPromo (Guardians home promo),
+    //     featureAcsWhoViewedMeBanner (after-call upsell banner), featureReferralNavDrawer,
+    //     featureRedeemPromo (1 read with the key right before the call, 2 with the const-string
+    //     hoisted; the read check needs one). Left out: featurePersonalSafetyMenuItem and
+    //     featureTruecallerNewsMenuItem (catalogue only, 0 reads) and featureChatWithZipZipMenuItem
+    //     (the Help "Chat with us" support row, not a promotion). The Firebase experiment toggle
+    //     "DisableWVMNotifications_65487" reads TRUE in the Firebase resolver ((String,
+    //     FeatureState)Z with an invoke-interface (String, Z)Z and no SharedPreferences reference;
+    //     h4k.a here), so the Who-viewed-me notification check (ux90.k) bails out. A new experiment
+    //     suffix fails the patch.
+    //   - Hide after-call screen for contacts (opt-in, owner decision: the after-call screen never
+    //     shows for phonebook contacts on incoming or outgoing calls): featureShowACSAllIncoming and
+    //     featureShowACSAllOutgoing off (4 reads each). The ACS rules (gl.b here) show it for a
+    //     phonebook contact only when the user's afterCallForPbContacts AND the matching toggle are
+    //     on, so contacts lose it even with that setting on. Missed calls, unknown numbers and the
+    //     user's prefs (afterCall, afterCallForPbContacts, afterCallForNonPbContacts) are untouched;
+    //     no pref is written.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0087FF,
-        targets = listOf(AppTarget(version = "26.40.5", versionCode = 2640005))
+        targets = listOf(AppTarget(version = "26.41.5", versionCode = 2641005))
     )
 
     // Verified 2026-10-13 against com.hevy 3.1.16 (versionCode 3325935, XAPK base + arm64 + en +
