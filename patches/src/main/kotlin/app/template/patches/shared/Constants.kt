@@ -2311,7 +2311,26 @@ object Constants {
         targets = listOf(AppTarget(version = "6.238.23405", versionCode = 23405))
     )
 
-    // Verified 2026-10-15 against com.yahoo.mobile.client.android.sportacular 12.10.3
+    // Updated 2026-10-23 to com.yahoo.mobile.client.android.sportacular 12.26.1 (versionCode
+    // 11168590): owner-supplied apkcube bundle, merged, arm64-v8a only; signer CN=Yahoo! mobile CA,
+    // O=Yahoo! Inc., cert SHA-256
+    // d3f1fb1b2c81e096e3f5809a503afda0cfaf56b9d39dedc656ee2660acef614c, the same as the APKMirror
+    // 12.10.3 bundle. Disable ads is unchanged (all three anchors still match once). Hide betting
+    // promotions is re-anchored: 12.26.1 removed SportsbookPromotionHelper (and the
+    // sponsored-moments promotion path) that the old fingerprint called for, and R8 now renames
+    // BettingImageBannerCtrl (12.26.1: ui/card/bettingimagebanner/control/a). The same CardCtrl data
+    // override (M2(Object)) is now found by shape: (Object)V, the "placement" key it passes to the
+    // betting-promo data service, and a call into the kept CardCtrl base class. It returns at once,
+    // so the server bettingPromo banner (now its only source) is never requested. Status 2026-10-23
+    // on 12.26.1: YahooSportsSmokeTest passes, FingerprintProbe has all four fingerprints
+    // OK-unique, and the CLI (no -f) applies both patches. A whole-APK dexindex diff shows exactly
+    // the 6 target methods changed in 4 classes (ad card setData GONE, the 3 sponsored-moments
+    // getters false, getAdTagUri null, M2 return-void); manifest and resources are byte-identical.
+    // Emulator (ARM translation, stock control): no crash; the Home, Scores and game-page ad cards
+    // are gone with no empty slot and the IMA SDK no longer loads; the game video still plays.
+    // Not runtime-tested: the BetMGM banner (it never appears on the emulator, stock included) and
+    // a video pre-roll (the Watch video is region-blocked, SS-202, in both builds).
+    // Verified 2026-10-15 against 12.10.3
     // (versionCode 11166823, APKMirror bundle merged; signer CN=Yahoo! mobile CA, O=Yahoo! Inc.,
     // SHA-256 d3f1fb1b...614c, same as 12.9.2). No packer, PairIP or billing. App view/controller
     // and Verizon Media player class names are kept; members and helper classes are R8-renamed.
@@ -2323,10 +2342,10 @@ object Constants {
     // null, so no IMA pre-roll is requested. MobileAds, the SponsoredMoments initializer and the
     // generic config delegate are untouched. Not covered: ads inside web articles (server-side
     // pages), the sponsor splash and sponsored comments.
-    // Hide betting promotions: BettingImageBannerCtrl's data method (the caller of
-    // SportsbookPromotionHelper.shouldShowBettingImageBanner) returns at once, so the BetMGM
-    // banner view stays GONE (it hides itself in its constructor) and neither promotion source is
-    // fetched. Odds, the Sportsbook hub and the six-pack betting prompt are untouched.
+    // Hide betting promotions (12.10.3 anchor, replaced above): BettingImageBannerCtrl's data
+    // method (the caller of SportsbookPromotionHelper.shouldShowBettingImageBanner) returns at
+    // once, so the BetMGM banner view stays GONE (it hides itself in its constructor) and neither
+    // promotion source is fetched. Odds, the Sportsbook hub and the six-pack betting prompt are untouched.
     // YahooSportsSmokeTest asserts all four hooks. CLI (no -f) applies both patches and a full
     // smali diff shows only the four target classes change. Emulator (morphe-test): stock shows
     // ad cards (V) on home, scores, game, team and news and 19-57 IMA log lines around video;
@@ -2338,7 +2357,7 @@ object Constants {
         packageName = "com.yahoo.mobile.client.android.sportacular",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x6001D2, // Yahoo purple.
-        targets = listOf(AppTarget(version = "12.10.3", versionCode = 11166823))
+        targets = listOf(AppTarget(version = "12.26.1", versionCode = 11168590))
     )
 
     // Smoke-tested 2026-10-15 against com.pzolee.bluetoothscanner 1.9.3 (versionCode 93, APKPure

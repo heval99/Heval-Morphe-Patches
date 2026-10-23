@@ -16,7 +16,7 @@ val hideBettingPromotionsPatch = bytecodePatch(
     compatibleWith(COMPATIBILITY_YAHOO_SPORTS)
 
     execute {
-        // Neither the sponsored-moments promotion nor the server bettingPromo banner is fetched.
+        // The server bettingPromo banner is never requested.
         BettingImageBannerBindFingerprint.method.returnEarly()
     }
 }
