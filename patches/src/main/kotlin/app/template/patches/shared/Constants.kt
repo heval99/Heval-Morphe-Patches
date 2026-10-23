@@ -483,55 +483,6 @@ object Constants {
         )
     )
 
-    // Verified 2026-08-20 against ru.iptvremote.android.iptv apkm v9.1.25
-    // (universal, Android 12L+). Free app package; Pro is a separate paid app
-    // (ru.iptvremote.android.iptv.pro) with its own build.
-    // Re-anchored 2026-10-07 on the same 9.1.25 build (still APKPure latest) for issue #35,
-    // where both patches were found to be ineffective:
-    //   - Disable ads: killing WortiseSdk.initialize left Yandex banners/instream running.
-    //     Ads go through an in-app mediation provider (b4, located by its
-    //     "instream_preload_lead_sec" remote-config getter); every override was delegated
-    //     to the app's built-in no-ads sibling provider (i5), found structurally (narrowed
-    //     on 2026-10-09, see below).
-    //   - Enable Premium: IptvFreeApplication.k()Z was never a Pro/trial gate (it is a
-    //     20-minute ad-closed cooldown that only suppresses the review prompt). Pro features
-    //     are XML stub preferences linking to the Pro listing; the access-control (parental
-    //     PIN) feature ships in the free app and is unlocked by swapping its stubs for the
-    //     real preference classes. Start on boot / autoplay last channel have no code in the
-    //     free build and stay locked.
-    //     The free build's main-settings Playlists entry has no key, so "Lock playlist
-    //     settings" (a PIN locker attached to "screen_playlists") was never enforced; the
-    //     resource patch adds that key.
-    // IptvSmokeTest asserts the delegation and the rewritten XML; the CLI-patched APK was
-    // decompiled to confirm both. Runtime-tested 2026-10-07 on an Android 35 emulator (full
-    // APKMirror bundle, merged): app starts, PIN can be set, the playlist lock prompts for it
-    // and the correct PIN lets the user through (the app needs a second tap afterwards, which
-    // is its own behaviour for intent-based entries). That runtime pass covered Enable Premium
-    // only.
-    // 2026-10-09 (same 9.1.25 build, issue #35 follow-up): the 2026-10-07 runtime claim did not
-    // hold for Disable ads. With it applied, the app crashed on launch: the banner fragment's
-    // onAttach asked the provider for a placement view, which was delegated to i5.a, and i5.a
-    // wraps Collections.EMPTY_LIST in a composite (bv) whose constructor throws when the list is
-    // empty. The placement factory (the only (Context, placement) override) is no longer
-    // delegated. Its callers are cut off instead: the provider's static "banners allowed"
-    // check (!isTv, its only static (Context)Z) returns false, and the ad consent gate (found
-    // by its "AdConsentGate" / "Deferred consent action..." log in the replay method) drops
-    // deferred ad actions, which stops the idle placement preloader, interstitial loads and
-    // instream preload. The other overrides still delegate to i5; each caller handles the
-    // value it returns. IptvSmokeTest asserts all of this. Runtime re-test pending.
-    // Rule 12, 2026-10-19 (CLI, no -f, default set = Disable ads + Enable Premium, both Applied;
-    // aapt2 dump resources stock vs patched, PUBLIC flags ignored): the Enable Premium resource
-    // patch changes no string, plural or array value and loses no entry. Only the case-twin ids
-    // STANDARD / standard come back as id_0x7f0a000f / id_0x7f0a04d7 (same IDs; the attr enum
-    // labels that name them change with them).
-    val COMPATIBILITY_IPTVREMOTE = Compatibility(
-        name = "IPTV",
-        packageName = "ru.iptvremote.android.iptv",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0x1976D2,
-        targets = listOf(AppTarget(version = "9.1.25", versionCode = 5010))
-    )
-
     // Verified 2026-08-19 against brave.apkm v1.93.136, re-anchored 2026-09-18 against
     // v1.95.104 (versionCode 429510404, the current APKMirror build). All Brave Origin
     // anchor strings and non-obfuscated classes (BraveOriginPreferences,

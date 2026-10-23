@@ -69,7 +69,6 @@
       "name": "Video & TV",
       "emoji": "📺",
       "packages": [
-        "ru.iptvremote.android.iptv",
         "app.expert.player",
         "com.duplila.screenshare"
       ]
