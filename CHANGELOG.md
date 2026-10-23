@@ -1,3 +1,15 @@
+## [1.19.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0-dev.4...v1.19.0-dev.5) (2026-10-23)
+
+### 🐛 Bug Fixes
+
+* **433:** updated to version 2.3.585 ([a4d7912](https://github.com/heval99/Heval-Morphe-Patches/commit/a4d791255a12f0375237543a2275fa237605018e))
+* **eurosport:** updated to version 8.34.1 ([3c829a8](https://github.com/heval99/Heval-Morphe-Patches/commit/3c829a8122eb4bc8f5ef0c6e78d730850778c29c))
+* **lequipe:** updated to version 10.70.0 ([33592da](https://github.com/heval99/Heval-Morphe-Patches/commit/33592da7f158443aad4ad5222c824d5a889eeddf))
+* **nativecamera:** updated to version 1.4.5 ([4e0b922](https://github.com/heval99/Heval-Morphe-Patches/commit/4e0b922824abe8218bc1f3aeff9ea1882cce7c06))
+* **onefootball:** updated to version 15.147.0 ([0d82f24](https://github.com/heval99/Heval-Morphe-Patches/commit/0d82f24c26e3a9f5650fe1bea7f3cbda432cce5a))
+* **shazam:** updated to version 16.64.0-261015 ([17d58c1](https://github.com/heval99/Heval-Morphe-Patches/commit/17d58c1825fe5781eee1a0812c641166f9d20aaf))
+* **truecaller:** stop Enable Premium from crashing the Premium tab ([#77](https://github.com/heval99/Heval-Morphe-Patches/issues/77)) ([e7204ab](https://github.com/heval99/Heval-Morphe-Patches/commit/e7204ab536dfbddb2872b3971c8868db89eba70b))
+
 ## [1.19.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0-dev.3...v1.19.0-dev.4) (2026-10-23)
 
 ### 🐛 Bug Fixes

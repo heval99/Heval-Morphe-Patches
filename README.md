@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.19.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.19.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**183** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-23
+> **[v1.19.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.19.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**183** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-23
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -51,21 +51,21 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="https://img.shields.io/badge/-%20-FFC107?style=flat-square" height="14" alt=""> | **365Scores** | 🚫 💎 🔕 🧩 5 | `14.9.7` | APKM | [Play](https://play.google.com/store/apps/details?id=com.scores365) |
-| <img src="https://img.shields.io/badge/-%20-F1FF00?style=flat-square" height="14" alt=""> | **433** | 🚫 🛡️ 🧪 2 | `2.3.548` | APKM | [Play](https://play.google.com/store/apps/details?id=com.football433) |
+| <img src="https://img.shields.io/badge/-%20-F1FF00?style=flat-square" height="14" alt=""> | **433** | 🚫 🛡️ 🧪 2 | `2.3.585` | APKM | [Play](https://play.google.com/store/apps/details?id=com.football433) |
 | <img src="https://img.shields.io/badge/-%20-00C853?style=flat-square" height="14" alt=""> | **AiScore** | 💎 🧩 2 | `4.3.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.onesports.score) |
 | <img src="https://img.shields.io/badge/-%20-2E7D32?style=flat-square" height="14" alt=""> | **BeSoccer** | 🚫 🔑 2 | `6.6.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.resultadosfutbol.mobile) |
 | <img src="https://img.shields.io/badge/-%20-1A1A1A?style=flat-square" height="14" alt=""> | **Bleacher Report** | 🚫 🛡️ 🧩 3 | `11.12.0.33` | APKM | [Play](https://play.google.com/store/apps/details?id=com.bleacherreport.android.teamstream) |
 | <img src="https://img.shields.io/badge/-%20-FF0000?style=flat-square" height="14" alt=""> | **BoxBox** | 🚫 🛡️ 💎 3 | `5.4.17` | APKM | [Play](https://play.google.com/store/apps/details?id=club.boxbox.android) |
 | <img src="https://img.shields.io/badge/-%20-262626?style=flat-square" height="14" alt=""> | **CREX** | 🚫 💎 2 | `26.10.07` | APKM | [Play](https://play.google.com/store/apps/details?id=in.cricketexchange.app.cricketexchange) |
 | <img src="https://img.shields.io/badge/-%20-1D56A8?style=flat-square" height="14" alt=""> | **Digi Sport** | 🚫 🛡️ 🔕 🧩 🧪 8 | `1.1.15` | APK | [Play](https://play.google.com/store/apps/details?id=ro.rcsrds.digisport) |
-| <img src="https://img.shields.io/badge/-%20-000000?style=flat-square" height="14" alt=""> | **Eurosport** | 🚫 🛡️ 🧩 3 | `8.33.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.eurosport) |
+| <img src="https://img.shields.io/badge/-%20-000000?style=flat-square" height="14" alt=""> | **Eurosport** | 🚫 🛡️ 🧩 3 | `8.34.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.eurosport) |
 | <img src="https://img.shields.io/badge/-%20-1E88E5?style=flat-square" height="14" alt=""> | **Flashscore** | 🚫 🛡️ 🔕 🧩 6 | `26.10.2` | APKS | [Play](https://play.google.com/store/apps/details?id=eu.livesport.FlashScore_com) |
 | <img src="https://img.shields.io/badge/-%20-00985F?style=flat-square" height="14" alt=""> | **FotMob** | 🚫 🛡️ 💎 🔕 🧩 8 | `239.17834.20261016` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mobilefootie.wc2010) |
 | <img src="https://img.shields.io/badge/-%20-26A69A?style=flat-square" height="14" alt=""> | **Futbin** | 🚫 1 | `27.08` | APK | [Play](https://play.google.com/store/apps/details?id=com.futbin) |
-| <img src="https://img.shields.io/badge/-%20-0A1E32?style=flat-square" height="14" alt=""> | **L'Équipe** | 🚫 🧪 1 | `10.69.1` | APKM | [Play](https://play.google.com/store/apps/details?id=lequipe.fr) |
+| <img src="https://img.shields.io/badge/-%20-0A1E32?style=flat-square" height="14" alt=""> | **L'Équipe** | 🚫 🧪 1 | `10.70.0` | APKM | [Play](https://play.google.com/store/apps/details?id=lequipe.fr) |
 | <img src="https://img.shields.io/badge/-%20-C8102E?style=flat-square" height="14" alt=""> | **Livescore** | 🚫 1 | `10.3.2` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
 | <img src="https://img.shields.io/badge/-%20-0D47A1?style=flat-square" height="14" alt=""> | **OneCricket** | 🚫 1 | `26.08.01` | APKM | [Play](https://play.google.com/store/apps/details?id=one.cricket.app) |
-| <img src="https://img.shields.io/badge/-%20-00C853?style=flat-square" height="14" alt=""> | **OneFootball** | 🚫 1 | `15.146.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
+| <img src="https://img.shields.io/badge/-%20-00C853?style=flat-square" height="14" alt=""> | **OneFootball** | 🚫 1 | `15.147.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
 | <img src="https://img.shields.io/badge/-%20-384CF4?style=flat-square" height="14" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 9 | `26.10.12` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
 | <img src="https://img.shields.io/badge/-%20-001AA3?style=flat-square" height="14" alt=""> | **Transfermarkt** | 🚫 🛡️ 2 | `4.3.2` | APKM | [Play](https://play.google.com/store/apps/details?id=de.transfermarkt.v2) |
 | <img src="https://img.shields.io/badge/-%20-6001D2?style=flat-square" height="14" alt=""> | **Yahoo Sports** | 🚫 🧩 2 | `12.26.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.sportacular) |
@@ -99,7 +99,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-FF6D00?style=flat-square" height="14" alt=""> | **jetAudio** | 💎 1 | `13.1.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.jetappfactory.jetaudio) |
 | <img src="https://img.shields.io/badge/-%20-3F51B5?style=flat-square" height="14" alt=""> | **Pi Music Player** | 🚫 💎 2 | `3.2.0.0_release_2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.Project100Pi.themusicplayer) |
 | <img src="https://img.shields.io/badge/-%20-FF5722?style=flat-square" height="14" alt=""> | **Podcast Republic** | 🚫 1 | `9.17.0-260909124` | APK | [Play](https://play.google.com/store/apps/details?id=com.podcast.podcasts) |
-| <img src="https://img.shields.io/badge/-%20-0088FF?style=flat-square" height="14" alt=""> | **Shazam** | 🛡️ 🧩 4 | `16.63.0-261008` | APKM | [Play](https://play.google.com/store/apps/details?id=com.shazam.android) |
+| <img src="https://img.shields.io/badge/-%20-0088FF?style=flat-square" height="14" alt=""> | **Shazam** | 🛡️ 🧩 4 | `16.64.0-261015` | APKM | [Play](https://play.google.com/store/apps/details?id=com.shazam.android) |
 | <img src="https://img.shields.io/badge/-%20-FF6D00?style=flat-square" height="14" alt=""> | **Simple Radio** | 🚫 💎 2 | `6.3.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.streema.simpleradio) |
 | <img src="https://img.shields.io/badge/-%20-000000?style=flat-square" height="14" alt=""> | **SoundHound** | 🚫 1 | `10.5.8` | APK | [Play](https://play.google.com/store/apps/details?id=com.melodis.midomiMusicIdentifier.freemium) |
 
@@ -173,7 +173,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-009688?style=flat-square" height="14" alt=""> | **IrCode Finder** | 🚫 1 | `14.17.0 build 206 InAPP` | APKM | [Play](https://play.google.com/store/apps/details?id=ru.wasiliysoft.ircodefindernec) |
 | <img src="https://img.shields.io/badge/-%20-406C5C?style=flat-square" height="14" alt=""> | **LibrePods** | 💎 1 | `1.0.1-rc1-play` | APKM | [Play](https://play.google.com/store/apps/details?id=me.kavishdevar.librepods) |
 | <img src="https://img.shields.io/badge/-%20-3A362F?style=flat-square" height="14" alt=""> | **LuckyClick** | 🚫 🔑 2 | `3.28` | APKM | [Play](https://play.google.com/store/apps/details?id=com.peter890331.luckyclick.app) |
-| <img src="https://img.shields.io/badge/-%20-D0BCFF?style=flat-square" height="14" alt=""> | **Native Camera** | 💎 🔑 2 | `1.4.4` | APKM | [Play](https://play.google.com/store/apps/details?id=com.rawcam.app) |
+| <img src="https://img.shields.io/badge/-%20-D0BCFF?style=flat-square" height="14" alt=""> | **Native Camera** | 💎 🔑 2 | `1.4.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.rawcam.app) |
 | <img src="https://img.shields.io/badge/-%20-9C27B0?style=flat-square" height="14" alt=""> | **Pocket Color Wheel** | 🚫 1 | `3.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.pocketcolorwheel.PCW) |
 | <img src="https://img.shields.io/badge/-%20-2962FF?style=flat-square" height="14" alt=""> | **Unified Remote** | 💎 1 | `3.25.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.Relmtech.Remote) |
 | <img src="https://img.shields.io/badge/-%20-00A63B?style=flat-square" height="14" alt=""> | **WeMuslim** | 🚫 🛡️ 💎 🧩 4 | `3.5.4` | APKM | [Play](https://play.google.com/store/apps/details?id=com.fyxtech.muslim) |
@@ -200,7 +200,7 @@ Verified on: `14.9.7`
 <details>
 <summary><b>433</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.football433</code></summary>
 
-Verified on: `2.3.548`
+Verified on: `2.3.585`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -285,7 +285,7 @@ Verified on: `1.1.15`
 <details>
 <summary><b>Eurosport</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>com.eurosport</code></summary>
 
-Verified on: `8.33.0`
+Verified on: `8.34.1`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -339,7 +339,7 @@ Verified on: `27.08`
 <details>
 <summary><b>L'Équipe</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>lequipe.fr</code></summary>
 
-Verified on: `10.69.1`
+Verified on: `10.70.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -369,7 +369,7 @@ Verified on: `26.08.01`
 <details>
 <summary><b>OneFootball</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>de.motain.iliga</code></summary>
 
-Verified on: `15.146.0`
+Verified on: `15.147.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -606,7 +606,7 @@ Verified on: `9.17.0-260909124`
 <details>
 <summary><b>Shazam</b> &nbsp;·&nbsp; 4 patches &nbsp;·&nbsp; <code>com.shazam.android</code></summary>
 
-Verified on: `16.63.0-261008`
+Verified on: `16.64.0-261015`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1004,7 +1004,7 @@ Verified on: `3.28`
 <details>
 <summary><b>Native Camera</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.rawcam.app</code></summary>
 
-Verified on: `1.4.4`
+Verified on: `1.4.5`
 
 | Patch | What it does | Default |
 |---|---|:-:|
