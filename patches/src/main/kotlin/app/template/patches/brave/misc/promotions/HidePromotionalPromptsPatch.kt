@@ -49,9 +49,7 @@ private fun forcePrefRead(
 @Suppress("unused")
 val hidePromotionalPromptsPatch = bytecodePatch(
     name = "Hide promotional prompts",
-    description = "Experimental: stops the recurring \"Set Brave as default browser\" dialog, " +
-        "the \"Rate Brave\" dialog and card, retention and Rewards promo notifications, the " +
-        "search widget promo and the VPN card in Settings.",
+    description = "Hides default browser, rating and promo prompts.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_BRAVE_EXPERIMENTAL)

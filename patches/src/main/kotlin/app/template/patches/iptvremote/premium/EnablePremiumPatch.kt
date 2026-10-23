@@ -77,10 +77,7 @@ private val accessControlResourcePatch = resourcePatch {
 @Suppress("unused")
 val enablePremiumPatch = bytecodePatch(
     name = "Enable Premium",
-    description = "Unlocks the Pro-only access control settings (parental PIN, locking " +
-            "playlist/EPG/proxy/import-export/recording settings, hiding playlist URLs) and " +
-            "suppresses the in-app review prompt. Start on boot and autoplay last channel are " +
-            "only implemented in the separate IPTV Pro app and stay unavailable."
+    description = "Unlocks the Pro access control settings."
 ) {
     compatibleWith(COMPATIBILITY_IPTVREMOTE)
 

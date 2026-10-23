@@ -9,8 +9,7 @@ import app.template.patches.shared.Constants.COMPATIBILITY_BRAVE_EXPERIMENTAL
 @Suppress("unused")
 val disableAdsPatch = bytecodePatch(
     name = "Disable ads",
-    description = "Experimental: hides sponsored new tab images (including full-page takeovers) " +
-        "and the \"Earn BAT for viewing ads\" Rewards signup popup.",
+    description = "Hides sponsored new tab images and the Brave Rewards ads popup.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_BRAVE_EXPERIMENTAL)

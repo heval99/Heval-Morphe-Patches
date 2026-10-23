@@ -78,9 +78,7 @@ private fun BytecodePatchContext.storytellerModules(): List<String> {
 @Suppress("unused")
 val disableAdsPatch = bytecodePatch(
     name = "Disable ads",
-    description = "Removes the banner and in-feed ads, the ads in the Stories and Clips players and the " +
-        "pre-roll ads on free videos. Ads inserted into live and premium streams are part of the stream " +
-        "and stay.",
+    description = "Removes ads, including video pre-rolls on free videos.",
 ) {
     compatibleWith(COMPATIBILITY_EUROSPORT)
 

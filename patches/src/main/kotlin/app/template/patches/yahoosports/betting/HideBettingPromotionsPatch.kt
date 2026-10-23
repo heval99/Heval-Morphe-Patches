@@ -11,7 +11,7 @@ import app.template.patches.shared.Constants.COMPATIBILITY_YAHOO_SPORTS
 @Suppress("unused")
 val hideBettingPromotionsPatch = bytecodePatch(
     name = "Hide betting promotions",
-    description = "Hides the sportsbook promotion banner."
+    description = "Hides sportsbook promotions."
 ) {
     compatibleWith(COMPATIBILITY_YAHOO_SPORTS)
 

@@ -40,7 +40,7 @@ private fun BytecodePatchContext.booleanMethods(type: String, names: Collection<
 @Suppress("unused")
 val enablePremiumPatch = bytecodePatch(
     name = "Enable Premium",
-    description = "Unlocks OsmAnd Pro, Maps+ and live updates."
+    description = "Unlocks OsmAnd Pro and Maps+."
 ) {
     compatibleWith(COMPATIBILITY_OSMAND)
 

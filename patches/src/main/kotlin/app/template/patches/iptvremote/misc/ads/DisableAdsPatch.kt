@@ -30,8 +30,7 @@ private const val CONTEXT = "Landroid/content/Context;"
 @Suppress("unused")
 val disableAdsPatch = bytecodePatch(
     name = "Disable ads",
-    description = "Switches the app to its built-in no-ads provider, removing banner, " +
-            "interstitial and video pre-roll ads (Yandex, Wortise and mediated networks)."
+    description = "Removes all ads."
 ) {
     compatibleWith(COMPATIBILITY_IPTVREMOTE)
 

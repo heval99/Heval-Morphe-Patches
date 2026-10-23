@@ -74,9 +74,7 @@ private fun BytecodePatchContext.resolve(ref: MethodReference): String? {
 @Suppress("unused")
 val disableAdsPatch = bytecodePatch(
     name = "Disable ads",
-    description = "Stops every Google Mobile Ads banner, interstitial, native, rewarded and app-open ad " +
-        "from loading, including the Teads and Equativ ads it mediates. Taboola sponsored content " +
-        "and ads inside web pages are not removed.",
+    description = "Removes Google ads. Taboola and ads inside web pages stay.",
 ) {
     compatibleWith(COMPATIBILITY_LEQUIPE)
 

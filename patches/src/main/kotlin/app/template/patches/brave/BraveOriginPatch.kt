@@ -37,7 +37,7 @@ private const val PREF_PREFIX = "brave_origin_off_"
 // before the binder runs. Ported from dh6k's EnableBraveOriginResourcePatch.
 private val braveOriginResourcePatch = resourcePatch(
     name = "Brave Origin Resource Defaults",
-    description = "Sets Origin preference switches to enabled by default.",
+    description = "Turns the Brave Origin switches on by default.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_BRAVE)
@@ -83,7 +83,7 @@ private val braveOriginResourcePatch = resourcePatch(
 @Suppress("unused")
 val braveOriginPatch = bytecodePatch(
     name = "Brave Origin",
-    description = "Unlocks Brave Origin and enables feature toggle controls.",
+    description = "Unlocks Brave Origin.",
     default = true,
 ) {
     compatibleWith(COMPATIBILITY_BRAVE)
