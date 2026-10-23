@@ -140,9 +140,46 @@ object Constants {
             // default-on Disable Facebook SDK (its manifest flags) and by GmsCore support, and
             // that strips the literal surrounding quotes of the Arabic (values-ar)
             // string/fantasy_rebuild_squad_token. Not checked at runtime.
+            // 2026-10-22: updated to version 26.10.12 (versionCode 261012002; APKMirror bundle,
+            // signer CN=Sofa Score cert SHA-256 ecd3a2c9...f841, identical on APKPure). All 9 patches
+            // apply unchanged: SofascoreSmokeTest passes, and the Morphe matcher (FingerprintProbe)
+            // resolves 14 of 15 fingerprints uniquely - the 15th, TennisPromoSheet, is the documented
+            // optional sheet removed in 26.09.28. 26.10.05 was dropped (latest verified version only).
+            // 2026-10-22 additions on 26.10.12 (owner-approved; all three new fingerprints OK-unique
+            // in FingerprintProbe, asserted in SofascoreSmokeTest):
+            //   - Disable telemetry, "Sofascore NATS analytics": the app's own first-party event
+            //     sender (sends user_id, analytics_user_id, account id, advertising id, device info
+            //     and geo with every event) returns early. Anchor: (String, FirebaseBundle)V shape
+            //     plus "event_date" + "event_timestamp" (b9e.c here). The method never references
+            //     the NATS client or the live-update connection, which stay untouched.
+            //   - Disable telemetry, "Firebase Performance off": isPerformanceMonitoringEnabled
+            //     (vp3.o here) returns false. Anchor: no-arg Z holding "fpr_enabled",
+            //     "fpr_disabled_android_versions" and "com.google.firebase.perf.SdkEnabled".
+            //   - Disable ads, "skip ad SDK start-up": ReleaseApp's no-arg void consent method
+            //     ("ad_personalization" + "analytics_storage"; ReleaseApp is the unobfuscated
+            //     manifest Application class) loses its single
+            //     Thread.start() (the patch fails on any other count), so the background thread
+            //     that sets ad consent and starts Mintegral/Unity/Moloco/Pangle/Equativ/Nimbus/
+            //     AppHarbr and MobileAds.initialize never runs; the Firebase consent code stays
+            //     and the shared R8 runnable's run() is untouched. Rule 9: every MobileAds static
+            //     void is neutralised too (setAppVolume/setAppMuted come from the init listener and
+            //     AppHarbr, openDebugMenu from the hidden developer options). The banner,
+            //     interstitial, rewarded and IMA preroll load paths were traced: all are gated by the ad-free flags Disable ads already forces and by
+            //     PREF_AD_ADAPTER_INITIALISED (stays false without init), so no GMA load hooks.
+            //   - UserAccount.getDataSharingOptOut is deliberately NOT forced: it is serialized
+            //     with the account and synced to the user's Sofascore account, so forcing it
+            //     would change a server-side account setting, not just this device.
+            //   Status: smoke test, Morphe matcher and CLI decompile check (all 9 patches Applied
+            //   without -f; only the 3 new methods changed vs the earlier verification). Emulator
+            //   (stock control, all 9 patches): no crash/ANR/MobileAds error; the stock Unity,
+            //   Mintegral, Pangle, InMobi, Audience Network and AdMob data files and the fireperf
+            //   settings fetch are absent in patched; live scores still update (clock and new
+            //   incidents on a live match). Push, MicroG sign-in and the NATS transport not observed.
+            //   The rule-9 MobileAds statics step was added after those runs: it is covered by
+            //   SofascoreSmokeTest and a separate CLI decompile check, not by the emulator run.
             AppTarget(
-                version = "26.10.05",
-                versionCode = 261005002
+                version = "26.10.12",
+                versionCode = 261012002
             )
         )
     )
