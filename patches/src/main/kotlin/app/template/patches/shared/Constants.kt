@@ -1549,13 +1549,18 @@ object Constants {
     // NativeCameraSmokeTest passes unchanged (commit 4884eb6); not device-tested on 1.4.4.
     // Disable license check is a pre-rule licence bypass the owner kept (2026-10-19).
     // 2026-10-19: older target 1.4.3 dropped (latest version only, owner).
+    // 2026-10-23: target moved to 1.4.5 (versionCode 57; APKPure, same signing certificate).
+    // The premium class and setter were renamed by R8 (R1/q -> R1/r, U -> W); the "is_premium" +
+    // "rawcam_prefs" anchors and the PairIP LicenseClient.checkLicense still match uniquely.
+    // Smoke test and CLI decompile (no -f; exactly the 3 hooked methods change) pass; not run on
+    // the emulator (the APKPure bundle is armeabi-v7a only, which the emulator cannot install).
     val COMPATIBILITY_NATIVECAMERA = Compatibility(
         name = "Native Camera",
         packageName = "com.rawcam.app",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xD0BCFF,
         targets = listOf(
-            AppTarget(version = "1.4.4", versionCode = 56)
+            AppTarget(version = "1.4.5", versionCode = 57)
         )
     )
 
