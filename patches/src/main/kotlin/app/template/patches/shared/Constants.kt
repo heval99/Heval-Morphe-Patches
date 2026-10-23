@@ -529,7 +529,22 @@ object Constants {
             // 2026-10-19: older targets 1.95.104, 1.96.61 dropped (latest version only, owner);
             // BraveSmokeTest runs against 1.97.56. No versionCode: Brave's arm64 and x86_64
             // builds of one version carry different versionCodes.
-            AppTarget(version = "1.97.56"),
+            // 2026-10-23: target moved 1.97.56 -> 1.98.60 (versionCode 429806004, GitHub release
+            // Bravearm64Universal.apk). The Origin restart snackbar the policy-write callback
+            // calls is now (II)V (title and message string ids, p5()V before): the listener
+            // rewrite reads both ids from the `const` loads before that one call site (anchor:
+            // "Failed to set policy value for " plus the single BraveOriginPreferences void call)
+            // and loads them into two free locals found by a liveness check. All policy keys,
+            // pref keys and the other Origin anchors are unchanged. The new 1.98 activation flow
+            // (the "Ready to activate" snackbar and the Skus activation limit) is untested; on a
+            // fresh install it is not reached, because step 6 forces the token check that sets
+            // the O0 lock flag false. BraveSmokeTest passes on 1.98.60; CLI-applied without -f
+            // and decompile-checked on the arm64 build (25 methods + 1 helper, all 9 Origin
+            // defaults true, no string value changed). Emulator (x86_64 BraveMonox64 1.98.60,
+            // stock control): Origin opens without the paywall, all switches ON, toggling shows
+            // the "Changing Brave features" restart snackbar, brave_origin_off_* prefs are written,
+            // the activation flow does not appear, no crash.
+            AppTarget(version = "1.98.60"),
         )
     )
 
@@ -550,8 +565,25 @@ object Constants {
             // Bravearm64Universal.apk): the experimental patches apply unchanged; BraveSmokeTest
             // passes. Not runtime-tested on this version.
             // 2026-10-19: older target 1.96.61 dropped (latest version only, owner).
+            // 2026-10-23: target moved 1.97.56 -> 1.98.60 (versionCode 429806004, GitHub release
+            // Bravearm64Universal.apk). Disable telemetry applies unchanged. Hide promotional
+            // prompts: the rate-dialog check now matches any one object parameter ("L"), because
+            // in the x86_64 BraveMonox64 build R8 narrowed its Context parameter to an obfuscated
+            // ChromeTabbedActivity superclass and the old (Context)Z fingerprint failed there (the
+            // arm64 builds, including the Play AAB, keep Context). Do not pin Context again. The
+            // sponsored-image factory createBrandedWallpaper was renamed
+            // createNewTabTakeoverWallpaper (same parameters), so Disable ads now matches it by
+            // shape: the only NTPBackgroundImagesBridge method returning Wallpaper.
+            // Verified: BraveSmokeTest passes; all three patches Applied without -f on both the
+            // arm64 Universal and the x86_64 Mono build; decompile-checked on arm64. Emulator
+            // (x86_64): the Settings VPN callout card is gone and nothing crashes. The system
+            // "Set Brave as your default browser app?" role dialog on the very first start still
+            // shows, as in stock: it is Brave's one-off first-run request, not the recurring
+            // default-browser dialog this patch skips (that one needs many app opens, not
+            // reproduced). Sponsored new tab images never appeared on the emulator, so Disable ads
+            // is verified in bytecode only.
             AppTarget(
-                version = "1.97.56",
+                version = "1.98.60",
                 isExperimental = true,
             ),
         )
