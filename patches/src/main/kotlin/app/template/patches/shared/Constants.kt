@@ -1866,6 +1866,25 @@ object Constants {
     //     on, so contacts lose it even with that setting on. Missed calls, unknown numbers and the
     //     user's prefs (afterCall, afterCallForPbContacts, afterCallForNonPbContacts) are untouched;
     //     no pref is written.
+    // 2026-10-23 (#71, 26.41.5; TruecallerSmokeTest + FingerprintProbe, the 3 new fingerprints
+    //   OK-unique; NOT runtime-tested, the call log needs SMS registration): Show caller number in
+    //   call log (opt-in, owner-approved). The revamped call log's row mapper ((List) public, kept
+    //   CallLogHistoryItem.HistoryEntry enum reads ContextAction SAVE_CONTACT -> Name UNKNOWN ->
+    //   SubtitleLabel RECORDING -> WHATSAPP_VIDEO in that order; b98.G here) builds each row with one
+    //   invoke-direct/range HistoryEntry.<init>. Fields come from the toString labels
+    //   ("CallLogHistoryEntryData(primaryHistoryEventId=" / "HistoryEntry(id=" prefixes, replayed
+    //   append order through the outlined helpers; phonebookId J, normalisedNumber, countryCode,
+    //   name, spamScoreLabel, blockReasonLabel String, isSpam, isBlocked Z) and the row constructor's
+    //   stores; the mapper must pass the model's normalisedNumber as the row's. At the join of the
+    //   subtitle label branches (first two instructions write two free registers, checked) a new
+    //   static morpheCallLogSubtitle(entry, label) on the mapper's class replaces the label: for
+    //   phonebookId 0, not blocked, non-blank name and number, the number (PhoneNumberUtils
+    //   formatNumber with the upper-cased countryCode when it is two letters, else E.164), after
+    //   " · " when there is a text label (the (String) label class whose superclass is the
+    //   subtitle type and whose toString prints "Text(text="). Owner decision: resource labels
+    //   (recording, video, WhatsApp, screening, voicemail) stay as they are, without the number.
+    //   An Exception in the helper keeps the stock label. Only the revamped call log uses this
+    //   mapper; "Restore classic call log" shows the classic list instead.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
