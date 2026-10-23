@@ -1,3 +1,15 @@
+## [1.19.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.18.0...v1.19.0-dev.1) (2026-10-23)
+
+### 🐛 Bug Fixes
+
+* shorten patch descriptions ([9915181](https://github.com/heval99/Heval-Morphe-Patches/commit/99151812a30ac5cc0485fb43081a8c800c6ede01))
+
+### ✨ New Features
+
+* **fotmob:** updated to version 239.17834.20261016, add Disable ads, Disable telemetry, Hide betting content, Disable rating prompts and Disable FotMob+ promo popup ([4ba1b8f](https://github.com/heval99/Heval-Morphe-Patches/commit/4ba1b8f920a1d29ab5234d5045fd0c002f3e8aeb))
+* **sofascore:** updated to version 26.10.12, skip ad SDK start-up and disable more telemetry ([f25778e](https://github.com/heval99/Heval-Morphe-Patches/commit/f25778eaa0d1364cb35143820c74b2fb28f172a7))
+* **truecaller:** updated to version 26.41.5, add Disable auto-launch, Disable nags, Hide promotions and Hide after-call screen for contacts ([ba478ac](https://github.com/heval99/Heval-Morphe-Patches/commit/ba478ac6fc743d0c341158baae040db34697e900))
+
 ## [1.18.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.17.0...v1.18.0) (2026-10-22)
 
 ### 🐛 Bug Fixes
