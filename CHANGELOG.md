@@ -1,3 +1,13 @@
+## [1.19.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0-dev.2...v1.19.0-dev.3) (2026-10-23)
+
+### 🐛 Bug Fixes
+
+* **iptv:** remove IPTV support ([8265916](https://github.com/heval99/Heval-Morphe-Patches/commit/826591660af4c1834a252cf43a71d76d92c522e8))
+
+### ✨ New Features
+
+* **brave:** updated to version 1.98.60 ([17b1d43](https://github.com/heval99/Heval-Morphe-Patches/commit/17b1d431ec64315e834bf697a9630d5593e1a825))
+
 ## [1.19.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0-dev.1...v1.19.0-dev.2) (2026-10-23)
 
 ### 🐛 Bug Fixes

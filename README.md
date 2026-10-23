@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.19.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.19.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**74** apps&nbsp;&nbsp;•&nbsp;&nbsp;**185** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-23
+> **[v1.19.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.19.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**183** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-23
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -103,12 +103,11 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-FF6D00?style=flat-square" height="14" alt=""> | **Simple Radio** | 🚫 💎 2 | `6.3.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.streema.simpleradio) |
 | <img src="https://img.shields.io/badge/-%20-000000?style=flat-square" height="14" alt=""> | **SoundHound** | 🚫 1 | `10.5.8` | APK | [Play](https://play.google.com/store/apps/details?id=com.melodis.midomiMusicIdentifier.freemium) |
 
-#### 📺 Video & TV <sub>3 apps</sub>
+#### 📺 Video & TV <sub>2 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="https://img.shields.io/badge/-%20-009FE3?style=flat-square" height="14" alt=""> | **Duplila** | 🚫 💎 🔑 3 | `5.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.duplila.screenshare) |
-| <img src="https://img.shields.io/badge/-%20-1976D2?style=flat-square" height="14" alt=""> | **IPTV** | 🚫 💎 2 | `9.1.25` | APKM | [Play](https://play.google.com/store/apps/details?id=ru.iptvremote.android.iptv) |
 | <img src="https://img.shields.io/badge/-%20-1565C0?style=flat-square" height="14" alt=""> | **TV Smarters Player Expert** | 🚫 💎 2 | `11.2.0` | APKM | [Play](https://play.google.com/store/apps/details?id=app.expert.player) |
 
 #### 📚 Books & reading <sub>2 apps</sub>
@@ -151,7 +150,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
-| <img src="https://img.shields.io/badge/-%20-FF4500?style=flat-square" height="14" alt=""> | **Brave Browser** | 🚫 🛡️ 💎 🔕 🧪 4 | `1.97.56` | APKM | [Play](https://play.google.com/store/apps/details?id=com.brave.browser) |
+| <img src="https://img.shields.io/badge/-%20-FF4500?style=flat-square" height="14" alt=""> | **Brave Browser** | 🚫 🛡️ 💎 🔕 🧪 4 | `1.98.60` | APKM | [Play](https://play.google.com/store/apps/details?id=com.brave.browser) |
 | <img src="https://img.shields.io/badge/-%20-FF7139?style=flat-square" height="14" alt=""> | **Firefox** | 🛡️ 🔕 🧩 6 | `158.0` | APK | [Play](https://play.google.com/store/apps/details?id=org.mozilla.firefox) |
 | <img src="https://img.shields.io/badge/-%20-7542E5?style=flat-square" height="14" alt=""> | **Firefox Focus** | 🛡️ 🔕 🧩 5 | `158.0` | APKM | [Play](https://play.google.com/store/apps/details?id=org.mozilla.focus) |
 | <img src="https://img.shields.io/badge/-%20-FFB700?style=flat-square" height="14" alt=""> | **Via** | 🛡️ 1 | `7.3.3` | APK | [Play](https://play.google.com/store/apps/details?id=mark.via.gp) |
@@ -654,17 +653,6 @@ Verified on: `5.1`
 
 </details>
 <details>
-<summary><b>IPTV</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>ru.iptvremote.android.iptv</code></summary>
-
-Verified on: `9.1.25`
-
-| Patch | What it does | Default |
-|---|---|:-:|
-| 🚫 **Disable ads** | Removes all ads. | ✅ |
-| 💎 **Enable Premium** | Unlocks the Pro access control settings. | ✅ |
-
-</details>
-<details>
 <summary><b>TV Smarters Player Expert</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>app.expert.player</code></summary>
 
 Verified on: `11.2.0`
@@ -862,14 +850,14 @@ Verified on: `6.6.20`
 <details>
 <summary><b>Brave Browser</b> &nbsp;·&nbsp; 4 patches &nbsp;·&nbsp; <code>com.brave.browser</code></summary>
 
-Verified on: `1.97.56`
+Verified on: `1.98.60`
 
 | Patch | What it does | Default |
 |---|---|:-:|
 | 💎 **Brave Origin** | Unlocks Brave Origin. | ✅ |
 | 🚫 **Disable ads** 🧪 | Hides sponsored new tab images and the Brave Rewards ads popup. | ➖ |
 | 🛡️ **Disable telemetry** 🧪 | Disables usage analytics and crash reports. | ➖ |
-| 🔕 **Hide promotional prompts** 🧪 | Hides default browser, rating and promo prompts. | ➖ |
+| 🔕 **Hide promotional prompts** 🧪 | Hides the recurring default browser, rating and promo prompts. | ➖ |
 
 </details>
 <details>
