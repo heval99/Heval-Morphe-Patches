@@ -240,19 +240,58 @@ object Constants {
     // but on 238+, where the literal is present, a picker or NoEntitlement branch shape that no
     // longer matches now fails the whole patch instead of logging a warning, so a drifted icon
     // screen fails Enable FotMob+ (ad removal included) loudly.
+    // 2026-10-22: updated to version 239.17834.20261016 (versionCode 17834; same CN=Christer
+    // Nordvik signer). 239 removed the MainActivityWrapper class: .ui.MainActivityWrapper is now a
+    // manifest activity-alias targeting com.fotmob.android.ui.MainActivity, so GmsCore support
+    // hooks the manifest-declared MainActivity.onCreate(Bundle) instead (unique; the checkGmsCore
+    // invoke-static/range p0 injection is unchanged). The other anchors (staff email strings,
+    // "No active subscriptions found", TYPE_NO_CREDENTIAL constructor, the onboarding log
+    // prefixes) resolve unchanged; only R8 names rotated. FotMobSmokeTest passes on 239.
+    // 2026-10-22: two new patches on 239 (owner-approved), verified by FotMobSmokeTest, the
+    // Morphe matcher (FingerprintProbe) and a CLI decompile check; runtime below.
+    // - "Disable ads": shouldShowAds() (no-arg boolean holding the log string starting "Ads
+    //   disabled: user is in sanctioned country", lc.f in 239) returns false, the FotMob+ path.
+    // - "Disable telemetry": the "firebase_analytics_collection_deactivated" read answers TRUE
+    //   (shared with Sofascore, shared/misc/telemetry), AppMeasurementSdk.logEvent(String, String,
+    //   Bundle) returns early, the AppsFlyerLib subclass's start/logEvent/logSession/logAdRevenue
+    //   (6 methods) return early, and in the classes holding "firebase_crashlytics_collection_
+    //   enabled" only the synchronized no-arg boolean (the DataCollectionArbiter getter, e93.o)
+    //   returns false; the unrelated static SDK_INT check merged into the other class is untouched.
+    // 2026-10-22: three more patches on 239 (owner-approved), verified by FotMobSmokeTest, the
+    // Morphe matcher (FingerprintProbe: each fingerprint OK-unique) and a CLI decompile check.
+    // - "Hide betting content" (default off, like the other apps' betting patches): the odds gate,
+    //   a suspend (Object)Object holding the log line starting "User has disabled odds in
+    //   settings" (am9.b in 239), returns Boolean.FALSE at once. Match odds, the odds tab (built
+    //   only when the gate allows), the odds promo and betting card offers wait on it. The odds
+    //   format (NO_ODDS) reader is deliberately not forced: it feeds the account settings sync and
+    //   would push "No odds" to the user's server-side settings. Settings > Odds and its age-gate
+    //   dialog stay reachable, user-initiated.
+    // - "Disable rating prompts": the only method constructing RatingAppMessage
+    //   (<init>(String), suspend (Object)Object shape, u20.a in 239) returns null, which its caller
+    //   already treats as "no message".
+    // - "Disable FotMob+ promo popup" (owner's name): the public static no-arg PlusPromoConfig
+    //   reader of the "fotmobplus_promo" Remote Config key (jnb.a in 239) returns null. Both
+    //   callers null-check it: the promo eligibility coroutine answers false and the RevenueCat
+    //   experiment attribute is not set.
+    // 2026-10-22 runtime (emulator, ARM translation, stock control, all 8 patches): no crash or
+    // ANR; on the match page the stock Stake/bet365 odds rows, banner and in-feed ad are gone with
+    // no empty placeholder; GMA network lines 469 -> 0, Firebase Analytics reports deactivated.
+    // Not reached on the emulator: the FotMob+ membership screen (no entry point in More, not
+    // exported), the odds tab and betting cards (absent on the tested match) and the rating
+    // prompt (shown 21-40 days after install). A second run with the 7 other patches and WITHOUT
+    // Enable FotMob+ (the free-user path of Disable ads) also passed: no crash and no MobileAds or
+    // ads_mobile_sdk exception on the tour, the odds row and banner gone, GMA lines 426 -> 0.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00985F,
         targets = listOf(
-            // Verified 2026-10-13 (see the comment above), including the emulator run; the
-            // 2026-10-18 GmsCore support / Spoof signature patches were verified on it only.
-            // 2026-10-19: older targets 238.17666.20260928, 237.17536.20260911, 236.17398.20260827
-            // and 236.17338.20260822 dropped (latest version only, owner).
+            // 2026-10-22: 239.17834.20261016 replaces 238.17794.20261012 (latest version only,
+            // owner 2026-10-19); see the 2026-10-22 note above for what was verified on it.
             AppTarget(
-                version = "238.17794.20261012",
-                versionCode = 17794
+                version = "239.17834.20261016",
+                versionCode = 17834
             )
         )
     )
