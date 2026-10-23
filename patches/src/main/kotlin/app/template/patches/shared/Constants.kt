@@ -2765,17 +2765,22 @@ object Constants {
     // Decompile-checked 2026-10-17 (CLI, no -f): the 9 GMA classes above change, every load and
     // MobileAds static void starts with return-void, putPublisherFirstPartyIdEnabled returns 0,
     // and the app's banner and interstitial call sites still call the patched loads.
-    // Emulator 2026-10-17: not runnable here. The app is arm64-only React Native, and on the x86_64
+    // Emulator 2026-10-17: not runnable here. The 10.69.1 source was arm64-only React Native, and on the x86_64
     // emulator SoLoader never finds its arm64 libs, so stock and patched both crash at start with the
     // same AssertionError (environment, not the patch). The target is EXPERIMENTAL until it is
     // checked on an arm64 device: ads gone, no empty boxes, no crash. Shipped in v1.17.0 as
     // experimental and on by default (owner decision; the arm64 device check is still pending).
+    // 2026-10-23: target moved to 10.70.0 (versionCode 1620; APKPure XAPK, armeabi-v7a only, same
+    // Airweb signing certificate). The GMA library anchors are unchanged; the app's banner and
+    // interstitial callers were only renamed by R8. Smoke test and CLI decompile (no -f; the same
+    // 25 GMA methods change) pass; not run on the emulator (an armeabi-v7a APK doesn't install on
+    // it). Still experimental (arm64 device check pending).
     val COMPATIBILITY_LEQUIPE = Compatibility(
         name = "L'Équipe",
         packageName = "lequipe.fr",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0A1E32,
-        targets = listOf(AppTarget(version = "10.69.1", versionCode = 1616, isExperimental = true))
+        targets = listOf(AppTarget(version = "10.70.0", versionCode = 1620, isExperimental = true))
     )
 
     // Written 2026-10-17 against de.transfermarkt.v2 4.3.2 (versionCode 2075, Play bundle merged).

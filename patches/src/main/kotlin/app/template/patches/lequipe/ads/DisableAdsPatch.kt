@@ -108,8 +108,8 @@ val disableAdsPatch = bytecodePatch(
         }
 
         // 3. Every GMA load call in the APK must land on a patched method, and the app's own
-        //    banner and interstitial calls (w21/qh3 banner coroutines, the x21 bidding
-        //    interstitial in 10.69.1) must still be there. Otherwise the app has moved to an
+        //    banner and interstitial calls (v21/mh3 banner coroutines, the w21 bidding
+        //    interstitial in 10.70.0) must still be there. Otherwise the app has moved to an
         //    entry point this patch does not cover.
         val appCalls = mutableSetOf<String>()
         val uncovered = mutableSetOf<String>()
