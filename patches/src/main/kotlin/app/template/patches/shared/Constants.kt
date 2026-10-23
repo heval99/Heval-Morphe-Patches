@@ -2688,24 +2688,36 @@ object Constants {
         targets = listOf(AppTarget(version = "9.18.3", versionCode = 405213))
     )
 
-    // Written 2026-10-17 against com.eurosport 8.33.0 (versionCode 113758, APKMirror
-    // bundle merged). Signer CN=Unknown, OU=Eurosport, O=Eurosport, L=Issy, C=fr, SHA-256
-    // 03428013...9a17, plus a v3.1 Google (CN=Android) signer for SDK 33+, SHA-256 cabdcdfd...09a1.
+    // Updated 2026-10-23 to com.eurosport 8.34.1 (versionCode 113929; replaces 8.33.0 /
+    // 113758). Signer: v3.1 key rotation; the developer cert CN=Unknown, OU=Eurosport,
+    // O=Eurosport, L=Issy, C=fr (SHA-256 03428013...9a17) signs for SDK 24-32 and the rotated
+    // Google key (CN=Android, SHA-256 cabdcdfd...09a1) for SDK 33+; apksigner verifies the
+    // lineage. 8.34.1 dropped PlayerModel (and its showAds flag), so Disable ads step 3 now nulls
+    // PlayerMediaInfo's adsMetadata instead; every other anchor is unchanged. EurosportSmokeTest
+    // passes on 8.34.1 (2026-10-23). Decompile-checked on 8.34.1 (CLI, no -f): exactly the 37
+    // hooked methods change, the null store sits right before the only adsMetadata write, and
+    // the string values are unchanged. Emulator on 8.34.1 (stock control): no crash; the home
+    // GAM banner and native ad card are gone and an on-demand video plays with no FreeWheel or
+    // doubleclick requests. Not seen: in-app live playback (live cards open HBO Max on the web)
+    // and the partner-promo banner.
+    // Written 2026-10-17 against 8.33.0 (APKMirror bundle merged).
     // The app is R8-renamed almost everywhere, so its models are found by their toString()
     // output and the methods by shape; the Storyteller, Teads, Comscore, New Relic, AppsFlyer and
-    // Apptentive SDKs keep their class names. EurosportSmokeTest asserts every hook. A CLI build
-    // (no -f) applies all three patches and changes the 13 hooked classes; a dexdump of the
-    // SdkConfig, PlayerModel, Settings, StorytellerEventTrackingOptions and setModules hooks
-    // matches, and the string values are unchanged after the manifest edit (aapt2 diff of every
+    // Apptentive SDKs keep their class names. EurosportSmokeTest asserts every hook. On 8.33.0 a
+    // CLI build (no -f) applied all three patches and changed the 13 hooked classes; a dexdump of
+    // the SdkConfig, PlayerModel, Settings, StorytellerEventTrackingOptions and setModules hooks
+    // matched, and the string values were unchanged after the manifest edit (aapt2 diff of every
     // string, plurals and array entry, rule 12).
     // Limitation: ads inserted into live and premium streams (AdSparx SSAI) and video
     // entitlement / DRM are server-side and not touched.
     //   - Disable ads: the SdkConfig model ("SdkConfig(sdk=") constructor stores enabled = false
     //     for GOOGLE_AD and TEADS (matched by the Sdk enum's name()), so the ad view factory makes
     //     a 0x0 view; the only static (1 arg) AdPlaceholderModel factory ("AdPlaceholderModel(
-    //     content=", in the class with "Unsupported provider: ") answers null; PlayerModel
-    //     ("PlayerModel(isLive=") stores showAds (the field toString prints after "showAds=")
-    //     as false; Storyteller Settings (both constructors) store AdSource.NoAds (the enum
+    //     content=", in the class with "Unsupported provider: ") answers null; PlayerMediaInfo
+    //     ("PlayerMediaInfo(id=") stores null as adsMetadata (its only final field of the
+    //     "AdsMetadata(id=" type, cross-checked against what toString prints after
+    //     "adsMetadata="), so the player sets up no IMA ads (8.33.0 instead forced PlayerModel's
+    //     showAds false); Storyteller Settings (both constructors) store AdSource.NoAds (the enum
     //     with NoAds / IntegratingApp / Storyteller); StorytellerClipsAdConfiguration
     //     getBottomBannerEnabled / getPreRollEnabled answer false; Storyteller.setModules gets an
     //     empty list (the patch fails if a non-ads StorytellerModule exists; the app registers
@@ -2725,9 +2737,9 @@ object Constants {
     //   - Hide partner promotions (off by default): the only static (1 arg) WatchBannerUi
     //     factory ("WatchBannerUi(label=") answers null, which also hides the HBO Max /
     //     discovery+ links to the event.
-    // Decompile-checked 2026-10-17 (CLI, no -f; jadx confirms the SdkConfig blocks clear the
-    // ad/telemetry vendors and never STORYTELLER; the string table is unchanged). Emulator
-    // 2026-10-17 (stock control): 2 cold starts, no crash with Comscore/New Relic/Apptentive
+    // Decompile-checked on 8.33.0, 2026-10-17 (CLI, no -f; jadx confirms the SdkConfig blocks
+    // clear the ad/telemetry vendors and never STORYTELLER; the string table is unchanged).
+    // Emulator on 8.33.0, 2026-10-17 (stock control): 2 cold starts, no crash with Comscore/New Relic/Apptentive
     // stubbed; the home-feed "ADVERTISEMENT" card is gone and the feed closes up; a free clip
     // plays without pre-roll (stock showed none at that moment either); no
     // Comscore/NewRelic/Teads/Permutive/Chartbeat/Mux log lines. Not seen on either build:
@@ -2737,7 +2749,7 @@ object Constants {
         packageName = "com.eurosport",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x000000, // The adaptive icon's black background.
-        targets = listOf(AppTarget(version = "8.33.0", versionCode = 113758))
+        targets = listOf(AppTarget(version = "8.34.1", versionCode = 113929))
     )
 
     // Verified 2026-10-17 against lequipe.fr 10.69.1 (versionCode 1616) in bytecode only (smoke
