@@ -2613,12 +2613,17 @@ object Constants {
     // overview), no ad log lines in 60 s idle (so no retry loop), no crash in either build. The
     // wallpaper "Download [AD]" button: stock plays a rewarded ad first; patched downloads at
     // once. That is the app's own reaction to the failed load, not a patched reward path.
+    // 2026-10-23: target moved to 2.3.585 (versionCode 905; APKPure XAPK, armeabi-v7a only, same
+    // signing certificate). Only R8 renames (plugin classes P8 -> w9, UXCam/Branch handlers); every
+    // string and shape anchor is still unique and the smoke test passes unchanged. CLI decompile
+    // (no -f): 28 hooked methods change plus the added NO_FILL helper, resources byte-identical.
+    // Not run on the emulator (armeabi-v7a only, which the emulator cannot install).
     val COMPATIBILITY_FOOTBALL433 = Compatibility(
         name = "433",
         packageName = "com.football433",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF1FF00, // The adaptive icon's neon yellow background.
-        targets = listOf(AppTarget(version = "2.3.548", versionCode = 868))
+        targets = listOf(AppTarget(version = "2.3.585", versionCode = 905))
     )
 
     // Same app, used only by "Disable telemetry", so Morphe Manager flags it as experimental
@@ -2640,12 +2645,13 @@ object Constants {
     // Decompile-checked 2026-10-17 (every hook and the one-line manifest change). On the emulator
     // neither stock nor patched logged Sentry, UXCam or Branch lines, so the effect can't be told
     // apart there; Airship push work still runs, as intended. Stays experimental.
+    // 2026-10-23: moved to 2.3.585 with the main entry (telemetry anchors unchanged apart from R8 renames).
     val COMPATIBILITY_FOOTBALL433_EXPERIMENTAL = Compatibility(
         name = "433",
         packageName = "com.football433",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF1FF00,
-        targets = listOf(AppTarget(version = "2.3.548", versionCode = 868, isExperimental = true))
+        targets = listOf(AppTarget(version = "2.3.585", versionCode = 905, isExperimental = true))
     )
 
     // Written 2026-10-17 against com.mail.mobile.android.mail 9.18.3 (versionCode
