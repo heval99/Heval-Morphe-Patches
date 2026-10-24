@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.19.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.19.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**183** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-24
+> **[v2.0.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.0.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**183** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-24
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -171,7 +171,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-1084F7?style=flat-square" height="14" alt=""> | **Bluetooth Scanner** | 🚫 1 | `1.9.3` | APK | [Play](https://play.google.com/store/apps/details?id=com.pzolee.bluetoothscanner) |
 | <img src="https://img.shields.io/badge/-%20-0288D1?style=flat-square" height="14" alt=""> | **Brevent** | 💎 1 | `4.2.31.1` | APK | [Play](https://play.google.com/store/apps/details?id=me.piebridge.brevent) |
 | <img src="https://img.shields.io/badge/-%20-009688?style=flat-square" height="14" alt=""> | **IrCode Finder** | 🚫 1 | `14.17.0 build 206 InAPP` | APKM | [Play](https://play.google.com/store/apps/details?id=ru.wasiliysoft.ircodefindernec) |
-| <img src="https://img.shields.io/badge/-%20-406C5C?style=flat-square" height="14" alt=""> | **LibrePods** | 💎 1 | `1.0.1-rc1-play` | APKM | [Play](https://play.google.com/store/apps/details?id=me.kavishdevar.librepods) |
+| <img src="https://img.shields.io/badge/-%20-406C5C?style=flat-square" height="14" alt=""> | **LibrePods** | 💎 1 | `1.0.4-play` | APKM | [Play](https://play.google.com/store/apps/details?id=me.kavishdevar.librepods) |
 | <img src="https://img.shields.io/badge/-%20-3A362F?style=flat-square" height="14" alt=""> | **LuckyClick** | 🚫 🔑 2 | `3.28` | APKM | [Play](https://play.google.com/store/apps/details?id=com.peter890331.luckyclick.app) |
 | <img src="https://img.shields.io/badge/-%20-D0BCFF?style=flat-square" height="14" alt=""> | **Native Camera** | 💎 🔑 2 | `1.4.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.rawcam.app) |
 | <img src="https://img.shields.io/badge/-%20-9C27B0?style=flat-square" height="14" alt=""> | **Pocket Color Wheel** | 🚫 1 | `3.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.pocketcolorwheel.PCW) |
@@ -983,7 +983,7 @@ Verified on: `14.17.0 build 206 InAPP`
 <details>
 <summary><b>LibrePods</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>me.kavishdevar.librepods</code></summary>
 
-Verified on: `1.0.1-rc1-play`
+Verified on: `1.0.4-play`
 
 | Patch | What it does | Default |
 |---|---|:-:|

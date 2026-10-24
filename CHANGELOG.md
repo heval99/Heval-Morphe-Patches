@@ -1,3 +1,19 @@
+## [2.0.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0...v2.0.0-dev.1) (2026-10-24)
+
+### ⚠ BREAKING CHANGES
+
+* the patch bundle is built for Morphe patcher 2.0.0 and needs Morphe Manager 2.0 or newer. Manager 1.x shows "Update Morphe" and offers no patches from it.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### 🐛 Bug Fixes
+
+* **librepods:** updated to version 1.0.4-play ([7ba76bc](https://github.com/heval99/Heval-Morphe-Patches/commit/7ba76bcc328fdae94acf722e8a0071503306b54e))
+
+### ✨ New Features
+
+* upgrade to Morphe patcher 2.0.0 ([6c0d665](https://github.com/heval99/Heval-Morphe-Patches/commit/6c0d66554de55e0acb64243632d14fcfcf20d8c7))
+
 ## [1.19.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.18.0...v1.19.0) (2026-10-24)
 
 ### 🐛 Bug Fixes
