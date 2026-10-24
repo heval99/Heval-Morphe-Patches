@@ -601,8 +601,13 @@ object Constants {
     // 2026-10-13, 1.0.1-rc1-play (versionCode 64): premium logic unchanged; the CLI applies
     // Enable Premium without -f and the patched processPurchases() (uo.e(List)) loads true
     // before Boolean.valueOf feeds the premium state on every path, including the empty list.
-    // 2026-10-19: older target 1.0.0-rc1-play dropped (latest version only, owner);
-    // LibrePodsSmokeTest runs against 1.0.1-rc1-play.
+    // 2026-10-19: older target 1.0.0-rc1-play dropped (latest version only, owner).
+    // 2026-10-24, 1.0.4-play (versionCode 100040301, owner-supplied APKMirror .apkm, merged;
+    // signer CN=Kavish Devar, cert SHA-256 b1b8511c...4428e): replaces 1.0.1-rc1-play. The
+    // ProcessPurchasesFingerprint (product id + productIds/productId/purchaseState, V(List))
+    // is OK-unique under the real matcher (now so.e(List)). The gate is unchanged: the premium
+    // StateFlow starts as Boolean.FALSE in LibrePodsApplication.onCreate and its only writer
+    // is the single Boolean.valueOf in that method. LibrePodsSmokeTest runs against 1.0.4-play.
     val COMPATIBILITY_LIBREPODS = Compatibility(
         name = "LibrePods",
         packageName = "me.kavishdevar.librepods",
@@ -610,8 +615,8 @@ object Constants {
         appIconColor = 0x406C5C,
         targets = listOf(
             AppTarget(
-                version = "1.0.1-rc1-play",
-                versionCode = 64
+                version = "1.0.4-play",
+                versionCode = 100040301
             )
         )
     )

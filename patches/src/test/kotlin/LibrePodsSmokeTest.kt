@@ -38,6 +38,7 @@ class LibrePodsSmokeTest {
     @Test
     fun `Enable Premium patch applies and forces premium flag in PlayBillingProvider`() {
         val root = repoRoot()
+        // 1.0.4-play (versionCode 100040301), the COMPATIBILITY_LIBREPODS target.
         val apk = File(root, "apks/librepods/base.apk")
 
         // The APK lives in the gitignored apks/ directory. Skip rather than fail when it is
