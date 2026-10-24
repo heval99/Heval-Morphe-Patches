@@ -1934,6 +1934,18 @@ object Constants {
     //   screen. All other isPremium readers keep the forced true. Side effect: a real subscriber who
     //   also enables Enable Premium sees the plans screen in the Premium tab instead of their
     //   subscription screen; managing the subscription in the Play Store still works.
+    // 2026-10-24 (#76, 26.41.5; TruecallerSmokeTest + FingerprintProbe, the 2 new fingerprints
+    //   OK-unique; NOT runtime-tested, the call log needs SMS registration): Hide call log filters
+    //   (opt-in, owner-approved). The revamped call log's filter row (chips plus the SIM selector) is
+    //   one static Compose function (a050.e here; matched by the exact string "filtersStartPadding",
+    //   static, void and its 11 parameter types); it returns at once, before its restart group, so it
+    //   emits nothing in either mode (pinned, or the LazyColumn item "call_log_filters"). The selected
+    //   filter is an in-memory StateFlow (initial NONE, reset to NONE by TruecallerInit.onCreate, never
+    //   persisted; the SIM choice likewise), but the missed call / voicemail / assistant intent extras
+    //   select a filter through one setter, which would leave the list filtered with no chips to undo
+    //   it. That setter (ud8.f(FilterType) here, the (kept com.truecaller.calllog.api.FilterType)V
+    //   call after "set_missed_filter" and FilterType.MISSED in TruecallerInit.onNewIntent; onCreate
+    //   calls the same one) now always selects NONE, the value behind the All chip.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
