@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.19.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.19.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**183** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-23
+> **[v1.19.0-dev.6](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v1.19.0-dev.6)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**183** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-24
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -132,7 +132,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 |:-:|---|---|---|:-:|:-:|
 | <img src="https://img.shields.io/badge/-%20-0288D1?style=flat-square" height="14" alt=""> | **FishBuddy** | 💎 1 | `11.0.125` | APKM | [Play](https://play.google.com/store/apps/details?id=no.fishbuddy_playground.app) |
 | <img src="https://img.shields.io/badge/-%20-1565C0?style=flat-square" height="14" alt=""> | **Fishing Points** | 💎 1 | `4.7.3` | APK | [Play](https://play.google.com/store/apps/details?id=com.gregacucnik.fishingpoints) |
-| <img src="https://img.shields.io/badge/-%20-7CB342?style=flat-square" height="14" alt=""> | **OsmAnd** | 💎 1 | `5.4.10` | APKM | [Play](https://play.google.com/store/apps/details?id=net.osmand) |
+| <img src="https://img.shields.io/badge/-%20-7CB342?style=flat-square" height="14" alt=""> | **OsmAnd** | 💎 1 | `5.4.11` | APKM | [Play](https://play.google.com/store/apps/details?id=net.osmand) |
 | <img src="https://img.shields.io/badge/-%20-112D5A?style=flat-square" height="14" alt=""> | **VesselFinder** | 🚫 🔑 2 | `6.7.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.astrapaging.vff) |
 | <img src="https://img.shields.io/badge/-%20-1565C0?style=flat-square" height="14" alt=""> | **Weather Underground** | 🚫 1 | `6.20.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.wunderground.android.weather) |
 
@@ -759,11 +759,11 @@ Verified on: `4.7.3`
 <details>
 <summary><b>OsmAnd</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>net.osmand</code></summary>
 
-Verified on: `5.4.10`
+Verified on: `5.4.11`
 
 | Patch | What it does | Default |
 |---|---|:-:|
-| 💎 **Enable Premium** | Unlocks OsmAnd Pro and Maps+. | ✅ |
+| 💎 **Enable Premium** | Unlocks OsmAnd Pro, Maps+ and Android Auto. | ✅ |
 
 </details>
 <details>

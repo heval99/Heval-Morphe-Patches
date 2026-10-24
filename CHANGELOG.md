@@ -1,3 +1,10 @@
+## [1.19.0-dev.6](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0-dev.5...v1.19.0-dev.6) (2026-10-24)
+
+### 🐛 Bug Fixes
+
+* **onefootball:** remove more in-feed ads ([00f7109](https://github.com/heval99/Heval-Morphe-Patches/commit/00f71094e06913c5ea049d3f8072a41b6f1717d7))
+* **osmand:** updated to version 5.4.11 ([df6a7d7](https://github.com/heval99/Heval-Morphe-Patches/commit/df6a7d7734ffb0ee83fc9964adc5fcc3049ad472)), closes [#79](https://github.com/heval99/Heval-Morphe-Patches/issues/79)
+
 ## [1.19.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0-dev.4...v1.19.0-dev.5) (2026-10-23)
 
 ### 🐛 Bug Fixes
