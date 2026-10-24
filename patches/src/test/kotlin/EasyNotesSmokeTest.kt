@@ -62,12 +62,8 @@ class EasyNotesSmokeTest {
             "expected ${wanted.size} EasyNotes patches in the bundle, found ${target.map { it.name }}"
         )
 
-        val config = PatcherConfig(
-            apk,
-            workDir.resolve("out"),
-            PKG,
-            "1.3.63.0921",
-        )
+        // validate = true: every match()/matchOrNull() must match at most one method.
+        val config = PatcherConfig(apk, workDir.resolve("out"), validate = true)
 
         // Patcher.invoke() only executes the patches. Patcher.get() finalizes the bytecode
         // context and emits the patched dex files - without it you just re-read the unpatched

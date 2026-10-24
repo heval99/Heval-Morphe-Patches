@@ -1,5 +1,6 @@
 import app.morphe.patcher.Patcher
 import app.morphe.patcher.PatcherConfig
+import app.morphe.patcher.apk.ApkUtils.applyTo
 import app.morphe.patcher.patch.Patch
 import app.morphe.patcher.patch.loadPatchesFromJar
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -20,6 +21,9 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import java.io.File
 import java.nio.ByteBuffer
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.util.zip.ZipFile
 
 /**
  * Shared helpers for the per-app unlock smoke tests. Each test applies the app's patch to the
@@ -236,7 +240,7 @@ fun assertReturnsTrueFlow(method: Method, label: String, diagnostics: String = "
 
 /**
  * Applies [patchNames] (filtered to patches compatible with [pkg]) to [apk] and returns every
- * class from the emitted dex files. Pass [filterByCompatibility] = false for universal patches
+ * class of the patched APK, one ClassDef per type, in ART load order. Pass [filterByCompatibility] = false for universal patches
  * that declare no compatibility at all (they apply to any package).
  */
 fun applyPatches(
@@ -258,11 +262,24 @@ fun applyPatches(
         "expected patches $patchNames in the bundle, found ${target.map { it.name }}"
     )
 
-    val config = PatcherConfig(apk, workDir.resolve("out"), pkg, version)
+    // validate = true: every match()/matchOrNull() must match at most one method (as matchSingle()
+    // would), and slow fingerprints and patches are logged. The patcher behaviours (exact strings,
+    // on-request resource decoding, ...) follow the bundle manifest's Patcher-Version, as in
+    // Manager and the CLI.
+    val config = PatcherConfig(apk, workDir.resolve("out"), validate = true)
 
     // Patcher.invoke() only executes the patches. Patcher.get() finalizes the bytecode context
     // and emits the patched dex files - without it you just re-read the unpatched input dex.
-    val result = Patcher(config).use { patcher ->
+    //
+    // Since morphe-patcher 2.0.0 (default BytecodeMode.STRIP_FAST), PatcherResult.dexFiles is NOT
+    // the app's class set: it holds only the original dex files a patch stripped classes from plus
+    // new dex files (numbered after the originals) with the modified classes; original dex files
+    // without a modified class are left out (PatcherResult.dexFilesComplete = false), and
+    // ApkUtils.applyTo overlays dexFiles on the input APK by entry name. Reading dexFiles alone
+    // drops every class of an untouched dex, so "nothing calls X" scans would pass vacuously.
+    // Build the patched APK the way Manager does (Session.kt: resourcesApk, else a copy of the
+    // input, then applyTo) and read its classes*.dex instead.
+    val patchedApk = Patcher(config).use { patcher ->
         patcher += target.toSet()
         val results = runBlocking { patcher.invoke().toList() }
         val ours = results.filter { it.patch.name in patchNames }
@@ -273,15 +290,52 @@ fun applyPatches(
         for (r in ours) {
             assertNull(r.exception, "patch '${r.patch.name}' failed: ${r.exception}")
         }
-        patcher.get()
+        val result = patcher.get()
+        assertTrue(result.dexFiles.isNotEmpty(), "patcher produced no patched dex files")
+        val output = result.resources.resourcesApk
+            ?: workDir.resolve("patched-unsigned.apk").also { copy ->
+                Files.copy(apk.toPath(), copy.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            }
+        result.applyTo(output)
+        output
     }
 
-    assertTrue(result.dexFiles.isNotEmpty(), "patcher produced no patched dex files")
+    val classes = patchedApkClasses(patchedApk)
+    // No patch here removes a class, so every stock class must still be there; this fails if the
+    // harness ever reads a partial dex set again.
+    val types = classes.mapTo(HashSet()) { it.type }
+    val missing = patchedApkClasses(apk).map { it.type }.filter { it !in types }
+    assertTrue(
+        missing.isEmpty(),
+        "${missing.size} stock classes are missing from the patched APK, e.g. ${missing.take(5)}"
+    )
+    return classes
+}
 
-    // Drain every stream up front (temp files stay open otherwise) and load from memory;
-    // path-backed dex files stay locked on Windows.
-    return result.dexFiles.flatMap { dexFile ->
-        val bytes = dexFile.stream.use { it.readBytes() }
-        DexBackedDexFile(Opcodes.forApi(36), ByteBuffer.wrap(bytes)).classes.toList()
+/**
+ * Every class of the dex files ART loads from [apk] (root `classes*.dex`, in load order), read
+ * from memory (path-backed dex files stay locked on Windows). Fails if a type is defined twice,
+ * so a lookup can never land on a stale copy of a patched class.
+ */
+fun patchedApkClasses(apk: File): List<ClassDef> {
+    val dexEntry = Regex("""classes(\d*)\.dex""")
+    val perDex = ZipFile(apk).use { zip ->
+        zip.entries().asSequence()
+            .mapNotNull { entry -> dexEntry.matchEntire(entry.name)?.let { entry to it } }
+            .sortedBy { (_, match) -> match.groupValues[1].toIntOrNull() ?: 1 }
+            .map { (entry, _) ->
+                val bytes = zip.getInputStream(entry).use { it.readBytes() }
+                entry.name to DexBackedDexFile(Opcodes.forApi(36), ByteBuffer.wrap(bytes)).classes.toList()
+            }
+            .toList()
     }
+    val classes = perDex.flatMap { it.second }
+    val duplicates = perDex.flatMap { (name, defs) -> defs.map { it.type to name } }
+        .groupBy({ it.first }, { it.second })
+        .filterValues { it.size > 1 }
+    assertTrue(
+        duplicates.isEmpty(),
+        "${duplicates.size} types are defined more than once in ${apk.name}, e.g. ${duplicates.entries.take(5)}"
+    )
+    return classes
 }

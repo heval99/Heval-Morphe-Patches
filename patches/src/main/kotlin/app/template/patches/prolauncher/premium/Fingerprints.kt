@@ -15,9 +15,11 @@ internal const val IS_PRO_PREF = "IS_PRO"
 
 // SubscriberInfo is Pro Launcher's kept (unobfuscated) data class for the subscription state that
 // the Compose screens collect from a StateFlow. The anchor is the class name plus the reader shape:
-// a no-arg Z method that loads the isPro:Z field.
+// a no-arg Z method that loads the isPro:Z field. The kept getter name pins the match to isPro():
+// the data-class component1() has the same shape, and a fingerprint must match a single method.
 internal object SubscriberInfoIsProFingerprint : Fingerprint(
     definingClass = SUBSCRIBER_INFO,
+    name = IS_PRO_FIELD,
     returnType = "Z",
     parameters = listOf(),
     filters = listOf(fieldAccess("$SUBSCRIBER_INFO->$IS_PRO_FIELD:Z", Opcode.IGET_BOOLEAN)),

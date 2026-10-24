@@ -129,7 +129,10 @@ internal object BusinessDetailsScreenFingerprint : Fingerprint(
         "L", "L", "Lkotlin/jvm/functions/Function1;", "Lkotlin/jvm/functions/Function0;",
         "Lkotlin/jvm/functions/Function2;", "L", "I",
     ),
-    strings = listOf("BusinessDetailsScreen", "BusinessDesTitle"),
+    strings = listOf(
+        string("BusinessDetailsScreen", StringComparisonType.CONTAINS),
+        string("BusinessDesTitle", StringComparisonType.CONTAINS),
+    ),
     custom = { method, _ -> AccessFlags.STATIC.isSet(method.accessFlags) },
 )
 
@@ -144,7 +147,11 @@ internal object CallLogHistoryEntryDataToStringFingerprint : Fingerprint(
     returnType = "Ljava/lang/String;",
     parameters = listOf(),
     filters = listOf(string("CallLogHistoryEntryData(primaryHistoryEventId=", StringComparisonType.STARTS_WITH)),
-    strings = listOf(", phonebookId=", ", normalisedNumber=", ", blockReasonLabel="),
+    strings = listOf(
+        string(", phonebookId=", StringComparisonType.CONTAINS),
+        string(", normalisedNumber=", StringComparisonType.CONTAINS),
+        string(", blockReasonLabel=", StringComparisonType.CONTAINS),
+    ),
 )
 
 // toString() of the revamped call log's row model (CallLogHistoryItem.HistoryEntry, mh8 in 26.41.5),
@@ -154,7 +161,10 @@ internal object CallLogHistoryRowToStringFingerprint : Fingerprint(
     returnType = "Ljava/lang/String;",
     parameters = listOf(),
     filters = listOf(string("HistoryEntry(id=", StringComparisonType.STARTS_WITH)),
-    strings = listOf(", subtitleLabel=", ", normalisedNumber="),
+    strings = listOf(
+        string(", subtitleLabel=", StringComparisonType.CONTAINS),
+        string(", normalisedNumber=", StringComparisonType.CONTAINS),
+    ),
 )
 
 // The revamped call log's row mapper (b98.G(List) in 26.41.5): for each CallLogHistoryEntryData it
