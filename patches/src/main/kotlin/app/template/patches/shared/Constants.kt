@@ -920,13 +920,27 @@ object Constants {
     // OsmAndSmokeTest passes unchanged (commit 4884eb6).
     // 2026-10-19: the entitlement getter lookups are now required (a missing one fails the patch).
     // 2026-10-19: older targets 5.4.5, 5.4.9 dropped (latest version only, owner).
+    // 2026-10-24: updated to version 5.4.11 (versionCode 5411; APKPure XAPK merged, arm64-v8a
+    // only; signer CN=Victor Shcherb, cert SHA-256 d192f4ff...5bed27, matches the expected
+    // developer cert). isPurchased and the five InAppPurchaseHelperImpl getters are unchanged
+    // (dexindex). Enable Premium now also forces InAppPurchaseUtils.isAndroidAutoAvailable(
+    // OsmandApplication) true (GitHub #79): it is a separate gate, true only for 10 days after
+    // install/update and then only for developer/paid builds or saved *_PURCHASED settings
+    // (filled after an inventory cycle), so Android Auto showed RequestPurchaseScreen. Callers:
+    // NavigationSession.onCreateScreen/onPurchaseDone, IntentHelper.parseContentIntent,
+    // MapViewWithLayers.setupRenderingView. Kept (not obfuscated) name, mandatory lookup.
+    // Android Auto lists sideloaded apps only with its "Unknown sources" developer setting on.
+    // OsmAndSmokeTest passes; CLI (no -f) Applied, the 7 forced methods decompile-verified (no
+    // other method changed). Emulator vs stock: starts, Free-version banner gone, Weather
+    // unlocked. Android Auto not runtime-tested (needs a head unit), bytecode only. 5.4.10
+    // dropped (latest version only).
     val COMPATIBILITY_OSMAND = Compatibility(
         name = "OsmAnd",
         packageName = "net.osmand",
         apkFileType = ApkFileType.APKM, // bundle-only on APKMirror and APKPure (checked 2026-10-07)
         appIconColor = 0x7CB342,
         targets = listOf(
-            AppTarget(version = "5.4.10", versionCode = 5410)
+            AppTarget(version = "5.4.11", versionCode = 5411)
         )
     )
 
