@@ -902,9 +902,22 @@ object Constants {
             // 5099231f83f0f6d011f15287f37fe37b6392f97b9908f6f44ea6cb86d44356ab, confirmed by APKPure).
             // All GMA load/init hooks are unchanged (dexindex diff vs 15.146.0) and
             // OneFootballSmokeTest passes; 15.146.0 dropped (latest verified version only).
-            // Emulator (stock control): no crash; the Home banner ad and all GMA traffic are gone,
-            // but the in-feed "Ad Break" slot (home and match page) stays as an empty skeleton box
-            // instead of collapsing - a cosmetic follow-up, the ad itself never loads.
+            // Emulator (stock control): no crash; the Home banner ad and all GMA traffic are gone.
+            // The in-feed "Ad Break" slot (home and match page) stayed as an empty skeleton box.
+            // 2026-10-24: Disable ads also (1) makes both native ad component parsers
+            // (AdvertisingComponentParser / AdvertisingPlaceholderComponentParser.parse) return
+            // null, so ComponentParserRegistry leaves those components out (anchors: parse shape
+            // (String, I, ComponentModel, protobuf Any) -> ComponentModel plus the generated
+            // Ads$AdComponentProperties / Ads$PlaceholderAdComponentProperties parseFrom call), and
+            // (2) answers the Flutter getAdData / getOMPAdData bridge calls with the app's own
+            // result.error("Ad Blocked") at once (handle(MethodCall, Result)V holding the channel
+            // method name), so Dart no longer waits on a load that never ends. OneFootballSmokeTest
+            // asserts both; CLI (no -f) Applied, 32 methods changed and all intended (decompile).
+            // Emulator vs stock: no crash, no Google ad traffic, match page ad slots gone with no
+            // gap, Home banner gone. Known limit: the Home feed's "Ad Break" card keeps its grey
+            // skeleton. It is a Dart-only placeholder (feed fetched and decorated in Dart; stock
+            // shows the same skeleton on any no-fill) and no native lever removes it. Other Dart
+            // feeds (e.g. a competition News feed) were not rechecked and likely behave the same.
             AppTarget(version = "15.147.0", versionCode = 1045019512)
         )
     )
