@@ -2767,12 +2767,17 @@ object Constants {
     // (stock control): 2 cold starts each, no crash; the start screen and login load. The inbox
     // ads, promo cards, rating prompt and upsell sheet sit behind a login, so those effects are
     // verified in bytecode only.
+    // 2026-10-25: updated to version 9.19.0 (versionCode 405215; APKPure XAPK merged, same signer);
+    // every patch anchor is unchanged. MailcomSmokeTest needed one fix: 9.19.0 replaced the
+    // IapUpsellingFeature toggle with the per-account suspend check
+    // UpsellFeatureImpl.isIapUpsellEnabled(Account, Continuation), so the test's "left untouched"
+    // check now looks at that method; it passes on patcher 2.0.0.
     val COMPATIBILITY_MAILCOM = Compatibility(
         name = "mail.com",
         packageName = "com.mail.mobile.android.mail",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x283167, // The adaptive icon's navy background.
-        targets = listOf(AppTarget(version = "9.18.3", versionCode = 405213))
+        targets = listOf(AppTarget(version = "9.19.0", versionCode = 405215))
     )
 
     // Updated 2026-10-23 to com.eurosport 8.34.1 (versionCode 113929; replaces 8.33.0 /
