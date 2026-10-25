@@ -3092,6 +3092,10 @@ object Constants {
     // the tabs patch, background tab processes sat at adj 0-100 in the foreground (stock not
     // measured). Sponsored stories and sponsored suggestions did not appear on stock in that run,
     // so those two steps are bytecode-only. Re-signing may break Send Tab and web push.
+    // 2026-10-25: updated to version 158.0.2 (archive.mozilla.org, arm64-v8a 2016191570; x86_64
+    // 2016191574 read from Mozilla's x86_64 build; same Mozilla signer). FirefoxSmokeTest passes;
+    // CLI (no -f) applies all 6 patches and only the intended 37 methods change (+1 helper).
+    // Emulator not re-run for this bump.
     val COMPATIBILITY_FIREFOX = Compatibility(
         name = "Firefox",
         packageName = "org.mozilla.firefox",
@@ -3100,8 +3104,8 @@ object Constants {
         signatures = setOf("a78b62a5165b4494b2fead9e76a280d22d937fee6251aece599446b2ea319b04"), // O=Mozilla Corporation
         targets = listOf(
             AppTarget(
-                version = "158.0",
-                versionCodes = mapOf(SupportedAbi.X86_64 to 2016189054, SupportedAbi.ARM64_V8A to 2016189050),
+                version = "158.0.2",
+                versionCodes = mapOf(SupportedAbi.X86_64 to 2016191574, SupportedAbi.ARM64_V8A to 2016191570),
             )
         )
     )
