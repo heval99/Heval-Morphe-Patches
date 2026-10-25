@@ -2496,13 +2496,18 @@ object Constants {
     // pc hits stock too (environment). The emulator gets no ads and stock showed no meter
     // wall in about 11 articles, so ad removal and the article limit are verified in bytecode
     // only. FCM fails with the same 403 on stock (environment).
+    // 2026-10-25: updated to version 6.239.23439 (versionCode 23439; APKPure XAPK merged,
+    // armeabi-v7a, same signer); GuardianSmokeTest passes; CLI (no -f) applies all 3 patches,
+    // 11 methods plus the manifest change, no string values changed (rule 12). The resource
+    // rebuild renames 4 case-colliding id names (appBar/appbar, checkBox/checkbox) to id_0x...;
+    // no code looks them up by name. Emulator not re-run for this bump.
     val COMPATIBILITY_GUARDIAN = Compatibility(
         name = "The Guardian",
         packageName = "com.guardian",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x052962, // Guardian navy.
         signatures = setOf("4965429ead99251c84c2d557d4e6f36c7bc3b35c1ea18e1996bcca13e55a9e7d"), // CN=Android, O=Guardian News and Media
-        targets = listOf(AppTarget(version = "6.238.23405", versionCode = 23405))
+        targets = listOf(AppTarget(version = "6.239.23439", versionCode = 23439))
     )
 
     // Updated 2026-10-23 to com.yahoo.mobile.client.android.sportacular 12.26.1 (versionCode
