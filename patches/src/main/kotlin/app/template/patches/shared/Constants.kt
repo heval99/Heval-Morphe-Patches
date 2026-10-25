@@ -1639,6 +1639,11 @@ object Constants {
     // Calldorado SDK (in-app ad manager started unconditionally, plus the after-call screen);
     // its public start/startInAppAdManager entry points are neutralised. RevenueCat + Play
     // Billing handle purchases. No PairIP.
+    // 2026-10-25: 5.4.4.19080 (versionCode 19080, APKPure, same signer) NOT adopted: it drops the
+    // Calldorado core SDK (no com.calldorado.Calldorado class, so Disable ads fails loudly). Ads now
+    // run through Appvestor's ad SDK (com.appvestor.adssdk AvAds: AppLovin MAX + Google Mobile Ads),
+    // started with the appvestor data partners from the app's ThirdPartyManager; only Calldorado's
+    // lookup/opt-in/in-app-update modules remain. Disable ads needs new research and a runtime check.
     val COMPATIBILITY_ZTNNOTEPAD = Compatibility(
         name = "#Notepad",
         packageName = "com.ztnstudio.notepad",
