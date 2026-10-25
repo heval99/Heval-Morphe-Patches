@@ -1103,12 +1103,14 @@ object Constants {
     // so there is no in-app premium gate; ads-only.
     // 2026-10-12 APK-finder audit: only distributed as a split bundle (APKMirror BUNDLE /
     // APKPure-Uptodown XAPK), so apkFileType is APKM; any "universal APK" note below is outdated.
+    // 2026-10-25: updated to version 10.8 (versionCode 1008000; APKPure XAPK merged, same signer);
+    // MoonReaderSmokeTest passes on patcher 2.0.0; anchors unchanged.
     val COMPATIBILITY_MOONREADER = Compatibility(
         name = "Moon+ Reader",
         packageName = "com.flyersoft.moonreader",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x283593,
-        targets = listOf(AppTarget(version = "10.7", versionCode = 1007000))
+        targets = listOf(AppTarget(version = "10.8", versionCode = 1008000))
     )
 
     // Verified 2026-10-10 against com.foobnix.pdf.reader 9.4.20 (versionCode 7175) from APKPure.
