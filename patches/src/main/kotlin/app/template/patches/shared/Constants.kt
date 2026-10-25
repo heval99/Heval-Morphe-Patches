@@ -1174,12 +1174,15 @@ object Constants {
     // 274.914062dp (float precision); the case-twin ids detail_Lunar_event_times /
     // detail_lunar_event_times become id_0x7f0a02eb / id_0x7f0a0324 (same IDs; the names appear
     // in the dex only in the string pool with the other R.id names; not checked further).
+    // 2026-10-25: updated to version 2.55.8 (versionCode 255800; APKPure XAPK merged, same signer);
+    // BusinessCalendarSmokeTest passes on patcher 2.0.0; anchors unchanged. The emulator and rule 12
+    // checks above were run on 2.55.7 only.
     val COMPATIBILITY_BUSINESSCALENDAR = Compatibility(
         name = "Business Calendar 2",
         packageName = "com.appgenix.bizcal",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x009688,
-        targets = listOf(AppTarget(version = "2.55.7", versionCode = 255702))
+        targets = listOf(AppTarget(version = "2.55.8", versionCode = 255800))
     )
 
     // Verified 2026-10-11 against app.expert.player 11.2.0 (versionCode 306) from APKPure's XAPK
