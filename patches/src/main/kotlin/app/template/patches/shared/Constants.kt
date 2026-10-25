@@ -713,6 +713,9 @@ object Constants {
     // Verified 2026-10-07 against 1.2338 (versionCode 2338, APKPure): all patches apply
     // unchanged; FairEmailSmokeTest passes.
     // 2026-10-19: older target 1.2337 dropped (latest version only, owner).
+    // 2026-10-25: updated to version 1.2339 (versionCode 2339, GitHub release, same signer);
+    // FairEmailSmokeTest passes; CLI (no -f) changes only ActivityBilling.isPro. 1.2338 is kept
+    // as the version-diff fixture.
     val COMPATIBILITY_FAIREMAIL = Compatibility(
         name = "FairEmail",
         packageName = "eu.faircode.email",
@@ -720,7 +723,7 @@ object Constants {
         appIconColor = 0x2196F3,
         signatures = setOf("e02067249f5a350e0ec703fe9df4dd682e0291a09f0c2e041050bbe7c064f5c9"), // O=FairCode
         targets = listOf(
-            AppTarget(version = "1.2338", versionCode = 2338)
+            AppTarget(version = "1.2339", versionCode = 2339)
         )
     )
 
