@@ -366,13 +366,28 @@ object Constants {
     // 2026-10-14: Disable ads also neutralises the other MobileAds statics (rule 9).
     // 2026-10-19: older targets 5.4.9, 5.4.16 dropped (latest version only, owner); BoxBoxSmokeTest
     // runs against 5.4.17.
+    // 2026-10-25: updated to version 5.4.18 (versionCode 262; APKPure XAPK merged, arm64-v8a, same
+    // signer); BoxBoxSmokeTest passes on patcher 2.0.0 after one fix. R8 moved the inlined
+    // MobileAds.initialize out of MobileAds (which now only has setPlugin and stop) into the app's
+    // consent-gated ad init helper, a static-only class whose "can request ads" flow starts false,
+    // so Disable ads step 3 now also returns early from every static void carrying the SDK's
+    // "Initializing on calling thread" log (InlinedMobileAdsInitFingerprint) to keep GMA
+    // uninitialised as on 5.4.17; the helper's privacy-options flow then also stays false.
+    // FullScreenAdLoadFingerprint now anchors on the SDK's "Context cannot be null." and "#008" main
+    // thread checks: R8 dropped "AdRequest cannot be null." from the RewardedAd, RewardedInterstitialAd
+    // and AppOpenAd loads (reached only from GMA's ad inspector test handler), so all four
+    // full-screen loads return early, mandatory when GMA is bundled. The other anchors are
+    // unchanged. Emulator vs stock (5.4.18, before the full-screen load re-anchor): starts, no
+    // ads, Pro unlocked, the "Ad privacy choices" row is gone (expected: the privacy-options flow
+    // stays false); ad loads after consent not tried. The rewarded, rewarded-interstitial and
+    // app-open load hooks are verified in bytecode only (CLI, 19 methods changed).
     val COMPATIBILITY_BOXBOX = Compatibility(
         name = "BoxBox",
         packageName = "club.boxbox.android",
         apkFileType = ApkFileType.APKM, // bundle-only on APKMirror and APKPure (checked 2026-10-07)
         appIconColor = 0xFF0000,
         targets = listOf(
-            AppTarget(version = "5.4.17", versionCode = 261)
+            AppTarget(version = "5.4.18", versionCode = 262)
         )
     )
 
