@@ -2328,12 +2328,14 @@ object Constants {
     // change. Emulator (morphe-test, API 35): stock shows the "plus users" upgrade dialog on
     // Typography; patched opens it with no badge or dialog, and premium survives a force-stop
     // and a reboot. No crashes.
+    // 2026-10-25: updated to version 2.2.13 (versionCode 20213; APKPure XAPK merged, same signer);
+    // HyperionSmokeTest passes on patcher 2.0.0; anchors unchanged.
     val COMPATIBILITY_HYPERION = Compatibility(
         name = "Hyperion Launcher",
         packageName = "projekt.launcher",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3C59AD, // Mid-point of the icon's blue-to-indigo background gradient.
-        targets = listOf(AppTarget(version = "2.2.7", versionCode = 20207))
+        targets = listOf(AppTarget(version = "2.2.13", versionCode = 20213))
     )
 
     // Written 2026-10-15/16 against com.guardian 6.238.23405 (versionCode 23405), the STABLE
