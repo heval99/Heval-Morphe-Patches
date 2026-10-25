@@ -658,9 +658,11 @@ object Constants {
             // Verified 2026-10-07 against 1.3.63.0921 (versionCode 10569, APKPure XAPK
             // merged): both patches apply unchanged; EasyNotesSmokeTest passes.
             // 2026-10-19: older target 1.3.61.0907 dropped (latest version only, owner).
+            // 2026-10-25: updated to version 1.3.64.0929 (versionCode 10570; APKPure XAPK merged,
+            // same signer); EasyNotesSmokeTest passes on patcher 2.0.0; anchors unchanged.
             AppTarget(
-                version = "1.3.63.0921",
-                versionCode = 10569
+                version = "1.3.64.0929",
+                versionCode = 10570
             )
         )
     )
