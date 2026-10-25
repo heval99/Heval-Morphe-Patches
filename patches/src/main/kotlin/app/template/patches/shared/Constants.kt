@@ -327,13 +327,16 @@ object Constants {
     // MyFitnessPalSmokeTest passes.
     // Emulator 2026-10-14 (26.41.0, logged out): no crash. The app never logs Datadog start-up, so the
     // Datadog skip is verified in bytecode only.
+    // 2026-10-25: updated to version 26.42.0 (versionCode 51610; APKPure XAPK merged, same
+    // signer); MyFitnessPalSmokeTest passes; CLI (no -f) changes only the Entitlement/Tier
+    // parsers and the Datadog start decision. Emulator not re-run for this bump.
     val COMPATIBILITY_MYFITNESSPAL = Compatibility(
         name = "MyFitnessPal",
         packageName = "com.myfitnesspal.android",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0072BC,
         signatures = setOf("e2f39185315095611b23f9602cef6332a89db8960ee76a45fb41eeef4975d95d"), // CN=MyFitnessPal LLC
-        targets = listOf(AppTarget(version = "26.41.0", versionCode = 51589))
+        targets = listOf(AppTarget(version = "26.42.0", versionCode = 51610))
     )
 
     // Verified 2026-09-18 against club.boxbox.android 5.4.9 (versionCode 251, the current
