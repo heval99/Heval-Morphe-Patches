@@ -1,3 +1,20 @@
+## [2.0.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.0.0-dev.2...v2.0.0-dev.3) (2026-10-25)
+
+### 🐛 Bug Fixes
+
+* **fairemail:** updated to version 1.2339 ([747ae1c](https://github.com/heval99/Heval-Morphe-Patches/commit/747ae1c747d32e8ab9217649ba7f825a31d5e93b))
+* **firefoxfocus:** updated to version 158.0.2 ([0863135](https://github.com/heval99/Heval-Morphe-Patches/commit/0863135f38bb1246bcf56efc309d160df9aa762e))
+* **firefox:** updated to version 158.0.2 ([3ec1bb4](https://github.com/heval99/Heval-Morphe-Patches/commit/3ec1bb41d8496ca2c060fc336ad5bbf6d9b4c146))
+* **guardian:** updated to version 6.239.23439 ([1bcba2d](https://github.com/heval99/Heval-Morphe-Patches/commit/1bcba2de3afbec21134bbcf6558cb6d51f11291b))
+* **hevy:** updated to version 3.2.2 ([cc164d3](https://github.com/heval99/Heval-Morphe-Patches/commit/cc164d32298f5b2376e4fea058a95296ac3007ca))
+* **luckyclick:** updated to version 4.8 ([c09c4a2](https://github.com/heval99/Heval-Morphe-Patches/commit/c09c4a283fdf58fa23a71bef782204cfdee3019a))
+* **myfitnesspal:** updated to version 26.42.0 ([08c8657](https://github.com/heval99/Heval-Morphe-Patches/commit/08c8657863cc7e35508b0193682570340e78aed6))
+* **wsj:** updated to version 15.11.0.42207 ([15b449c](https://github.com/heval99/Heval-Morphe-Patches/commit/15b449c7d8b446c9de3ed777cfa84aab38ebdb57))
+
+### ✨ New Features
+
+* declare the original signing certificate for each supported app ([05440e3](https://github.com/heval99/Heval-Morphe-Patches/commit/05440e3ad5d64d3b27071fa4d1e6c6e094579add))
+
 ## [2.0.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.0.0-dev.1...v2.0.0-dev.2) (2026-10-25)
 
 ### 🐛 Bug Fixes

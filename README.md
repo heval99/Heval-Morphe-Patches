@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.0.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.0.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**184** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-25
+> **[v2.0.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.0.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**184** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-25
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -77,8 +77,8 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-2979FF?style=flat-square" height="14" alt=""> | **Bluecoins** | 💎 1 | `13.1.149` | APK | [Play](https://play.google.com/store/apps/details?id=com.rammigsoftware.bluecoins) |
 | <img src="https://img.shields.io/badge/-%20-8BC34A?style=flat-square" height="14" alt=""> | **Monefy** | 💎 1 | `1.22.11` | APKM | [Play](https://play.google.com/store/apps/details?id=com.monefy.app.lite) |
 | <img src="https://img.shields.io/badge/-%20-0066A1?style=flat-square" height="14" alt=""> | **Moneycontrol** | 🚫 🧪 1 | `14.6.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.divum.MoneyControl) |
-| <img src="https://img.shields.io/badge/-%20-052962?style=flat-square" height="14" alt=""> | **The Guardian** | 🚫 🛡️ 🧩 3 | `6.238.23405` | APKM | [Play](https://play.google.com/store/apps/details?id=com.guardian) |
-| <img src="https://img.shields.io/badge/-%20-000000?style=flat-square" height="14" alt=""> | **The Wall Street Journal** | 🚫 1 | `6.43.0.33886` | APK | [Play](https://play.google.com/store/apps/details?id=wsj.reader_sp) |
+| <img src="https://img.shields.io/badge/-%20-052962?style=flat-square" height="14" alt=""> | **The Guardian** | 🚫 🛡️ 🧩 3 | `6.239.23439` | APKM | [Play](https://play.google.com/store/apps/details?id=com.guardian) |
+| <img src="https://img.shields.io/badge/-%20-000000?style=flat-square" height="14" alt=""> | **The Wall Street Journal** | 🚫 1 | `15.11.0.42207` | APK | [Play](https://play.google.com/store/apps/details?id=wsj.reader_sp) |
 
 #### 💬 Messaging, email & calls <sub>6 apps</sub>
 
@@ -86,7 +86,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 |:-:|---|---|---|:-:|:-:|
 | <img src="https://img.shields.io/badge/-%20-00B0FF?style=flat-square" height="14" alt=""> | **Aqua Mail** | 💎 1 | `2.7.0` | APKM | [Play](https://play.google.com/store/apps/details?id=org.kman.AquaMail) |
 | <img src="https://img.shields.io/badge/-%20-006CEF?style=flat-square" height="14" alt=""> | **BlueMail** | 🚫 1 | `2.2.408` | APKM | [Play](https://play.google.com/store/apps/details?id=me.bluemail.mail) |
-| <img src="https://img.shields.io/badge/-%20-2196F3?style=flat-square" height="14" alt=""> | **FairEmail** | 💎 1 | `1.2338` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
+| <img src="https://img.shields.io/badge/-%20-2196F3?style=flat-square" height="14" alt=""> | **FairEmail** | 💎 1 | `1.2339` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
 | <img src="https://img.shields.io/badge/-%20-283167?style=flat-square" height="14" alt=""> | **mail.com** | 🚫 🛡️ 🔕 🧩 4 | `9.19.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mail.mobile.android.mail) |
 | <img src="https://img.shields.io/badge/-%20-5C6BC0?style=flat-square" height="14" alt=""> | **Textra** | 💎 1 | `4.87` | APKM | [Play](https://play.google.com/store/apps/details?id=com.textra) |
 | <img src="https://img.shields.io/badge/-%20-0087FF?style=flat-square" height="14" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 24 | `26.41.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
@@ -121,9 +121,9 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
-| <img src="https://img.shields.io/badge/-%20-101012?style=flat-square" height="14" alt=""> | **Hevy** | 🛡️ 💎 2 | `3.2.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.hevy) |
+| <img src="https://img.shields.io/badge/-%20-101012?style=flat-square" height="14" alt=""> | **Hevy** | 🛡️ 💎 2 | `3.2.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.hevy) |
 | <img src="https://img.shields.io/badge/-%20-607D8B?style=flat-square" height="14" alt=""> | **Interval Timer** | 🚫 🛡️ 2 | `2.3.30` | APK | [Play](https://play.google.com/store/apps/details?id=cc.dreamspark.intervaltimer) |
-| <img src="https://img.shields.io/badge/-%20-0072BC?style=flat-square" height="14" alt=""> | **MyFitnessPal** | 🛡️ 💎 2 | `26.41.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.myfitnesspal.android) |
+| <img src="https://img.shields.io/badge/-%20-0072BC?style=flat-square" height="14" alt=""> | **MyFitnessPal** | 🛡️ 💎 2 | `26.42.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.myfitnesspal.android) |
 | <img src="https://img.shields.io/badge/-%20-333333?style=flat-square" height="14" alt=""> | **SmartWOD Timer** | 🚫 💎 2 | `1.46.9` | APKM | [Play](https://play.google.com/store/apps/details?id=net.smartwod.timer) |
 
 #### 🗺️ Maps, weather & outdoors <sub>5 apps</sub>
@@ -151,8 +151,8 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="https://img.shields.io/badge/-%20-FF4500?style=flat-square" height="14" alt=""> | **Brave Browser** | 🚫 🛡️ 💎 🔕 🧪 4 | `1.98.60` | APKM | [Play](https://play.google.com/store/apps/details?id=com.brave.browser) |
-| <img src="https://img.shields.io/badge/-%20-FF7139?style=flat-square" height="14" alt=""> | **Firefox** | 🛡️ 🔕 🧩 6 | `158.0` | APK | [Play](https://play.google.com/store/apps/details?id=org.mozilla.firefox) |
-| <img src="https://img.shields.io/badge/-%20-7542E5?style=flat-square" height="14" alt=""> | **Firefox Focus** | 🛡️ 🔕 🧩 5 | `158.0` | APKM | [Play](https://play.google.com/store/apps/details?id=org.mozilla.focus) |
+| <img src="https://img.shields.io/badge/-%20-FF7139?style=flat-square" height="14" alt=""> | **Firefox** | 🛡️ 🔕 🧩 6 | `158.0.2` | APK | [Play](https://play.google.com/store/apps/details?id=org.mozilla.firefox) |
+| <img src="https://img.shields.io/badge/-%20-7542E5?style=flat-square" height="14" alt=""> | **Firefox Focus** | 🛡️ 🔕 🧩 5 | `158.0.2` | APKM | [Play](https://play.google.com/store/apps/details?id=org.mozilla.focus) |
 | <img src="https://img.shields.io/badge/-%20-FFB700?style=flat-square" height="14" alt=""> | **Via** | 🛡️ 1 | `7.3.3` | APK | [Play](https://play.google.com/store/apps/details?id=mark.via.gp) |
 
 #### 🏠 Launchers <sub>3 apps</sub>
@@ -172,7 +172,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-0288D1?style=flat-square" height="14" alt=""> | **Brevent** | 💎 1 | `4.2.31.1` | APK | [Play](https://play.google.com/store/apps/details?id=me.piebridge.brevent) |
 | <img src="https://img.shields.io/badge/-%20-009688?style=flat-square" height="14" alt=""> | **IrCode Finder** | 🚫 1 | `14.17.0 build 206 InAPP` | APKM | [Play](https://play.google.com/store/apps/details?id=ru.wasiliysoft.ircodefindernec) |
 | <img src="https://img.shields.io/badge/-%20-406C5C?style=flat-square" height="14" alt=""> | **LibrePods** | 💎 1 | `1.0.4-play` | APKM | [Play](https://play.google.com/store/apps/details?id=me.kavishdevar.librepods) |
-| <img src="https://img.shields.io/badge/-%20-3A362F?style=flat-square" height="14" alt=""> | **LuckyClick** | 🚫 🔑 2 | `3.28` | APKM | [Play](https://play.google.com/store/apps/details?id=com.peter890331.luckyclick.app) |
+| <img src="https://img.shields.io/badge/-%20-3A362F?style=flat-square" height="14" alt=""> | **LuckyClick** | 🚫 🔑 2 | `4.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.peter890331.luckyclick.app) |
 | <img src="https://img.shields.io/badge/-%20-D0BCFF?style=flat-square" height="14" alt=""> | **Native Camera** | 💎 🔑 2 | `1.4.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.rawcam.app) |
 | <img src="https://img.shields.io/badge/-%20-9C27B0?style=flat-square" height="14" alt=""> | **Pocket Color Wheel** | 🚫 1 | `3.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.pocketcolorwheel.PCW) |
 | <img src="https://img.shields.io/badge/-%20-2962FF?style=flat-square" height="14" alt=""> | **Unified Remote** | 💎 1 | `3.25.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.Relmtech.Remote) |
@@ -452,7 +452,7 @@ Verified on: `14.6.2`
 <details>
 <summary><b>The Guardian</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>com.guardian</code></summary>
 
-Verified on: `6.238.23405`
+Verified on: `6.239.23439`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -464,7 +464,7 @@ Verified on: `6.238.23405`
 <details>
 <summary><b>The Wall Street Journal</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>wsj.reader_sp</code></summary>
 
-Verified on: `6.43.0.33886`
+Verified on: `15.11.0.42207`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -497,7 +497,7 @@ Verified on: `2.2.408`
 <details>
 <summary><b>FairEmail</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>eu.faircode.email</code></summary>
 
-Verified on: `1.2338`
+Verified on: `1.2339`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -693,7 +693,7 @@ Verified on: `10.8`
 <details>
 <summary><b>Hevy</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.hevy</code></summary>
 
-Verified on: `3.2.0`
+Verified on: `3.2.2`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -715,7 +715,7 @@ Verified on: `2.3.30`
 <details>
 <summary><b>MyFitnessPal</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.myfitnesspal.android</code></summary>
 
-Verified on: `26.41.0`
+Verified on: `26.42.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -864,7 +864,7 @@ Verified on: `1.98.60`
 <details>
 <summary><b>Firefox</b> &nbsp;·&nbsp; 6 patches &nbsp;·&nbsp; <code>org.mozilla.firefox</code></summary>
 
-Verified on: `158.0`
+Verified on: `158.0.2`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -879,7 +879,7 @@ Verified on: `158.0`
 <details>
 <summary><b>Firefox Focus</b> &nbsp;·&nbsp; 5 patches &nbsp;·&nbsp; <code>org.mozilla.focus</code></summary>
 
-Verified on: `158.0`
+Verified on: `158.0.2`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -994,7 +994,7 @@ Verified on: `1.0.4-play`
 <details>
 <summary><b>LuckyClick</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.peter890331.luckyclick.app</code></summary>
 
-Verified on: `3.28`
+Verified on: `4.8`
 
 | Patch | What it does | Default |
 |---|---|:-:|
