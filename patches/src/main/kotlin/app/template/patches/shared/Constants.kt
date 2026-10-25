@@ -1446,12 +1446,14 @@ object Constants {
     // MaxNativeAdLoader.loadAd; every MaxAdView is kept GONE (setVisibility override + every
     // constructor). Smoke-tested and CLI-verified (no -f, smali checked) on 11.26.1; not
     // runtime-tested.
+    // 2026-10-25: updated to version 11.27.0-261014339 (versionCode 261014339; APKPure XAPK merged,
+    // same signer); CastboxSmokeTest passes on patcher 2.0.0; anchors unchanged.
     val COMPATIBILITY_CASTBOX = Compatibility(
         name = "Castbox",
         packageName = "fm.castbox.audiobook.radio.podcast",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF44336,
-        targets = listOf(AppTarget(version = "11.26.1-260915290", versionCode = 260915290))
+        targets = listOf(AppTarget(version = "11.27.0-261014339", versionCode = 261014339))
     )
 
     // Verified 2026-10-07 against com.melodis.midomiMusicIdentifier.freemium 10.5.8
