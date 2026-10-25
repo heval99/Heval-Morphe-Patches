@@ -473,13 +473,15 @@ object Constants {
     // APKPure-Uptodown XAPK), so apkFileType is APKM; any "universal APK" note below is outdated.
     // 2026-10-19: older target 11.0.101 dropped (latest version only, owner); FishBuddySmokeTest
     // runs against 11.0.125.
+    // 2026-10-25: updated to version 11.0.137 (versionCode 110137; APKPure XAPK merged, same
+    // signer); FishBuddySmokeTest passes on patcher 2.0.0; anchors unchanged.
     val COMPATIBILITY_FISHBUDDY = Compatibility(
         name = "FishBuddy",
         packageName = "no.fishbuddy_playground.app",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0288D1,
         targets = listOf(
-            AppTarget(version = "11.0.125", versionCode = 110125)
+            AppTarget(version = "11.0.137", versionCode = 110137)
         )
     )
 
