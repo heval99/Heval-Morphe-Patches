@@ -1,3 +1,25 @@
+## [2.0.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.0.0-dev.1...v2.0.0-dev.2) (2026-10-25)
+
+### 🐛 Bug Fixes
+
+* **bizcal:** updated to version 2.55.8 ([521d432](https://github.com/heval99/Heval-Morphe-Patches/commit/521d4326f6a490b3758ada23370ca9b010859a0a))
+* **boxbox:** updated to version 5.4.18 ([c877fa9](https://github.com/heval99/Heval-Morphe-Patches/commit/c877fa93fb996057df29e7019819c753530fb9f4))
+* **castbox:** updated to version 11.27.0 ([3fc3a20](https://github.com/heval99/Heval-Morphe-Patches/commit/3fc3a20d55237ddc553a74d03f48b6d48a2c52ca))
+* **duplila:** updated to version 5.3 ([39b8a66](https://github.com/heval99/Heval-Morphe-Patches/commit/39b8a661f9a95733b7a9b2dfcbd9b72e1bfbd581))
+* **easynotes:** updated to version 1.3.64.0929 ([986d0bb](https://github.com/heval99/Heval-Morphe-Patches/commit/986d0bb2e462590da72882981513546c3802d34a))
+* **expertplayer:** updated to version 11.3.0 ([68e648c](https://github.com/heval99/Heval-Morphe-Patches/commit/68e648cbe7c786419afed0963f8c6e4cc0a2b5be))
+* **fishbuddy:** updated to version 11.0.137 ([110bd94](https://github.com/heval99/Heval-Morphe-Patches/commit/110bd94f356d6a7b292be309c1f5dc665b090782))
+* **fishingpoints:** updated to version 4.8.0 ([a6d15e6](https://github.com/heval99/Heval-Morphe-Patches/commit/a6d15e6ca0d024188579389faa891b14afe9fefa))
+* **hyperion:** updated to version 2.2.13 ([abbad99](https://github.com/heval99/Heval-Morphe-Patches/commit/abbad99b2ecd98f9f37f0ca3d4faf5c9c0c741f8))
+* **mailcom:** updated to version 9.19.0 ([b5e40aa](https://github.com/heval99/Heval-Morphe-Patches/commit/b5e40aa3994d9a6b1418c36733283747e1f77fa8))
+* **moonreader:** updated to version 10.8 ([27676c3](https://github.com/heval99/Heval-Morphe-Patches/commit/27676c3b9c29a00244c9dd45474f8c08db04b83c))
+* **pimusicplayer:** updated to version 3.2.1.0_release_1 ([8127bb6](https://github.com/heval99/Heval-Morphe-Patches/commit/8127bb676d999d9059728b90959181e3d71cf999))
+* **prolauncher:** updated to version v2.4.3 ([4aca22c](https://github.com/heval99/Heval-Morphe-Patches/commit/4aca22cbf1bf8b512f3e898b5a8603463e70daa2))
+
+### ✨ New Features
+
+* **truecaller:** add Hide call log filters ([c04df74](https://github.com/heval99/Heval-Morphe-Patches/commit/c04df74b57938d05dfb5fd6c1dd51b1f65748b9c)), closes [#76](https://github.com/heval99/Heval-Morphe-Patches/issues/76)
+
 ## [2.0.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0...v2.0.0-dev.1) (2026-10-24)
 
 ### ⚠ BREAKING CHANGES
