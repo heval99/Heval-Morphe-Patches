@@ -1202,12 +1202,18 @@ object Constants {
     // AdManagerAdView.loadAd, AdLoader.loadAd(s), the static full-screen loads) return at once as
     // a backstop. Dart uses banner, interstitial, rewarded-interstitial and app-open ads
     // (libapp.so channel names). Not run on a device.
+    // 2026-10-25: updated to version 11.3.0 (versionCode 309; APKPure XAPK merged, same signer);
+    // ExpertPlayerSmokeTest passes on patcher 2.0.0 after one fix. Disable ads anchors unchanged.
+    // Enable Premium (opt-in) pinned RevenueCat's EntitlementInfo by its R8 name (G5.M in 11.2.0,
+    // d6.J now) and failed to match; it now finds the class by RevenueCat's toString literal
+    // "EntitlementInfo(identifier='" and takes its only (String, Z isActive, ...) constructor,
+    // which still forces isActive (p2) true. No R8 name is pinned any more.
     val COMPATIBILITY_EXPERTPLAYER = Compatibility(
         name = "TV Smarters Player Expert",
         packageName = "app.expert.player",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x1565C0,
-        targets = listOf(AppTarget(version = "11.2.0", versionCode = 306))
+        targets = listOf(AppTarget(version = "11.3.0", versionCode = 309))
     )
 
     // Verified 2026-09-29 against com.streema.simpleradio 6.2.0 (versionCode 872,
