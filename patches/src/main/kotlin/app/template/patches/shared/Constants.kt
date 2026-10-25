@@ -3050,13 +3050,17 @@ object Constants {
     // Fork userscript installs through Violentmonkey's confirm tab and runs, add-ons and scripts
     // survive Erase and two relaunches, about:config opens, Daily usage ping shows off. uBO's
     // "More" pane is empty, the same as in Firefox itself. Rating/promo patches bytecode-only.
+    // 2026-10-25: updated to version 158.0.2 (versionCode 402940253, the Play build: APKPure
+    // XAPK merged, armeabi-v7a, same Mozilla signer; Mozilla's archive builds use other per-ABI
+    // codes). FirefoxFocusSmokeTest passes; CLI (no -f) applies all 5 patches, 14 methods change
+    // plus the extension classes. Emulator not re-run for this bump.
     val COMPATIBILITY_FIREFOX_FOCUS = Compatibility(
         name = "Firefox Focus",
         packageName = "org.mozilla.focus",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x7542E5, // The icon's purple.
         signatures = setOf("6203a473be36d64ee37f87fa500edbc79eab930610ab9b9fa4ca7d5c1f1b4ffc"), // CN=Release Engineering, O=Mozilla Corporation
-        targets = listOf(AppTarget(version = "158.0", versionCode = 402802337))
+        targets = listOf(AppTarget(version = "158.0.2", versionCode = 402940253))
     )
 
     // Written 2026-10-18 against org.mozilla.firefox 158.0 (versionCode 2016189054 for x86_64 and
