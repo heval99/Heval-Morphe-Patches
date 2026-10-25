@@ -58,6 +58,20 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    // Smoke tests load the built bundle and gitignored APKs at runtime, outside the Java
+    // source set. Include both in Gradle's cache key so a changed/added/removed fixture or
+    // patch bundle cannot reuse a result from another input. A plain :patches:test also
+    // builds the bundle before the harness selects it.
+    dependsOn("buildAndroid")
+    inputs.files(fileTree(layout.buildDirectory.dir("libs")) {
+        include("*.mpp")
+        exclude("*sources*", "*javadoc*")
+    })
+        .withPropertyName("patchBundle")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(rootProject.fileTree("apks") { include("*/base.apk") })
+        .withPropertyName("apkFixtures")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
     // The smoke tests load the full APK (up to ~390 MB, multidex) and parse every emitted
     // dex in memory.
     maxHeapSize = "4g"
