@@ -2127,12 +2127,14 @@ object Constants {
     // CLI (no -f) applies all three. NOT runtime-tested: the app ships armeabi-v7a libs only and the
     // x86_64 test emulator refuses it (INSTALL_FAILED_NO_MATCHING_ABIS).
     // Disable license check is a pre-rule licence bypass the owner kept (2026-10-19).
+    // 2026-10-25: updated to version 5.3 (versionCode 70; APKPure XAPK merged, same signer);
+    // DuplilaSmokeTest passes on patcher 2.0.0; anchors unchanged.
     val COMPATIBILITY_DUPLILA = Compatibility(
         name = "Duplila",
         packageName = "com.duplila.screenshare",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x009FE3,
-        targets = listOf(AppTarget(version = "5.1", versionCode = 68))
+        targets = listOf(AppTarget(version = "5.3", versionCode = 70))
     )
 
     // Added 2026-10-14 from the Reddit request queue ("the ads are really long and unskippable").
