@@ -2332,13 +2332,28 @@ object Constants {
     // not crash, and that run found the quote page's "ADVERTISEMENT" caption fixed above. The
     // screens it opened are not recorded, except the stock quote page; video pre-rolls are not
     // recorded as checked.
+    // 2026-10-25: updated to version 15.11.0.42207 (versionCode 700042207; APKPure universal APK,
+    // same signer). Section ads were reworked: SectionAdPlacementStrategy is now a class behind
+    // com.dowjones.advertisement.SectionAdPlacementStrategyContract, fed by a remote placement
+    // registry, so step 1 now empties every contract implementation's getAdSlotConfigList(I, Z,
+    // SectionAdPlacementModel) (SectionAdViewmodel is its only caller). Two new ad surfaces are
+    // covered: live coverage (LiveCoveragePlacementStrategy's only (I)Z, shouldInsertAdBeforeCard,
+    // answers false) and the Discover vertical video feed (every store to DiscoverScreenViewModel's
+    // only int field, the DiscoverAds ad frequency read by onFeedData, stores 0, so no
+    // DiscoverVideoInterstitialAd page is inserted; its AdLoader load is also a no-op). Steps 2-8
+    // anchors are unchanged. WsjSmokeTest asserts every hook; CLI (no -f) changes exactly the 38
+    // hooked methods and nothing else (injected instruction counts match the snippets).
+    // Emulator 2026-10-25 (15.11, signed out, consent declined): stock shows "ADVERTISEMENT" slots
+    // on Home, Markets and a quote page; patched shows none and no gaps; the Media vertical video
+    // feed (10 videos) had no ad page or pre-roll in either build; no crash. Articles and live
+    // coverage were not reached (paywall without an account), so steps 2 and 9 are bytecode-only.
     val COMPATIBILITY_WSJ = Compatibility(
         name = "The Wall Street Journal",
         packageName = "wsj.reader_sp",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x000000, // Black WSJ logotype on a #F7F7F7 adaptive-icon background.
         signatures = setOf("23bb0cd3b5fbc3fdd4f869b2c423ef79ea25ff7c54b06ea29ccd49472f66451f"), // CN=Wall Street Journal Digital Network, O=The Wall Street Journal
-        targets = listOf(AppTarget(version = "6.43.0.33886", versionCode = 643003886))
+        targets = listOf(AppTarget(version = "15.11.0.42207", versionCode = 700042207))
     )
 
     // Verified 2026-10-14 against me.piebridge.brevent 4.2.31.1 (versionCode 539, APKPure).
