@@ -2262,13 +2262,29 @@ object Constants {
     // screen capture, also after background/resume; the accessibility service binds; no crashes.
     // The TRADE/EVOLVE modes and the overlay window were not reached.
     // Disable license check is a pre-rule licence bypass the owner kept (2026-10-19).
+    // 2026-10-25: updated to version 4.8 (versionCode 77; APKPure XAPK merged, armeabi-v7a, same
+    // signer; minSdk 29). The prefs keys are no longer string literals: AD_FREE_PERMANENT is now a
+    // lazily decoded key on MainActivity (iget-object; Lazy.getValue(); check-cast String), and
+    // the startup read moved from onCreate into a helper called from onCreate and onResume.
+    // Disable ads now takes the key field from the purchase restore's only putBoolean and the
+    // ad-free state from the setValue storing its only Boolean.valueOf(Z); it forces every
+    // getBoolean on that key true (mandatory: a read in the method that sets the state TRUE).
+    // The restore fingerprint anchors on Boolean.valueOf + putBoolean instead of the old string.
+    // 4.8 adds a rewarded ad that unlocks an extra automation flow. While ad-free the app's own
+    // code adds that flow without the ad, so patched users get it free; RewardedAd.load is also
+    // no-oped. PairIP LicenseClient.checkLicense(Context) and its callers are unchanged.
+    // LuckyClickSmokeTest asserts every hook on 4.8; CLI (no -f) changes exactly 22 methods (the
+    // hooks above) and nothing else. Emulator 2026-10-25 (x86_64, lib/armeabi-v7a stripped from
+    // stock and patched to install): stock shows the PairIP "Something went wrong" dialog;
+    // patched starts without it, Settings shows "Ads removed (Permanent)", no banner or gap, Start
+    // goes straight to the capture prompt (also after resume), adding a flow shows no ad, no crash.
     val COMPATIBILITY_LUCKYCLICK = Compatibility(
         name = "LuckyClick",
         packageName = "com.peter890331.luckyclick.app",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3A362F,
         signatures = setOf("f7430d18f3745825b6a7a21171d1bc6d6fa2320fb1c9d094d022d66fb372346d"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "3.28", versionCode = 68))
+        targets = listOf(AppTarget(version = "4.8", versionCode = 77))
     )
 
     // Added 2026-10-14 from the Reddit request queue (ads only: premium is an account role from
