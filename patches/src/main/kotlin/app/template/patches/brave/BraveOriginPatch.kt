@@ -36,7 +36,8 @@ import org.w3c.dom.Element
 private const val PREF_PREFIX = "brave_origin_off_"
 
 // Sets XML defaultValue="true" on all Origin preference switches so they display as ON
-// before the binder runs. Ported from dh6k's EnableBraveOriginResourcePatch.
+// before the binder runs (the binder skips the native read, step 8). Fails when the
+// preferences file or any switch is missing. Ported from dh6k's EnableBraveOriginResourcePatch.
 private val braveOriginResourcePatch = resourcePatch(
     name = "Brave Origin Resource Defaults",
     description = "Turns the Brave Origin switches on by default.",
@@ -56,27 +57,38 @@ private val braveOriginResourcePatch = resourcePatch(
             "web_discovery_project_switch",
         )
         // The preferences XML filename is obfuscated and changes between Brave versions.
-        // Find the correct file by scanning all res/xml/*.xml files for our switch keys.
+        // Find the correct file by scanning all res/xml/*.xml files for the rewards switch key.
         // morphe-patcher 2.0.0 decodes resources on request, so res/xml holds nothing until
-        // decode() has decoded the files to scan.
-        val targetPath = decode("res/xml/*.xml")
-            .firstOrNull { path -> get(path).readText().contains("rewards_switch") }
-            ?: return@execute
+        // decode() has decoded the files to scan. Exactly one file must hold it, and every
+        // switch below must sit in it once: an upstream XML change fails here instead of
+        // applying as a silent no-op.
+        val rewardsKey = Regex("""\bkey="rewards_switch"""")
+        val candidates = decode("res/xml/*.xml").filter { path -> rewardsKey.containsMatchIn(get(path).readText()) }.toList()
+        val targetPath = candidates.singleOrNull()
+            ?: throw PatchException(
+                "Expected one res/xml file with key=\"rewards_switch\" (the Brave Origin preferences), " +
+                    "found ${candidates.size}: $candidates",
+            )
 
         document(targetPath).use { doc ->
             val elements = doc.getElementsByTagName("*")
-            for (i in 0 until elements.length) {
-                val node = elements.item(i) as? Element ?: continue
-                val key = node.getAttribute("android:key").takeIf { it.isNotEmpty() }
-                    ?: node.getAttribute("key")
-                if (key in switches) {
-                    when {
-                        node.hasAttribute("android:defaultValue") ->
-                            node.setAttribute("android:defaultValue", "true")
-                        node.hasAttribute("defaultValue") ->
-                            node.setAttribute("defaultValue", "true")
-                    }
+            val byKey = (0 until elements.length)
+                .mapNotNull { elements.item(it) as? Element }
+                .groupBy { node ->
+                    node.getAttribute("android:key").takeIf { it.isNotEmpty() } ?: node.getAttribute("key")
                 }
+            switches.forEach { key ->
+                val node = byKey[key]?.singleOrNull()
+                    ?: throw PatchException(
+                        "$targetPath: expected one element with key \"$key\", found ${byKey[key]?.size ?: 0}",
+                    )
+                // A switch without a default is off, so a missing attribute is added as on too.
+                val attribute = if (node.hasAttribute("defaultValue") && !node.hasAttribute("android:defaultValue")) {
+                    "defaultValue"
+                } else {
+                    "android:defaultValue"
+                }
+                node.setAttribute(attribute, "true")
             }
         }
     }

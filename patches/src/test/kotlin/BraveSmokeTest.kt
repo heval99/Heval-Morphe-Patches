@@ -29,7 +29,7 @@ private const val MAIN_PREFERENCES = "Lorg/chromium/chrome/browser/settings/Brav
 private const val SHARED_PREFS = "Landroid/content/SharedPreferences;"
 private const val PROFILE = "Lorg/chromium/chrome/browser/profiles/Profile;"
 
-// The switch keys braveOriginResourcePatch turns on by default.
+// The switch keys braveOriginResourcePatch turns on by default; all are required.
 private val ORIGIN_SWITCHES = setOf(
     "rewards_switch",
     "privacy_preserving_analytics_switch",
@@ -245,22 +245,23 @@ class BraveSmokeTest {
 
         // Brave Origin Resource Defaults: every Origin switch in the preferences XML defaults
         // to on. morphe-patcher 2.0.0 decodes resources on request, so this also proves the
-        // patch decoded res/xml before scanning it (it returns silently when it finds no file).
-        // The patcher keeps its decoded, patched working copy under <temporary files>/apk.
-        val originXml = File(workDir, "out/apk").walkTopDown()
+        // patch decoded res/xml before scanning it. The patcher keeps its decoded, patched
+        // working copy under <temporary files>/apk. Like the patch, exactly one file may hold
+        // the rewards switch key, and each required switch must appear in it once.
+        val originXmls = File(workDir, "out/apk").walkTopDown()
             .filter { it.isFile && it.extension == "xml" && it.parentFile.name == "xml" && it.parentFile.parentFile.name == "res" }
-            .firstOrNull { it.readText().contains("rewards_switch") }
-            ?: error("no decoded res/xml file holds rewards_switch: the resource patch decoded nothing")
-        val switchTags = Regex("""<[^>]*\bandroid:key="(\w+_switch)"[^>]*>""").findAll(originXml.readText()).toList()
-        val originSwitches = switchTags.filter { tag -> tag.groupValues[1] in ORIGIN_SWITCHES }
-        assertTrue(
-            originSwitches.any { "android:defaultValue=" in it.value },
-            "${originXml.name} has no Origin switch with a defaultValue: ${switchTags.map { it.groupValues[1] }}",
-        )
-        originSwitches.filter { "android:defaultValue=" in it.value }.forEach { tag ->
+            .filter { Regex("""\bkey="rewards_switch"""").containsMatchIn(it.readText()) }
+            .toList()
+        val originXml = originXmls.singleOrNull()
+            ?: error("expected one decoded res/xml file with key=\"rewards_switch\", found ${originXmls.map { it.name }}")
+        val switchTags = Regex("""<[^>]*\bandroid:key="(\w+)"[^>]*>""").findAll(originXml.readText())
+            .groupBy { it.groupValues[1] }
+        ORIGIN_SWITCHES.forEach { key ->
+            val tag = switchTags[key]?.singleOrNull()
+                ?: error("${originXml.name}: expected one element with key \"$key\", found ${switchTags[key]?.size ?: 0}")
             assertTrue(
                 """android:defaultValue="true"""" in tag.value,
-                "${tag.groupValues[1]} in ${originXml.name} does not default to true: ${tag.value}",
+                "$key in ${originXml.name} does not default to true: ${tag.value}",
             )
         }
 
