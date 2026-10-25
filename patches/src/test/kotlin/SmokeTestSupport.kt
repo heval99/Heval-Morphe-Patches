@@ -98,12 +98,18 @@ fun assertReturnsInt(method: Method, expected: Int, label: String, diagnostics: 
     val insns = method.instructions()
     val first = insns.getOrNull(0)
     assertTrue(
-        first is NarrowLiteralInstruction && first.narrowLiteral.toInt() == expected,
+        first is NarrowLiteralInstruction &&
+            first.opcode in setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opcode.CONST_HIGH16) &&
+            first.narrowLiteral == expected,
         "$label was not forced to $expected; first instruction is ${first?.opcode}\n$diagnostics"
     )
     assertTrue(
         insns.getOrNull(1)?.opcode == Opcode.RETURN,
         "$label does not return immediately; second instruction is ${insns.getOrNull(1)?.opcode}\n$diagnostics"
+    )
+    assertTrue(
+        (insns[1] as OneRegisterInstruction).registerA == (first as OneRegisterInstruction).registerA,
+        "$label returns a different register than the constant\n$diagnostics"
     )
 }
 
@@ -118,12 +124,27 @@ fun assertReturnsMethodCall(
     val first = insns.getOrNull(0) as? ReferenceInstruction
     val ref = first?.reference as? MethodReference
     assertTrue(
-        ref != null && ref.definingClass == targetClass && ref.name == targetName,
+        first?.opcode in setOf(
+            Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE,
+            Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_VIRTUAL_RANGE,
+            Opcode.INVOKE_INTERFACE, Opcode.INVOKE_INTERFACE_RANGE,
+            Opcode.INVOKE_DIRECT, Opcode.INVOKE_DIRECT_RANGE,
+            Opcode.INVOKE_SUPER, Opcode.INVOKE_SUPER_RANGE,
+        ) &&
+            ref != null && ref.definingClass == targetClass && ref.name == targetName,
         "$label does not call $targetClass.$targetName first; first instruction is ${first?.opcode} ${ref}\n$diagnostics"
+    )
+    assertTrue(
+        insns.getOrNull(1)?.opcode == Opcode.MOVE_RESULT_OBJECT,
+        "$label does not capture the call result; second instruction is ${insns.getOrNull(1)?.opcode}\n$diagnostics"
     )
     assertTrue(
         insns.getOrNull(2)?.opcode == Opcode.RETURN_OBJECT,
         "$label does not return the call result; third instruction is ${insns.getOrNull(2)?.opcode}\n$diagnostics"
+    )
+    assertTrue(
+        (insns[2] as OneRegisterInstruction).registerA == (insns[1] as OneRegisterInstruction).registerA,
+        "$label returns a different register than the call result\n$diagnostics"
     )
 }
 
