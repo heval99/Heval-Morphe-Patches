@@ -2084,13 +2084,29 @@ object Constants {
     // Sentry providers are unchanged; HevySmokeTest passes.
     // Emulator 2026-10-14 (3.2.0): not runtime-tested; the merged APK fails to load libreactnative.so on the
     // x86_64 emulator for stock and patched alike. Smoke test and CLI (bundle bytes + SHA-1 footer) pass.
+    // 2026-10-25: updated to version 3.2.2 (versionCode 3398745; APKPure XAPK merged, same signer).
+    // Unlock Pro is unchanged (the three strings still pick one getter). 3.2.2 R8-renames the
+    // Sentry, Facebook, Amplitude and Branch SDK classes, so Block telemetry & trackers is
+    // re-anchored: Sentry on the RNSentryModule.initNativeSdk bridge method (the renamed Impl's
+    // only caller); Facebook on AppEventQueue.flushAndWait (V6.n.n) by the APP_EVENTS_FLUSHED /
+    // _NUM_EVENTS_FLUSHED intent strings, which every flush path reaches; Branch.isTrackingDisabled
+    // (Mg.e.r0) as the ()Z the RNBranchModule.isTrackingDisabled bridge method calls. Amplitude's
+    // isLimitAdTrackingEnabled and prefetch are gone (unused, removed by R8), so the two ad-ID
+    // readers (a$a.t by the getAdvertisingIdInfo/isLimitAdTrackingEnabled reflection strings,
+    // a$a.s by limit_ad_tracking/advertising_id) return null instead. Adjust PackageHandler and
+    // Amplitude getLegacyEvents are unchanged by name. FingerprintProbe: all three new fingerprints
+    // OK-unique; HevySmokeTest passes. CLI (no -f) applies both patches: exactly 8 methods change
+    // (the hooks above), the Hermes bundle Pro bytes + SHA-1 footer, and the two Sentry providers
+    // are disabled; no string value changed (rule 12). flushAndWait is broader than the old flush
+    // hook (the timer and event-count flushes reach it too). Not runtime-tested: libreactnative.so
+    // still doesn't load on the x86_64 emulator.
     val COMPATIBILITY_HEVY = Compatibility(
         name = "Hevy",
         packageName = "com.hevy",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x101012,
         signatures = setOf("add9aa0d804a1a14a04119d44fa7cb4cc229c86322991eda526f5455d11580ef"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "3.2.0", versionCode = 3364731))
+        targets = listOf(AppTarget(version = "3.2.2", versionCode = 3398745))
     )
 
     // Verified 2026-10-13 against easy.launcher 1.10.28 (versionCode 11028, the owner's APKMirror
