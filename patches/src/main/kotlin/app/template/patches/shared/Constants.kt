@@ -2556,12 +2556,19 @@ object Constants {
     // toggles Interrupt (3 apps), opens the swipe-gesture choices, adds a category, and the Pro
     // item / Pro Membership row show the subscriber "Pro Member" sheet. Same after a cold start; no
     // crashes.
+    // 2026-10-25: updated to version v2.4.3 (versionCode 271; APKPure XAPK merged, same signer);
+    // ProLauncherSmokeTest passes on patcher 2.0.0 after one fix. v2.4.3 added a second no-arg Z
+    // reader of "IS_PRO", the "trial just ended" check (trial started, trial over, not Pro, within a
+    // day of the trial end; it drives the once-a-day trial sheet in ComposeMainActivity.onResume),
+    // so the IS_PRO fingerprint matched twice. It now also requires the no-arg Z trial-check call
+    // right after the getBoolean read, which only the Pro getter has; the trial-ended check is left
+    // alone. SubscriberInfo anchors unchanged.
     val COMPATIBILITY_PRO_LAUNCHER = Compatibility(
         name = "Pro Launcher",
         packageName = "app.prolauncher",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x111111, // The icon's near-black background (white glyph).
-        targets = listOf(AppTarget(version = "v2.4.2", versionCode = 269))
+        targets = listOf(AppTarget(version = "v2.4.3", versionCode = 271))
     )
 
     // Verified 2026-10-15 against mark.via.gp 7.3.3 (versionCode 20260823, single universal
