@@ -1314,12 +1314,14 @@ object Constants {
     // MobileAds statics are neutralised as a guard only (the app never calls initialize).
     // Smoke-tested and CLI-verified (no -f, smali checked) on 3.2.0.0_release_2; not
     // runtime-tested.
+    // 2026-10-25: updated to version 3.2.1.0_release_1 (versionCode 32101; APKPure XAPK merged,
+    // same signer); PiMusicPlayerSmokeTest passes on patcher 2.0.0; anchors unchanged.
     val COMPATIBILITY_PIMUSICPLAYER = Compatibility(
         name = "Pi Music Player",
         packageName = "com.Project100Pi.themusicplayer",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3F51B5,
-        targets = listOf(AppTarget(version = "3.2.0.0_release_2", versionCode = 32001))
+        targets = listOf(AppTarget(version = "3.2.1.0_release_1", versionCode = 32101))
     )
 
     // Verified 2026-10-05 against com.shazam.android 16.62.0 (versionCode 1606200,
