@@ -26,6 +26,13 @@ object Constants {
     //   - Configuration rule (owner, 2026-10-19): every Compatibility lists only the latest
     //     verified target, the one its smoke test runs against.
 
+    // Signatures (2026-10-25, patcher 2.0): each Compatibility lists the SHA-256 of the signing
+    // certificate of its verified target APK (apksigner on the APK, or the original base split
+    // recorded when a bundle was merged; Firefox from Mozilla's own 158.0 build). Morphe Manager
+    // 2.x warns, with an option to go on, when a picked APK is signed by none of them; on
+    // Android 10 and older it skips the check. Textra has none: its Play-signed cert came from
+    // one mirror only. On an app update, check the signer and keep or replace the hash.
+
     // 2026-10-12 APK-finder audit: only distributed as a split bundle (APKMirror BUNDLE /
     // APKPure-Uptodown XAPK), so apkFileType is APKM; any "universal APK" note below is outdated.
     val COMPATIBILITY_SOFASCORE = Compatibility(
@@ -33,6 +40,7 @@ object Constants {
         packageName = "com.sofascore.results",
         apkFileType = ApkFileType.APKM, // Preferred or recommended file type.
         appIconColor = 0x384CF4, // Icon color in Morphe Manager.
+        signatures = setOf("ecd3a2c9902adbef2653b105924a97f1755bbebb93c5f2b2a1fb56c7b009f841"), // CN=Sofa Score, O=SofaScore
         targets = listOf(
             // "version = null" means the patch works with the latest app target
             // and is expected to work with all future app targets.
@@ -286,6 +294,7 @@ object Constants {
         packageName = "com.mobilefootie.wc2010",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00985F,
+        signatures = setOf("99eb36651caf7752dc34770ee1afbf5b5f4e07a906243904104eb5acc9ffbaf4"), // CN=Christer Nordvik, O=Score Service
         targets = listOf(
             // 2026-10-22: 239.17834.20261016 replaces 238.17794.20261012 (latest version only,
             // owner 2026-10-19); see the 2026-10-22 note above for what was verified on it.
@@ -323,6 +332,7 @@ object Constants {
         packageName = "com.myfitnesspal.android",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0072BC,
+        signatures = setOf("e2f39185315095611b23f9602cef6332a89db8960ee76a45fb41eeef4975d95d"), // CN=MyFitnessPal LLC
         targets = listOf(AppTarget(version = "26.41.0", versionCode = 51589))
     )
 
@@ -386,6 +396,7 @@ object Constants {
         packageName = "club.boxbox.android",
         apkFileType = ApkFileType.APKM, // bundle-only on APKMirror and APKPure (checked 2026-10-07)
         appIconColor = 0xFF0000,
+        signatures = setOf("ea97f13707620039a2c9d8ab8f3122304e1dedb58ea87b131845e0b14b8d7518"), // Google Play app signing key
         targets = listOf(
             AppTarget(version = "5.4.18", versionCode = 262)
         )
@@ -443,6 +454,7 @@ object Constants {
         packageName = "com.scores365",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFFC107,
+        signatures = setOf("08ab809258f8d7c0ac7451033d6b12c8ca70053ab4f37942fc988cb6571b963b"), // CN=Roe Aharoni, O=365 Scores
         targets = listOf(
             AppTarget(version = "14.9.7", versionCode = 1497)
         )
@@ -473,6 +485,7 @@ object Constants {
         packageName = "com.livescore",
         apkFileType = ApkFileType.APK,
         appIconColor = 0xC8102E,
+        signatures = setOf("82bf3a1c6498d93a22c4fe6ab8f272d5a8495093a8e04a66b0b1c92cdcd12ebb"), // CN=Sebastian, O=Cloeme
         targets = listOf(AppTarget(version = "10.3.2", versionCode = 2230))
     )
 
@@ -495,6 +508,7 @@ object Constants {
         packageName = "no.fishbuddy_playground.app",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0288D1,
+        signatures = setOf("dad0c2bd5066aeaf984967fd562e98ec7b4cced799ec9aab2a256d930eff389a"), // Google Play app signing key
         targets = listOf(
             AppTarget(version = "11.0.137", versionCode = 110137)
         )
@@ -514,6 +528,7 @@ object Constants {
         packageName = "com.brave.browser",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFF4500,
+        signatures = setOf("9c2db70513515fdbfbbc585b3edf3d7123d4dc67c94ffd306361c1d79bbf18ac"), // CN=Chris Lacy, O=Digital Ashes
         targets = listOf(
             // History (1.95.104 and 1.96.61 were targets until 2026-10-19, see the last note):
             // Verified 2026-10-07 against com.brave.browser 1.96.61 (versionCode 429606104,
@@ -577,6 +592,7 @@ object Constants {
         packageName = "com.brave.browser",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFF4500,
+        signatures = setOf("9c2db70513515fdbfbbc585b3edf3d7123d4dc67c94ffd306361c1d79bbf18ac"), // CN=Chris Lacy, O=Digital Ashes
         targets = listOf(
             // Verified 2026-10-07 against 1.97.56 (versionCode 429705604, GitHub release
             // Bravearm64Universal.apk): the experimental patches apply unchanged; BraveSmokeTest
@@ -630,6 +646,7 @@ object Constants {
         packageName = "me.kavishdevar.librepods",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x406C5C,
+        signatures = setOf("b1b8511c0ff7b488458fa9c20622cdb2dea9205532f893ec1b90e6504bf4428e"), // CN=Kavish Devar
         targets = listOf(
             AppTarget(
                 version = "1.0.4-play",
@@ -671,6 +688,7 @@ object Constants {
         packageName = "easynotes.notes.notepad.notebook.privatenotes.note",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00ACFF,
+        signatures = setOf("6591e7c2a62f9db462192e5417921fb74ecfd72f660e5270ef512b9a5fa4267a"), // CN=gulooloo, O=gulooloo
         targets = listOf(
             // Verified 2026-10-07 against 1.3.63.0921 (versionCode 10569, APKPure XAPK
             // merged): both patches apply unchanged; EasyNotesSmokeTest passes.
@@ -700,6 +718,7 @@ object Constants {
         packageName = "eu.faircode.email",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x2196F3,
+        signatures = setOf("e02067249f5a350e0ec703fe9df4dd682e0291a09f0c2e041050bbe7c064f5c9"), // O=FairCode
         targets = listOf(
             AppTarget(version = "1.2338", versionCode = 2338)
         )
@@ -726,6 +745,7 @@ object Constants {
         packageName = "net.dinglisch.android.taskerm",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x4CAF50,
+        signatures = setOf("973fe25b9be28fb7436d49582b04277767c852539be31783d134a55621b6636d"), // CN=Lee Wilmot
         targets = listOf(AppTarget(version = "6.6.20", versionCode = 5445))
     )
 
@@ -749,6 +769,7 @@ object Constants {
         packageName = "org.kman.AquaMail",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00B0FF,
+        signatures = setOf("da3a93962f82949130f2869637f7abbd0d8f4fff3527a089b06a1078acb7d684"), // CN=Kostya Vasilyev, O="Hypnotica, Inc."
         targets = listOf(AppTarget(version = "2.7.0", versionCode = 200700061))
     )
 
@@ -763,6 +784,7 @@ object Constants {
         packageName = "com.wunderground.android.weather",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1565C0,
+        signatures = setOf("baea216abcdbf01625d10a858453c1c879e451ba5c4dda3eca77c08c6e20c8cd"), // CN=John Celenza, O=Weather Underground
         targets = listOf(AppTarget(version = "6.20.1", versionCode = 2019070035))
     )
 
@@ -784,6 +806,7 @@ object Constants {
         packageName = "com.monefy.app.lite",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x8BC34A,
+        signatures = setOf("1648cbbe1517389ffbf1d6e0dd911dab52656d53ed01be670f9caf112dbeb85e"), // CN=Monefy App, O=www.monefy.me
         targets = listOf(AppTarget(version = "1.22.11", versionCode = 2229))
     )
 
@@ -810,6 +833,7 @@ object Constants {
         packageName = "com.rammigsoftware.bluecoins",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x2979FF,
+        signatures = setOf("669491c227af63912876c38b286d782a3f7f7e382c7941b820fe48137d1f8c64"), // CN=ANTONIO BARRIA, O=RAMMIG SOFTWARE
         targets = listOf(
             AppTarget(version = "13.1.149", versionCode = 33215),
         )
@@ -891,6 +915,7 @@ object Constants {
         // format and the per-version note point users there instead. APKM still works.
         apkFileType = ApkFileType.APKS,
         appIconColor = 0x1E88E5,
+        signatures = setOf("2c8830db33069e1beb410e5f37ea0949b4c5852fde108c6e3895738e07226550"), // CN=Pavel Cvetler, O=LiveSport s.r.o.
         targets = listOf(
             AppTarget(version = "26.10.2", versionCode = 520, description = FLASHSCORE_SOURCE_NOTE),
         )
@@ -920,6 +945,7 @@ object Constants {
         packageName = "de.motain.iliga",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00C853,
+        signatures = setOf("5099231f83f0f6d011f15287f37fe37b6392f97b9908f6f44ea6cb86d44356ab"), // CN=Appsolute, OU=SD
         targets = listOf(
             // 2026-10-23: updated to version 15.147.0 (versionCode 1045019512; APKMirror bundle,
             // every ABI; signer CN=Appsolute OU=SD, cert SHA-256
@@ -976,6 +1002,7 @@ object Constants {
         packageName = "net.osmand",
         apkFileType = ApkFileType.APKM, // bundle-only on APKMirror and APKPure (checked 2026-10-07)
         appIconColor = 0x7CB342,
+        signatures = setOf("d192f4fffff2fae37f2821e4ca44f4cbe2483e7ffa24a8472043f685dd5bed27"), // CN=Victor Shcherb, OU=OsmAnd
         targets = listOf(
             AppTarget(version = "5.4.11", versionCode = 5411)
         )
@@ -1020,6 +1047,7 @@ object Constants {
         packageName = "com.jetappfactory.jetaudio",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFF6D00,
+        signatures = setOf("6bd7d17bd3553400ef40222f4a7cd4cee0c0b276e97e3ce831baa7f1d0b71b4b"), // CN=JetAudio Team, O=JetAppFactory
         targets = listOf(AppTarget(version = "13.1.2", versionCode = 261320))
     )
 
@@ -1036,6 +1064,7 @@ object Constants {
         packageName = "com.Relmtech.Remote",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x2962FF,
+        signatures = setOf("b506be7e0c84f44785538ff9034687d52c3b8080c3c745cb79da07891c3c92cb"), // CN=Jakob Berglund, O=Relmtech
         targets = listOf(AppTarget(version = "3.25.1", versionCode = 325001))
     )
 
@@ -1080,6 +1109,7 @@ object Constants {
         packageName = "com.futbin",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x26A69A,
+        signatures = setOf("1cf7ff75f2e364c2e671321af98f86d35979fe8f3575da508b90d530df75e904"), // CN=Dirk Duncan, O=FUTBIN
         targets = listOf(AppTarget(version = "27.08", versionCode = 7008))
     )
 
@@ -1099,6 +1129,7 @@ object Constants {
         packageName = "com.pocketcolorwheel.PCW",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x9C27B0,
+        signatures = setOf("fb2ba2a7e820705bd774b02f9c34b36a51bb6d0ebdbc81ff2d67b97ad39fd46c"), // Google Play app signing key
         targets = listOf(AppTarget(version = "3.26", versionCode = 57))
     )
 
@@ -1127,6 +1158,7 @@ object Constants {
         packageName = "com.flyersoft.moonreader",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x283593,
+        signatures = setOf("5ac646ebc68017e4cc582b11b1c2ae5d29b15d9b0ac3a54fc60972417b41c9ad"), // CN=Seany Zhou
         targets = listOf(AppTarget(version = "10.8", versionCode = 1008000))
     )
 
@@ -1140,6 +1172,7 @@ object Constants {
         packageName = "com.foobnix.pdf.reader",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1E88E5,
+        signatures = setOf("cdf4e1c31c41a55ed72896bf443ce56d50fb34bb933e3189b3ddc2609c90d8f9"), // CN=Ivan Ivanenko
         targets = listOf(AppTarget(version = "9.4.20", versionCode = 7175))
     )
 
@@ -1159,6 +1192,7 @@ object Constants {
         packageName = "com.alarmclock.xtreme.free",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF44336,
+        signatures = setOf("7638e4e83b50c513ec1eb886301a451b6f0751cf470ec9921e916a6818203359"), // CN=Irene Duke
         targets = listOf(AppTarget(version = "26.06.0", versionCode = 70004221))
     )
 
@@ -1199,6 +1233,7 @@ object Constants {
         packageName = "com.appgenix.bizcal",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x009688,
+        signatures = setOf("53d3dc3f50ea8256ea27768bc0c6c24d44c1dcf8b478fa08496a721658a21a8f"), // CN=Michael Kopplin, O=Mikado Software
         targets = listOf(AppTarget(version = "2.55.8", versionCode = 255800))
     )
 
@@ -1228,6 +1263,7 @@ object Constants {
         packageName = "app.expert.player",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x1565C0,
+        signatures = setOf("78601372350f222eed7007cd300a115fd215dacd7b2352c5077d6db026b4168a"), // Google Play app signing key
         targets = listOf(AppTarget(version = "11.3.0", versionCode = 309))
     )
 
@@ -1279,6 +1315,7 @@ object Constants {
         packageName = "com.streema.simpleradio",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFF6D00,
+        signatures = setOf("e9dc74df7439ad7a73c7cb916b7dd5697281e0a3f6bfac93208ec7bd9f70725a"), // OU=Streema
         targets = listOf(AppTarget(version = "6.3.0", versionCode = 899))
     )
 
@@ -1305,6 +1342,7 @@ object Constants {
         packageName = "com.farproc.wifi.analyzer",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x00ACC1,
+        signatures = setOf("90c579818cc58567db12e7f1150a60e4bba9a393e3c269eaba46d89af402f881"), // O=farproc.com
         targets = listOf(
             AppTarget(version = "3.11.2", versionCode = 139)
         )
@@ -1344,6 +1382,7 @@ object Constants {
         packageName = "com.Project100Pi.themusicplayer",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3F51B5,
+        signatures = setOf("f1b56e1d0e7901712e4ed9be385a34b7a11b696c60c9f458cf804ae3cf0f8636"), // CN=100PiDevs, O=Team100Pi
         targets = listOf(AppTarget(version = "3.2.1.0_release_1", versionCode = 32101))
     )
 
@@ -1409,6 +1448,7 @@ object Constants {
         packageName = "com.shazam.android",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0088FF,
+        signatures = setOf("bffeb14903fbc92fffe6404a3654098a3f85c81a3513afd5dceac121cd678d1c"), // CN=Tony Miller, O=Shazam Entertainment Ltd.
         targets = listOf(
             // 2026-10-23: updated to version 16.64.0-261015 (versionCode 1606400; APKMirror bundle;
             // signer CN=Tony Miller / Shazam Entertainment Ltd., cert SHA-256
@@ -1441,6 +1481,7 @@ object Constants {
         packageName = "com.podcast.podcasts",
         apkFileType = ApkFileType.APK,
         appIconColor = 0xFF5722,
+        signatures = setOf("5efb79c6024b970c74f30a2012aa63cb018140966a397e709bcb11f74fd7de01"), // CN=Yoga Monkey, O=Guru
         targets = listOf(AppTarget(version = "9.17.0-260909124", versionCode = 260909124))
     )
 
@@ -1476,6 +1517,7 @@ object Constants {
         packageName = "fm.castbox.audiobook.radio.podcast",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF44336,
+        signatures = setOf("5efb79c6024b970c74f30a2012aa63cb018140966a397e709bcb11f74fd7de01"), // CN=Yoga Monkey, O=Guru
         targets = listOf(AppTarget(version = "11.27.0-261014339", versionCode = 261014339))
     )
 
@@ -1497,6 +1539,7 @@ object Constants {
         packageName = "com.melodis.midomiMusicIdentifier.freemium",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x000000,
+        signatures = setOf("56d8b2577bea4cb34487e6c60225f1e3f0abc39e24fd34e45769876ebb062a3c"), // O=Melodis
         targets = listOf(AppTarget(version = "10.5.8", versionCode = 21134))
     )
 
@@ -1515,6 +1558,7 @@ object Constants {
         packageName = "one.cricket.app",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0D47A1,
+        signatures = setOf("6e795e00c60134f927a1a8d61677926fadac536befce84d617358def4ae8a4d9"), // CN=OneCricket, O=OneCricket
         targets = listOf(AppTarget(version = "26.08.01", versionCode = 90))
     )
 
@@ -1532,6 +1576,7 @@ object Constants {
         packageName = "com.gregacucnik.fishingpoints",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1565C0,
+        signatures = setOf("4e8e4f711a222f9c9c75b4fa1560bb3cb09d7a25b1ce26db1808b2b0e042ca15"), // CN=Grega Cucnik
         targets = listOf(AppTarget(version = "4.8.0", versionCode = 411))
     )
 
@@ -1568,6 +1613,7 @@ object Constants {
         packageName = "com.onesports.score",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00C853,
+        signatures = setOf("175a57de17de7811434710e42b2afbbf8e60811e54a6e570b740fa7bb4c6906f"), // CN=onescore, O=onescore
         targets = listOf(AppTarget(version = "4.3.2", versionCode = 297))
     )
 
@@ -1599,6 +1645,7 @@ object Constants {
         packageName = "com.resultadosfutbol.mobile",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x2E7D32,
+        signatures = setOf("97f9d6deb3d9d3ca623528b77dddc530c49516c90e948628e0354bb530cc3b6f"), // CN=Alejandro Sanchez Blanes, O=Resultados-Futbol.com
         targets = listOf(AppTarget(version = "6.6.0", versionCode = 23005536))
     )
 
@@ -1627,6 +1674,7 @@ object Constants {
         packageName = "com.rawcam.app",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xD0BCFF,
+        signatures = setOf("e6cb3d3dc3c31c4ffbcc5a2b95d71875c1861ee2b17ddc3e591471c274bd9768"), // Google Play app signing key
         targets = listOf(
             AppTarget(version = "1.4.5", versionCode = 57)
         )
@@ -1649,6 +1697,7 @@ object Constants {
         packageName = "com.ztnstudio.notepad",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFFC107,
+        signatures = setOf("d7508eb3c26f90cbf457dc823b6008f4927d78bf0e64edcde5472fff9564bde5"), // O=ZTN Studios
         targets = listOf(AppTarget(version = "5.4.3.19019", versionCode = 19019))
     )
 
@@ -1677,6 +1726,7 @@ object Constants {
         packageName = "net.smartwod.timer",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x333333,
+        signatures = setOf("0c002344faaad0e17db0deca425519632476f7d2d9ebda4fb99f6828d9c73f99"), // Google Play app signing key
         targets = listOf(AppTarget(version = "1.46.9", versionCode = 10000399))
     )
 
@@ -1699,6 +1749,7 @@ object Constants {
         packageName = "me.bluemail.mail",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x006CEF,
+        signatures = setOf("46cc9dad502c7581cb5fa56c1e7ea092db8f31948f4a6af2388fcf9391c41af6"), // O=BlueMail
         targets = listOf(AppTarget(version = "2.2.408", versionCode = 47587))
     )
 
@@ -1992,6 +2043,7 @@ object Constants {
         packageName = "com.truecaller",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0087FF,
+        signatures = setOf("7712b5f255f2c85b8b164519116ac4381bb9a3582dcdd2b73ac06ee7464913ae"), // CN=truecaller
         targets = listOf(AppTarget(version = "26.41.5", versionCode = 2641005))
     )
 
@@ -2031,6 +2083,7 @@ object Constants {
         packageName = "com.hevy",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x101012,
+        signatures = setOf("add9aa0d804a1a14a04119d44fa7cb4cc229c86322991eda526f5455d11580ef"), // Google Play app signing key
         targets = listOf(AppTarget(version = "3.2.0", versionCode = 3364731))
     )
 
@@ -2079,6 +2132,7 @@ object Constants {
         packageName = "easy.launcher",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x212121,
+        signatures = setOf("b85f085f998a77c5feedc1ddc5c75c51b68bb1a0e0c7881cd924130c9f7bb45a"), // Google Play app signing key
         targets = listOf(AppTarget(version = "1.10.28", versionCode = 11028))
     )
 
@@ -2115,6 +2169,7 @@ object Constants {
         packageName = "in.cricketexchange.app.cricketexchange",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x262626,
+        signatures = setOf("b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"), // CN=Purushotam Rawat
         targets = listOf(AppTarget(version = "26.10.07", versionCode = 668))
     )
 
@@ -2136,6 +2191,7 @@ object Constants {
         packageName = "cc.dreamspark.intervaltimer",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x607D8B,
+        signatures = setOf("3de6afd771d45215b2fed0573cf27a726a78ec4d151b04efb1c0ce160fa96a48"), // CN=Su-Au Hwang, O=dreamspark.cc
         targets = listOf(AppTarget(version = "2.3.30", versionCode = 239030))
     )
 
@@ -2162,6 +2218,7 @@ object Constants {
         packageName = "com.duplila.screenshare",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x009FE3,
+        signatures = setOf("45469bfeef3d01413dbffc3530ebe6849bb08312317774f9fbc4f2d999a29294"), // Google Play app signing key
         targets = listOf(AppTarget(version = "5.3", versionCode = 70))
     )
 
@@ -2188,6 +2245,7 @@ object Constants {
         packageName = "com.peter890331.luckyclick.app",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3A362F,
+        signatures = setOf("f7430d18f3745825b6a7a21171d1bc6d6fa2320fb1c9d094d022d66fb372346d"), // Google Play app signing key
         targets = listOf(AppTarget(version = "3.28", versionCode = 68))
     )
 
@@ -2211,6 +2269,7 @@ object Constants {
         packageName = "com.astrapaging.vff",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x112D5A,
+        signatures = setOf("d24b40de530cd622a604740c9dd036475ee6acfb326d29e34a06adcd1f6c6a1f"), // CN=Astra Paging Ltd., O=Astra Paging Ltd.
         targets = listOf(AppTarget(version = "6.7.8", versionCode = 678))
     )
 
@@ -2240,6 +2299,7 @@ object Constants {
         packageName = "wsj.reader_sp",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x000000, // Black WSJ logotype on a #F7F7F7 adaptive-icon background.
+        signatures = setOf("23bb0cd3b5fbc3fdd4f869b2c423ef79ea25ff7c54b06ea29ccd49472f66451f"), // CN=Wall Street Journal Digital Network, O=The Wall Street Journal
         targets = listOf(AppTarget(version = "6.43.0.33886", versionCode = 643003886))
     )
 
@@ -2265,6 +2325,7 @@ object Constants {
         packageName = "me.piebridge.brevent",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x0288D1,
+        signatures = setOf("b7ab38fa38c82ef3cb28b1f9044c0360794abf109bcb2ce97e8ad939d736bd1f"), // CN=Liu DongMiao, O=piebridge.me
         targets = listOf(AppTarget(version = "4.2.31.1", versionCode = 539))
     )
 
@@ -2313,6 +2374,7 @@ object Constants {
         packageName = "com.fyxtech.muslim",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00A63B,
+        signatures = setOf("5d8c442d9373ce3ce62410957a6ae3ab3a559097ff1e83f59888cf78fcdbee0c"), // CN=athan, O=yalla
         targets = listOf(AppTarget(version = "3.5.4", versionCode = 149))
     )
 
@@ -2347,6 +2409,7 @@ object Constants {
         appIconColor = 0x0066A1,
         // Experimental (owner decision 2026-10-14): shipped without a device test because the
         // emulator is blocked by Akamai even on the original app.
+        signatures = setOf("032e7418eec3fc2935e7235dca5abb40f180f57b616977499b24634c96b26064"), // CN=Ganapathy, O=Divum Corporate Services
         targets = listOf(AppTarget(version = "14.6.2", versionCode = 637, isExperimental = true))
     )
 
@@ -2376,6 +2439,7 @@ object Constants {
         packageName = "projekt.launcher",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3C59AD, // Mid-point of the icon's blue-to-indigo background gradient.
+        signatures = setOf("b83ad17c73dc062be4dc188f2b91e7f7632f69f85f962616e6866effe43bf603"), // O=projekt
         targets = listOf(AppTarget(version = "2.2.13", versionCode = 20213))
     )
 
@@ -2431,6 +2495,7 @@ object Constants {
         packageName = "com.guardian",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x052962, // Guardian navy.
+        signatures = setOf("4965429ead99251c84c2d557d4e6f36c7bc3b35c1ea18e1996bcca13e55a9e7d"), // CN=Android, O=Guardian News and Media
         targets = listOf(AppTarget(version = "6.238.23405", versionCode = 23405))
     )
 
@@ -2480,6 +2545,7 @@ object Constants {
         packageName = "com.yahoo.mobile.client.android.sportacular",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x6001D2, // Yahoo purple.
+        signatures = setOf("d3f1fb1b2c81e096e3f5809a503afda0cfaf56b9d39dedc656ee2660acef614c"), // CN=Yahoo! mobile CA, O=Yahoo! Inc.
         targets = listOf(AppTarget(version = "12.26.1", versionCode = 11168590))
     )
 
@@ -2500,6 +2566,7 @@ object Constants {
         packageName = "com.pzolee.bluetoothscanner",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1084F7, // The icon's Bluetooth blue (on black).
+        signatures = setOf("62799dcaf6986c6c512397a1d0bcb7f2f212685f3f97f8c5f3f5084f8df0e380"), // CN=Zoltan Pallagi
         targets = listOf(AppTarget(version = "1.9.3", versionCode = 93))
     )
 
@@ -2523,6 +2590,7 @@ object Constants {
         packageName = "com.macdom.ble.blescanner",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x2E59A8, // Mid-point of the icon's blue gradient.
+        signatures = setOf("bdfa4f78a08ea34576beba64605359c93df8ae7b6b53f896741af52d3a8a0977"), // CN=Ashok Domadiya
         targets = listOf(AppTarget(version = "4.8", versionCode = 74))
     )
 
@@ -2560,6 +2628,7 @@ object Constants {
         packageName = "ru.wasiliysoft.ircodefindernec",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x009688, // The icon's teal background.
+        signatures = setOf("79131c22b4d86ad2ab256d9fca57e7b7ffea7b84b09a67b4b26226ac7d92c2c3"), // CN=Vitaliy Vasilchenko, O=WasiliySoft
         targets = listOf(AppTarget(version = "14.17.0 build 206 InAPP", versionCode = 206))
     )
 
@@ -2594,6 +2663,7 @@ object Constants {
         packageName = "app.prolauncher",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x111111, // The icon's near-black background (white glyph).
+        signatures = setOf("07fd559fb0d1e34ee71433f11e1ca05945a069f8009d7214f74c3770a6bd6da7"), // Google Play app signing key
         targets = listOf(AppTarget(version = "v2.4.3", versionCode = 271))
     )
 
@@ -2621,6 +2691,7 @@ object Constants {
         packageName = "mark.via.gp",
         apkFileType = ApkFileType.APK,
         appIconColor = 0xFFB700, // The icon's largest stroke (amber; with red and blue, on white).
+        signatures = setOf("3df7f89d3b8d1315f05710c914fccbcf3a4e24980afddccb8dcebde90836a390"), // CN=Various Tu
         targets = listOf(AppTarget(version = "7.3.3", versionCode = 20260823))
     )
 
@@ -2664,6 +2735,7 @@ object Constants {
         packageName = "ro.rcsrds.digisport",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1D56A8, // The icon's blue gradient (mid-tone).
+        signatures = setOf("014322fe24ad21500ec22894f597be2f29904fe0762f7a27b887762de80c2853"), // CN=DigiSport, O=RCS&RDS
         targets = listOf(AppTarget(version = "1.1.15", versionCode = 75))
     )
 
@@ -2680,6 +2752,7 @@ object Constants {
         packageName = "ro.rcsrds.digisport",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1D56A8,
+        signatures = setOf("014322fe24ad21500ec22894f597be2f29904fe0762f7a27b887762de80c2853"), // CN=DigiSport, O=RCS&RDS
         targets = listOf(AppTarget(version = "1.1.15", versionCode = 75, isExperimental = true))
     )
 
@@ -2724,6 +2797,7 @@ object Constants {
         packageName = "com.football433",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF1FF00, // The adaptive icon's neon yellow background.
+        signatures = setOf("87a49808a3bbed73e6af698a594f2ef984d35a36bda298eb400a5b2ed29fb2d0"), // Google Play app signing key
         targets = listOf(AppTarget(version = "2.3.585", versionCode = 905))
     )
 
@@ -2752,6 +2826,7 @@ object Constants {
         packageName = "com.football433",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF1FF00,
+        signatures = setOf("87a49808a3bbed73e6af698a594f2ef984d35a36bda298eb400a5b2ed29fb2d0"), // Google Play app signing key
         targets = listOf(AppTarget(version = "2.3.585", versionCode = 905, isExperimental = true))
     )
 
@@ -2797,6 +2872,7 @@ object Constants {
         packageName = "com.mail.mobile.android.mail",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x283167, // The adaptive icon's navy background.
+        signatures = setOf("07ada0886afd11865d631373b2078ee6d15d8c4769f622b890bcbef778ccdfbe"), // CN=Raimund Rix, O=1&1 Mail & Media GmbH
         targets = listOf(AppTarget(version = "9.19.0", versionCode = 405215))
     )
 
@@ -2861,6 +2937,7 @@ object Constants {
         packageName = "com.eurosport",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x000000, // The adaptive icon's black background.
+        signatures = setOf("cabdcdfd15a3395a9cbcd9a073784338383f4260adf2f9b1125a512ca3fb09a1"), // Google Play app signing key
         targets = listOf(AppTarget(version = "8.34.1", versionCode = 113929))
     )
 
@@ -2904,6 +2981,7 @@ object Constants {
         packageName = "lequipe.fr",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0A1E32,
+        signatures = setOf("6d9f086b1df6eb441304d1d114c674185c985bc46fafcb045211db6172bd6e59"), // CN=Xavier Debbasch, O=Airweb
         targets = listOf(AppTarget(version = "10.70.0", versionCode = 1620, isExperimental = true))
     )
 
@@ -2941,6 +3019,7 @@ object Constants {
         packageName = "de.transfermarkt.v2",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x001AA3, // The adaptive icon's blue background.
+        signatures = setOf("69932f3cc60e277715dd59f601a6ad3455b2850f03cace2131eef8ccb1454f08"), // Google Play app signing key
         targets = listOf(AppTarget(version = "4.3.2", versionCode = 2075))
     )
 
@@ -2976,6 +3055,7 @@ object Constants {
         packageName = "org.mozilla.focus",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x7542E5, // The icon's purple.
+        signatures = setOf("6203a473be36d64ee37f87fa500edbc79eab930610ab9b9fa4ca7d5c1f1b4ffc"), // CN=Release Engineering, O=Mozilla Corporation
         targets = listOf(AppTarget(version = "158.0", versionCode = 402802337))
     )
 
@@ -3017,6 +3097,7 @@ object Constants {
         packageName = "org.mozilla.firefox",
         apkFileType = ApkFileType.APK,
         appIconColor = 0xFF7139, // The icon's orange.
+        signatures = setOf("a78b62a5165b4494b2fead9e76a280d22d937fee6251aece599446b2ea319b04"), // O=Mozilla Corporation
         targets = listOf(
             AppTarget(
                 version = "158.0",
@@ -3065,6 +3146,7 @@ object Constants {
         packageName = "com.bleacherreport.android.teamstream",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x1A1A1A, // The adaptive icon's background colour.
+        signatures = setOf("60baa40540f4950406f327d85761d6e4c533a169d7129e20dfac56fb3124a4f0"), // CN=Sam Parnell, O=Bleacher Report
         targets = listOf(AppTarget(version = "11.12.0.33", versionCode = 54053))
     )
 }
