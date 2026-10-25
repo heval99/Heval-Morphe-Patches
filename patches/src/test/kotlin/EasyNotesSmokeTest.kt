@@ -41,12 +41,7 @@ class EasyNotesSmokeTest {
         // absent, so CI stays green; locally it is present and the test really runs.
         assumeTrue(apk.exists(), "skipping: base.apk not present at ${apk.path}")
 
-        val bundle = File(root, "patches/build/libs").walkTopDown()
-            .filter {
-                it.isFile && it.extension == "mpp" &&
-                    !it.name.contains("sources") && !it.name.contains("javadoc")
-            }
-            .maxByOrNull { it.lastModified() } ?: error("no patch bundle (.mpp) found in patches/build/libs")
+        val bundle = newestPatchBundle(root)
 
         assertTrue(bundle.exists(), "patch bundle missing at ${bundle.path}")
 

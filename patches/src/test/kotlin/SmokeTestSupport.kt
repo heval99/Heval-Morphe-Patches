@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import util.requirePatchesVersion
+import util.selectPatchBundle
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.file.Files
@@ -35,14 +37,13 @@ fun repoRoot(): File {
     return dir ?: File(System.getProperty("user.dir")).absoluteFile
 }
 
+/**
+ * The bundle of the current project version, `patches/build/libs/patches-<version>.mpp`
+ * (version passed in by patches/build.gradle.kts), never the newest-modified one: stale bundles
+ * from older versions stay in build/libs. The name is kept for the existing call sites.
+ */
 fun newestPatchBundle(root: File): File =
-    File(root, "patches/build/libs").walkTopDown()
-        .filter {
-            it.isFile && it.extension == "mpp" &&
-                !it.name.contains("sources") && !it.name.contains("javadoc")
-        }
-        .maxByOrNull { it.lastModified() }
-        ?: error("no patch bundle (.mpp) found in patches/build/libs")
+    selectPatchBundle(File(root, "patches/build/libs"), requirePatchesVersion())
 
 fun loadAllPatches(bundle: File): Set<Patch<*>> = loadPatchesFromJar(setOf(bundle))
 
