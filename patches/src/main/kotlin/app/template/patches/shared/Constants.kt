@@ -1502,12 +1502,14 @@ object Constants {
     // shape). The forecast/weather API sends no entitlement, so the unlock is real. Ads
     // (AdMob + Pangle/Meta mediation) are skipped for premium users. Play Integrity is only
     // the Billing library's transitive dependency and gates nothing. No PairIP.
+    // 2026-10-25: updated to version 4.8.0 (versionCode 411; APKPure APK, same signer);
+    // FishingPointsSmokeTest passes on patcher 2.0.0; anchors unchanged.
     val COMPATIBILITY_FISHINGPOINTS = Compatibility(
         name = "Fishing Points",
         packageName = "com.gregacucnik.fishingpoints",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1565C0,
-        targets = listOf(AppTarget(version = "4.7.3", versionCode = 410))
+        targets = listOf(AppTarget(version = "4.8.0", versionCode = 411))
     )
 
     // Verified 2026-10-07 against com.onesports.score 4.3.1 (versionCode 296, APKPure split
