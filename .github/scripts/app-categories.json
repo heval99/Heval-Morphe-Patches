@@ -129,7 +129,8 @@
       "packages": [
         "easy.launcher",
         "projekt.launcher",
-        "app.prolauncher"
+        "app.prolauncher",
+        "bitpit.launcher"
       ]
     },
     {
