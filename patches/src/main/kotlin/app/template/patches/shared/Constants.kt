@@ -3090,7 +3090,8 @@ object Constants {
     //     manager starts are allowed with private browsing, anything else asks. FocusApplication
     //     .onCreate tracks the foreground Activity. WebExtensionBrowserMenuBuilder's constructor
     //     forces showAddonsInMenu and swaps onAddonsManagerTapped for the manager (install
-    //     uBlock Origin / Violentmonkey / Tampermonkey from AMO, settings, enable, update, remove).
+    //     uBlock Origin / Violentmonkey / Tampermonkey / Dark Reader from AMO, settings, enable,
+    //     update, remove).
     //     WebExtension$Action.openPopup shows popups in a GeckoView dialog. Installed add-ons are
     //     checked for updates on addons.mozilla.org at most once a day.
     //   - Enable about:config: GeckoRuntime.create(Context, GeckoRuntimeSettings) sets it first.
@@ -3112,6 +3113,11 @@ object Constants {
     // XAPK merged, armeabi-v7a, same Mozilla signer; Mozilla's archive builds use other per-ABI
     // codes). FirefoxFocusSmokeTest passes; CLI (no -f) applies all 5 patches, 14 methods change
     // plus the extension classes. Emulator not re-run for this bump.
+    // 2026-10-26 (#86): the manager also offers Dark Reader (addon@darkreader.org); it has no
+    // options_ui, so Open settings falls back to its popup page. FirefoxFocus smoke tests pass.
+    // Emulator (morphe-test, arm64 158.0.2 merged from APKMirror, same signer, all 5 patches):
+    // Dark Reader 4.9.133 installs from the manager, darkens example.com, its popup and Open
+    // settings render, On/Off works, and it survives Erase and a relaunch; no crash.
     val COMPATIBILITY_FIREFOX_FOCUS = Compatibility(
         name = "Firefox Focus",
         packageName = "org.mozilla.focus",
