@@ -1,3 +1,10 @@
+## [2.1.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.0.0...v2.1.0-dev.1) (2026-10-26)
+
+### ✨ New Features
+
+* **firefoxfocus:** add Dark Reader to the Extensions manager ([9ff4e33](https://github.com/heval99/Heval-Morphe-Patches/commit/9ff4e334cb0a7f3907da41e4e2cce329aa78799a)), closes [#86](https://github.com/heval99/Heval-Morphe-Patches/issues/86)
+* **truecaller:** add Hide frequently called contacts and Hide important senders ([d75b3e2](https://github.com/heval99/Heval-Morphe-Patches/commit/d75b3e248fcfa4c54ba795570ccf7bbae441ed6e))
+
 ## [2.0.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v1.19.0...v2.0.0) (2026-10-26)
 
 ### ⚠ BREAKING CHANGES

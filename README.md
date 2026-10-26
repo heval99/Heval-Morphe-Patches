@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.0.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.0.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**184** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-26
+> **[v2.1.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.1.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**73** apps&nbsp;&nbsp;•&nbsp;&nbsp;**186** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-26
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -89,7 +89,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-2196F3?style=flat-square" height="14" alt=""> | **FairEmail** | 💎 1 | `1.2339` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
 | <img src="https://img.shields.io/badge/-%20-283167?style=flat-square" height="14" alt=""> | **mail.com** | 🚫 🛡️ 🔕 🧩 4 | `9.19.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mail.mobile.android.mail) |
 | <img src="https://img.shields.io/badge/-%20-5C6BC0?style=flat-square" height="14" alt=""> | **Textra** | 💎 1 | `4.87` | APKM | [Play](https://play.google.com/store/apps/details?id=com.textra) |
-| <img src="https://img.shields.io/badge/-%20-0087FF?style=flat-square" height="14" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 24 | `26.41.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
+| <img src="https://img.shields.io/badge/-%20-0087FF?style=flat-square" height="14" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 26 | `26.41.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
 
 #### 🎵 Music, podcasts & radio <sub>7 apps</sub>
 
@@ -528,7 +528,7 @@ Verified on: `4.87`
 
 </details>
 <details>
-<summary><b>Truecaller</b> &nbsp;·&nbsp; 24 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
+<summary><b>Truecaller</b> &nbsp;·&nbsp; 26 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
 
 Verified on: `26.41.5`
 
@@ -553,6 +553,8 @@ Verified on: `26.41.5`
 | 🧩 **Hide business media** | Hides brand images, videos and campaign cards on business contacts. | ➖ |
 | 🧩 **Hide call log filters** | Hides the filter bar above the call log. | ➖ |
 | 🧩 **Hide family button** | Turns off Family Protection and hides its button. | ➖ |
+| 🧩 **Hide frequently called contacts** | Hides the row of frequently called contacts above the call log. | ➖ |
+| 🧩 **Hide important senders** | Hides the Important senders section in the Messages tab. | ➖ |
 | 🧩 **Hide promotions** | Hides promo banners, referral offers and Who viewed me promos. | ✅ |
 | 🧩 **Restore classic call log** | Experimental: restores the classic call log. | ➖ |
 | 🧩 **Show caller number in call log** | Shows the caller's number in the new call log for callers who aren't in your contacts. | ➖ |
@@ -883,7 +885,7 @@ Verified on: `158.0.2`
 
 | Patch | What it does | Default |
 |---|---|:-:|
-| 🧩 **Add-on support** | Adds an Extensions menu to install and manage uBlock Origin, Violentmonkey and Tampermonkey, and shows their popups. Add-ons run in private mode, like every Focus tab; their data survives Erase. Installed add-ons are checked for updates from addons.mozilla.org at most once a day. | ✅ |
+| 🧩 **Add-on support** | Adds an Extensions menu to install and manage uBlock Origin, Violentmonkey, Tampermonkey and Dark Reader, and shows their popups. Add-ons run in private mode, like every Focus tab; their data survives Erase. Installed add-ons are checked for updates from addons.mozilla.org at most once a day. | ✅ |
 | 🔕 **Disable rating prompts** | Disables the rating prompt. | ✅ |
 | 🛡️ **Disable telemetry** | Disables the usage ping and experiments. | ✅ |
 | 🧩 **Enable about:config** | Enables about:config. | ✅ |
