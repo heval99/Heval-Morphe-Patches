@@ -2044,6 +2044,21 @@ object Constants {
     //   it. That setter (ud8.f(FilterType) here, the (kept com.truecaller.calllog.api.FilterType)V
     //   call after "set_missed_filter" and FilterType.MISSED in TruecallerInit.onNewIntent; onCreate
     //   calls the same one) now always selects NONE, the value behind the All chip.
+    // 2026-10-26 (#90, 26.41.5; TruecallerSmokeTest + CLI decompile check, exactly these 2 methods
+    //   change; emulator: 2 cold starts with both + Disable ads/telemetry/Enable Premium, no crash or
+    //   linkage error; the rows themselves NOT runtime-tested, the call log and inbox need SMS
+    //   registration; with Restore classic call log the revamped builder is not used): Hide
+    //   frequently called contacts and Hide important senders (both opt-in). Both screens are Compose LazyColumns built in R8-merged Function1
+    //   lambdas (invoke(Object)Object), which add each optional item as a const-string key passed to
+    //   a static void item helper behind a branch that jumps past it. Anchors are the exact item keys:
+    //   "frequent_contacts_id" (qh8 here; if-eqz on the row's show flag) and
+    //   "important-senders-header" (c67 here; if-lt on importantSenders.size() against 6, the list
+    //   read from the BusinessHomeScreenState field that its toString prints after
+    //   ", importantSenders="). The shared skipLazyListItem inserts "goto <guard target>" right
+    //   before the guard; it checks the key is loaded once, the guard is the nearest branch after
+    //   the previous item that jumps past the item helper call without skipping the next item, and
+    //   nothing else jumps into the item. The Categories row, the section titles (kc4.A here) and
+    //   Recents are untouched.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
