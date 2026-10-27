@@ -35,6 +35,7 @@
       "packages": [
         "com.guardian",
         "wsj.reader_sp",
+        "ie.rte.news",
         "com.divum.MoneyControl",
         "com.rammigsoftware.bluecoins",
         "com.monefy.app.lite"
