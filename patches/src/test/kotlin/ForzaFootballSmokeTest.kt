@@ -21,6 +21,9 @@ import java.io.File
 private const val PKG = "se.footballaddicts.livescore"
 private const val ANALYTICS_DEACTIVATED_KEY = "firebase_analytics_collection_deactivated"
 private const val APPSFLYER_LIB = "Lcom/appsflyer/AppsFlyerLib;"
+private const val CUSTOMER_INFO = "Lcom/revenuecat/purchases/CustomerInfo;"
+private const val FORZA_LEGEND = "Forza Legend"
+private const val SIGNATURE_SHA1 = "6e1189e8e56ef029d11b8b16f584330cf3226529"
 
 class ForzaFootballSmokeTest {
 
@@ -100,7 +103,7 @@ class ForzaFootballSmokeTest {
     }
 
     @Test
-    fun `Disable ads, Disable telemetry and Hide betting content change the expected code`() {
+    fun `Forza patches unlock Legend, fix push, stop ads and telemetry, hide betting`() {
         val root = repoRoot()
         val apk = File(root, "apks/forzafootball/base.apk")
 
@@ -113,7 +116,9 @@ class ForzaFootballSmokeTest {
             workDir = workDir,
             pkg = PKG,
             version = "6.15.10",
-            patchNames = setOf("Disable ads", "Disable telemetry", "Hide betting content"),
+            patchNames = setOf(
+                "Disable ads", "Disable telemetry", "Hide betting content", "Enable Premium", "Spoof signature",
+            ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
         val diagnostics = "emitted classes=${classes.size}"
@@ -193,5 +198,20 @@ class ForzaFootballSmokeTest {
         val (betting, bettingToString) = classes.byToStringPrefix("Betting(country=")
         val optedOut = booleanAfter(betting, bettingToString, ", optedOut=")
         assertForcedInConstructors(betting, optedOut, value = true, what = "Hide betting content optedOut")
+
+        // Enable Premium: the app's only (CustomerInfo)Z with the "Forza Legend" entitlement id
+        // (RevenueCat's active entitlements walk) returns true.
+        val legendGates = allMethods.filter {
+            it.returnType == "Z" &&
+                it.parameterTypes.map(CharSequence::toString) == listOf(CUSTOMER_INFO) &&
+                FORZA_LEGEND in it.strings()
+        }
+        assertEquals(1, legendGates.size, "Forza Legend gates: ${legendGates.map { it.label() }}")
+        assertForcedBoolean(legendGates.single(), expected = true, label = "Forza Legend gate", diagnostics = diagnostics)
+
+        // Spoof signature: the extension carries the package and the original certificate, and no
+        // PackageManager.getPackageInfo(String, ...) call is left outside it (Firebase
+        // Installations reads the SHA-1 through one).
+        assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
     }
 }
