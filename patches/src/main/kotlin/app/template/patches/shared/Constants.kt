@@ -3323,4 +3323,21 @@ object Constants {
         signatures = setOf("c7190a0fe7b87e46212ae3ddf26dd31435c5aa9558bfeb442f2f64386fff27f3"),
         targets = listOf(AppTarget(version = "8.2", versionCode = 575))
     )
+
+    // Verified 2026-10-27 against app.pinya.mango 1.64 (versionCode 64, APKPure XAPK merged with
+    // APKEditor; signer CN=Android, OU=Android, O=Google Inc., cert SHA-256 7959db39...e98d - the Play
+    // app-signing key). Mango Launcher; R8-renamed, Play Billing for the subscription
+    // "mango_pro_yearly" plus the lifetime in-app "mango_pro_lifetime", no ads. The billing client
+    // keeps a Play-Billing-backed state (REAL/FREE/EXPIRED/YEARLY/YEARLY_CANCELED/LIFETIME, cached in
+    // "billing_cached_is_pro") and seeds a StateFlow with "YEARLY, YEARLY_CANCELED or LIFETIME" in its
+    // constructor; every Pro gate reads that flow. Enable Premium loads 1 into that seed. PairIP is
+    // the licence-check wrapper only, so Disable license check returns from checkLicense(Context).
+    val COMPATIBILITY_MANGO = Compatibility(
+        name = "Mango Launcher",
+        packageName = "app.pinya.mango",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xF5A524,
+        signatures = setOf("7959db394ab099fd6827d09ecc2ae865b1e5952f0bdf4e273aa37004a668e98d"),
+        targets = listOf(AppTarget(version = "1.64", versionCode = 64))
+    )
 }
