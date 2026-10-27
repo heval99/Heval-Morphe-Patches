@@ -2751,6 +2751,23 @@ object Constants {
     // crash, the launcher works. Side effect: the consent choice is no longer synced to Niagara's
     // server. HTTP traffic was not captured (the app does not log requests), and a local
     // crashlytics.installation.id is still created.
+    // Enable Premium (2026-10-27): Niagara keeps its Pro entitlement as a three-boolean account
+    // state (1.16.33: b/gzD9a0YbOD6gO7InQ4, toString "E(1=%s, 2=%s)") that the account JWT parse
+    // builds from the "pro" claim and "flg" bit 0x20000 (a free/no-claim state is
+    // (false,false,true), a Pro claim is (true,true,false)). The first flag is the Pro switch read
+    // by ~100 methods (settings header, feature gates); the second is the account access switch
+    // AccessDeniedActivity finishes on; the third is the app's own trial/no-claim value. The patch
+    // finds the account record constructor (UUID, String, String, <flags>, com.auth0.android.jwt.*),
+    // takes the flags type from its 4th parameter, checks it is three booleans with equals and a
+    // (Z,Z,Z) constructor, and loads 1 into the constructor's first two parameters at entry. The
+    // JWT parse, the DataStore and the Play Billing publishers are left alone, so the third flag
+    // keeps the value the app built. NiagaraSmokeTest asserts the two constants and that the rest
+    // of the constructor is the stock body. The CLI (no -f) applies it with Disable telemetry;
+    // resources.arsc and AndroidManifest.xml stay byte-identical. Emulator (x86_64, stock re-signed
+    // vs patched, same data): stock's Niagara settings header shows "Free version" and the Pro
+    // screen offers the trial; patched shows no "Free version" line and the Pro screen reads
+    // "Thank you for your support." (Discover features / Manage membership), no crash, the home
+    // screen works. Account sync is server-backed and still needs a real account.
     val COMPATIBILITY_NIAGARA = Compatibility(
         name = "Niagara Launcher",
         packageName = "bitpit.launcher",

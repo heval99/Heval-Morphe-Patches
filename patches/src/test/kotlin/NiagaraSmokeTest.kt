@@ -3,6 +3,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -45,7 +47,7 @@ class NiagaraSmokeTest {
     }
 
     @Test
-    fun `Disable telemetry stops the telemetry workers, Singular, Crashlytics and Analytics`() {
+    fun `Niagara patches stop telemetry and report Pro`() {
         val root = repoRoot()
         val apk = File(root, "apks/niagara/base.apk")
 
@@ -58,7 +60,7 @@ class NiagaraSmokeTest {
             workDir = workDir,
             pkg = PKG,
             version = "1.16.33",
-            patchNames = setOf("Disable telemetry"),
+            patchNames = setOf("Disable telemetry", "Enable Premium"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
         val diagnostics = "emitted classes=${classes.size}"
@@ -163,6 +165,43 @@ class NiagaraSmokeTest {
                 forcedField?.definingClass == "Ljava/lang/Boolean;" && forcedField.name == "TRUE" &&
                 (forced as OneRegisterInstruction).registerA == (move as OneRegisterInstruction).registerA,
             "$readLabel: the read is not overwritten with Boolean.TRUE; got ${readInsns.drop(keyIndex).take(4).map { it.opcode }}"
+        )
+
+        // 5. The account-state (Z,Z,Z) constructor (the class the account record's 4th parameter
+        // is a field of) starts by setting its first two flags true; the stock body follows.
+        val recordCtors = classes.flatMap { it.methods }.filter { method ->
+            val params = method.parameterTypes.map(CharSequence::toString)
+            val owner = classes.firstOrNull { it.type == method.definingClass }
+            method.name == "<init>" && params.size == 5 &&
+                params[0] == "Ljava/util/UUID;" &&
+                params[1] == "Ljava/lang/String;" && params[2] == "Ljava/lang/String;" &&
+                params[4].startsWith("Lcom/auth0/android/jwt/") &&
+                !method.definingClass.startsWith("Lcom/auth0/android/jwt/") &&
+                owner?.fields?.any { it.type == params[3] } == true
+        }
+        assertEquals(1, recordCtors.size, "account record constructors: ${recordCtors.map { it.definingClass }}")
+        val flagsType = recordCtors.single().parameterTypes[3].toString()
+        val flags = byType.getValue(flagsType)
+        val flagFields = flags.fields.toList()
+        assertEquals(3, flagFields.size, "$flagsType fields: ${flagFields.map { it.name }}")
+        assertTrue(flagFields.all { it.type == "Z" }, "$flagsType has non-boolean fields")
+
+        fun Instruction.trueConstInto(register: Int) = this is NarrowLiteralInstruction &&
+            opcode == Opcode.CONST_4 && narrowLiteral.toInt() == 1 &&
+            (this as OneRegisterInstruction).registerA == register
+
+        val proCtor = flags.method("<init>", listOf("Z", "Z", "Z"))
+        val proInsns = proCtor.instructions()
+        val p1 = proCtor.implementation!!.registerCount - 3
+        assertTrue(
+            proInsns.size >= 3 && proInsns[0].trueConstInto(p1) && proInsns[1].trueConstInto(p1 + 1),
+            "$flagsType.<init>(Z,Z,Z) does not set p1/p2 true first; got ${proInsns.take(2).map { it.opcode }}"
+        )
+        val stockCtor = patchedApkClasses(apk).first { it.type == flagsType }.method("<init>", listOf("Z", "Z", "Z"))
+        assertEquals(
+            stockCtor.instructions().map { it.opcode },
+            proInsns.drop(2).map { it.opcode },
+            "$flagsType.<init>(Z,Z,Z) changed beyond the two forced flags"
         )
     }
 }
