@@ -3272,4 +3272,21 @@ object Constants {
         signatures = setOf("9e808bcb0eed0fb8620403fbf174186a5fe3a7ade002d547a79ce3beea7e36bc"),
         targets = listOf(AppTarget(version = "3.9.6", versionCode = 30533))
     )
+
+    // Verified 2026-10-27 against com.twodoor.bookly 2.4.2 (versionCode 505, APKPure XAPK merged with
+    // APKEditor; signer CN=Iancu Tudor, OU=TwoDoor, O=TwoDoor, cert SHA-256 abe821f2...2255). Kotlin
+    // app with readable app packages, RevenueCat for the lifetime entitlement (active product id
+    // "chest_of_diamonds_3000") and Superwall for the paywall UI. The billing client's RevenueCat
+    // listener sets SubscriptionManager's StateFlow to Active when that product is active and Free
+    // otherwise; every Pro gate reads that flow. Enable Premium returns true from the entitlement
+    // check and seeds the manager with Active, so both the pre-callback frames and the listener are
+    // Pro. Ads (GMA) are not touched.
+    val COMPATIBILITY_BOOKLY = Compatibility(
+        name = "Bookly",
+        packageName = "com.twodoor.bookly",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x2E7D5B,
+        signatures = setOf("abe821f2d1f04d226fe1e994f68e13929c2b75745a8c0ed08fffa7bd1a362255"),
+        targets = listOf(AppTarget(version = "2.4.2", versionCode = 505))
+    )
 }
