@@ -3253,4 +3253,23 @@ object Constants {
         signatures = setOf("2b546d93493095f7314f6b26d17fb238a8c94d95594a52d76db78e81f73ed196"),
         targets = listOf(AppTarget(version = "9.22.8", versionCode = 360))
     )
+
+    // Verified 2026-10-27 against io.unorderly.structured 3.9.6 (versionCode 30533, APKPure XAPK
+    // merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc., cert SHA-256 9e808bcb...36bc
+    // - the Play app-signing key). Kotlin/Compose app, R8-renamed, RevenueCat for "pro" and
+    // "recurring_tasks"; PairIP is the licence-check wrapper only (LicenseClient, no VM shield), so a
+    // re-signed stock build stops at LicenseActivity. Disable license check returns from
+    // LicenseClient.checkLicense(Context). Enable Premium: the app's only CustomerInfo consumer is a
+    // static (CustomerInfo) mapper that reads entitlements.active.keySet() and tests "pro" and
+    // "recurring_tasks"; the patch loads 1 into the "pro" answer right after Set.contains.
+    // StructuredSmokeTest asserts both hooks. The CLI (no -f) applies both; resources.arsc and
+    // AndroidManifest.xml stay byte-identical.
+    val COMPATIBILITY_STRUCTURED = Compatibility(
+        name = "Structured",
+        packageName = "io.unorderly.structured",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x4D6BFE,
+        signatures = setOf("9e808bcb0eed0fb8620403fbf174186a5fe3a7ade002d547a79ce3beea7e36bc"),
+        targets = listOf(AppTarget(version = "3.9.6", versionCode = 30533))
+    )
 }
