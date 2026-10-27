@@ -107,6 +107,7 @@
       "emoji": "📝",
       "packages": [
         "com.ztnstudio.notepad",
+        "com.getupnote.android",
         "easynotes.notes.notepad.notebook.privatenotes.note",
         "com.appgenix.bizcal",
         "com.alarmclock.xtreme.free",

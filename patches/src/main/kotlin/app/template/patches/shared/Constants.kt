@@ -3236,4 +3236,21 @@ object Constants {
         signatures = setOf("60baa40540f4950406f327d85761d6e4c533a169d7129e20dfac56fb3124a4f0"), // CN=Sam Parnell, O=Bleacher Report
         targets = listOf(AppTarget(version = "11.12.0.33", versionCode = 54053))
     )
+
+    // Verified 2026-10-27 against com.getupnote.android 9.22.8 (versionCode 360, APKPure XAPK merged
+    // with APKEditor; signer CN=Android, OU=Android, O=Google Inc., cert SHA-256 2b546d93...d196 - the
+    // Play app-signing key). Small Kotlin app, R8-renamed, Play Billing and Play Integrity present, no
+    // ads. Premium is the account's subscription record (valid / cancelled / expiresDateMs from the
+    // UpNote API): a no-arg Boolean getter in the record class (9.22.8: mo3.h(), one Long and two
+    // Boolean fields) answers "premium", and the settings singleton copies it once at startup.
+    // Enable Premium makes that getter return Boolean.TRUE. Local only: cloud sync still needs a real
+    // account and is left to the server. UpNoteSmokeTest asserts the hook.
+    val COMPATIBILITY_UPNOTE = Compatibility(
+        name = "UpNote",
+        packageName = "com.getupnote.android",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x2F6FED,
+        signatures = setOf("2b546d93493095f7314f6b26d17fb238a8c94d95594a52d76db78e81f73ed196"),
+        targets = listOf(AppTarget(version = "9.22.8", versionCode = 360))
+    )
 }
