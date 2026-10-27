@@ -3289,4 +3289,22 @@ object Constants {
         signatures = setOf("abe821f2d1f04d226fe1e994f68e13929c2b75745a8c0ed08fffa7bd1a362255"),
         targets = listOf(AppTarget(version = "2.4.2", versionCode = 505))
     )
+
+    // Verified 2026-10-27 against com.qqlabs.minimalistlauncher 1.22.8 (versionCode 236, APKPure XAPK
+    // merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc., cert SHA-256 30ab0a6a...6a47a
+    // - the Play app-signing key). Kotlin/Compose launcher, R8-renamed; Play Billing for the one-time
+    // "full version", Braze/Branch for the referrer upload, no ad view in the dex (only
+    // AdvertisingIdClient refs). The purchase flag lives in the default SharedPreferences under "full
+    // version": a no-arg boolean getter (9.22.8: f83.u()) seeds the purchase StateFlow, and a setter
+    // (qz.l(boolean, purchase), log line "setting full version to ") writes the pref and the flow on
+    // every billing refresh. Enable Premium returns true from the getter and loads 1 into the setter's
+    // boolean parameter, so both the startup seed and later refreshes report the purchase.
+    val COMPATIBILITY_MINIMALIST = Compatibility(
+        name = "Minimalist Launcher",
+        packageName = "com.qqlabs.minimalistlauncher",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x1B1B1B,
+        signatures = setOf("30ab0a6a032881270eed4c161fc304d3d5c22f5822dcf4505708f97e6fb6a47a"),
+        targets = listOf(AppTarget(version = "1.22.8v236", versionCode = 236))
+    )
 }
