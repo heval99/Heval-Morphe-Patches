@@ -55,6 +55,12 @@ not the story.
 | Gym Workout | `gymworkout.gym.gymlog.gymtrainer` | Parked by the owner 2026-10-13; work stopped for now. A native signature check in `liblpcore` breaks string decoding on re-signed builds. |
 | OLED Control | `com.tully.ohledcontrol` | 1.0.2 (versionCode 2743; signer CN=OLED Control Android, O=Tully, cert SHA-256 `4f02c3ce…2820`). PairIP license-check wrapper only: the manifest Application is `com.pairip.application.Application`, and `attachBaseContext` runs `LicenseClient.checkLicense`. No `libpairipcore.so`, `VMRunner` or `SignatureCheck`. Not runtime-tested; may be patchable with a license-check bypass. |
 
+## Packed by a commercial app shell (needs a runtime unpack first)
+
+| App | Version | Why |
+|---|---|---|
+| Forest - Stay Focused | `cc.forestapp` 5.3.2 (versionCode 150302000) | **Skipped by the owner 2026-10-27** after this triage; revisit only with an unpacked build. Genuine APKPure build (single APK, 4 ABIs, signer CN=LEE YUAN-CHENG, OU=Forest Develop Team, O=National Ting Hua University, cert SHA-256 `8f637a2a...3f11`). The APK is packed by an ijiami-style shell: the manifest Application is `cc.forestapp.MyWrapperProxyApplication`, the dexes carry only 172 proxy/Tinker/MultiDex methods (6 of 7 dexes are 2.4 KB stubs), the real code is the 27 MB encrypted `assets/0OO00l111l1l`, and the loaders are `lib/{arm64-v8a,armeabi-v7a,x86}/libshella-4.6.2.2.so` and `libshell-super.cc.forestapp.so` (no x86_64 shell libs). It also ships the Pangle SDK as a dynamically loaded plugin APK (`assets/885839154`, `com.byted.pangle` 4.4.0.9), so the ad surface is not in the base dex either. Nothing to anchor on until the payload is unpacked; a runtime dump (frida, arm64 under the emulator's native bridge) is the prerequisite. |
+
 ## Blocked by PairIP VM and native tamper check (2026-10-10)
 
 | App | Package | Why |
