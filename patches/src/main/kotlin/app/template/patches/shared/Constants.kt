@@ -1291,7 +1291,11 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x1565C0,
         signatures = setOf("78601372350f222eed7007cd300a115fd215dacd7b2352c5077d6db026b4168a"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "11.3.0", versionCode = 309))
+        // 2026-10-29: updated to 11.4.0 (versionCode 311, same Play signer). Disable ads and Enable
+        // Premium apply unchanged: both smoke tests green and CLI without -f applied them. The
+        // APKPure bundle is armeabi-v7a only (no arm64 build on APKPure; the APKMirror slug was not
+        // found), so this update is bytecode-verified only.
+        targets = listOf(AppTarget(version = "11.4.0", versionCode = 311))
     )
 
     // Verified 2026-09-29 against com.streema.simpleradio 6.2.0 (versionCode 872,
