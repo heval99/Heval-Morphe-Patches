@@ -2428,7 +2428,11 @@ object Constants {
     // PKCS#8 RSA private key for the Yami mini-program signature check is deliberately omitted;
     // its call site returns an empty key, so Yami fails closed. The core app (prayer times, Qibla,
     // Quran/Hadith, ad and telemetry hooks) does not use it.
-    // Disable ads, Disable telemetry and Hide premium banners depend on the bypass patch.
+    // Disable ads, Disable telemetry, Hide premium banners and Hide feed clutter depend on the
+    // bypass patch. Hide feed clutter answers false from six InfoStreamUnit accessors (LoginGuide,
+    // Nearby, PostInfo, Store, FirstRecharge, WatchAdWinRewards), so the feed builder drops those
+    // server units without a gap; the Ad-Free buttons, Ask AI search, Me-screen rows and bottom
+    // navigation tabs are not InfoStream units and stay (issue #93's remaining items).
     // Native anti-debug markers (TracerPid/frida in libagora-ey.so, ptrace in libapminsightb.so)
     // are SDK self-protection and are not touched; on the Java side the signing cert is only
     // reported (Facebook app events, the app's SecModel log), never enforced.
