@@ -341,7 +341,10 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0072BC,
         signatures = setOf("e2f39185315095611b23f9602cef6332a89db8960ee76a45fb41eeef4975d95d"), // CN=MyFitnessPal LLC
-        targets = listOf(AppTarget(version = "26.42.0", versionCode = 51610))
+        // 2026-10-28: updated to 26.43.0 (versionCode 51626, arm64-v8a). Both patches apply
+        // unchanged: smoke test green, CLI without -f applied both, and the patched Datadog start
+        // decision decompiles to Skip(FLAG_DISABLED).
+        targets = listOf(AppTarget(version = "26.43.0", versionCode = 51626))
     )
 
     // Verified 2026-09-18 against club.boxbox.android 5.4.9 (versionCode 251, the current
