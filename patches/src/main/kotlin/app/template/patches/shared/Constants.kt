@@ -2393,7 +2393,9 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x000000, // Black WSJ logotype on a #F7F7F7 adaptive-icon background.
         signatures = setOf("23bb0cd3b5fbc3fdd4f869b2c423ef79ea25ff7c54b06ea29ccd49472f66451f"), // CN=Wall Street Journal Digital Network, O=The Wall Street Journal
-        targets = listOf(AppTarget(version = "15.11.0.42207", versionCode = 700042207))
+        // 2026-10-29: updated to 15.12.0.42675 (versionCode 700042675, arm64-v8a, same signer).
+        // Disable ads applies unchanged: smoke test green and CLI without -f applied it.
+        targets = listOf(AppTarget(version = "15.12.0.42675", versionCode = 700042675))
     )
 
     // Verified 2026-10-14 against me.piebridge.brevent 4.2.31.1 (versionCode 539, APKPure).
