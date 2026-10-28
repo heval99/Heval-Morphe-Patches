@@ -185,9 +185,14 @@ object Constants {
             //   incidents on a live match). Push, MicroG sign-in and the NATS transport not observed.
             //   The rule-9 MobileAds statics step was added after those runs: it is covered by
             //   SofascoreSmokeTest and a separate CLI decompile check, not by the emulator run.
+            // 2026-10-28: updated to 26.10.19 (versionCode 261019002, APKPure XAPK, armeabi-v7a
+            // only, signer unchanged). All seven patches apply unchanged: the smoke test passes,
+            // CLI without -f applies all seven, and the patched UserAccount gates decompile to
+            // getForceAds=false, getForceHideAds=true, getHasServerAds=false. No emulator run (the
+            // bundle is 32-bit ARM only).
             AppTarget(
-                version = "26.10.12",
-                versionCode = 261012002
+                version = "26.10.19",
+                versionCode = 261019002
             )
         )
     )
