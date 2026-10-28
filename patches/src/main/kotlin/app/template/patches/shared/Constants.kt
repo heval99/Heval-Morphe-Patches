@@ -3545,4 +3545,24 @@ object Constants {
         signatures = setOf("e7d2d2abeead23bb674aaf5524bced66325b5e57d53e5f3b332ed684931f4e87"), // CN=Joaquin Martin
         targets = listOf(AppTarget(version = "5.6.3", versionCode = 584))
     )
+
+    // Verified 2026-10-28 against bbc.mobile.news.ww 2026.9.1 (versionCode 10007111, APKPure XAPK
+    // merged with APKEditor, armeabi-v7a only; signer O=BBC Worldwide Limited, C=GB, cert SHA-256
+    // fd76b3b8...65dc7). React Native app (13.5 MB assets/index.android.bundle), 12 dex, 540k
+    // methods, Play Billing, Play Integrity and a large analytics stack (AppsFlyer, Firebase,
+    // Comscore, Permutive, Optimizely). No premium tier: the only "subscribe" strings are Urban
+    // Airship notification topics, and there is no Pro/premium UI, so an Enable Premium patch has
+    // nothing to unlock. Ads are Google Mobile Ads only (all eight load entry points present, no
+    // AppLovin MAX classes): Disable ads neuters every GMA load with the shared hooks and leaves
+    // MobileAds.initialize alone, because the React Native module awaits it and the next-gen
+    // statics throw without it. The JS side already handles a failed (no-fill) load. Bytecode-only
+    // verification: the APKPure bundle is armeabi-v7a and the x86_64 AVD cannot install it.
+    val COMPATIBILITY_BBCNEWS = Compatibility(
+        name = "BBC News",
+        packageName = "bbc.mobile.news.ww",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xBB1919, // BBC News red.
+        signatures = setOf("fd76b3b8df5fe8fd590957eb0f78a996967dd3c8bd87aff41f47e7799d065dc7"), // O=BBC Worldwide Limited
+        targets = listOf(AppTarget(version = "2026.9.1", versionCode = 10007111))
+    )
 }
