@@ -109,6 +109,7 @@
       "emoji": "📝",
       "packages": [
         "com.ztnstudio.notepad",
+        "com.fenchtose.reflog",
         "com.getupnote.android",
         "com.twodoor.bookly",
         "io.unorderly.structured",

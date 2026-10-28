@@ -3505,4 +3505,25 @@ object Constants {
         signatures = setOf("57c298f08356061f9028f9b13b641b18a577660a7ff60cf2e7814944effb6c2c"), // O=FootballAddicts
         targets = listOf(AppTarget(version = "6.15.10", versionCode = 731))
     )
+
+    // Verified 2026-10-28 against com.fenchtose.reflog 1.3.3 (versionCode 1331, APKPure single
+    // APK, all four ABIs; signer CN=Jay Rambhia, cert SHA-256 5ab41983...6727, the developer's own
+    // key). The package is still named reflog but the app label is Taskito (it was Reflog).
+    // Kotlin app, R8-renamed, Play Billing, Firebase Analytics, no ad SDK (the triage's
+    // "Google Mobile Ads" hits are only the advertising-ID client inside Firebase Measurement).
+    // Premium is local: the server entitlement is cached in SharedPreferences "entitlement"
+    // ("premium" plus "sku_<id>") and verified Play orders in "orders"/"order_tokens", and one
+    // Boolean getter answers "premium" for the app - features.purchase.d.d()Z in 1.3.3, the only
+    // method behind purchase-keeper f.d(). Its only caller, features.purchases.g.q(), ORs it into
+    // every feature gate (the t7.e implementation), so a single returnEarly(true) unlocks them all.
+    // Enable Premium hooks that getter; the billing client and the entitlement sync stay intact,
+    // and account-backed features still need a real account.
+    val COMPATIBILITY_TASKITO = Compatibility(
+        name = "Taskito",
+        packageName = "com.fenchtose.reflog",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x2E7D32, // The green of the icon's background.
+        signatures = setOf("5ab419834c1f5279b1ccaf262d75a6db2c2dcd9e8c1dab9bead92a640cf26727"), // CN=Jay Rambhia
+        targets = listOf(AppTarget(version = "1.3.3", versionCode = 1331))
+    )
 }
