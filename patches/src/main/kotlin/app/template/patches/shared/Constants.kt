@@ -3448,4 +3448,61 @@ object Constants {
         signatures = setOf("42947b25f3b0a5fc1b3905ba33f7e61cfc4b1fab9be3cc2173edf4103f2231cd"),
         targets = listOf(AppTarget(version = "1.0.90", versionCode = 90))
     )
+
+    // Verified 2026-10-26 against se.footballaddicts.livescore 6.15.10 (versionCode 731,
+    // owner-supplied APKCube split bundle merged with APKEditor, arm64-v8a only), developer signer
+    // O=FootballAddicts, C=SE (cert SHA-256 57c298f0...6c2c). Kotlin Multiplatform app, heavily
+    // R8-renamed; anchors are toString/log/event strings, kept class names and method shape, and
+    // kotlin.Unit is copied from each patched method's own return (its field is renamed).
+    //   - Disable ads: the ad slot's suspend load (the only method with the "AdOpportunity" event
+    //     and the "ads/opportunity" trace) returns Unit at entry, so slots stay idle; the next-gen
+    //     GMA SDK still initialises (rule 9). AdsSettings ("AdsSettings(appVersionName=") stores
+    //     prebidEnabled = false (field after ", prebidEnabled=") before every constructor return.
+    //     subscriptionActive is not touched.
+    //   - Disable telemetry: the single "firebase_analytics_collection_deactivated" read answers TRUE
+    //     (shared forceAnalyticsDeactivated, bytecode only); com.forzafootball.SentryInitializer.create
+    //     (kept, named in the manifest) returns Unit; every concrete AppsFlyerLib start / logEvent /
+    //     logSession / logAdRevenue returns at once; the Crashlytics arbiter (the synchronized ()Z
+    //     calling the "firebase_crashlytics_collection_enabled manifest flag" logger) answers false.
+    //     Intercom (support chat) and Firebase Performance are not touched.
+    //   - Hide betting content: Betting ("Betting(country=") stores optedOut = true (field after
+    //     ", optedOut=", the app's "Opt out of gambling ads" setting) before every constructor
+    //     return, so betting is never allowed; the opt-out switch cannot be turned off while the
+    //     patch is on. Remote-config odds switches are not touched.
+    // ForzaFootballSmokeTest asserts every step. The CLI (no -f) applies all three and exactly 15
+    // methods change; resources.arsc and AndroidManifest.xml stay byte-identical. Emulator (ARM
+    // translation, stock re-signed vs patched): no crash or ANR through onboarding, home, a match
+    // page, news and Intercom; Firebase Analytics logged 35 events in stock and 1 patched (31 more
+    // refused as "Event not sent since app measurement is disabled"), Sentry's native libs never load, Crashlytics fetches no settings. Neither build
+    // requested an ad and the gambling setting never showed (en-US/en-GB), so Disable ads and Hide
+    // betting content are bytecode-verified only. Push: the re-signed stock build gets 403
+    // API_KEY_ANDROID_APP_BLOCKED from Firebase Installations and never registers ("FCM
+    // Registration failed!"), so Spoof signature is part of the app's patch set (below).
+    // Enable Premium (2026-10-27): Forza Legend is a RevenueCat entitlement. The app's only gate is
+    // a static (CustomerInfo)Z that walks customerInfo.entitlements.active and asks whether the
+    // identifier "Forza Legend" is among them (its (CustomerInfo) neighbour only reads the
+    // expiration date for display). The patch returns true from it; RevenueCat, the offerings, the
+    // purchase screen and the expiration date stay untouched, so account-backed features still need
+    // a real account.
+    // Spoof signature (2026-10-27): the Play signing certificate (O=FootballAddicts, SHA-1
+    // 6e1189e8...6529, DER from the v2/v3 block of the owner-supplied 6.15.10 base split) is
+    // injected into the shared signature extension, which routes every
+    // PackageManager.getPackageInfo call, so Firebase's X-Android-Cert is the original and
+    // Installations accepts the re-signed build. On by default; the patch comment records the
+    // certificate.
+    // The smoke test (2026-10-27) applies all five patches. The CLI (no -f) applies them and
+    // changes 72 classes (the signature extension rewrites every getPackageInfo call site);
+    // resources.arsc and AndroidManifest.xml stay byte-identical. Emulator (ARM translation, stock
+    // re-signed vs patched, same data): stock Settings shows "Become A Legend", patched shows
+    // "Thanks for being a subscriber!"; the patched build logs a new FCM token and
+    // OnNewTokenWorker SUCCESS, while the re-signed stock build logs 403
+    // API_KEY_ANDROID_APP_BLOCKED and "FCM Registration failed!".
+    val COMPATIBILITY_FORZA_FOOTBALL = Compatibility(
+        name = "Forza Football",
+        packageName = "se.footballaddicts.livescore",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x2BC4CC, // The teal of the icon's stripe (its background is white).
+        signatures = setOf("57c298f08356061f9028f9b13b641b18a577660a7ff60cf2e7814944effb6c2c"), // O=FootballAddicts
+        targets = listOf(AppTarget(version = "6.15.10", versionCode = 731))
+    )
 }
