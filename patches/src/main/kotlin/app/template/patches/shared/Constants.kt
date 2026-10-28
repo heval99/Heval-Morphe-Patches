@@ -600,7 +600,11 @@ object Constants {
             // stock control): Origin opens without the paywall, all switches ON, toggling shows
             // the "Changing Brave features" restart snackbar, brave_origin_off_* prefs are written,
             // the activation flow does not appear, no crash.
-            AppTarget(version = "1.98.60"),
+            // 2026-10-29: 1.98.62 (versionCode 429806204, GitHub Bravearm64Universal.apk). The
+            // update-scout row said 1.100.36, but that tag is a Nightly build
+            // (com.brave.browser_nightly); the stable "Latest" release is 1.98.62, so that is the
+            // target. Brave Origin applies unchanged.
+            AppTarget(version = "1.98.62"),
         )
     )
 
@@ -639,8 +643,11 @@ object Constants {
             // default-browser dialog this patch skips (that one needs many app opens, not
             // reproduced). Sponsored new tab images never appeared on the emulator, so Disable ads
             // is verified in bytecode only.
+            // 2026-10-29: target moved 1.98.60 -> 1.98.62 (versionCode 429806204, GitHub release
+            // Bravearm64Universal.apk). All three experimental patches apply unchanged without -f;
+            // BraveSmokeTest passes.
             AppTarget(
-                version = "1.98.60",
+                version = "1.98.62",
                 isExperimental = true,
             ),
         )
