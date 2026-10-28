@@ -3505,4 +3505,43 @@ object Constants {
         signatures = setOf("57c298f08356061f9028f9b13b641b18a577660a7ff60cf2e7814944effb6c2c"), // O=FootballAddicts
         targets = listOf(AppTarget(version = "6.15.10", versionCode = 731))
     )
+
+    // Verified 2026-10-29 against dk.dr.webplayer 4.39.0 (versionCode 439000, APKMirror bundle
+    // merged with APKEditor, no native libs; signer CN=DR TV, O=DR TV, L=København, C=DK, cert
+    // SHA-256 0f5de4c3...3743, same as APKPure). The app is the Massive Axis SDK
+    // (axis.android.sdk.*) and R8 keeps its class and member names, as it keeps the Firebase,
+    // Segment and NPAW ones, so kept names are used as anchors here, each paired with a string or
+    // call unique to the method (fingerprints in drtv/misc/telemetry and drtv/player).
+    //   - Disable telemetry: Crashlytics DataCollectionArbiter.isAutomaticDataCollectionEnabled
+    //     and Firebase Performance ConfigResolver.isPerformanceMonitoringEnabled answer false;
+    //     SegmentAnalyticsProvider.initializeSegmentSDK ("writeKey") and NielsenUtilManager's
+    //     initNielsen ("Nielsen_AppSDK") return at entry, leaving their clients null (every reader
+    //     null-checks; live Nielsen tracking only starts once a NielsenUtil was handed over); the
+    //     "npawEnabled" flag reader answers false and initializeNpaw passes false to
+    //     AnalyticsOptions.setEnabled. Firebase Analytics is already deactivated in the manifest.
+    //     ResumePointService (continue watching) and PlayerStatisticsManager (debug overlay) are
+    //     untouched.
+    //   - Auto skip intro: in PlayerFragment.checkForBingMarkerButton(J)V (the progress-tick check
+    //     that calls BingeMarkerUtility.getTimeCodeWrapper and checkSkipThresholdInRange), right
+    //     after the single setViewVisibility(skipButton, 0) the patch calls skipButton.callOnClick(),
+    //     which runs the app's own Skip handler (hide, record, seek to the time code's end + 1 s).
+    //     Only intro/recap codes get the button; end credits and the server's threshold-0 switch
+    //     are left to the app.
+    //   - Allow free rotation (opt-in): PlayerActivity.onResume requests sensorLandscape (6) on API
+    //     27+; the patch requests full sensor (10) instead, which overrides the manifest's 6. The
+    //     player declares orientation in configChanges. Bytecode only, so API 26 and older keep 6.
+    // Skipped: a seek-step patch. ExoPlayerSurface builds the player with
+    // integer/player_forward_rewind_increment, which is already 15000 ms, not the 10 s default.
+    // DrtvSmokeTest asserts every step. The CLI (no -f) applies all three; resources.arsc and
+    // AndroidManifest.xml stay byte-identical; a whole-APK compare shows exactly the 8 intended
+    // methods. RUNTIME NOT VERIFIED (emulator run pending): do not release until a cold start, an
+    // auto-skipped intro, portrait rotation and no crash from the null trackers have been seen.
+    val COMPATIBILITY_DRTV = Compatibility(
+        name = "DRTV",
+        packageName = "dk.dr.webplayer",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xFD001E,
+        signatures = setOf("0f5de4c316dc42f22ed62dd9b442b19902005e005c169cf146180a03998d3743"), // CN=DR TV, O=DR TV
+        targets = listOf(AppTarget(version = "4.39.0", versionCode = 439000))
+    )
 }
