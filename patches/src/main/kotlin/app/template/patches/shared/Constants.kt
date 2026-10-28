@@ -3344,4 +3344,29 @@ object Constants {
         signatures = setOf("7959db394ab099fd6827d09ecc2ae865b1e5952f0bdf4e273aa37004a668e98d"),
         targets = listOf(AppTarget(version = "1.64", versionCode = 64))
     )
+
+    // Verified 2026-10-27 against ie.rte.news 10.0.2 (versionCode 440, APKPure XAPK merged with
+    // APKEditor, armeabi-v7a only; signer CN=Karina Carroll, OU=RTÉ Publishing, O=RTÉ, cert SHA-256
+    // fe9b87e6...2117). Compose/Kotlin app, app modules R8-renamed, no PairIP and no billing. The ad
+    // is an app widget, not an SDK slot: the article renderer builds an RteAdContainer (advertising
+    // info + AdView), calls AdView.loadAd(request), and a Compose block draws the "ADVERTISEMENT"
+    // heading and hosts the view ("adContainer" is its parameter name; "Ad request targeting: " is
+    // the loader's log line). Disable ads returns from that block, so neither heading nor empty
+    // placeholder is laid out, and removes the loadAd call so no request is made; the AdView and its
+    // request object are still built, and the OneTrust consent stack is untouched.
+    // RteNewsSmokeTest asserts both hooks. The CLI (no -f) applies the patch and changes the two
+    // methods; resources.arsc and AndroidManifest.xml stay byte-identical. The APK is armeabi-v7a
+    // only, which the x86_64 emulator refuses (INSTALL_FAILED_NO_MATCHING_ABIS), so the runtime check
+    // used a copy with lib/ stripped and re-signed for both builds: stock shows the "ADVERTISEMENT"
+    // heading and an empty black AdView placeholder in an article; the patched build shows the same
+    // article with no heading and no placeholder, and no crash. That stripped copy is a test vehicle
+    // only - the shipped APK keeps its libs.
+    val COMPATIBILITY_RTENEWS = Compatibility(
+        name = "RTÉ News",
+        packageName = "ie.rte.news",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x0B6E69,
+        signatures = setOf("fe9b87e61648c71b5ecc586907a04698334f953c450bfc076c518d50f9112117"),
+        targets = listOf(AppTarget(version = "10.0.2", versionCode = 440))
+    )
 }
