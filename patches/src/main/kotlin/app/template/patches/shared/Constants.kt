@@ -3369,4 +3369,31 @@ object Constants {
         signatures = setOf("fe9b87e61648c71b5ecc586907a04698334f953c450bfc076c518d50f9112117"),
         targets = listOf(AppTarget(version = "10.0.2", versionCode = 440))
     )
+
+    // Verified 2026-10-27 against com.rarecam.app 1.0.90 (versionCode 90, APKPure XAPK merged with
+    // APKEditor; signer CN=Android, OU=Android, O=Google Inc., cert SHA-256 42947b25...31cd - the Play
+    // app-signing key, still to be cross-checked against a second mirror). Kotlin/Compose app, R8
+    // renamed, no ad SDK. RevenueCat sells the single "rarecam_pro" entitlement; PairIP is the
+    // licence-check wrapper only (LicenseClient, no VMRunner/libpairipcore), so a re-signed stock
+    // build stops at LicenseActivity.
+    // Disable license check: LicenseClient.checkLicense(Context) returns at its entry.
+    // Enable Premium: the app's only CustomerInfo consumer is a static (CustomerInfo)V that reads
+    // entitlements.get("rarecam_pro")?.isActive() and stores the boolean into a Compose MutableState
+    // every Pro gate reads; the patch loads 1 into that boolean at the merge point before the state
+    // write, so both the missing and the expired branch report Pro. RevenueCat, the offerings and the
+    // purchase screen are untouched.
+    // RareCamSmokeTest asserts both hooks and that the state method otherwise matches stock. The CLI
+    // (no -f) applies both; resources.arsc and AndroidManifest.xml stay byte-identical. Emulator
+    // (x86_64, stock + licence check only vs full patch, same data): the licence-only build starts and
+    // shows "PRO" badges on LOG and StackND; the fully patched build runs the same screens with no PRO
+    // badges, no paywall when a Pro format is selected, and no crash. The licence bypass alone is what
+    // lets either build start; the premium hook is what removes the badges.
+    val COMPATIBILITY_RARECAM = Compatibility(
+        name = "RareCam",
+        packageName = "com.rarecam.app",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xFF6D00,
+        signatures = setOf("42947b25f3b0a5fc1b3905ba33f7e61cfc4b1fab9be3cc2173edf4103f2231cd"),
+        targets = listOf(AppTarget(version = "1.0.90", versionCode = 90))
+    )
 }
