@@ -3172,7 +3172,10 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x001AA3, // The adaptive icon's blue background.
         signatures = setOf("69932f3cc60e277715dd59f601a6ad3455b2850f03cace2131eef8ccb1454f08"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "4.3.2", versionCode = 2075))
+        // 2026-10-28: updated to 4.3.3 (versionCode 2078, arm64-v8a, same Play signer).
+        // Disable ads and Disable telemetry apply unchanged: smoke test green and CLI without -f
+        // applied both.
+        targets = listOf(AppTarget(version = "4.3.3", versionCode = 2078))
     )
 
     // Written 2026-10-18 against org.mozilla.focus 158.0 (versionCode 402802337 for both the
