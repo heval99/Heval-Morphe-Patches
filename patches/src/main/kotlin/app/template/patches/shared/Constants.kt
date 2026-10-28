@@ -2744,6 +2744,58 @@ object Constants {
         targets = listOf(AppTarget(version = "v2.4.3", versionCode = 271))
     )
 
+    // Verified 2026-10-26 against bitpit.launcher 1.16.33 (versionCode 1639, owner-supplied
+    // universal APK from APKCube; signer CN=Peter Huber, SHA-256 ccb91800...98ed, the same cert as
+    // the APKPure 1.16.28 build). App code and the bundled androidx/Kotlin/Firebase classes are
+    // R8-renamed into b/*; the WorkManager worker classes keep their names. Disable telemetry:
+    //   - The six telemetry workers (GdprConsentSyncWorker, RetentionEventsWorker, the three
+    //     Singular report workers and UsageReportUploadWorker) return Result.success() at entry
+    //     from their renamed doWork (each one's only instance (1 arg)Object method). Success is
+    //     found by its "Success {mOutputData=" toString; success() is its superclass's only static
+    //     no-arg method returning it.
+    //   - The Singular request sender (the only method with the "attribution" path string, shape
+    //     (String, L, KSerializer, L)Object) returns Unit at entry; Unit is the class whose
+    //     toString is "kotlin.Unit", and its INSTANCE field is the sender's own sget-object.
+    //   - The app's Crashlytics enable method (()V, UUID.randomUUID + putString of
+    //     "bitpit.launcher.key.CRASHLYTICS_USER_ID", in the class whose constructor throws
+    //     "FirebaseCrashlytics component is not present.") returns at once.
+    //   - The "firebase_analytics_collection_deactivated" read answers TRUE (shared
+    //     forceAnalyticsDeactivated, bytecode only, no resource re-encode): the app turns
+    //     collection on after its terms screen, and the deactivated switch overrides that.
+    // NiagaraSmokeTest asserts all four steps. The CLI (no -f) applies it and exactly these 9
+    // methods change; resources.arsc and AndroidManifest.xml stay byte-identical. Emulator (x86_64,
+    // stock re-signed vs patched, analytics allowed): Firebase Analytics logged 28 events in stock
+    // and 0 patched ("deactivated via the manifest"); the consent-sync and Singular workers succeed
+    // at once without sending, the follow-up Singular workers are never queued, no retries, no
+    // crash, the launcher works. Side effect: the consent choice is no longer synced to Niagara's
+    // server. HTTP traffic was not captured (the app does not log requests), and a local
+    // crashlytics.installation.id is still created.
+    // Enable Premium (2026-10-27): Niagara keeps its Pro entitlement as a three-boolean account
+    // state (1.16.33: b/gzD9a0YbOD6gO7InQ4, toString "E(1=%s, 2=%s)") that the account JWT parse
+    // builds from the "pro" claim and "flg" bit 0x20000 (a free/no-claim state is
+    // (false,false,true), a Pro claim is (true,true,false)). The first flag is the Pro switch read
+    // by ~100 methods (settings header, feature gates); the second is the account access switch
+    // AccessDeniedActivity finishes on; the third is the app's own trial/no-claim value. The patch
+    // finds the account record constructor (UUID, String, String, <flags>, com.auth0.android.jwt.*),
+    // takes the flags type from its 4th parameter, checks it is three booleans with equals and a
+    // (Z,Z,Z) constructor, and loads 1 into the constructor's first two parameters at entry. The
+    // JWT parse, the DataStore and the Play Billing publishers are left alone, so the third flag
+    // keeps the value the app built. NiagaraSmokeTest asserts the two constants and that the rest
+    // of the constructor is the stock body. The CLI (no -f) applies it with Disable telemetry;
+    // resources.arsc and AndroidManifest.xml stay byte-identical. Emulator (x86_64, stock re-signed
+    // vs patched, same data): stock's Niagara settings header shows "Free version" and the Pro
+    // screen offers the trial; patched shows no "Free version" line and the Pro screen reads
+    // "Thank you for your support." (Discover features / Manage membership), no crash, the home
+    // screen works. Account sync is server-backed and still needs a real account.
+    val COMPATIBILITY_NIAGARA = Compatibility(
+        name = "Niagara Launcher",
+        packageName = "bitpit.launcher",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x03004C, // The adaptive icon's background colour (ic_launcher_background).
+        signatures = setOf("ccb918002c40334b416899258de4f730a36c5d38821b3cb6fcb8c15a4b8198ed"), // CN=Peter Huber
+        targets = listOf(AppTarget(version = "1.16.33", versionCode = 1639))
+    )
+
     // Verified 2026-10-15 against mark.via.gp 7.3.3 (versionCode 20260823, single universal
     // APK, no native libs; signer CN=Various Tu, C=CN, SHA-256 3df7f89d...a390, same on APKMirror
     // and APKPure; Play developer Tu Yafeng). No packer or shield. Launcher label "Via". The
