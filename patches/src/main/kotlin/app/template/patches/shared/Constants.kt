@@ -3526,4 +3526,23 @@ object Constants {
         signatures = setOf("5ab419834c1f5279b1ccaf262d75a6db2c2dcd9e8c1dab9bead92a640cf26727"), // CN=Jay Rambhia
         targets = listOf(AppTarget(version = "1.3.3", versionCode = 1331))
     )
+
+    // Verified 2026-10-28 against com.gmail.jmartindev.timetune 5.6.3 (versionCode 584, APKPure
+    // single APK, no native libs; signer CN=Joaquin Martin, C=ES, cert SHA-256 e7d2d2ab...4e87).
+    // Kotlin app, readable app packages, Play Billing (the old com.android.billingclient library),
+    // Firebase Analytics, no ad SDK. Premium is cached in the billing preferences:
+    // "PREF_PREMIUM_SUBS" for the premium_subs subscription and "PREF_DIALOG" for the legacy
+    // one-time purchase (SKU dialog_title). One static getter per flag feeds the public premium
+    // check (5.6.3: Lug$a->a(Context) ORs b() and c()), and the whole app (schedule, backup,
+    // calendar, widgets, settings) calls it. Enable Premium returns true from the subscription
+    // getter (Lug$a->c(Context), anchored on the PREF_PREMIUM_SUBS string); the billing client and
+    // the preference writes stay intact. Local only: Google Play account features are untouched.
+    val COMPATIBILITY_TIMETUNE = Compatibility(
+        name = "TimeTune",
+        packageName = "com.gmail.jmartindev.timetune",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x1E88E5, // The blue of the icon.
+        signatures = setOf("e7d2d2abeead23bb674aaf5524bced66325b5e57d53e5f3b332ed684931f4e87"), // CN=Joaquin Martin
+        targets = listOf(AppTarget(version = "5.6.3", versionCode = 584))
+    )
 }
