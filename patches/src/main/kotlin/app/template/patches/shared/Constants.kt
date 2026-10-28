@@ -2204,7 +2204,11 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x212121,
         signatures = setOf("b85f085f998a77c5feedc1ddc5c75c51b68bb1a0e0c7881cd924130c9f7bb45a"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "1.10.28", versionCode = 11028))
+        // 2026-10-29: updated to 1.10.29 (versionCode 11029, arm64-v8a, same Play signer). Amplitude
+        // was removed from the app (no com.amplitude classes, no AmplitudeAnalyticsService), so the
+        // telemetry patch no longer hooks it; the other five patches apply unchanged. Smoke test
+        // green and CLI without -f applied all six.
+        targets = listOf(AppTarget(version = "1.10.29", versionCode = 11029))
     )
 
     // Verified 2026-10-13 against in.cricketexchange.app.cricketexchange 26.10.06 (versionCode
