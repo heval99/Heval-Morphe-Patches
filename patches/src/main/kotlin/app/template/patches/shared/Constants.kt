@@ -466,8 +466,21 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFFC107,
         signatures = setOf("08ab809258f8d7c0ac7451033d6b12c8ca70053ab4f37942fc988cb6571b963b"), // CN=Roe Aharoni, O=365 Scores
+        // 2026-10-28: updated to 14.9.8 (versionCode 1498, APKPure arm64-v8a, same signer). 14.9.8
+        // replaced the classic Google Mobile Ads SDK with the next-gen Ads SDK, which is compiled
+        // into the app and R8-renamed to ads_mobile_sdk.*: there is no MobileAds.initialize and no
+        // BaseAdView/AdLoader/InterstitialAd/RewardedAd/AppOpenAd left, so the old GMA hooks cannot
+        // anchor. Disable ads now works at the app layer: EntitlementRepository's "ads removed" gate
+        // (the ()Z logging "isUserAdsRemoved=", uej.e in 14.9.8) and its sibling that reads
+        // forceShowAds + IsUserRemovedAdsPackageBuying (uej.a) both answer true, and every
+        // per-activity showAdsForContext/isBannerNeedToBeShown gate still answers false. Every
+        // banner, interstitial, in-feed/MPU, AllScores and betting-promo path checks those gates,
+        // so the app now behaves as ad-free and the betting promos (BPMB) are blocked too. The
+        // per-activity presence check uses GameCenterBaseActivity (BaseActionBarActivity was renamed
+        // u41). Disable update prompts anchors on the onCreate(Bundle) shape (both extras) instead
+        // of the two class names.
         targets = listOf(
-            AppTarget(version = "14.9.7", versionCode = 1497)
+            AppTarget(version = "14.9.8", versionCode = 1498)
         )
     )
 
