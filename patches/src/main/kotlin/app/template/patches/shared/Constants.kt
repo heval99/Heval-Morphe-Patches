@@ -2228,7 +2228,9 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x262626,
         signatures = setOf("b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"), // CN=Purushotam Rawat
-        targets = listOf(AppTarget(version = "26.10.07", versionCode = 668))
+        // 2026-10-28: updated to 26.10.09 (versionCode 673, arm64-v8a, same signer). Enable Premium
+        // and Disable ads apply unchanged: smoke test green and CLI without -f applied both.
+        targets = listOf(AppTarget(version = "26.10.09", versionCode = 673))
     )
 
     // Added 2026-10-14 from the Reddit request queue ("the ads mess with the UI"). Verified
