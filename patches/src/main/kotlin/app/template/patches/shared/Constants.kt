@@ -1482,7 +1482,9 @@ object Constants {
             // bffeb14903fbc92fffe6404a3654098a3f85c81a3513afd5dceac121cd678d1c, SHA-1 b804e188...d8b6,
             // unchanged). The real matcher resolves all 11 Shazam fingerprints uniquely (4 R8
             // renames only) and ShazamSmokeTest passes; 16.63.0 dropped (latest verified only).
-            AppTarget(version = "16.64.0-261015", versionCode = 1606400),
+            // 2026-10-28: updated to 16.65.0-261022 (versionCode 1606500, arm64-v8a, same signer).
+        // All four patches apply unchanged: smoke test green and CLI without -f applied them.
+        AppTarget(version = "16.65.0-261022", versionCode = 1606500),
         )
     )
 
