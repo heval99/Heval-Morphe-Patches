@@ -1,3 +1,21 @@
+## [2.1.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.1.0-dev.1...v2.1.0-dev.2) (2026-10-28)
+
+### ✨ New Features
+
+* **bookly:** add Enable Premium ([003bd73](https://github.com/heval99/Heval-Morphe-Patches/commit/003bd73a37807cbb4a8c663844e140095ae9c4ce))
+* **droidcam:** add Disable ads ([cac5896](https://github.com/heval99/Heval-Morphe-Patches/commit/cac5896b13d1d3e7181bb4a519e8321b057c3f42))
+* **forzafootball:** add Enable Premium and Spoof signature ([ede1069](https://github.com/heval99/Heval-Morphe-Patches/commit/ede10698e2ae75449f9a36e8c54f9b122dcec766))
+* **forzafootball:** add Forza Football with Disable ads, Disable telemetry and Hide betting content ([dc4364c](https://github.com/heval99/Heval-Morphe-Patches/commit/dc4364c26e97506f90595eed49a385fea97898e4))
+* **mango:** add Enable Premium and Disable license check ([4284a0e](https://github.com/heval99/Heval-Morphe-Patches/commit/4284a0e051d6ebcedc75e6ad2eaf2476e9ef5caf))
+* **minimalist:** add Enable Premium ([18a3502](https://github.com/heval99/Heval-Morphe-Patches/commit/18a35020267ad6d4b2d903f4faa4b73753932fd5))
+* **niagara:** add Disable telemetry ([1a73271](https://github.com/heval99/Heval-Morphe-Patches/commit/1a732717b073c9e6a28480213fd33a99e447b21a))
+* **niagara:** add Enable Premium ([e2232e2](https://github.com/heval99/Heval-Morphe-Patches/commit/e2232e298864aaf99b338a8b0cd575729d3106da))
+* **rarecam:** add Enable Premium and Disable license check ([da768d3](https://github.com/heval99/Heval-Morphe-Patches/commit/da768d32dd039049d358752f62073ebf230e5d3e))
+* **rtenews:** add Disable ads ([e61fbb1](https://github.com/heval99/Heval-Morphe-Patches/commit/e61fbb1f013e3d0e571426e07516b694b55c4da5))
+* **structured:** add Enable Premium and Disable license check ([43061f4](https://github.com/heval99/Heval-Morphe-Patches/commit/43061f4748a2f14e2520dcb633a2fc5e5fd3cb41))
+* **upnote:** add Enable Premium ([96b44ec](https://github.com/heval99/Heval-Morphe-Patches/commit/96b44ec454894dbac74e419386cd2e89b7ebeeb2))
+* **wemuslim:** add Hide feed clutter ([7faa5f1](https://github.com/heval99/Heval-Morphe-Patches/commit/7faa5f1bbc729f478cb680e7f0d276b05404f095)), closes [#93](https://github.com/heval99/Heval-Morphe-Patches/issues/93)
+
 ## [2.1.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.0.0...v2.1.0-dev.1) (2026-10-26)
 
 ### ✨ New Features
