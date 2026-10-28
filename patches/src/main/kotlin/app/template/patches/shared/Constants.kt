@@ -303,8 +303,12 @@ object Constants {
         targets = listOf(
             // 2026-10-22: 239.17834.20261016 replaces 238.17794.20261012 (latest version only,
             // owner 2026-10-19); see the 2026-10-22 note above for what was verified on it.
+            // 2026-10-29: 240.17974.20261023 (versionCode 17974, APKMirror arm64/universal, same
+            // CN=Christer Nordvik cert). StaffAccountFingerprint gained the no-arg Boolean shape:
+            // 240 has a second method holding the staff address (ks4.b(Lir4;)Z), which made the
+            // string-only fingerprint match twice. All eight patches apply unchanged.
             AppTarget(
-                version = "239.17834.20261016",
+                version = "240.17974.20261023",
                 versionCode = 17834
             )
         )

@@ -76,7 +76,7 @@ class FotMobSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "239.17834.20261016",
+            version = "240.17974.20261023",
             patchNames = setOf(
                 "Disable ads", "Disable telemetry", "Enable FotMob+", "GmsCore support", "Spoof signature",
                 "Hide betting content", "Disable rating prompts", "Disable FotMob+ promo popup",
@@ -86,15 +86,18 @@ class FotMobSmokeTest {
         val stock = originalClasses(apk)
 
         // The manager is R8-renamed every release, so find it the same way the patch does:
-        // the class whose staff check contains the unique email string.
+        // the class whose staff check contains the unique email string. 240 also has an unrelated
+        // method with the same address (ks4.b(Lir4;)Z), so require the patch's no-arg Boolean shape.
         val manager = classes.firstOrNull { cls ->
             cls.methods.any { method ->
-                method.implementation?.instructions?.any { it.referencesString(STAFF_EMAIL) } == true
+                method.returnType == "Z" && method.parameterTypes.isEmpty() &&
+                    method.implementation?.instructions?.any { it.referencesString(STAFF_EMAIL) } == true
             }
         } ?: error("subscription manager (staff email string) not found in emitted dexes")
 
         val staff = manager.methods.first { method ->
-            method.implementation?.instructions?.any { it.referencesString(STAFF_EMAIL) } == true
+            method.returnType == "Z" && method.parameterTypes.isEmpty() &&
+                method.implementation?.instructions?.any { it.referencesString(STAFF_EMAIL) } == true
         }
         assertForcedBoolean(staff, expected = false, label = "${manager.type}.${staff.name} (staff check)")
 
