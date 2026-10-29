@@ -1603,7 +1603,7 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0D47A1,
         signatures = setOf("6e795e00c60134f927a1a8d61677926fadac536befce84d617358def4ae8a4d9"), // CN=OneCricket, O=OneCricket
-        targets = listOf(AppTarget(version = "26.08.01", versionCode = 90))
+        targets = listOf(AppTarget(version = "26.10.01", versionCode = 91))
     )
 
     // Verified 2026-10-07 against com.gregacucnik.fishingpoints 4.7.3 (versionCode 410,
