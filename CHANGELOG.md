@@ -1,3 +1,15 @@
+## [2.1.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.1.0-dev.3...v2.1.0-dev.4) (2026-10-29)
+
+### 🐛 Bug Fixes
+
+* **besoccer:** updated to version 6.7.0 ([b7f97c0](https://github.com/heval99/Heval-Morphe-Patches/commit/b7f97c052d368f094cb0364e794aa5953abe736f))
+* **bleacherreport:** updated to version 11.13.0.39 ([4ee772c](https://github.com/heval99/Heval-Morphe-Patches/commit/4ee772c59f889a2573512af76067eb443149ae14))
+* **hevy:** updated to version 3.2.4 ([b6bbfcb](https://github.com/heval99/Heval-Morphe-Patches/commit/b6bbfcbdc777474637dc3878d2008d8a10b3f46e))
+
+### ✨ New Features
+
+* **bold:** add Disable ads ([f67b7e8](https://github.com/heval99/Heval-Morphe-Patches/commit/f67b7e8a2ab128753ffe728014de75de43de1588))
+
 ## [2.1.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.1.0-dev.2...v2.1.0-dev.3) (2026-10-29)
 
 ### 🐛 Bug Fixes

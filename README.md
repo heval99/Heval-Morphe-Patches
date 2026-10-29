@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.1.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.1.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**88** apps&nbsp;&nbsp;•&nbsp;&nbsp;**213** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-29
+> **[v2.1.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.1.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**214** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-29
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -53,8 +53,8 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-FFC107?style=flat-square" height="14" alt=""> | **365Scores** | 🚫 💎 🔕 🧩 5 | `14.9.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.scores365) |
 | <img src="https://img.shields.io/badge/-%20-F1FF00?style=flat-square" height="14" alt=""> | **433** | 🚫 🛡️ 🧪 2 | `2.3.585` | APKM | [Play](https://play.google.com/store/apps/details?id=com.football433) |
 | <img src="https://img.shields.io/badge/-%20-00C853?style=flat-square" height="14" alt=""> | **AiScore** | 💎 🧩 2 | `4.3.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.onesports.score) |
-| <img src="https://img.shields.io/badge/-%20-2E7D32?style=flat-square" height="14" alt=""> | **BeSoccer** | 🚫 🔑 2 | `6.6.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.resultadosfutbol.mobile) |
-| <img src="https://img.shields.io/badge/-%20-1A1A1A?style=flat-square" height="14" alt=""> | **Bleacher Report** | 🚫 🛡️ 🧩 3 | `11.12.0.33` | APKM | [Play](https://play.google.com/store/apps/details?id=com.bleacherreport.android.teamstream) |
+| <img src="https://img.shields.io/badge/-%20-2E7D32?style=flat-square" height="14" alt=""> | **BeSoccer** | 🚫 🔑 2 | `6.7.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.resultadosfutbol.mobile) |
+| <img src="https://img.shields.io/badge/-%20-1A1A1A?style=flat-square" height="14" alt=""> | **Bleacher Report** | 🚫 🛡️ 🧩 3 | `11.13.0.39` | APKM | [Play](https://play.google.com/store/apps/details?id=com.bleacherreport.android.teamstream) |
 | <img src="https://img.shields.io/badge/-%20-FF0000?style=flat-square" height="14" alt=""> | **BoxBox** | 🚫 🛡️ 💎 3 | `5.4.18` | APKM | [Play](https://play.google.com/store/apps/details?id=club.boxbox.android) |
 | <img src="https://img.shields.io/badge/-%20-262626?style=flat-square" height="14" alt=""> | **CREX** | 🚫 💎 2 | `26.10.09` | APKM | [Play](https://play.google.com/store/apps/details?id=in.cricketexchange.app.cricketexchange) |
 | <img src="https://img.shields.io/badge/-%20-1D56A8?style=flat-square" height="14" alt=""> | **Digi Sport** | 🚫 🛡️ 🔕 🧩 🧪 8 | `1.1.15` | APK | [Play](https://play.google.com/store/apps/details?id=ro.rcsrds.digisport) |
@@ -122,11 +122,12 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-1E88E5?style=flat-square" height="14" alt=""> | **Librera** | 🚫 1 | `9.4.20` | APK | [Play](https://play.google.com/store/apps/details?id=com.foobnix.pdf.reader) |
 | <img src="https://img.shields.io/badge/-%20-283593?style=flat-square" height="14" alt=""> | **Moon+ Reader** | 🚫 1 | `10.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.flyersoft.moonreader) |
 
-#### 🏋️ Health & fitness <sub>4 apps</sub>
+#### 🏋️ Health & fitness <sub>5 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
-| <img src="https://img.shields.io/badge/-%20-101012?style=flat-square" height="14" alt=""> | **Hevy** | 🛡️ 💎 2 | `3.2.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.hevy) |
+| <img src="https://img.shields.io/badge/-%20-111111?style=flat-square" height="14" alt=""> | **Bold** | 🚫 1 | `6.5.2` | APKS | [Play](https://play.google.com/store/apps/details?id=dk.bold) |
+| <img src="https://img.shields.io/badge/-%20-101012?style=flat-square" height="14" alt=""> | **Hevy** | 🛡️ 💎 2 | `3.2.4` | APKM | [Play](https://play.google.com/store/apps/details?id=com.hevy) |
 | <img src="https://img.shields.io/badge/-%20-607D8B?style=flat-square" height="14" alt=""> | **Interval Timer** | 🚫 🛡️ 2 | `2.3.30` | APK | [Play](https://play.google.com/store/apps/details?id=cc.dreamspark.intervaltimer) |
 | <img src="https://img.shields.io/badge/-%20-0072BC?style=flat-square" height="14" alt=""> | **MyFitnessPal** | 🛡️ 💎 2 | `26.43.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.myfitnesspal.android) |
 | <img src="https://img.shields.io/badge/-%20-333333?style=flat-square" height="14" alt=""> | **SmartWOD Timer** | 🚫 💎 2 | `1.46.9` | APKM | [Play](https://play.google.com/store/apps/details?id=net.smartwod.timer) |
@@ -237,7 +238,7 @@ Verified on: `4.3.2`
 <details>
 <summary><b>BeSoccer</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.resultadosfutbol.mobile</code></summary>
 
-Verified on: `6.6.0`
+Verified on: `6.7.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -248,7 +249,7 @@ Verified on: `6.6.0`
 <details>
 <summary><b>Bleacher Report</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>com.bleacherreport.android.teamstream</code></summary>
 
-Verified on: `11.12.0.33`
+Verified on: `11.13.0.39`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -765,9 +766,19 @@ Verified on: `10.8`
 #### 🏋️ Health & fitness
 
 <details>
+<summary><b>Bold</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>dk.bold</code></summary>
+
+Verified on: `6.5.2`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Stops every Google Mobile Ads banner, native, interstitial, rewarded and app-open load. | ✅ |
+
+</details>
+<details>
 <summary><b>Hevy</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.hevy</code></summary>
 
-Verified on: `3.2.2`
+Verified on: `3.2.4`
 
 | Patch | What it does | Default |
 |---|---|:-:|
