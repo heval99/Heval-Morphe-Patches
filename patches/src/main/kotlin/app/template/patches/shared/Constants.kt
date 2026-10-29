@@ -1742,7 +1742,7 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFFC107,
         signatures = setOf("d7508eb3c26f90cbf457dc823b6008f4927d78bf0e64edcde5472fff9564bde5"), // O=ZTN Studios
-        targets = listOf(AppTarget(version = "5.4.3.19019", versionCode = 19019))
+        targets = listOf(AppTarget(version = "5.4.4.19080", versionCode = 19080))
     )
 
     // Verified 2026-10-12 against net.smartwod.timer 1.46.9 (versionCode 10000399, APKMirror
