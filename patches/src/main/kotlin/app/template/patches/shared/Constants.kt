@@ -731,8 +731,8 @@ object Constants {
             // 2026-10-25: updated to version 1.3.64.0929 (versionCode 10570; APKPure XAPK merged,
             // same signer); EasyNotesSmokeTest passes on patcher 2.0.0; anchors unchanged.
             AppTarget(
-                version = "1.3.64.0929",
-                versionCode = 10570
+                version = "1.3.65.1019",
+                versionCode = 10571
             )
         )
     )
