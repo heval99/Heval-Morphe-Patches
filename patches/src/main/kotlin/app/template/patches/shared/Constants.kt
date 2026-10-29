@@ -1690,7 +1690,7 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x2E7D32,
         signatures = setOf("97f9d6deb3d9d3ca623528b77dddc530c49516c90e948628e0354bb530cc3b6f"), // CN=Alejandro Sanchez Blanes, O=Resultados-Futbol.com
-        targets = listOf(AppTarget(version = "6.6.0", versionCode = 23005536))
+        targets = listOf(AppTarget(version = "6.7.0", versionCode = 23005544))
     )
 
     // Verified 2026-10-07 against com.rawcam.app 1.4.3 (versionCode 55, APKPure split bundle
