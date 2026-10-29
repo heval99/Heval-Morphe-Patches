@@ -1794,7 +1794,7 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x006CEF,
         signatures = setOf("46cc9dad502c7581cb5fa56c1e7ea092db8f31948f4a6af2388fcf9391c41af6"), // O=BlueMail
-        targets = listOf(AppTarget(version = "2.2.408", versionCode = 47587))
+        targets = listOf(AppTarget(version = "2.2.418", versionCode = 48013))
     )
 
     // Verified 2026-10-12 against com.truecaller 26.39.6 (versionCode 2639006, APKMirror bundle
