@@ -73,7 +73,8 @@
       "packages": [
         "app.expert.player",
         "com.duplila.screenshare",
-        "dk.dr.webplayer"
+        "dk.dr.webplayer",
+        "com.viaplay.android"
       ]
     },
     {

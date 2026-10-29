@@ -3544,4 +3544,58 @@ object Constants {
         signatures = setOf("0f5de4c316dc42f22ed62dd9b442b19902005e005c169cf146180a03998d3743"), // CN=DR TV, O=DR TV
         targets = listOf(AppTarget(version = "4.39.0", versionCode = 439000))
     )
+
+    // Verified 2026-10-29 against com.viaplay.android 26.42.1 (versionCode 2642010, user-supplied
+    // APKCube .apks merged with APKEditor, arm64-v8a only; signer CN=Niklas BJorkholm, OU=MTG,
+    // cert SHA-256 8b1a306b...aa2c). The app and most of Firebase are R8-obfuscated into rotating
+    // top-level classes, so the anchors are stable strings, kept library classes (com.npaw.*,
+    // com.nielsen.*, androidx.media3.*), the kept com.viaplay.tracking model classes and method
+    // shape (fingerprints in viaplay/misc/telemetry and viaplay/ads).
+    //   - Disable telemetry: the Crashlytics data-collection gate (the ()Z method logging
+    //     "Crashlytics automatic data collection ") and Firebase Performance's monitoring check
+    //     ("fpr_enabled" + "com.google.firebase.perf.SdkEnabled") answer false; the shared
+    //     forceAnalyticsDeactivated() makes the "firebase_analytics_collection_deactivated" read
+    //     answer true (the manifest does not set it); the NPAW initializer ("Viaplay Android
+    //     Mobile", the only NpawPluginProvider.initialize caller) and the Nielsen wrapper ("Failed
+    //     to initialize Nielsen SDK", the only AppSdk constructor call) return at entry, and every
+    //     reader null-checks NpawPluginProvider.getInstance() / the AppSdk field; the static
+    //     Cronos dispatcher (VPTrackingEvent, BaseData, List)V returns at entry, so no
+    //     cronos-events.viaplay.com session or event is sent (its callers ignore the result).
+    //     The CSE playback/ad beacons, OneTrust and continue watching are untouched.
+    // ViaplaySmokeTest asserts every step; the CLI (no -f) applies it, checked with a dexindex spot
+    // check only (no formal decompile run). RUNTIME NOT VERIFIED (no emulator run yet; arm64 runs
+    // under the AVD's translation): do not release until a cold start, sign-in and VOD playback
+    // have been seen with no crash from the null NPAW/Nielsen clients.
+    val COMPATIBILITY_VIAPLAY = Compatibility(
+        name = "Viaplay",
+        packageName = "com.viaplay.android",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE40050, // The icon's pink-to-red gradient (mid-tone).
+        signatures = setOf("8b1a306bfad5bc14025c488f6350751657dcb2b6e7eab311778d64c78a82aa2c"), // CN=Niklas BJorkholm, OU=MTG
+        targets = listOf(AppTarget(version = "26.42.1", versionCode = 2642010))
+    )
+
+    // Same app, used only by "Skip ads", so Morphe Manager flags it as experimental (2026-10-29,
+    // 26.42.1 / versionCode 2642010). VOD ads are server-side inserted DASH periods: the only
+    // implementation of Media3's ServerSideAdInsertionMediaSource$AdPlaybackStateUpdater builds
+    // an AdPlaybackState for EVERY period: "ad-id-signaling" periods get one server-side ad
+    // group, content periods and every live period get an empty state with no ad groups. Its
+    // tail marks the ad skipped (withSkippedAd(0, 0)) only when the period is in the set of ad
+    // breaks before the resume position. The patch keeps that if-eqz but feeds it the state's
+    // adGroupCount instead of Set.contains (an iget inserted right before it), so every state
+    // with an ad group is marked skipped and Media3 plays past it, while empty states are left
+    // alone (withSkippedAd(0, 0) on them would index adGroups[0] and throw). The ad-period
+    // detector is untouched. (The first draft removed the branch outright; the pre-commit review
+    // caught that it would have thrown on every content period.)
+    // Smoke-verified in bytecode only. RUNTIME NOT VERIFIED: not seen skipping a real ad break,
+    // and whether the app's ad UI or the CSE ad beacons react badly to never-played ads is
+    // unknown. Stays experimental until a VOD with ads has been watched on a patched build.
+    val COMPATIBILITY_VIAPLAY_EXPERIMENTAL = Compatibility(
+        name = "Viaplay",
+        packageName = "com.viaplay.android",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE40050,
+        signatures = setOf("8b1a306bfad5bc14025c488f6350751657dcb2b6e7eab311778d64c78a82aa2c"), // CN=Niklas BJorkholm, OU=MTG
+        targets = listOf(AppTarget(version = "26.42.1", versionCode = 2642010, isExperimental = true))
+    )
 }
