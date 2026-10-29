@@ -3339,7 +3339,7 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x1A1A1A, // The adaptive icon's background colour.
         signatures = setOf("60baa40540f4950406f327d85761d6e4c533a169d7129e20dfac56fb3124a4f0"), // CN=Sam Parnell, O=Bleacher Report
-        targets = listOf(AppTarget(version = "11.12.0.33", versionCode = 54053))
+        targets = listOf(AppTarget(version = "11.13.0.39", versionCode = 54189))
     )
 
     // Verified 2026-10-27 against com.getupnote.android 9.22.8 (versionCode 360, APKPure XAPK merged
