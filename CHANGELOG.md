@@ -1,3 +1,27 @@
+## [2.1.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.1.0-dev.2...v2.1.0-dev.3) (2026-10-29)
+
+### 🐛 Bug Fixes
+
+* **365scores:** updated to version 14.9.8 ([27cb747](https://github.com/heval99/Heval-Morphe-Patches/commit/27cb747ff5fbb4627742ed6641249e0ef5fd4393))
+* **brave:** updated to version 1.98.62 ([caddfd6](https://github.com/heval99/Heval-Morphe-Patches/commit/caddfd64c5ad89e2e90d058b8839d3be98976f38))
+* **crex:** updated to version 26.10.09 ([71fdb1d](https://github.com/heval99/Heval-Morphe-Patches/commit/71fdb1d385635f7282734d42bee43bf8dfa3d88a))
+* **easylauncher:** updated to version 1.10.29 ([4a9e440](https://github.com/heval99/Heval-Morphe-Patches/commit/4a9e44023553c152ee1e7ecb4f29739e3fec533a))
+* **expertplayer:** updated to version 11.4.0 ([e1f9090](https://github.com/heval99/Heval-Morphe-Patches/commit/e1f909071a69386c533c98ba695f6d5dd1274d50))
+* **fotmob:** updated to version 240.17974.20261023 ([2c525a3](https://github.com/heval99/Heval-Morphe-Patches/commit/2c525a3b0ea64e39047f84eeeb6671980d7cef94))
+* **myfitnesspal:** updated to version 26.43.0 ([10739c5](https://github.com/heval99/Heval-Morphe-Patches/commit/10739c570e973cac7f4cb09a8fd20cf877a75e53))
+* **shazam:** updated to version 16.65.0-261022 ([76df8a5](https://github.com/heval99/Heval-Morphe-Patches/commit/76df8a5a76c3b738771c7bda738205dbb48348b0))
+* **sofascore:** updated to version 26.10.19 ([30d7fbc](https://github.com/heval99/Heval-Morphe-Patches/commit/30d7fbc6bf83e94cfb8d89b9f0ce2dfa6208a243))
+* **transfermarkt:** updated to version 4.3.3 ([e301b9f](https://github.com/heval99/Heval-Morphe-Patches/commit/e301b9fee5cdadd38d531dfd3309154be9abbcb7))
+* **wsj:** updated to version 15.12.0.42675 ([d79455d](https://github.com/heval99/Heval-Morphe-Patches/commit/d79455d1e1ac5b897e479b845a4c785dfa600220))
+
+### ✨ New Features
+
+* **bbcnews:** add Disable ads ([141a7e3](https://github.com/heval99/Heval-Morphe-Patches/commit/141a7e352be54799bfce62fc44d0b1a431428a7e))
+* **drtv:** add DRTV with Disable telemetry, Auto skip intro and Allow free rotation ([90ebdc3](https://github.com/heval99/Heval-Morphe-Patches/commit/90ebdc32905328811ac37ed0675b27153f777d0f))
+* **taskito:** add Enable Premium ([219ae80](https://github.com/heval99/Heval-Morphe-Patches/commit/219ae803e57398f9a7908fbbd049f111cdabca52))
+* **timetune:** add Enable Premium ([b927dde](https://github.com/heval99/Heval-Morphe-Patches/commit/b927dde1262472c5da2f6cda777ee0c9a591db1d))
+* **viaplay:** add Viaplay with Disable telemetry and Skip ads ([f8b8b5c](https://github.com/heval99/Heval-Morphe-Patches/commit/f8b8b5cc1abc096e0556342996443cd129df37b8))
+
 ## [2.1.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.1.0-dev.1...v2.1.0-dev.2) (2026-10-28)
 
 ### ✨ New Features
