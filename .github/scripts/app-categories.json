@@ -73,7 +73,9 @@
       "emoji": "📺",
       "packages": [
         "app.expert.player",
-        "com.duplila.screenshare"
+        "com.duplila.screenshare",
+        "dk.dr.webplayer",
+        "com.viaplay.android"
       ]
     },
     {
