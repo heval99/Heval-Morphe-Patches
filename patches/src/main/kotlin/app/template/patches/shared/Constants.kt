@@ -808,7 +808,7 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00B0FF,
         signatures = setOf("da3a93962f82949130f2869637f7abbd0d8f4fff3527a089b06a1078acb7d684"), // CN=Kostya Vasilyev, O="Hypnotica, Inc."
-        targets = listOf(AppTarget(version = "2.7.0", versionCode = 200700061))
+        targets = listOf(AppTarget(version = "2.8.1", versionCode = 200801029))
     )
 
     // Verified 2026-09-17 against com.wunderground.android.weather 6.20.1
