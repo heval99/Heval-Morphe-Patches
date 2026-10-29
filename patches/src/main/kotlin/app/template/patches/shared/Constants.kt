@@ -2159,7 +2159,7 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x101012,
         signatures = setOf("add9aa0d804a1a14a04119d44fa7cb4cc229c86322991eda526f5455d11580ef"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "3.2.2", versionCode = 3398745))
+        targets = listOf(AppTarget(version = "3.2.4", versionCode = 3403347))
     )
 
     // Verified 2026-10-13 against easy.launcher 1.10.28 (versionCode 11028, the owner's APKMirror
