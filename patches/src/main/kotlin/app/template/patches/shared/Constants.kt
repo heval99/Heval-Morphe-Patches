@@ -514,7 +514,7 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0xC8102E,
         signatures = setOf("82bf3a1c6498d93a22c4fe6ab8f272d5a8495093a8e04a66b0b1c92cdcd12ebb"), // CN=Sebastian, O=Cloeme
-        targets = listOf(AppTarget(version = "10.3.2", versionCode = 2230))
+        targets = listOf(AppTarget(version = "10.4", versionCode = 2250))
     )
 
     // Verified 2026-08-20 against FishBuddy v11.0.84 (universal, Android 7.0+).
