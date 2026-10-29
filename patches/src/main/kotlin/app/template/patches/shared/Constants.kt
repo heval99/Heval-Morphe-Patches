@@ -3495,7 +3495,7 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFF6D00,
         signatures = setOf("42947b25f3b0a5fc1b3905ba33f7e61cfc4b1fab9be3cc2173edf4103f2231cd"),
-        targets = listOf(AppTarget(version = "1.0.90", versionCode = 90))
+        targets = listOf(AppTarget(version = "1.0.92", versionCode = 92))
     )
 
     // Verified 2026-10-26 against se.footballaddicts.livescore 6.15.10 (versionCode 731,

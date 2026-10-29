@@ -51,7 +51,7 @@ class RareCamSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "1.0.90",
+            version = "1.0.92",
             patchNames = setOf("Enable Premium", "Disable license check"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
