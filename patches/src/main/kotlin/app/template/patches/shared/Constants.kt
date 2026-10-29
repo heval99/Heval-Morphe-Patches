@@ -3707,4 +3707,20 @@ object Constants {
         signatures = setOf("8b1a306bfad5bc14025c488f6350751657dcb2b6e7eab311778d64c78a82aa2c"), // CN=Niklas BJorkholm, OU=MTG
         targets = listOf(AppTarget(version = "26.42.1", versionCode = 2642010, isExperimental = true))
     )
+
+    // Verified 2026-10-29 against dk.bold 6.5.2 (versionCode 261, owner-supplied APKCube .apks
+    // bundle merged with APKEditor, arm64-v8a; signer OU=Bold.dk, O=Bold.dk, C=NL, cert SHA-256
+    // 4a82f8d0...8d3c). Native Android app, 179k methods; Google Mobile Ads is the only ad SDK (all
+    // eight load entry points present, no AppLovin MAX) and Firebase Analytics/Crashlytics the only
+    // telemetry SDK. There is no Play Billing or RevenueCat class, so the app has no premium tier
+    // and no Enable Premium to write. Disable ads neuters every GMA load with the shared hooks and
+    // leaves MobileAds.initialize alone (rule 9).
+    val COMPATIBILITY_BOLD = Compatibility(
+        name = "Bold",
+        packageName = "dk.bold",
+        apkFileType = ApkFileType.APKS,
+        appIconColor = 0x111111,
+        signatures = setOf("4a82f8d055489660354920bffe80b57f851093b16e98d51043ca564468b28d3c"), // O=Bold.dk
+        targets = listOf(AppTarget(version = "6.5.2", versionCode = 261))
+    )
 }
