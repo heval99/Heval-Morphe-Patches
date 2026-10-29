@@ -2528,7 +2528,7 @@ object Constants {
         // Experimental (owner decision 2026-10-14): shipped without a device test because the
         // emulator is blocked by Akamai even on the original app.
         signatures = setOf("032e7418eec3fc2935e7235dca5abb40f180f57b616977499b24634c96b26064"), // CN=Ganapathy, O=Divum Corporate Services
-        targets = listOf(AppTarget(version = "14.6.2", versionCode = 637, isExperimental = true))
+        targets = listOf(AppTarget(version = "14.6.3.RC0", versionCode = 638, isExperimental = true))
     )
 
     // Verified 2026-10-15 against projekt.launcher 2.2.7 (versionCode 20207, APKMirror bundle
