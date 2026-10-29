@@ -3643,8 +3643,10 @@ object Constants {
     // integer/player_forward_rewind_increment, which is already 15000 ms, not the 10 s default.
     // DrtvSmokeTest asserts every step. The CLI (no -f) applies all three; resources.arsc and
     // AndroidManifest.xml stay byte-identical; a whole-APK compare shows exactly the 8 intended
-    // methods. RUNTIME NOT VERIFIED (emulator run pending): do not release until a cold start, an
-    // auto-skipped intro, portrait rotation and no crash from the null trackers have been seen.
+    // methods. Runtime 2026-10-29 (emulator, dev.3 bundle, stock control): the patched cold start
+    // reaches MainActivity and loads the home page with no crash, and the Nielsen SDK that stock
+    // starts at launch stays silent. Playback needs a DR login, so the auto-skipped intro and
+    // portrait rotation have not been seen; the owner accepted a clean start as enough.
     val COMPATIBILITY_DRTV = Compatibility(
         name = "DRTV",
         packageName = "dk.dr.webplayer",
@@ -3671,10 +3673,11 @@ object Constants {
     //     Cronos dispatcher (VPTrackingEvent, BaseData, List)V returns at entry, so no
     //     cronos-events.viaplay.com session or event is sent (its callers ignore the result).
     //     The CSE playback/ad beacons, OneTrust and continue watching are untouched.
-    // ViaplaySmokeTest asserts every step; the CLI (no -f) applies it, checked with a dexindex spot
-    // check only (no formal decompile run). RUNTIME NOT VERIFIED (no emulator run yet; arm64 runs
-    // under the AVD's translation): do not release until a cold start, sign-in and VOD playback
-    // have been seen with no crash from the null NPAW/Nielsen clients.
+    // ViaplaySmokeTest asserts every step; the CLI (no -f) applies it. Runtime 2026-10-29
+    // (emulator, dev.3 bundle, stock control): the patched cold start reaches the login screen
+    // through the permission and consent dialogs with no crash, and Firebase Analytics logs "App
+    // measurement deactivated via the manifest" where stock initializes it. Sign-in and VOD
+    // playback need a subscription and have not been seen.
     val COMPATIBILITY_VIAPLAY = Compatibility(
         name = "Viaplay",
         packageName = "com.viaplay.android",
@@ -3696,9 +3699,10 @@ object Constants {
     // alone (withSkippedAd(0, 0) on them would index adGroups[0] and throw). The ad-period
     // detector is untouched. (The first draft removed the branch outright; the pre-commit review
     // caught that it would have thrown on every content period.)
-    // Smoke-verified in bytecode only. RUNTIME NOT VERIFIED: not seen skipping a real ad break,
-    // and whether the app's ad UI or the CSE ad beacons react badly to never-played ads is
-    // unknown. Stays experimental until a VOD with ads has been watched on a patched build.
+    // Smoke-verified, and an apktool disassembly of the CLI-patched APK shows the adGroupCount iget
+    // before the if-eqz guarding withSkippedAd (2026-10-29). The patched build starts cleanly, but
+    // no real ad break has been watched (needs a subscription), and whether the app's ad UI or the
+    // CSE ad beacons react badly to never-played ads is unknown, so it stays experimental.
     val COMPATIBILITY_VIAPLAY_EXPERIMENTAL = Compatibility(
         name = "Viaplay",
         packageName = "com.viaplay.android",
