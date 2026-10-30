@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.1.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.1.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**214** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-29
+> **[v2.1.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.1.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**214** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-30
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -64,8 +64,8 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-00985F?style=flat-square" height="14" alt=""> | **FotMob** | 🚫 🛡️ 💎 🔕 🧩 8 | `240.17974.20261023` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mobilefootie.wc2010) |
 | <img src="https://img.shields.io/badge/-%20-26A69A?style=flat-square" height="14" alt=""> | **Futbin** | 🚫 1 | `27.08` | APK | [Play](https://play.google.com/store/apps/details?id=com.futbin) |
 | <img src="https://img.shields.io/badge/-%20-0A1E32?style=flat-square" height="14" alt=""> | **L'Équipe** | 🚫 🧪 1 | `10.70.0` | APKM | [Play](https://play.google.com/store/apps/details?id=lequipe.fr) |
-| <img src="https://img.shields.io/badge/-%20-C8102E?style=flat-square" height="14" alt=""> | **Livescore** | 🚫 1 | `10.3.2` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
-| <img src="https://img.shields.io/badge/-%20-0D47A1?style=flat-square" height="14" alt=""> | **OneCricket** | 🚫 1 | `26.08.01` | APKM | [Play](https://play.google.com/store/apps/details?id=one.cricket.app) |
+| <img src="https://img.shields.io/badge/-%20-C8102E?style=flat-square" height="14" alt=""> | **Livescore** | 🚫 1 | `10.4` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
+| <img src="https://img.shields.io/badge/-%20-0D47A1?style=flat-square" height="14" alt=""> | **OneCricket** | 🚫 1 | `26.10.01` | APKM | [Play](https://play.google.com/store/apps/details?id=one.cricket.app) |
 | <img src="https://img.shields.io/badge/-%20-00C853?style=flat-square" height="14" alt=""> | **OneFootball** | 🚫 1 | `15.147.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
 | <img src="https://img.shields.io/badge/-%20-384CF4?style=flat-square" height="14" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 9 | `26.10.19` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
 | <img src="https://img.shields.io/badge/-%20-001AA3?style=flat-square" height="14" alt=""> | **Transfermarkt** | 🚫 🛡️ 2 | `4.3.3` | APKM | [Play](https://play.google.com/store/apps/details?id=de.transfermarkt.v2) |
@@ -78,7 +78,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-BB1919?style=flat-square" height="14" alt=""> | **BBC News** | 🚫 1 | `2026.9.1` | APKM | [Play](https://play.google.com/store/apps/details?id=bbc.mobile.news.ww) |
 | <img src="https://img.shields.io/badge/-%20-2979FF?style=flat-square" height="14" alt=""> | **Bluecoins** | 💎 1 | `13.1.149` | APK | [Play](https://play.google.com/store/apps/details?id=com.rammigsoftware.bluecoins) |
 | <img src="https://img.shields.io/badge/-%20-8BC34A?style=flat-square" height="14" alt=""> | **Monefy** | 💎 1 | `1.22.11` | APKM | [Play](https://play.google.com/store/apps/details?id=com.monefy.app.lite) |
-| <img src="https://img.shields.io/badge/-%20-0066A1?style=flat-square" height="14" alt=""> | **Moneycontrol** | 🚫 🧪 1 | `14.6.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.divum.MoneyControl) |
+| <img src="https://img.shields.io/badge/-%20-0066A1?style=flat-square" height="14" alt=""> | **Moneycontrol** | 🚫 🧪 1 | `14.6.3.RC0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.divum.MoneyControl) |
 | <img src="https://img.shields.io/badge/-%20-0B6E69?style=flat-square" height="14" alt=""> | **RTÉ News** | 🚫 1 | `10.0.2` | APKM | [Play](https://play.google.com/store/apps/details?id=ie.rte.news) |
 | <img src="https://img.shields.io/badge/-%20-052962?style=flat-square" height="14" alt=""> | **The Guardian** | 🚫 🛡️ 🧩 3 | `6.239.23439` | APKM | [Play](https://play.google.com/store/apps/details?id=com.guardian) |
 | <img src="https://img.shields.io/badge/-%20-000000?style=flat-square" height="14" alt=""> | **The Wall Street Journal** | 🚫 1 | `15.12.0.42675` | APK | [Play](https://play.google.com/store/apps/details?id=wsj.reader_sp) |
@@ -87,8 +87,8 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
-| <img src="https://img.shields.io/badge/-%20-00B0FF?style=flat-square" height="14" alt=""> | **Aqua Mail** | 💎 1 | `2.7.0` | APKM | [Play](https://play.google.com/store/apps/details?id=org.kman.AquaMail) |
-| <img src="https://img.shields.io/badge/-%20-006CEF?style=flat-square" height="14" alt=""> | **BlueMail** | 🚫 1 | `2.2.408` | APKM | [Play](https://play.google.com/store/apps/details?id=me.bluemail.mail) |
+| <img src="https://img.shields.io/badge/-%20-00B0FF?style=flat-square" height="14" alt=""> | **Aqua Mail** | 💎 1 | `2.8.1` | APKM | [Play](https://play.google.com/store/apps/details?id=org.kman.AquaMail) |
+| <img src="https://img.shields.io/badge/-%20-006CEF?style=flat-square" height="14" alt=""> | **BlueMail** | 🚫 1 | `2.2.418` | APKM | [Play](https://play.google.com/store/apps/details?id=me.bluemail.mail) |
 | <img src="https://img.shields.io/badge/-%20-2196F3?style=flat-square" height="14" alt=""> | **FairEmail** | 💎 1 | `1.2339` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
 | <img src="https://img.shields.io/badge/-%20-283167?style=flat-square" height="14" alt=""> | **mail.com** | 🚫 🛡️ 🔕 🧩 4 | `9.19.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mail.mobile.android.mail) |
 | <img src="https://img.shields.io/badge/-%20-5C6BC0?style=flat-square" height="14" alt=""> | **Textra** | 💎 1 | `4.87` | APKM | [Play](https://play.google.com/store/apps/details?id=com.textra) |
@@ -149,8 +149,8 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-F44336?style=flat-square" height="14" alt=""> | **Alarm Clock Xtreme** | 🚫 1 | `26.06.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.alarmclock.xtreme.free) |
 | <img src="https://img.shields.io/badge/-%20-2E7D5B?style=flat-square" height="14" alt=""> | **Bookly** | 💎 1 | `2.4.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.twodoor.bookly) |
 | <img src="https://img.shields.io/badge/-%20-009688?style=flat-square" height="14" alt=""> | **Business Calendar 2** | 🚫 🛡️ 💎 3 | `2.55.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.appgenix.bizcal) |
-| <img src="https://img.shields.io/badge/-%20-00ACFF?style=flat-square" height="14" alt=""> | **EasyNotes** | 🚫 💎 2 | `1.3.64.0929` | APKM | [Play](https://play.google.com/store/apps/details?id=easynotes.notes.notepad.notebook.privatenotes.note) |
-| <img src="https://img.shields.io/badge/-%20-FFC107?style=flat-square" height="14" alt=""> | **#Notepad** | 🚫 💎 2 | `5.4.3.19019` | APKM | [Play](https://play.google.com/store/apps/details?id=com.ztnstudio.notepad) |
+| <img src="https://img.shields.io/badge/-%20-00ACFF?style=flat-square" height="14" alt=""> | **EasyNotes** | 🚫 💎 2 | `1.3.65.1019` | APKM | [Play](https://play.google.com/store/apps/details?id=easynotes.notes.notepad.notebook.privatenotes.note) |
+| <img src="https://img.shields.io/badge/-%20-FFC107?style=flat-square" height="14" alt=""> | **#Notepad** | 🚫 💎 2 | `5.4.4.19080` | APKM | [Play](https://play.google.com/store/apps/details?id=com.ztnstudio.notepad) |
 | <img src="https://img.shields.io/badge/-%20-4D6BFE?style=flat-square" height="14" alt=""> | **Structured** | 💎 🔑 2 | `3.9.6` | APKM | [Play](https://play.google.com/store/apps/details?id=io.unorderly.structured) |
 | <img src="https://img.shields.io/badge/-%20-4CAF50?style=flat-square" height="14" alt=""> | **Tasker** | 💎 1 | `6.6.20` | APK | [Play](https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm) |
 | <img src="https://img.shields.io/badge/-%20-2E7D32?style=flat-square" height="14" alt=""> | **Taskito** | 💎 1 | `1.3.3` | APK | [Play](https://play.google.com/store/apps/details?id=com.fenchtose.reflog) |
@@ -171,7 +171,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="https://img.shields.io/badge/-%20-212121?style=flat-square" height="14" alt=""> | **Easy Homescreen** | 🚫 🛡️ 🔕 🧩 6 | `1.10.29` | APKM | [Play](https://play.google.com/store/apps/details?id=easy.launcher) |
-| <img src="https://img.shields.io/badge/-%20-3C59AD?style=flat-square" height="14" alt=""> | **Hyperion Launcher** | 💎 1 | `2.2.13` | APKM | [Play](https://play.google.com/store/apps/details?id=projekt.launcher) |
+| <img src="https://img.shields.io/badge/-%20-3C59AD?style=flat-square" height="14" alt=""> | **Hyperion Launcher** | 💎 1 | `2.2.14` | APKM | [Play](https://play.google.com/store/apps/details?id=projekt.launcher) |
 | <img src="https://img.shields.io/badge/-%20-F5A524?style=flat-square" height="14" alt=""> | **Mango Launcher** | 💎 🔑 2 | `1.64` | APKM | [Play](https://play.google.com/store/apps/details?id=app.pinya.mango) |
 | <img src="https://img.shields.io/badge/-%20-1B1B1B?style=flat-square" height="14" alt=""> | **Minimalist Launcher** | 💎 1 | `1.22.8v236` | APKM | [Play](https://play.google.com/store/apps/details?id=com.qqlabs.minimalistlauncher) |
 | <img src="https://img.shields.io/badge/-%20-03004C?style=flat-square" height="14" alt=""> | **Niagara Launcher** | 🛡️ 💎 2 | `1.16.33` | APK | [Play](https://play.google.com/store/apps/details?id=bitpit.launcher) |
@@ -190,7 +190,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-3A362F?style=flat-square" height="14" alt=""> | **LuckyClick** | 🚫 🔑 2 | `4.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.peter890331.luckyclick.app) |
 | <img src="https://img.shields.io/badge/-%20-D0BCFF?style=flat-square" height="14" alt=""> | **Native Camera** | 💎 🔑 2 | `1.4.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.rawcam.app) |
 | <img src="https://img.shields.io/badge/-%20-9C27B0?style=flat-square" height="14" alt=""> | **Pocket Color Wheel** | 🚫 1 | `3.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.pocketcolorwheel.PCW) |
-| <img src="https://img.shields.io/badge/-%20-FF6D00?style=flat-square" height="14" alt=""> | **RareCam** | 💎 🔑 2 | `1.0.90` | APKM | [Play](https://play.google.com/store/apps/details?id=com.rarecam.app) |
+| <img src="https://img.shields.io/badge/-%20-FF6D00?style=flat-square" height="14" alt=""> | **RareCam** | 💎 🔑 2 | `1.0.92` | APKM | [Play](https://play.google.com/store/apps/details?id=com.rarecam.app) |
 | <img src="https://img.shields.io/badge/-%20-2962FF?style=flat-square" height="14" alt=""> | **Unified Remote** | 💎 1 | `3.25.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.Relmtech.Remote) |
 | <img src="https://img.shields.io/badge/-%20-00A63B?style=flat-square" height="14" alt=""> | **WeMuslim** | 🚫 🛡️ 💎 🧩 5 | `3.5.4` | APKM | [Play](https://play.google.com/store/apps/details?id=com.fyxtech.muslim) |
 | <img src="https://img.shields.io/badge/-%20-00ACC1?style=flat-square" height="14" alt=""> | **WiFi Analyzer** | 🚫 1 | `3.11.2` | APK | — |
@@ -379,7 +379,7 @@ Verified on: `10.70.0`
 <details>
 <summary><b>Livescore</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.livescore</code></summary>
 
-Verified on: `10.3.2`
+Verified on: `10.4`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -389,7 +389,7 @@ Verified on: `10.3.2`
 <details>
 <summary><b>OneCricket</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>one.cricket.app</code></summary>
 
-Verified on: `26.08.01`
+Verified on: `26.10.01`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -482,7 +482,7 @@ Verified on: `1.22.11`
 <details>
 <summary><b>Moneycontrol</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.divum.MoneyControl</code></summary>
 
-Verified on: `14.6.2`
+Verified on: `14.6.3.RC0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -527,7 +527,7 @@ Verified on: `15.12.0.42675`
 <details>
 <summary><b>Aqua Mail</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>org.kman.AquaMail</code></summary>
 
-Verified on: `2.7.0`
+Verified on: `2.8.1`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -537,7 +537,7 @@ Verified on: `2.7.0`
 <details>
 <summary><b>BlueMail</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>me.bluemail.mail</code></summary>
 
-Verified on: `2.2.408`
+Verified on: `2.2.418`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -911,7 +911,7 @@ Verified on: `2.55.8`
 <details>
 <summary><b>EasyNotes</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>easynotes.notes.notepad.notebook.privatenotes.note</code></summary>
 
-Verified on: `1.3.64.0929`
+Verified on: `1.3.65.1019`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -922,11 +922,11 @@ Verified on: `1.3.64.0929`
 <details>
 <summary><b>#Notepad</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.ztnstudio.notepad</code></summary>
 
-Verified on: `5.4.3.19019`
+Verified on: `5.4.4.19080`
 
 | Patch | What it does | Default |
 |---|---|:-:|
-| 🚫 **Disable ads** | Removes all ads, including the after-call ad screen. | ✅ |
+| 🚫 **Disable ads** | Removes all ads. | ✅ |
 | 💎 **Enable Premium** | Unlocks premium features. | ✅ |
 
 </details>
@@ -1057,7 +1057,7 @@ Verified on: `1.10.29`
 <details>
 <summary><b>Hyperion Launcher</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>projekt.launcher</code></summary>
 
-Verified on: `2.2.13`
+Verified on: `2.2.14`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1204,7 +1204,7 @@ Verified on: `3.26`
 <details>
 <summary><b>RareCam</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.rarecam.app</code></summary>
 
-Verified on: `1.0.90`
+Verified on: `1.0.92`
 
 | Patch | What it does | Default |
 |---|---|:-:|
