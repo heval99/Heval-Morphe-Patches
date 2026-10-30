@@ -96,7 +96,7 @@ class TruecallerSmokeTest {
     }
 
     @Test
-    fun `Truecaller patches unlock premium, remove ads, telemetry, contact upload, update prompts, auto-launch, nags, promotions and optional UI, show caller numbers in the call log, hide its filters, and route GMS to MicroG RE`() {
+    fun `Truecaller patches unlock premium, remove ads, telemetry, contact upload, update prompts, auto-launch, nags, promotions and optional UI, show caller numbers in the call log, hide its filters, frequent contacts and important senders, and route GMS to MicroG RE`() {
         val root = repoRoot()
         val apk = File(root, "apks/truecaller/base.apk")
 
@@ -139,6 +139,8 @@ class TruecallerSmokeTest {
                 "Hide after-call screen for contacts",
                 "Show caller number in call log",
                 "Hide call log filters",
+                "Hide frequently called contacts",
+                "Hide important senders",
                 "GmsCore support",
                 "Spoof signature",
             ),
@@ -162,6 +164,7 @@ class TruecallerSmokeTest {
         assertDisableContactUpload(classes)
         assertShowCallerNumber(classes, byType, apk)
         assertHideCallLogFilters(classes, byType)
+        assertHideListItems(classes)
         // onGetCredential tests isAvailableOnDevice(int) in this build, so the routing applies.
         assertGmsCoreSupport(classes, workDir, PKG, TRUECALLER_INIT, SIGNATURE_SHA1, expectCredentialRouting = true)
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
@@ -1030,6 +1033,44 @@ class TruecallerSmokeTest {
             val calls = init.methods.filter { it.name == name }.flatMap { m -> m.instructions().mapNotNull { it.setterCall() } }
             check(calls.isNotEmpty() && calls.all { it.definingClass == setterRef.definingClass && it.name == setterRef.name }) {
                 "TruecallerInit.$name selects filters through ${calls.map { "${it.definingClass}->${it.name}" }.distinct()}, not $label"
+            }
+        }
+    }
+
+    private fun assertHideListItems(classes: List<ClassDef>) {
+        // "Hide frequently called contacts" and "Hide important senders": in each list builder
+        // (invoke(Object)Object loading the item key), the key goes to a static void item helper,
+        // and the nearest branch before it that jumps past that call is now dead code behind a goto
+        // to the same target, so the item is never added.
+        for ((key, guardOpcode) in listOf("frequent_contacts_id" to Opcode.IF_EQZ, "important-senders-header" to Opcode.IF_LT)) {
+            val (cls, builder) = classes.singleMethod("$key list builder") { _, m ->
+                m.name == "invoke" && m.returnType == "Ljava/lang/Object;" && m.params() == listOf("Ljava/lang/Object;") && key in m.strings()
+            }
+            val label = "${cls.type}.${builder.name} ($key)"
+            val insns = builder.instructions()
+            val keyIndex = insns.indexOfFirst { it.stringOrNull() == key }
+            val keyRegister = (insns[keyIndex] as OneRegisterInstruction).registerA
+            val addCall = (keyIndex + 1 until insns.size).first { insns[it].arguments()?.contains(keyRegister) == true }
+            check(insns[addCall].opcode == Opcode.INVOKE_STATIC && insns[addCall].call()?.returnType == "V") {
+                "$label does not pass the key to a static void item helper; got ${insns[addCall].opcode} ${insns[addCall].call()}"
+            }
+            val guard = (keyIndex - 1 downTo 0).firstOrNull {
+                insns[it].opcode in setOf(Opcode.IF_EQZ, Opcode.IF_LT) && insns.branchTarget(it) > addCall
+            } ?: error("$label has no guard that skips the item")
+            check(insns[guard].opcode == guardOpcode) { "$label is guarded by ${insns[guard].opcode}, expected $guardOpcode" }
+            val skip = insns[guard - 1]
+            check(skip.opcode in setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32) && insns.branchTarget(guard - 1) == insns.branchTarget(guard)) {
+                "$label does not jump to the guard's target right before the guard; got ${skip.opcode}"
+            }
+            if (guardOpcode == Opcode.IF_LT) {
+                // The guard compares importantSenders.size() (List.size, then move-result into its first register).
+                val sizeRegister = (insns[guard] as TwoRegisterInstruction).registerA
+                val result = (guard - 2 downTo 0).first {
+                    insns[it].opcode.setsRegister() && (insns[it] as? OneRegisterInstruction)?.registerA == sizeRegister
+                }
+                check(insns[result].opcode == Opcode.MOVE_RESULT && insns[result - 1].call()?.let {
+                    it.definingClass == "Ljava/util/List;" && it.name == "size"
+                } == true) { "$label: the guard does not compare a List.size() result" }
             }
         }
     }

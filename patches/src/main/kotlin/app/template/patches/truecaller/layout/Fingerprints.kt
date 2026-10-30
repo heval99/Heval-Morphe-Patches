@@ -225,3 +225,35 @@ internal object CallLogRowMapperFingerprint : Fingerprint(
         ),
     ),
 )
+
+// The revamped call log's LazyColumn builder (an R8-merged Function1 lambda, qh8.invoke in 26.41.5):
+// banners, the header ad, then the frequently called contacts row as the item "frequent_contacts_id"
+// (only when its show flag is set), the "call_log_filters" item, the history rows and the footers.
+internal object FrequentContactsListFingerprint : Fingerprint(
+    name = "invoke",
+    returnType = "Ljava/lang/Object;",
+    parameters = listOf("Ljava/lang/Object;"),
+    filters = listOf(string("frequent_contacts_id")),
+)
+
+// The Messages tab's LazyColumn builder (an R8-merged Function1 lambda, c67.invoke in 26.41.5) for
+// BusinessHomeScreenState: the banners, the "available-filters" Categories row, then the Important
+// senders grid as the item "important-senders-header" (only with six or more important senders),
+// then "recentHeader" and the recent conversations.
+internal object ImportantSendersListFingerprint : Fingerprint(
+    name = "invoke",
+    returnType = "Ljava/lang/Object;",
+    parameters = listOf("Ljava/lang/Object;"),
+    filters = listOf(string("important-senders-header")),
+)
+
+// toString() of the Messages tab's screen state (BusinessHomeScreenState, d67 in 26.41.5), a Kotlin
+// data class whose importantSenders list feeds the Important senders grid. Only the stable prefix and
+// the importantSenders label are matched.
+internal object BusinessHomeScreenStateToStringFingerprint : Fingerprint(
+    name = "toString",
+    returnType = "Ljava/lang/String;",
+    parameters = listOf(),
+    filters = listOf(string("BusinessHomeScreenState(", StringComparisonType.STARTS_WITH)),
+    strings = listOf(string(", importantSenders=", StringComparisonType.CONTAINS)),
+)
