@@ -3580,6 +3580,14 @@ object Constants {
     // every feature gate (the t7.e implementation), so a single returnEarly(true) unlocks them all.
     // Enable Premium hooks that getter; the billing client and the entitlement sync stay intact,
     // and account-backed features still need a real account.
+    // 2026-11-02 (issue #100), 1.3.3: Hide Premium tab. The bottom bar appends a "premium" tab
+    // when purchase-keeper o() ("no entitlement and no orders", which Enable Premium leaves alone)
+    // and the remote "premium_tab" experiment are both true. Anchor: the builder returning the
+    // kept custom View BottomNavigationBar with the "premium" and "base_activity" strings
+    // (base.i.d1() in 1.3.3, "base_activity" is unique to it); the experiment result before the
+    // if-eqz that skips the tab is forced to 0. Smoke test, CLI without -f and decompile checked;
+    // emulator: with "premium_tab":"1" put in the cached Remote Config, stock shows Timeline/Board/
+    // Unplanned/More/Premium and the patched build (same data) the first four, all tabs open.
     val COMPATIBILITY_TASKITO = Compatibility(
         name = "Taskito",
         packageName = "com.fenchtose.reflog",
