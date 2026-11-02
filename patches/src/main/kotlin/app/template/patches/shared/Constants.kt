@@ -2205,7 +2205,10 @@ object Constants {
     //   path. Verified: smoke test (gate shapes, registry, manifest, entry call), CLI without -f
     //   (all 20 patches applied), apkanalyzer smali of onViewCreated, doo.a, the tabs helper and
     //   morpheBrandMedia, aapt2 manifest (provider exported=false initOrder=1000, activity
-    //   exported=false) and string values (identical to a GmsCore-only build). Not run on a device.
+    //   exported=false) and string values (identical to a GmsCore-only build). Emulator (7756584):
+    //   2 clean cold starts, InitProvider ran, the Controls screen (opened directly) lists the 12
+    //   switches with 6 Restart badges, a toggle persists, Pause all and Reset work. The Settings
+    //   row itself needs a phone-verified account, so it is checked in bytecode only.
     //   The host is a hard dependency of the 12 converted patches (featurePatch dependsOn it): if
     //   the Settings entry anchor (CategoriesFragmentViewCreatedFingerprint) drifts, all 12 fail
     //   loudly, not only "Heval Controls" - accepted, the target is pinned. Root Mount: the host is
