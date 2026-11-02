@@ -2137,6 +2137,22 @@ object Constants {
     //   (Float, Float, Int, Modifier)Modifier offset call right before each tag is negated, so answer
     //   sits left and decline right. Each button is dragged in any direction (progress is the drag
     //   distance), so the gesture does not depend on the side. The PiP actions are not changed.
+    // 2026-11-02 (#113, 26.42.5; TruecallerSmokeTest + CLI without -f with all 28 patches + apkanalyzer
+    //   disassembly of hk8/h09/tb6 invoke; patched cold start reached WizardActivity with no
+    //   VerifyError and `cmd package compile -m verify` passed; the haptics themselves NOT
+    //   runtime-tested, they need a real incoming call): Disable call button haptics (opt-in), three
+    //   sources. 1) Completion: each call UI action handler dispatches new p89(CallUIHaptic.X) to
+    //   m89.b and then reports an analytics enum; the dispatch is removed in the handlers that report
+    //   ACCEPT or REJECT of CallUIActions, CallUIDetailsViewAction or CallUIPipActions (6 sites in
+    //   hk8/h09, found by walking back from the enum read to the CallUIHaptic read on the same
+    //   straight-line path; CONFIRM/REJECT must match). HANGUP and KEYPAD_END_CALL keep the same REJECT
+    //   haptic. 2) Drag start and 3) drag vibration live in the R8-merged Function1 lambda (tb6 here)
+    //   that the incoming call composable passes as the function references
+    //   "onCallUiSwipeButtonDraggingStateChanged" / "onDraggingProgressChanged" (the last constructor
+    //   argument is the switch case): the CallUIHaptic.CLICK dispatch behind "state != IDLE" is
+    //   removed, and the progress is set to 0 right before its cmpg-float against 0.1f, so the
+    //   handler always takes the stop path (j99.a, Vibrator.cancel) and never starts the looping
+    //   one-shot.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",

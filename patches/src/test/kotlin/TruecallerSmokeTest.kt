@@ -55,7 +55,13 @@ private const val CLEVERTAP_FEATURE_KEY = "featureCleverTap"
 private const val CRASHLYTICS_COLLECTION_KEY = "firebase_crashlytics_collection_enabled"
 private const val CONTACT_TYPE = "Lcom/truecaller/enterpriseinfo/api/model/ContactType;"
 private const val CALL_LOG_FILTER_TYPE = "Lcom/truecaller/calllog/api/FilterType;"
-private const val MOBILE_NUMBERS_SELECTION = "data_type = ? AND data_phonebook_id NOT NULL AND data8 = ?"
+private const val CALL_UI_HAPTIC = "Lcom/truecaller/callui/presentation/ui/CallUIHaptic;"
+private const val SWIPE_DRAGGING_STATE = "Lcom/truecaller/callui/presentation/ui/components/CallUISwipeButtonDraggingState;"
+private val BLOCK_END_OPCODES = setOf(
+    Opcode.RETURN_VOID, Opcode.RETURN, Opcode.RETURN_WIDE, Opcode.RETURN_OBJECT, Opcode.THROW,
+    Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32, Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH,
+)
+private const val MOBILE_NUMBERS_SELECTION ="data_type = ? AND data_phonebook_id NOT NULL AND data8 = ?"
 
 class TruecallerSmokeTest {
 
@@ -142,6 +148,7 @@ class TruecallerSmokeTest {
                 "Hide frequently called contacts",
                 "Hide important senders",
                 "Swap call answer and decline buttons",
+                "Disable call button haptics",
                 "GmsCore support",
                 "Spoof signature",
             ),
@@ -167,6 +174,7 @@ class TruecallerSmokeTest {
         assertHideCallLogFilters(classes, byType)
         assertHideListItems(classes)
         assertSwapCallButtons(classes)
+        assertDisableCallButtonHaptics(classes, byType)
         // onGetCredential tests isAvailableOnDevice(int) in this build, so the routing applies.
         assertGmsCoreSupport(classes, workDir, PKG, TRUECALLER_INIT, SIGNATURE_SHA1, expectCredentialRouting = true)
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
@@ -845,6 +853,148 @@ class TruecallerSmokeTest {
             check(negate.opcode == Opcode.NEG_FLOAT && (negate as TwoRegisterInstruction).registerA == x && negate.registerB == x) {
                 "$label: the $tag offset x (v$x) is not negated; got ${negate.opcode}"
             }
+        }
+    }
+
+    /** Indices that a branch, a switch case or an exception handler jumps to. */
+    private fun List<Instruction>.jumpTargets(method: Method): Set<Int> {
+        val addresses = runningFold(0) { offset, instruction -> offset + instruction.codeUnits }
+        val targets = mutableSetOf<Int>()
+        forEachIndexed { index, instruction ->
+            if (instruction is OffsetInstruction) {
+                val target = addresses.indexOf(addresses[index] + instruction.codeOffset)
+                val payload = getOrNull(target)
+                if (payload is SwitchPayload) {
+                    payload.switchElements.forEach { targets += addresses.indexOf(addresses[index] + it.offset) }
+                } else {
+                    targets += target
+                }
+            }
+        }
+        method.implementation?.tryBlocks?.forEach { block ->
+            block.exceptionHandlers.forEach { targets += addresses.indexOf(it.handlerCodeAddress) }
+        }
+        return targets
+    }
+
+    private fun Instruction.isCallUiHaptic() = opcode == Opcode.SGET_OBJECT && field()?.definingClass == CALL_UI_HAPTIC
+
+    /** True when the haptic event built from the CallUIHaptic read at [haptic] is still dispatched. */
+    private fun List<Instruction>.hapticDispatched(haptic: Int, label: String): Boolean {
+        val create = this[haptic - 1]
+        val init = this[haptic + 1]
+        check(create.opcode == Opcode.NEW_INSTANCE && init.opcode == Opcode.INVOKE_DIRECT &&
+            init.call()?.params() == listOf(CALL_UI_HAPTIC)
+        ) { "$label: the CallUIHaptic at $haptic is not passed to a new haptic event" }
+        val event = (create as OneRegisterInstruction).registerA
+        val next = getOrNull(haptic + 2)
+        return (next?.opcode == Opcode.INVOKE_VIRTUAL || next?.opcode == Opcode.INVOKE_INTERFACE) &&
+            next.call()?.returnType == "V" && (next as FiveRegisterInstruction).registerCount == 2 && next.registerD == event
+    }
+
+    private fun MethodReference.params() = parameterTypes.map(CharSequence::toString)
+
+    /**
+     * The R8-merged lambda behind the function reference [handler] the incoming call screen builds,
+     * and the instruction range of its switch case (switch target to first return or throw).
+     */
+    private fun swipeHandlerCase(classes: List<ClassDef>, byType: Map<String, ClassDef>, handler: String): Triple<String, Method, IntRange> {
+        val (cls, composable) = classes.singleMethod("incoming call screen with the swipe handlers") { _, m ->
+            m.strings().containsAll(listOf("onCallUiSwipeButtonDraggingStateChanged", "onDraggingProgressChanged"))
+        }
+        val insns = composable.instructions()
+        val name = insns.indexOfFirst { it.opcode == Opcode.CONST_STRING && it.stringOrNull() == handler }
+        val constructor = (name + 1 until insns.size).first { insns[it].call()?.name == "<init>" }
+        val call = insns[constructor].call()!!
+        check(call.params() == listOf("I", "Ljava/lang/Object;", "Ljava/lang/Class;", "Ljava/lang/String;", "Ljava/lang/String;", "I", "B")) {
+            "${cls.type}.${composable.name}: $handler goes to $call"
+        }
+        val range = insns[constructor] as RegisterRangeInstruction
+        val caseRegister = range.startRegister + range.registerCount - 1
+        val case = (constructor - 1 downTo 0).map { insns[it] }
+            .first { it is OneRegisterInstruction && it.registerA == caseRegister && it.opcode.setsRegister() }
+            .let { (it as NarrowLiteralInstruction).narrowLiteral }
+
+        val lambda = byType.getValue(call.definingClass)
+        val invoke = lambda.methods.single { it.name == "invoke" && it.implementation != null }
+        val body = invoke.instructions()
+        val addresses = body.runningFold(0) { offset, instruction -> offset + instruction.codeUnits }
+        val selector = body.indexOfFirst { it.opcode == Opcode.IGET_BYTE && it.field()?.definingClass == lambda.type }
+        val switch = (selector + 1 until body.size).first { body[it].opcode == Opcode.PACKED_SWITCH || body[it].opcode == Opcode.SPARSE_SWITCH }
+        check((body[switch] as OneRegisterInstruction).registerA == (body[selector] as TwoRegisterInstruction).registerA) {
+            "${lambda.type}.invoke does not switch on its case field"
+        }
+        val payload = body[addresses.indexOf(addresses[switch] + (body[switch] as OffsetInstruction).codeOffset)] as SwitchPayload
+        val start = payload.switchElements.firstOrNull { it.key == case }
+            ?.let { addresses.indexOf(addresses[switch] + it.offset) } ?: (switch + 1)
+        val end = (start until body.size).first { body[it].opcode in setOf(Opcode.RETURN_OBJECT, Opcode.RETURN_VOID, Opcode.THROW) }
+        return Triple("${lambda.type}.invoke case $case ($handler)", invoke, start..end)
+    }
+
+    private fun assertDisableCallButtonHaptics(classes: List<ClassDef>, byType: Map<String, ClassDef>) {
+        // 1. Every handler that reports an ACCEPT or REJECT call UI action (full screen, details
+        // view, PiP) still builds its CONFIRM / REJECT haptic event but no longer dispatches it.
+        // Handlers reporting HANGUP keep dispatching the same REJECT haptic.
+        val analytics = "Lcom/truecaller/callui/api/internal/analytics/model/"
+        val enums = listOf("CallUIActions", "CallUIDetailsViewAction", "CallUIPipActions").map { "$analytics$it;" }
+        val answerDecline = enums.flatMap { listOf((it to "ACCEPT") to "CONFIRM", (it to "REJECT") to "REJECT") }.toMap()
+        val hangUp = enums.map { it to "HANGUP" }.toSet()
+        val dropped = mutableSetOf<Pair<String, String>>()
+        val kept = mutableSetOf<Pair<String, String>>()
+        for (cls in classes) for (method in cls.methods) {
+            val insns = method.instructions()
+            val actions = insns.indices.filter { index ->
+                insns[index].opcode == Opcode.SGET_OBJECT &&
+                    insns[index].field()?.let { (it.definingClass to it.name) in answerDecline || (it.definingClass to it.name) in hangUp } == true
+            }
+            if (actions.isEmpty()) continue
+            val targets = insns.jumpTargets(method)
+            for (index in actions) {
+                // The haptic read on the straight-line path into the action, as the patch finds it.
+                val haptic = (index - 1 downTo 0).firstOrNull { i ->
+                    insns[i].isCallUiHaptic() || insns[i].opcode in BLOCK_END_OPCODES || i in targets
+                }?.takeIf { insns[it].isCallUiHaptic() } ?: continue
+                val field = insns[index].field()!!
+                val action = field.definingClass to field.name
+                val label = "${cls.type}.${method.name} (${field.name})"
+                if (action in answerDecline) {
+                    check(insns[haptic].field()?.name == answerDecline.getValue(action)) { "$label plays ${insns[haptic].field()?.name}" }
+                    check(!insns.hapticDispatched(haptic, label)) { "$label still dispatches its haptic" }
+                    dropped += action
+                } else {
+                    check(insns.hapticDispatched(haptic, label)) { "$label (hang-up) lost its haptic" }
+                    kept += action
+                }
+            }
+        }
+        check(dropped == answerDecline.keys) { "answer/decline haptics dropped for $dropped, expected ${answerDecline.keys}" }
+        check(kept.isNotEmpty()) { "no hang-up haptic dispatch found to check" }
+
+        // 2. The dragging state case: the CLICK event behind "state != IDLE" is built but not dispatched.
+        run {
+            val (label, invoke, block) = swipeHandlerCase(classes, byType, "onCallUiSwipeButtonDraggingStateChanged")
+            val insns = invoke.instructions()
+            val idle = block.first { insns[it].opcode == Opcode.SGET_OBJECT && insns[it].field()?.definingClass == SWIPE_DRAGGING_STATE && insns[it].field()?.name == "IDLE" }
+            check(insns[idle + 1].opcode == Opcode.IF_EQ || insns[idle + 1].opcode == Opcode.IF_NE) { "$label does not compare IDLE" }
+            val haptic = (idle + 2..block.last).first { insns[it].isCallUiHaptic() }
+            check(insns[haptic].field()?.name == "CLICK") { "$label plays ${insns[haptic].field()?.name}" }
+            check(!insns.hapticDispatched(haptic, label)) { "$label still dispatches the drag start CLICK" }
+        }
+
+        // 3. The dragging progress case: the progress is zeroed right before the 0.1f compare, so the
+        // looping vibration never starts.
+        run {
+            val (label, invoke, block) = swipeHandlerCase(classes, byType, "onDraggingProgressChanged")
+            val insns = invoke.instructions()
+            val threshold = block.first { insns[it].opcode == Opcode.CONST && (insns[it] as NarrowLiteralInstruction).narrowLiteral == 0.1f.toRawBits() }
+            val zero = insns[threshold + 1]
+            val compare = insns[threshold + 2]
+            check(compare.opcode == Opcode.CMPG_FLOAT || compare.opcode == Opcode.CMPL_FLOAT) { "$label: no float compare after 0.1f; got ${compare.opcode}" }
+            val thresholdRegister = (insns[threshold] as OneRegisterInstruction).registerA
+            val progress = (compare as ThreeRegisterInstruction).let { if (it.registerC == thresholdRegister) it.registerB else it.registerC }
+            check((zero.opcode == Opcode.CONST_4 || zero.opcode == Opcode.CONST_16) &&
+                (zero as OneRegisterInstruction).registerA == progress && (zero as NarrowLiteralInstruction).narrowLiteral == 0
+            ) { "$label: the progress (v$progress) is not zeroed before the compare; got ${zero.opcode}" }
         }
     }
 
