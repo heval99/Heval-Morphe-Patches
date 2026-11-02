@@ -46,6 +46,7 @@ private const val RATING_APP_MESSAGE = "Lcom/fotmob/android/feature/appmessage/m
 private const val PLUS_PROMO_CONFIG = "Lcom/fotmob/android/feature/billing/model/PlusPromoConfig;"
 private const val PLUS_PROMO_KEY = "fotmobplus_promo"
 private const val TYPEFACE = "Landroid/graphics/Typeface;"
+private const val SYSTEM_FONT_EXTENSION = "Lapp/template/extension/fotmob/SystemFontPatch;"
 
 class FotMobSmokeTest {
 
@@ -226,15 +227,60 @@ class FotMobSmokeTest {
         val callRef = call.methodRef()
         val p2 = loader.implementation!!.registerCount - 4 + 2
         assertTrue(
-            call.opcode == Opcode.INVOKE_STATIC_RANGE && callRef?.definingClass == TYPEFACE && callRef.name == "create" &&
-                callRef.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", "I") &&
+            call.opcode == Opcode.INVOKE_STATIC_RANGE && callRef?.definingClass == SYSTEM_FONT_EXTENSION && callRef.name == "create" &&
+                callRef.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", "I") && callRef.returnType == TYPEFACE &&
                 (call as RegisterRangeInstruction).startRegister == p2 && call.registerCount == 2,
-            "$loaderLabel: does not start with Typeface.create(p2 family, p3 style); got ${call.opcode} $callRef"
+            "$loaderLabel: does not start with SystemFontPatch.create(p2 family, p3 style); got ${call.opcode} $callRef"
         )
         assertTrue(
             insns[1].opcode == Opcode.MOVE_RESULT_OBJECT && insns[2].opcode == Opcode.RETURN_OBJECT &&
                 (insns[1] as OneRegisterInstruction).registerA == (insns[2] as OneRegisterInstruction).registerA,
             "$loaderLabel: the created Typeface is not returned at once; got ${insns.take(3).map { it.opcode }}"
+        )
+
+        // The extension is merged, and no app code calls Typeface.create(String, int) directly any
+        // more: AppCompat's fontFamily resolution, Compose and the loader all go through it.
+        val extension = classes.singleOrNull { it.type == SYSTEM_FONT_EXTENSION }
+        assertTrue(extension != null, "SystemFontPatch extension class is missing")
+        assertTrue(
+            extension!!.methods.any { it.name == "composeFamily" } && extension.methods.any { it.name == "create" },
+            "SystemFontPatch lacks create/composeFamily"
+        )
+        fun MethodReference.isCreateByName() = definingClass == TYPEFACE && name == "create" &&
+            parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", "I")
+        val direct = classes.filter { it.type != SYSTEM_FONT_EXTENSION }.flatMap { cls ->
+            cls.methods.filter { m -> m.instructions().any { it.methodRef()?.isCreateByName() == true } }
+                .map { "${cls.type}->${it.name}" }
+        }
+        assertTrue(direct.isEmpty(), "Typeface.create(String, int) still called directly: $direct")
+        val redirected = classes.filter { it.type != SYSTEM_FONT_EXTENSION }.sumOf { cls ->
+            cls.methods.sumOf { m ->
+                m.instructions().count { insn ->
+                    insn.methodRef()?.let { it.definingClass == SYSTEM_FONT_EXTENSION && it.name == "create" } == true
+                }
+            }
+        }
+        assertTrue(redirected >= 10, "only $redirected calls go through SystemFontPatch.create")
+
+        // Compose's platform typeface factory (found by its library shape) first maps the family.
+        val factories = classes.flatMap { it.methods }.filter { m ->
+            AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == TYPEFACE && m.parameterTypes.size == 3 &&
+                m.parameterTypes[0].toString() == "Ljava/lang/String;" && m.parameterTypes[2].toString() == "I" &&
+                m.instructions().any { it.fieldRef()?.let { f -> f.definingClass == TYPEFACE && f.name == "DEFAULT_BOLD" } == true } &&
+                m.instructions().any { insn ->
+                    insn.methodRef()?.let { it.definingClass == TYPEFACE && it.name == "create" && it.parameterTypes.size == 3 } == true
+                }
+        }
+        assertEquals(1, factories.size, "Compose typeface factories: ${factories.map { "${it.definingClass}.${it.name}" }}")
+        val factory = factories.single()
+        val factoryInsns = factory.instructions()
+        val p0 = factory.implementation!!.registerCount - 3
+        val mapCall = factoryInsns[0]
+        assertTrue(
+            mapCall.methodRef()?.let { it.definingClass == SYSTEM_FONT_EXTENSION && it.name == "composeFamily" } == true &&
+                (mapCall as FiveRegisterInstruction).registerCount == 1 && mapCall.registerC == p0 &&
+                factoryInsns[1].opcode == Opcode.MOVE_RESULT_OBJECT && (factoryInsns[1] as OneRegisterInstruction).registerA == p0,
+            "${factory.definingClass}.${factory.name}: does not start with p0 = SystemFontPatch.composeFamily(p0); got ${factoryInsns.take(2)}"
         )
     }
 

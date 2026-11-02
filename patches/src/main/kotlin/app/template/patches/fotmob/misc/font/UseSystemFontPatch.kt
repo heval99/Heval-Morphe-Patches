@@ -1,15 +1,23 @@
 package app.template.patches.fotmob.misc.font
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.template.patches.shared.Constants.COMPATIBILITY_FOTMOB
 import app.template.patches.shared.addInstructionsAtControlFlowLabelChecked
 import app.template.patches.shared.addInstructionsChecked
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import org.w3c.dom.Element
 
 // The system font values FotMob itself uses in the base theme (values/styles.xml) and for
@@ -78,6 +86,7 @@ val useSystemFontPatch = bytecodePatch(
     compatibleWith(COMPATIBILITY_FOTMOB)
 
     dependsOn(useSystemFontResourcePatch)
+    extendWith("extensions/fotmob.mpe")
 
     execute {
         // 1. Compose: the font holder's static flag (app font allowed) is stored as false, so
@@ -96,15 +105,81 @@ val useSystemFontPatch = bytecodePatch(
         }
 
         // 2. Code-set Views: the Typeface loader skips the font resource and returns the system
-        // family its caller passes ("sans-serif", "sans-serif-medium") in the requested style.
-        // The /range form keeps the call valid whatever register p2 lands on.
+        // family its caller passes ("sans-serif", "sans-serif-medium") in the requested style,
+        // mapped to the device font. The /range form keeps the call valid whatever register p2
+        // lands on.
         TypefaceLoaderFingerprint.method.addInstructionsChecked(
             0,
             """
-                invoke-static/range {p2 .. p3}, Landroid/graphics/Typeface;->create(Ljava/lang/String;I)Landroid/graphics/Typeface;
+                invoke-static/range {p2 .. p3}, $EXTENSION_CREATE
                 move-result-object v0
                 return-object v0
             """,
         )
+
+        // 3. Compose: FontFamily.Default reaches the platform factory as a null name and would
+        // become Typeface.DEFAULT (Roboto). With a device UI font the name becomes "sans-serif",
+        // which step 4 maps; the factory still applies the requested weight and italic.
+        ComposePlatformTypefaceFingerprint.method.addInstructionsChecked(
+            0,
+            """
+                invoke-static {p0}, $EXTENSION_COMPOSE_FAMILY
+                move-result-object p0
+            """,
+        )
+
+        // 4. Every Typeface.create(String, int) in the app goes through the extension, which maps
+        // "sans-serif" / "sans-serif-medium" / "sans-serif-black" to the device UI font. That is
+        // how XML Views get it: AppCompat's text helper resolves the theme's fontFamily names
+        // (set by the resource step) with this call, as do Compose (step 3) and the loader (step 2).
+        val redirected = redirectTypefaceCreate()
+        if (redirected == 0) throw PatchException("FotMob font: no Typeface.create(String, int) call found")
     }
+}
+
+private const val EXTENSION_PACKAGE = "Lapp/template/extension/fotmob/"
+private const val EXTENSION_CLASS = "${EXTENSION_PACKAGE}SystemFontPatch;"
+private const val TYPEFACE = "Landroid/graphics/Typeface;"
+private const val EXTENSION_CREATE = "$EXTENSION_CLASS->create(Ljava/lang/String;I)$TYPEFACE"
+private const val EXTENSION_COMPOSE_FAMILY = "$EXTENSION_CLASS->composeFamily(Ljava/lang/String;)Ljava/lang/String;"
+
+private fun Instruction.isTypefaceCreateByName(): Boolean {
+    if (opcode != Opcode.INVOKE_STATIC && opcode != Opcode.INVOKE_STATIC_RANGE) return false
+    val ref = (this as ReferenceInstruction).reference as MethodReference
+    return ref.definingClass == TYPEFACE && ref.name == "create" && ref.returnType == TYPEFACE &&
+        ref.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", "I")
+}
+
+/** Redirects every app-dex Typeface.create(String, int) into the extension; returns the count. */
+private fun BytecodePatchContext.redirectTypefaceCreate(): Int {
+    val targets = mutableListOf<ClassDef>()
+    classDefForEach { classDef ->
+        // Never the extension itself: its own fallback call would recurse.
+        if (classDef.type.startsWith(EXTENSION_PACKAGE)) return@classDefForEach
+        if (classDef.methods.any { m -> m.implementation?.instructions?.any { it.isTypefaceCreateByName() } == true }) {
+            targets += classDef
+        }
+    }
+    var count = 0
+    for (classDef in targets) {
+        for (method in mutableClassDefBy(classDef).methods) {
+            val instructions = method.implementation?.instructions?.toList() ?: continue
+            instructions.forEachIndexed { index, instruction ->
+                if (!instruction.isTypefaceCreateByName()) return@forEachIndexed
+                // Same arguments, same order: only the target changes, so no index shifts.
+                val smali = when (instruction) {
+                    is RegisterRangeInstruction -> {
+                        val last = instruction.startRegister + instruction.registerCount - 1
+                        "invoke-static/range { v${instruction.startRegister} .. v$last }, $EXTENSION_CREATE"
+                    }
+                    is FiveRegisterInstruction ->
+                        "invoke-static { v${instruction.registerC}, v${instruction.registerD} }, $EXTENSION_CREATE"
+                    else -> throw PatchException("Unexpected invoke format ${instruction.opcode}")
+                }
+                method.replaceInstruction(index, smali)
+                count++
+            }
+        }
+    }
+    return count
 }
