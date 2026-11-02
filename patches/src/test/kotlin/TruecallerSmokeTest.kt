@@ -854,6 +854,25 @@ class TruecallerSmokeTest {
                 "$label: the $tag offset x (v$x) is not negated; got ${negate.opcode}"
             }
         }
+
+        // The incoming call notification builder: the ()Z call style check after the "Decline"
+        // PendingIntent now has its result overwritten with false right after its move-result.
+        val (notificationCls, notification) = classes.singleMethod("incoming call notification builder") { _, m ->
+            m.returnType == "V" && AccessFlags.STATIC.isSet(m.accessFlags) && m.implementation != null &&
+                m.strings().containsAll(listOf("incoming_calls", "Answer", "Decline"))
+        }
+        val notificationLabel = "${notificationCls.type}.${notification.name}"
+        val body = notification.instructions()
+        val decline = body.indexOfFirst { it.opcode == Opcode.CONST_STRING && it.stringOrNull() == "Decline" }
+        val check = (decline + 1 until body.size).first { index ->
+            body[index].opcode == Opcode.INVOKE_VIRTUAL && body[index].call()?.let { it.returnType == "Z" && it.parameterTypes.isEmpty() } == true
+        }
+        val result = (body[check + 1] as OneRegisterInstruction).registerA
+        val forced = body[check + 2]
+        check(
+            body[check + 1].opcode == Opcode.MOVE_RESULT && forced.opcode == Opcode.CONST_4 &&
+                (forced as OneRegisterInstruction).registerA == result && (forced as NarrowLiteralInstruction).narrowLiteral == 0
+        ) { "$notificationLabel: the call style check (v$result) is not forced false; got ${forced.opcode}" }
     }
 
     /** Indices that a branch, a switch case or an exception handler jumps to. */

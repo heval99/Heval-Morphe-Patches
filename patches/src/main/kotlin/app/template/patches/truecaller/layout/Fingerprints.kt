@@ -271,3 +271,19 @@ internal object IncomingCallButtonsFingerprint : Fingerprint(
     ),
     custom = { method, _ -> AccessFlags.STATIC.isSet(method.accessFlags) },
 )
+
+// The incoming call notification builder (static m5m.x in 26.42.5): picks the "incoming_calls" or
+// "phone_calls" channel, builds the "Answer" and "Decline" PendingIntents, then asks a ()Z check
+// (Android 12+, the featureCallStyleNotifications experiment, maker and device not excluded)
+// whether to build a system call style notification or Truecaller's own RemoteViews layout. The
+// last filter is that check.
+internal object IncomingCallNotificationFingerprint : Fingerprint(
+    isStatic = true,
+    returnType = "V",
+    filters = listOf(
+        string("incoming_calls"),
+        string("Answer"),
+        string("Decline"),
+        methodCall(opcode = Opcode.INVOKE_VIRTUAL, parameters = listOf(), returnType = "Z"),
+    ),
+)

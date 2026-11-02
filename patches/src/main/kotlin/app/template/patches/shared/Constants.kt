@@ -2153,6 +2153,26 @@ object Constants {
     //   removed, and the progress is set to 0 right before its cmpg-float against 0.1f, so the
     //   handler always takes the stop path (j99.a, Vibrator.cancel) and never starts the looping
     //   one-shot.
+    // 2026-11-02 (#116, 26.42.5; TruecallerSmokeTest + CLI without -f; the notification itself NOT
+    //   runtime-tested, it needs a real incoming call): Swap call answer and decline buttons now
+    //   also swaps them in the incoming call notification. The builder (m5m.x here; the only static
+    //   void method with "incoming_calls", "Answer" and "Decline") asks a ()Z check (sy8.a: SDK 31+,
+    //   Firebase experiment "featureCallStyleNotifications_44143", maker/device not excluded) whether
+    //   to build Notification.CallStyle.forIncomingCall (ry8) or its own RemoteViews class (itd).
+    //   CallStyle fixes decline first with red/green styling, so it cannot be swapped; the reporter's
+    //   screenshot shows that style. The check's result is forced false right after its move-result
+    //   (the patch requires the false path to build a class whose constructor inflates RemoteViews),
+    //   and a resource part moves @id/button_answer in front of @id/button_decline in
+    //   res/layout/notification_call_incoming.xml (icon row, also inside the Android 12 big layout)
+    //   and notification_call_incoming_big.xml (older text-button layout), swapping their
+    //   layout_margin* attributes so the spacing stays. Intents are bound by id, so label, colour and
+    //   action move together. Side effect: users who had the system call style get Truecaller's own
+    //   notification design; the ongoing call notification is unchanged.
+    //   #115 (Disable splash screen): not implemented. TruecallerInit's theme
+    //   (Theme.Truecaller.Splash: windowSplashScreenBackground + BrandingImage on v31, a windowBackground
+    //   drawable before) only styles the system starting window; tje.U setTheme()s the real theme
+    //   before super.onCreate, and there is no SplashScreen API, keep-on-screen condition, pre-draw hold
+    //   or timed splash activity. The Lottie "Page_SplashScreen" is a one-time onboarding wizard page.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
