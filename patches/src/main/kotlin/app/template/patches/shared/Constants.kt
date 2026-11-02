@@ -318,7 +318,7 @@ object Constants {
             // sans-serif families and TextAppearance.FotMob.Switch to sans-serif-medium.
             AppTarget(
                 version = "240.17974.20261023",
-                versionCode = 17834
+                versionCode = 17974
             )
         )
     )
