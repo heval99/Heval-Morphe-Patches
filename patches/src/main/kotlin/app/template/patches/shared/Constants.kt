@@ -1062,6 +1062,19 @@ object Constants {
     // are told apart by the state they test: intValue()==1 is forced true (licensed),
     // intValue()==0 is forced false. No method names are used.
     // 2026-10-19: older target 4.85 dropped (latest version only, owner).
+    // 2026-11-02 (GitHub #108, "4.87 crash on start"): the current Play build of 4.87
+    // (versionCode 48767, arm64) is now wrapped by the full PairIP native VM:
+    // com.pairip.application.Application.attachBaseContext runs VMRunner.setContext +
+    // SignatureCheck.verifyIntegrity, StartupLauncher.launch() runs in App.<clinit>, and
+    // libpairipcore.so ships for arm64-v8a. Emulator differential control: the Play-signed
+    // splits reach InitialSyncActivity, but any re-signed build (unpatched STOCK control AND
+    // the Enable Pro build) SIGSEGVs in libpairipcore.so ~2 s after start, before onCreate.
+    // That is Morphe's re-signing tripping the native tamper check, NOT this patch - the
+    // Enable Pro bytecode still applies and the smoke test passes. Same native-VM blocker as
+    // Zedge/Backdrops/HabitNow; the Java SignatureCheck.verifySignatureMatches force does not
+    // help there. Enable Pro should be withdrawn for the PairIP-wrapped Play build (see
+    // docs/patch-blocklist.md). Play app-signing cert (verified 2026-11-02):
+    // a93dd7bddbe5d1539d0450fda15dbcd28c793c390d5fcf04169a4f385c8aff82 (CN=Android, O=Google Inc.).
     val COMPATIBILITY_TEXTRA = Compatibility(
         name = "Textra",
         packageName = "com.textra",
