@@ -1,3 +1,13 @@
+## [2.2.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.2.0-dev.1...v2.2.0-dev.2) (2026-11-02)
+
+### 🐛 Bug Fixes
+
+* **truecaller:** keep Heval Controls patches on Root Mount installs ([7756584](https://github.com/heval99/Heval-Morphe-Patches/commit/7756584a76fa24047461500b19cb72e1387f8a01))
+
+### ✨ New Features
+
+* **truecaller:** add Heval Controls ([5e127ee](https://github.com/heval99/Heval-Morphe-Patches/commit/5e127ee3da6ae080a9d236a9ccafbbcdec4a21fb))
+
 ## [2.2.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.1.0...v2.2.0-dev.1) (2026-11-02)
 
 ### 🐛 Bug Fixes

@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.2.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.2.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**218** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-02
+> **[v2.2.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.2.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**219** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-02
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -92,7 +92,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-2196F3?style=flat-square" height="14" alt=""> | **FairEmail** | 💎 1 | `1.2339` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
 | <img src="https://img.shields.io/badge/-%20-283167?style=flat-square" height="14" alt=""> | **mail.com** | 🚫 🛡️ 🔕 🧩 4 | `9.19.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mail.mobile.android.mail) |
 | <img src="https://img.shields.io/badge/-%20-5C6BC0?style=flat-square" height="14" alt=""> | **Textra** | 💎 1 | `4.87` | APKM | [Play](https://play.google.com/store/apps/details?id=com.textra) |
-| <img src="https://img.shields.io/badge/-%20-0087FF?style=flat-square" height="14" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 28 | `26.42.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
+| <img src="https://img.shields.io/badge/-%20-0087FF?style=flat-square" height="14" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 29 | `26.42.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
 
 #### 🎵 Music, podcasts & radio <sub>7 apps</sub>
 
@@ -579,7 +579,7 @@ Verified on: `4.87`
 
 </details>
 <details>
-<summary><b>Truecaller</b> &nbsp;·&nbsp; 28 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
+<summary><b>Truecaller</b> &nbsp;·&nbsp; 29 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
 
 Verified on: `26.42.5`
 
@@ -595,6 +595,7 @@ Verified on: `26.42.5`
 | 💎 **Enable Premium** | Unlocks premium features. Server features like Who viewed me stay locked. | ✅ |
 | 🧩 **Fix T9 contact search** | Fixes T9 search not finding new contacts. | ➖ |
 | 🧩 **GmsCore support** | Makes Google sign-in and Google services work. Requires MicroG RE. Needed for Google Drive backup. | ✅ |
+| 🧩 **Heval Controls** | Adds a screen to turn supported features on or off. | ✅ |
 | 🧩 **Hide Assistant tab** | Turns off Call Assistant and hides its tab. | ➖ |
 | 🧩 **Hide Blocking tab** | Hides the Blocking tab from the bottom navigation bar. | ➖ |
 | 🧩 **Hide Messages tab** | Hides the Messages tab from the bottom navigation bar. | ➖ |
