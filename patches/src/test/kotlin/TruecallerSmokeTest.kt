@@ -29,6 +29,9 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.ByteBuffer
 import java.util.zip.ZipFile
+import javax.xml.parsers.DocumentBuilderFactory
+import org.w3c.dom.Element
+import org.w3c.dom.Node
 
 private const val PKG = "com.truecaller"
 private const val TRUECALLER_INIT = "Lcom/truecaller/ui/TruecallerInit;"
@@ -873,6 +876,51 @@ class TruecallerSmokeTest {
             body[check + 1].opcode == Opcode.MOVE_RESULT && forced.opcode == Opcode.CONST_4 &&
                 (forced as OneRegisterInstruction).registerA == result && (forced as NarrowLiteralInstruction).narrowLiteral == 0
         ) { "$notificationLabel: the call style check (v$result) is not forced false; got ${forced.opcode}" }
+
+        assertSwappedNotificationLayouts()
+    }
+
+    // Swap call answer and decline buttons, resources: the decoded notification layouts the patch
+    // wrote. Stock 26.42.5 has decline right before answer in one LinearLayout, the small row with
+    // marginEnd 16dp on both and the big row with marginStart 8dp on answer only. The margins stay
+    // with the slot, so answer now comes first and takes the first slot's margins.
+    private fun assertSwappedNotificationLayouts() {
+        fun Element.margins(): Map<String, Float> =
+            (0 until attributes.length).map { attributes.item(it) }
+                .filter { it.nodeName.startsWith("android:layout_margin") }
+                .associate { it.nodeName to it.nodeValue.removeSuffix("dip").removeSuffix("dp").toFloat() }
+        fun Element.previousElement(): Element? {
+            var node: Node? = previousSibling
+            while (node != null && node !is Element) node = node.previousSibling
+            return node as? Element
+        }
+        val expected = mapOf(
+            "notification_call_incoming" to (
+                mapOf("android:layout_marginEnd" to 16f) to mapOf("android:layout_marginEnd" to 16f)
+            ),
+            "notification_call_incoming_big" to (
+                emptyMap<String, Float>() to mapOf("android:layout_marginStart" to 8f)
+            ),
+        )
+        for ((name, margins) in expected) {
+            val (answerMargins, declineMargins) = margins
+            val file = workDir.walkTopDown().singleOrNull { it.name == "$name.xml" && it.parentFile.name == "layout" }
+                ?: error("no decoded layout/$name.xml under $workDir")
+            val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
+            val all = doc.getElementsByTagName("*")
+            fun view(id: String): Element {
+                val matches = (0 until all.length).map { all.item(it) as Element }
+                    .filter { it.getAttribute("android:id").substringAfter('/') == id }
+                return matches.singleOrNull() ?: error("$name.xml: expected one view $id, found ${matches.size}")
+            }
+            val answer = view("button_answer")
+            val decline = view("button_decline")
+            check(decline.previousElement() === answer && decline.parentNode === answer.parentNode) {
+                "$name.xml: button_answer is not right before button_decline in the same parent"
+            }
+            check(answer.margins() == answerMargins) { "$name.xml: button_answer margins ${answer.margins()}, expected $answerMargins" }
+            check(decline.margins() == declineMargins) { "$name.xml: button_decline margins ${decline.margins()}, expected $declineMargins" }
+        }
     }
 
     /** Indices that a branch, a switch case or an exception handler jumps to. */
