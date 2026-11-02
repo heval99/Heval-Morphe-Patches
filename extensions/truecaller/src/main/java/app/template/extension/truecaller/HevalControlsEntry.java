@@ -1,9 +1,11 @@
 package app.template.extension.truecaller;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -15,13 +17,15 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * The "Heval Controls" row on Truecaller's main Settings screen (CategoriesFragment). It goes right
  * after "Help" (the last row), with a divider like the stock rows, and is styled after Help: same
  * text size, colours, font, padding, height and icon size. A tap opens the Heval Controls screen.
  * Stock rows are found by their resource entry names, which survive R8 and a package rename. Any
- * error leaves the screen as it is.
+ * error leaves the screen as it is. No row on a Root Mount install: it keeps the stock manifest, so
+ * the screen is not registered there (the features still run with their saved or default state).
  */
 @SuppressWarnings("unused")
 public final class HevalControlsEntry {
@@ -34,6 +38,9 @@ public final class HevalControlsEntry {
 
     private static final String ACTIVITY = "app.template.extension.hevalcontrols.ui.HevalControlsActivity";
 
+    /** Whether the manifest declares {@link #ACTIVITY}; null until the first check. */
+    private static volatile Boolean activityRegistered;
+
     /**
      * Patched in right after CategoriesFragment.onViewCreated calls super.onViewCreated, with the
      * fragment's root view: adds a divider and the "Heval Controls" row after "Help" (or "About").
@@ -41,6 +48,10 @@ public final class HevalControlsEntry {
     public static void addRow(View root) {
         try {
             if (root == null) return;
+            if (!isActivityRegistered(root.getContext())) {
+                Log.w(TAG, "Heval Controls row not added: the screen is not in the manifest (Root Mount install?)");
+                return;
+            }
             Resources resources = root.getResources();
             View anchor = findByEntryName(root, "item_help", resources);
             if (anchor == null) anchor = findByEntryName(root, "item_about", resources);
@@ -94,6 +105,21 @@ public final class HevalControlsEntry {
         } catch (Throwable failure) {
             Log.e(TAG, "Heval Controls row not added: " + failure.getClass().getName());
         }
+    }
+
+    /** Whether this install's manifest has the Heval Controls screen (not the case on Root Mount). */
+    private static boolean isActivityRegistered(Context context) {
+        Boolean known = activityRegistered;
+        if (known != null) return known;
+        boolean registered;
+        try {
+            context.getPackageManager().getActivityInfo(new ComponentName(context.getPackageName(), ACTIVITY), 0);
+            registered = true;
+        } catch (PackageManager.NameNotFoundException missing) {
+            registered = false;
+        }
+        activityRegistered = registered;
+        return registered;
     }
 
     /** A gear icon at the size of the stock row's start icon, tinted like it. */
@@ -175,6 +201,11 @@ public final class HevalControlsEntry {
             }
         } catch (Throwable failure) {
             Log.e(TAG, "Cannot open Heval Controls: " + failure.getClass().getName());
+            try {
+                Toast.makeText(context, "Heval Controls could not be opened", Toast.LENGTH_SHORT).show();
+            } catch (Throwable ignored) {
+                // The notice is optional.
+            }
         }
     }
 

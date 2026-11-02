@@ -1,3 +1,6 @@
+import app.morphe.patcher.patch.ApkArchitecture
+import app.morphe.patcher.patch.InstallerType
+import app.morphe.patcher.patch.PatchAvailability
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.template.patches.shared.hevalcontrols.HEVAL_SETTINGS_CLASS
@@ -8,6 +11,7 @@ import app.template.patches.shared.hevalcontrols.addHevalGate
 import app.template.patches.shared.hevalcontrols.addHevalStockPath
 import app.template.patches.shared.hevalcontrols.hevalReturnEarly
 import app.template.patches.shared.hevalcontrols.hevalReturnNull
+import app.template.patches.truecaller.controls.truecallerHevalControlsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
@@ -119,6 +123,21 @@ class HevalControlsTest {
 
         // Patching an already patched APK is refused.
         assertThrows<PatchException> { document.addHevalControlsComponents() }
+    }
+
+    @Test
+    fun hostIsAvailableOnEveryInstaller() {
+        // The converted feature patches depend on the host: an UNAVAILABLE host (Root Mount, which
+        // keeps the stock manifest) would take every one of them away.
+        val availability = truecallerHevalControlsPatch.availability ?: return
+        InstallerType.entries.forEach { installer ->
+            ApkArchitecture.entries.forEach { architecture ->
+                assertTrue(
+                    availability.resolve(installer, architecture) != PatchAvailability.UNAVAILABLE,
+                    "Heval Controls is unavailable for $installer / $architecture",
+                )
+            }
+        }
     }
 
     @Test

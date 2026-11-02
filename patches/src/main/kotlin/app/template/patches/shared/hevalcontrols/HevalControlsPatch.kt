@@ -9,9 +9,7 @@ package app.template.patches.shared.hevalcontrols
 import app.morphe.patcher.patch.BytecodePatch
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.Compatibility
-import app.morphe.patcher.patch.InstallerType
 import app.morphe.patcher.patch.Patch
-import app.morphe.patcher.patch.PatchAvailability
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
@@ -78,7 +76,13 @@ class HevalControlsHost internal constructor(internal val compatibility: Compati
  *    features, the bundle version and the patched app version into the extension's `Registry`
  *    getters.
  *
- * Unavailable on Root Mount installs, which keep the stock manifest (no provider or activity).
+ * Available on every installer, Root Mount included: the feature patches depend on it, so making
+ * it unavailable would take them all away. A mount install keeps the stock manifest, so the
+ * provider and the activity are not registered there, but the dex is the patched one: hooks
+ * initialise the engine lazily through `AppContext.currentApplication()` (registered defaults until
+ * the Application exists, then the saved choices), the crash guard (armed only by the provider)
+ * stays off, and in-app entry points must check that the activity is registered before showing
+ * themselves (see extensions/truecaller `HevalControlsEntry`).
  *
  * @param compatibility The app this host (and its feature patches) applies to.
  * @param default Whether "Heval Controls" is selected by default.
@@ -104,13 +108,6 @@ fun hevalControlsPatch(
         default = default,
     ) {
         compatibleWith(compatibility)
-
-        availability { installer, _ ->
-            when (installer) {
-                InstallerType.MOUNT -> PatchAvailability.UNAVAILABLE
-                else -> if (default) PatchAvailability.ENABLED else PatchAvailability.DISABLED
-            }
-        }
 
         dependsOn(manifestPatch, *dependencies.toTypedArray())
 

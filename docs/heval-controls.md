@@ -5,11 +5,13 @@ patch features on or off at runtime without patching again. A choice is a saved 
 the patched code reads, so a change takes effect at once, or after a restart for features read
 only at startup.
 
-Status (2026-10-15): the core framework is built and tested, but no app ships it. LinkedIn
-4.1.1261 was the first app (an in-app entry row in the home nav panel and runtime features). It
-was removed on 2026-10-15 after the test account was banned, so the LinkedIn names below are
-examples only. The design study, with alternatives and the HushMessenger analysis, is kept
-outside the repo; this page is the developer guide.
+Status (2026-11-02): Truecaller 26.42.5 ships it. Its "Heval Controls" patch (default on) adds a
+"Heval Controls" row below Help on the main Settings screen, and 12 converted Truecaller patches
+are runtime switches (`truecaller/controls/TruecallerControls.kt` and the patches that use
+`truecallerControls.featurePatch`). LinkedIn 4.1.1261 was the first app (an in-app entry row in
+the home nav panel and runtime features). It was removed on 2026-10-15 after the test account was
+banned, so the LinkedIn names below are examples only. The design study, with alternatives and the
+HushMessenger analysis, is kept outside the repo; this page is the developer guide.
 
 ## Contents
 
@@ -111,7 +113,8 @@ Writes use `commit()`, so a restart or a crash cannot lose them. Crash-guard rec
 
    The host patch adds the provider and the activity to the manifest, merges the `.mpe`, and in
    `finalize` writes the registry, the bundle version and the patched app version into
-   `Registry`. It is unavailable on Root Mount installs.
+   `Registry`. It is available on every installer, Root Mount included (see
+   [Known limits](#known-limits-and-next-steps) for what a mount install loses).
 
 2. **Write each feature as its own named patch** with `featurePatch`. That patch depends on the
    host, runs your edits, and registers the feature only after every edit has succeeded:
@@ -136,15 +139,23 @@ Writes use `commit()`, so a restart or a crash cannot lose them. Crash-guard rec
    Patches that cannot be switched at runtime can still be listed. Register them with
    `buildTimeOnly = true`, and they show as "Applied at patch time".
 
+   A feature patch `dependsOn` the host, so selecting any converted patch also applies "Heval
+   Controls". The host is selected by default; deselecting it in Manager while a converted patch
+   is selected still applies it. It also means a broken host anchor (for Truecaller, the Settings
+   entry point) makes every converted patch fail loudly, not only the host.
+
 3. **Add an entry point.** This is per app. A menu-row hook calls
    `HevalControlsActivity.open(Context)` through
    `invoke-static {pX}, Lapp/template/extension/hevalcontrols/ui/HevalControlsActivity;->open(Landroid/content/Context;)V`
    (or starts the activity by class name). The activity is `exported="false"`, so only the app
    itself can open it. Pass the unnamed entry-point patch to the host,
    `hevalControlsPatch(COMPATIBILITY_X, dependencies = setOf(entryPatch))`, so the entry is always
-   part of "Heval Controls". LinkedIn's entry (`linkedin/controls/LinkedInControls.kt`) appends a
-   stock footer row to the nav panel list and gives it a click listener that skips LinkedIn's
-   tracking.
+   part of "Heval Controls". Truecaller's entry (`truecaller/controls/TruecallerControls.kt` and
+   `HevalControlsEntry` in `extensions/truecaller`) adds a row styled like Help right after it on
+   the main Settings screen. An entry must first check that the activity is registered
+   (`PackageManager.getActivityInfo` for the component; `NameNotFoundException` means a Root Mount
+   install with the stock manifest) and show nothing otherwise. If starting the activity fails, it
+   logs and shows a short toast.
 
 4. **Smoke test.** Assert that the extension classes are in the emitted dex, that the
    `Registry.encoded()` string equals `HevalRegistryCodec.encode(...)` of the expected features,
@@ -158,8 +169,13 @@ shipped id: it names the user's saved choice.
 
 ## Feature hook example
 
-`addHevalGate` inserts the gate. The `hevalReturnEarly` and `hevalReturnNull` helpers wrap it for
-the three common shapes:
+`addHevalGate` inserts the gate: while the feature is on, the patched path runs, and the original
+code after it is the stock path. `addHevalStockPath` is the inverse, for code the patch generated
+itself (a helper method that exists only in the patched app): while the feature is off, the given
+stock path runs and must end with a return, throw or goto; while it is on, execution falls into the
+original (patched) code. Truecaller's Hide Blocking tab, Show caller number in call log and Fix T9
+contact search use it at index 0 of their own helpers. The `hevalReturnEarly` and
+`hevalReturnNull` helpers wrap `addHevalGate` for the three common shapes:
 
 | Helper | Method shape | Patched path |
 |---|---|---|
@@ -199,6 +215,9 @@ Any other edit can use `addHevalGate` with your own patched path:
 
 ```kotlin
 method.addHevalGate("app.feature", index = 0) { v -> "return-void" }
+
+// A generated helper whose body is the patched behaviour: while off, return the stock answer.
+helper.addHevalStockPath("app.feature") { v -> "return-void" }
 ```
 
 The usual rules still apply (AGENTS.md):
@@ -282,7 +301,10 @@ The limits are stated in the UI, too. Safe mode cannot help when:
 
 - the crash comes from a patch-time change;
 - the crash happens before `InitProvider` runs (for example in `attachBaseContext`);
-- it is a native crash on Android 10 or older.
+- it is a native crash on Android 10 or older;
+- the app was installed with Root Mount: `InitProvider` is not registered there, so the crash
+  guard is never armed and no start records are written. A safe mode saved earlier is still
+  honoured by the lazily started engine.
 
 ## Settings screen
 
@@ -358,7 +380,7 @@ both sides. The Kotlin encoder test and the Java decoder test both read it.
 | What | Command | What it covers |
 |---|---|---|
 | Core JVM unit tests | `.\gradlew :extensions:hevalcontrols:core:testDebugUnitTest` | Registry decode and versioning, defaults, toggle and persistence on a fake store, pause, safe mode, fail-open, dependencies, restart-pending, unknown ids, crash-guard counting and resume. |
-| Patch-side tests | `.\gradlew :patches:buildAndroid :patches:cleanTest :patches:test --tests "HevalControls*" --no-build-cache` | `HevalControlsTest` covers the encoder against the fixture, feature validation, the manifest components and the gate helpers. `HevalControlsPatcherTest` runs a test-only host and feature through the real patcher on `apks/nativecamera/base.apk` (skipped without it). |
+| Patch-side tests | `.\gradlew :patches:buildAndroid :patches:cleanTest :patches:test --tests "HevalControls*" --no-build-cache` | `HevalControlsTest` covers the encoder against the fixture, feature validation, the manifest components, the gate helpers and that the Truecaller host is available on every installer (Root Mount included). `HevalControlsPatcherTest` runs a test-only host and feature through the real patcher on `apks/nativecamera/base.apk` (skipped without it). |
 | Lint | `.\gradlew :extensions:hevalcontrols:core:lintRelease :extensions:hevalcontrols:lintRelease` | Checks API levels against minSdk 23. |
 
 CI (`release.yml`) runs no tests. Consider adding the core unit-test task there.
@@ -368,7 +390,14 @@ CI (`release.yml`) runs no tests. Consider adding the core unit-test task there.
 - **Other processes.** A secondary process starts the engine lazily and reads the choices once.
   The change listener does not reach across processes, so a change applies there after a
   restart. The crash guard runs in the main process only.
-- **Root Mount** is unsupported, because the manifest is unchanged there.
+- **Root Mount** keeps the stock manifest, so `InitProvider` and `HevalControlsActivity` are not
+  registered (the patch still adds them; mount ignores them). The patched dex runs, so the
+  features work: the first hook starts the engine lazily through
+  `ActivityThread.currentApplication()`, answering the registered defaults until the Application
+  exists and the saved choices after that. What is lost: the settings screen (the entry row is
+  not shown, so every feature stays at its default), the crash guard and the safe-mode toast.
+  Because the feature patches depend on the host, the host stays available on Root Mount;
+  making it unavailable would remove every converted patch there.
 - **Restart-required features are informational.** `isEnabled` returns the current choice. The
   screen counts differences from the process start.
 - **Hook failures** are kept in memory only, for the current process.

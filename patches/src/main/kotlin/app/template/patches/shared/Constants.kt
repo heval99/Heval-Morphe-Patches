@@ -2206,6 +2206,20 @@ object Constants {
     //   (all 20 patches applied), apkanalyzer smali of onViewCreated, doo.a, the tabs helper and
     //   morpheBrandMedia, aapt2 manifest (provider exported=false initOrder=1000, activity
     //   exported=false) and string values (identical to a GmsCore-only build). Not run on a device.
+    //   The host is a hard dependency of the 12 converted patches (featurePatch dependsOn it): if
+    //   the Settings entry anchor (CategoriesFragmentViewCreatedFingerprint) drifts, all 12 fail
+    //   loudly, not only "Heval Controls" - accepted, the target is pinned. Root Mount: the host is
+    //   available there too (it was UNAVAILABLE, which would have taken the 12 patches away); mount
+    //   keeps the stock manifest, so InitProvider/HevalControlsActivity are not registered, the
+    //   engine starts lazily on the first hook, the crash guard stays off, and HevalControlsEntry
+    //   skips its row when getActivityInfo finds no activity (features stay at their defaults).
+    //   Rule 12 (2026-11-02): the string baseline above was GmsCore-only, so a build with ONLY
+    //   "Heval Controls" + "Disable nags" (CLI without -f, both applied) was diffed against stock:
+    //   the aapt2 string pool is byte-identical; the only table change is 36 entry names of
+    //   case-colliding pairs renamed to <type>_0x<id> (17 id pairs such as toolbar/toolBar,
+    //   standard/STANDARD, plus string/dismiss + string/Dismiss), values unchanged. A GmsCore-only
+    //   build renames exactly the same 36 entries, so it is the shared re-encode, not this patch;
+    //   item_help/item_about keep their names.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
