@@ -2119,13 +2119,31 @@ object Constants {
     //   the previous item that jumps past the item helper call without skipping the next item, and
     //   nothing else jumps into the item. The Categories row, the section titles (kc4.A here) and
     //   Recents are untouched.
+    // 2026-11-02 (#98): updated to 26.42.5 (versionCode 2642005, owner-supplied APKCube .apks merged
+    //   with APKEditor, arm64; signer CN=truecaller, cert SHA-256 7712b5f2...4913ae as pinned). 26.42.5
+    //   added a local override read (a SharedPreferences contains(key) + getBoolean(key) behind a
+    //   flag check) to all three (String, FeatureState)Z resolvers (doo.a SharedPreferences store,
+    //   f5k.a Firebase experiments, rpq.a default only), so the old "reads SharedPreferences" /
+    //   "never touches SharedPreferences" split matched three and zero methods and Hide promotions
+    //   failed on FirebaseFeatureToggleResolverFingerprint. The keys did not move (every overridden
+    //   key is read through the same store as in 26.41.5). FeatureToggleResolverFingerprint now
+    //   matches every concrete (String, FeatureState)Z method and every override goes into each
+    //   resolver; requireFeatureToggleRead accepts a read through any of them.
+    // 2026-11-02 (#114, 26.42.5; TruecallerSmokeTest + CLI disassembly, NOT runtime-tested: the
+    //   incoming call screen needs a real call): Swap call answer and decline buttons (opt-in). The
+    //   incoming call buttons composable (iis.d here; the only static void method loading both test
+    //   tags "rejectCallButton" and "answerCallButton") places both swipe buttons in one Box with
+    //   the same alignment and moves them sideways with offset(x = -/+ width / 3.5). The x of the
+    //   (Float, Float, Int, Modifier)Modifier offset call right before each tag is negated, so answer
+    //   sits left and decline right. Each button is dragged in any direction (progress is the drag
+    //   distance), so the gesture does not depend on the side. The PiP actions are not changed.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0087FF,
         signatures = setOf("7712b5f255f2c85b8b164519116ac4381bb9a3582dcdd2b73ac06ee7464913ae"), // CN=truecaller
-        targets = listOf(AppTarget(version = "26.41.5", versionCode = 2641005))
+        targets = listOf(AppTarget(version = "26.42.5", versionCode = 2642005))
     )
 
     // Verified 2026-10-13 against com.hevy 3.1.16 (versionCode 3325935, XAPK base + arm64 + en +

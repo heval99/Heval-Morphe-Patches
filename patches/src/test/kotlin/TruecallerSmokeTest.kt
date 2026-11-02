@@ -115,7 +115,7 @@ class TruecallerSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.41.5",
+            version = "26.42.5",
             patchNames = setOf(
                 "Enable Premium",
                 "Disable ads",
@@ -141,6 +141,7 @@ class TruecallerSmokeTest {
                 "Hide call log filters",
                 "Hide frequently called contacts",
                 "Hide important senders",
+                "Swap call answer and decline buttons",
                 "GmsCore support",
                 "Spoof signature",
             ),
@@ -165,6 +166,7 @@ class TruecallerSmokeTest {
         assertShowCallerNumber(classes, byType, apk)
         assertHideCallLogFilters(classes, byType)
         assertHideListItems(classes)
+        assertSwapCallButtons(classes)
         // onGetCredential tests isAvailableOnDevice(int) in this build, so the routing applies.
         assertGmsCoreSupport(classes, workDir, PKG, TRUECALLER_INIT, SIGNATURE_SHA1, expectCredentialRouting = true)
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
@@ -723,17 +725,19 @@ class TruecallerSmokeTest {
     }
 
     private fun assertToggleOverrides(classes: List<ClassDef>) {
-        // The SharedPreferences toggle resolver starts with one "key.equals(p1) -> return value"
-        // block per override, each falling through to the next and finally to the stock code.
-        // Hide family button and Restore classic call log add one each, Disable ads five (incl. the
-        // Offer Hub), Hide business media the seven verified business campaign toggles, Disable
-        // contact upload the Call Assistant number sync and the contact editor name suggestion,
-        // Disable auto-launch one, Disable nags nine, Hide promotions four and Hide after-call
+        // Every toggle resolver isEnabled(key, FeatureState) (three in 26.42.5: the SharedPreferences
+        // store, the Firebase experiments and a default-only one) starts with one
+        // "key.equals(p1) -> return value" block per override, each falling through to the next and
+        // finally to the stock code. Hide family button and Restore classic call log add one each,
+        // Disable ads five (incl. the Offer Hub), Hide business media the seven verified business
+        // campaign toggles, Disable contact upload the Call Assistant number sync and the contact
+        // editor name suggestion, Disable auto-launch one, Disable nags nine, Hide promotions four
+        // plus the Firebase experiment "DisableWVMNotifications_65487" (on), and Hide after-call
         // screen for contacts two.
-        val (cls, resolver) = classes.singleMethod("feature toggle resolver") { _, m ->
-            m.returnType == "Z" && m.params() == listOf("Ljava/lang/String;", FEATURE_STATE) &&
-                m.instructions().any { it.call()?.definingClass == "Landroid/content/SharedPreferences;" && it.call()?.name == "getBoolean" }
+        val resolvers = classes.methodsWhere { _, m ->
+            m.returnType == "Z" && m.params() == listOf("Ljava/lang/String;", FEATURE_STATE) && m.implementation != null
         }
+        check(resolvers.size >= 2) { "expected the toggle resolvers, found ${resolvers.map { (c, m) -> "${c.type}.${m.name}" }}" }
         val expected = mapOf(
             "featureFamilyProtect" to 0,
             "featureCallLogRevamp" to 0,
@@ -767,34 +771,18 @@ class TruecallerSmokeTest {
             "featureRedeemPromo" to 0,
             "featureShowACSAllIncoming" to 0,
             "featureShowACSAllOutgoing" to 0,
+            "DisableWVMNotifications_65487" to 1,
         )
-        assertOverrideBlocks(cls, resolver, expected)
-        assertResolverReads(classes, cls, resolver, expected.keys)
-
-        // Hide promotions: the Firebase experiment resolver (same signature, asks an interface
-        // (String, Z)Z store, no SharedPreferences) answers true for the Who-viewed-me
-        // notification switch; it is still read there.
-        val (firebaseClass, firebase) = classes.singleMethod("Firebase toggle resolver") { _, m ->
-            m.returnType == "Z" && m.params() == listOf("Ljava/lang/String;", FEATURE_STATE) && m.implementation != null &&
-                m.instructions().any {
-                    it.opcode == Opcode.INVOKE_INTERFACE && it.call()?.returnType == "Z" &&
-                        it.call()?.parameterTypes?.map(CharSequence::toString) == listOf("Ljava/lang/String;", "Z")
-                } &&
-                m.instructions().none {
-                    it.call()?.definingClass == "Landroid/content/SharedPreferences;" ||
-                        ((it as? ReferenceInstruction)?.reference as? TypeReference)?.type == "Landroid/content/SharedPreferences;"
-                }
-        }
-        val firebaseExpected = mapOf("DisableWVMNotifications_65487" to 1)
-        assertOverrideBlocks(firebaseClass, firebase, firebaseExpected)
-        assertResolverReads(classes, firebaseClass, firebase, firebaseExpected.keys)
+        for ((cls, resolver) in resolvers) assertOverrideBlocks(cls, resolver, expected)
+        // The Firebase experiment and the SharedPreferences toggles are each read through some resolver.
+        assertResolverReads(classes, resolvers, expected.keys)
     }
 
-    /** Some method other than the resolver loads each key and later calls the resolver with it. */
-    private fun assertResolverReads(classes: List<ClassDef>, cls: ClassDef, resolver: Method, keys: Set<String>) {
-        val label = "${cls.type}.${resolver.name}(String, FeatureState)"
+    /** Some method other than a resolver loads each key and later calls one of the [resolvers] with it. */
+    private fun assertResolverReads(classes: List<ClassDef>, resolvers: List<Pair<ClassDef, Method>>, keys: Set<String>) {
+        val targets = resolvers.map { (cls, m) -> cls.type to m.name }.toSet()
         fun Instruction.isResolverCall() = call()?.let {
-            it.definingClass == cls.type && it.name == resolver.name && it.returnType == "Z" &&
+            (it.definingClass to it.name) in targets && it.returnType == "Z" &&
                 it.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", FEATURE_STATE)
         } == true
         val callers = classes.methodsWhere { _, m -> m.implementation != null && m.instructions().any { it.isResolverCall() } }
@@ -803,37 +791,60 @@ class TruecallerSmokeTest {
                 val insns = m.instructions()
                 val load = insns.indexOfFirst { it.stringOrNull() == key }
                 load >= 0 && insns.drop(load + 1).any { it.isResolverCall() }
-            }) { "no method passes $key to $label" }
+            }) { "no method passes $key to a toggle resolver" }
         }
     }
 
     /**
-     * The [resolver] starts with exactly one "key.equals(p1) -> return value" block per entry of
-     * [expected], each falling through to the next and finally to the stock code.
+     * The [resolver] starts with "key.equals(p1) -> return value" blocks, each falling through to
+     * the next and finally to the stock code; they are parsed until the pattern stops and must be
+     * exactly [expected].
      */
     private fun assertOverrideBlocks(cls: ClassDef, resolver: Method, expected: Map<String, Int>) {
         val label = "${cls.type}.${resolver.name}(String, FeatureState)"
         val insns = resolver.instructions()
         val keyRegister = resolver.implementation!!.registerCount - 2 // this + key + state
         val overrides = mutableMapOf<String, Int>()
-        for (block in expected.keys.indices) {
-            val start = block * 6
-            val key = insns.getOrNull(start)?.stringOrNull() ?: error("$label: override block $block has no key")
+        var start = 0
+        while (insns.getOrNull(start)?.opcode == Opcode.CONST_STRING && insns.getOrNull(start + 1)?.call()?.name == "equals") {
+            val key = insns[start].stringOrNull()!!
             val equals = insns[start + 1]
             check(equals.opcode == Opcode.INVOKE_VIRTUAL && equals.call()?.definingClass == "Ljava/lang/String;" &&
-                equals.call()?.name == "equals" && (equals as FiveRegisterInstruction).registerD == keyRegister
+                (equals as FiveRegisterInstruction).registerD == keyRegister
             ) { "$label: $key is not compared with p1" }
             check(insns[start + 2].opcode == Opcode.MOVE_RESULT && insns[start + 3].opcode == Opcode.IF_EQZ) { "$label: $key has no branch" }
             check(insns.branchTarget(start + 3) == start + 6) { "$label: a non-matching $key does not fall through" }
             val value = insns[start + 4]
             check(value.opcode == Opcode.CONST_4 && insns[start + 5].opcode == Opcode.RETURN) { "$label: $key does not return a constant" }
-            overrides[key] = (value as NarrowLiteralInstruction).narrowLiteral
+            check(overrides.put(key, (value as NarrowLiteralInstruction).narrowLiteral) == null) { "$label overrides $key twice" }
+            start += 6
         }
         check(overrides == expected) { "$label overrides $overrides, expected $expected" }
-        // Nothing past the override blocks is another override: the stock code follows.
-        val next = insns.getOrNull(expected.size * 6)
-        check(next?.opcode != Opcode.CONST_STRING || insns.getOrNull(expected.size * 6 + 1)?.call()?.name != "equals") {
-            "$label has more than ${expected.size} override blocks"
+    }
+
+    private fun assertSwapCallButtons(classes: List<ClassDef>) {
+        // The incoming call buttons composable loads the decline and then the answer test tag; the
+        // offset(x, y) modifier call right before each now has its x negated by a neg-float on the
+        // same register, so decline moves to the right and answer to the left.
+        val (cls, buttons) = classes.singleMethod("incoming call buttons composable") { _, m ->
+            m.returnType == "V" && AccessFlags.STATIC.isSet(m.accessFlags) && m.implementation != null &&
+                m.strings().containsAll(listOf("rejectCallButton", "answerCallButton"))
+        }
+        val label = "${cls.type}.${buttons.name}"
+        val insns = buttons.instructions()
+        val modifier = buttons.params().first()
+        for (tag in listOf("rejectCallButton", "answerCallButton")) {
+            val tagIndex = insns.indexOfFirst { it.opcode == Opcode.CONST_STRING && it.stringOrNull() == tag }
+            check(tagIndex >= 0) { "$label does not load $tag" }
+            val offset = (tagIndex - 1 downTo 0).first { index ->
+                insns[index].opcode == Opcode.INVOKE_STATIC && insns[index].call()?.returnType == modifier &&
+                    insns[index].call()?.parameterTypes?.map(CharSequence::toString) == listOf("F", "F", "I", modifier)
+            }
+            val x = (insns[offset] as FiveRegisterInstruction).registerC
+            val negate = insns[offset - 1]
+            check(negate.opcode == Opcode.NEG_FLOAT && (negate as TwoRegisterInstruction).registerA == x && negate.registerB == x) {
+                "$label: the $tag offset x (v$x) is not negated; got ${negate.opcode}"
+            }
         }
     }
 

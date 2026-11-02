@@ -257,3 +257,17 @@ internal object BusinessHomeScreenStateToStringFingerprint : Fingerprint(
     filters = listOf(string("BusinessHomeScreenState(", StringComparisonType.STARTS_WITH)),
     strings = listOf(string(", importantSenders=", StringComparisonType.CONTAINS)),
 )
+
+// The incoming call buttons composable (iis.d in 26.42.5): a Box that places the decline and the
+// answer swipe buttons (test tags "rejectCallButton" / "answerCallButton", in that order), each
+// aligned the same way and pushed sideways by an offset(x) of -/+ width / 3.5. Each button is
+// dragged in any direction (the swipe progress is the drag distance), so where it sits does not
+// change how it is used.
+internal object IncomingCallButtonsFingerprint : Fingerprint(
+    returnType = "V",
+    filters = listOf(
+        string("rejectCallButton"),
+        string("answerCallButton"),
+    ),
+    custom = { method, _ -> AccessFlags.STATIC.isSet(method.accessFlags) },
+)
