@@ -1,3 +1,9 @@
+import app.morphe.patcher.patch.Patch
+import app.template.patches.shared.hevalcontrols.HEVAL_SETTINGS_CLASS
+import app.template.patches.shared.hevalcontrols.HevalFeature
+import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
+import app.template.patches.truecaller.controls.TRUECALLER_CONTROLS_ENTRY
+import app.template.patches.truecaller.layout.BRAND_MEDIA_HELPER
 import app.template.patches.truecaller.layout.CALL_LOG_NUMBER_SEPARATOR
 import app.template.patches.truecaller.layout.CALL_LOG_SUBTITLE_HELPER
 import app.template.patches.truecaller.shared.toStringFields
@@ -65,6 +71,38 @@ private val BLOCK_END_OPCODES = setOf(
     Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32, Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH,
 )
 private const val MOBILE_NUMBERS_SELECTION ="data_type = ? AND data_phonebook_id NOT NULL AND data8 = ?"
+private const val HEVAL_EXTENSION = "Lapp/template/extension/hevalcontrols/"
+private const val CATEGORIES_FRAGMENT = "Lcom/truecaller/settings/impl/ui/categories/CategoriesFragment;"
+
+// Heval Controls feature ids. They name the user's saved choices, so a shipped id never changes.
+private const val HIDE_PROMOTIONS = "truecaller.hide_promotions"
+private const val DISABLE_NAGS = "truecaller.disable_nags"
+private const val DISABLE_AUTO_LAUNCH = "truecaller.disable_auto_launch"
+private const val DISABLE_UPDATE_PROMPTS = "truecaller.disable_update_prompts"
+private const val HIDE_AFTER_CALL_CONTACTS = "truecaller.hide_after_call_contacts"
+private const val HIDE_FAMILY_BUTTON = "truecaller.hide_family_button"
+private const val HIDE_BUSINESS_MEDIA = "truecaller.hide_business_media"
+private const val HIDE_ASSISTANT_TAB = "truecaller.hide_assistant_tab"
+private const val HIDE_SCAM_FEED = "truecaller.hide_scam_feed"
+private const val HIDE_BLOCKING_TAB = "truecaller.hide_blocking_tab"
+private const val SHOW_CALLER_NUMBER = "truecaller.show_caller_number"
+private const val FIX_T9_SEARCH = "truecaller.fix_t9_search"
+
+/** Patch name, feature id, category and restartRequired of every Truecaller Heval Controls feature. */
+private val HEVAL_FEATURES = listOf(
+    Triple("Hide promotions", HIDE_PROMOTIONS, "Promotions & nags" to true),
+    Triple("Disable nags", DISABLE_NAGS, "Promotions & nags" to false),
+    Triple("Disable auto-launch", DISABLE_AUTO_LAUNCH, "Promotions & nags" to false),
+    Triple("Disable update prompts", DISABLE_UPDATE_PROMPTS, "Promotions & nags" to false),
+    Triple("Hide Assistant tab", HIDE_ASSISTANT_TAB, "Tabs & buttons" to true),
+    Triple("Hide Scam feed", HIDE_SCAM_FEED, "Tabs & buttons" to true),
+    Triple("Hide Blocking tab", HIDE_BLOCKING_TAB, "Tabs & buttons" to true),
+    Triple("Hide family button", HIDE_FAMILY_BUTTON, "Tabs & buttons" to true),
+    Triple("Show caller number in call log", SHOW_CALLER_NUMBER, "Call log & search" to false),
+    Triple("Fix T9 contact search", FIX_T9_SEARCH, "Call log & search" to true),
+    Triple("Hide after-call screen for contacts", HIDE_AFTER_CALL_CONTACTS, "Contacts & business" to false),
+    Triple("Hide business media", HIDE_BUSINESS_MEDIA, "Contacts & business" to false),
+)
 
 class TruecallerSmokeTest {
 
@@ -102,6 +140,85 @@ class TruecallerSmokeTest {
             "$label does not load PremiumTierType.GOLD first; got ${insns.getOrNull(0)?.opcode} $gold"
         }
         check(insns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT) { "$label does not return GOLD at once" }
+    }
+
+    /**
+     * The instructions at [at] are the Heval Controls gate for [featureId]: const-string vX, the
+     * /range isEnabled call on vX, move-result vX and [branch] vX (IF_EQZ for addHevalGate, IF_NEZ for
+     * addHevalStockPath). Returns the index the branch jumps to (the original code).
+     */
+    private fun assertGate(method: Method, featureId: String, label: String, branch: Opcode = Opcode.IF_EQZ, at: Int = 0): Int {
+        val insns = method.instructions()
+        val id = insns.getOrNull(at)
+        check(id?.opcode == Opcode.CONST_STRING && id.stringOrNull() == featureId) {
+            "$label does not start its Heval Controls gate with \"$featureId\"; got ${id?.opcode} ${id?.stringOrNull()}"
+        }
+        val register = (id as OneRegisterInstruction).registerA
+        val call = insns.getOrNull(at + 1)
+        check(call?.opcode == Opcode.INVOKE_STATIC_RANGE && call.call()?.definingClass == HEVAL_SETTINGS_CLASS &&
+            call.call()?.name == "isEnabled" && (call as RegisterRangeInstruction).startRegister == register && call.registerCount == 1
+        ) { "$label does not ask HevalSettings.isEnabled(v$register); got ${call?.opcode} ${call?.call()}" }
+        val result = insns.getOrNull(at + 2)
+        val test = insns.getOrNull(at + 3)
+        check(result?.opcode == Opcode.MOVE_RESULT && (result as OneRegisterInstruction).registerA == register &&
+            test?.opcode == branch && (test as OneRegisterInstruction).registerA == register
+        ) { "$label: the gate does not branch on the isEnabled result with $branch; got ${result?.opcode} ${test?.opcode}" }
+        return insns.branchTarget(at + 3)
+    }
+
+    private fun assertHevalControls(byType: Map<String, ClassDef>, allPatches: Set<Patch<*>>) {
+        // 1. The extension classes (core, screen, init provider, the Settings row helper) are merged.
+        for (type in listOf(HEVAL_SETTINGS_CLASS, "${HEVAL_EXTENSION}Registry;", "${HEVAL_EXTENSION}InitProvider;",
+            "${HEVAL_EXTENSION}ui/HevalControlsActivity;", TRUECALLER_CONTROLS_ENTRY)) {
+            check(type in byType) { "$type is not in the patched dex" }
+        }
+
+        // 2. The registry lists exactly the twelve features, with each patch's Manager name and
+        // description, default on. They are written in registration (patch execution) order, so the
+        // records are compared as a set.
+        val expected = HEVAL_FEATURES.map { (name, id, rest) ->
+            val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
+            HevalFeature(id, name, patch.description!!, rest.first, default = true, restartRequired = rest.second)
+        }
+        val registry = byType.getValue("${HEVAL_EXTENSION}Registry;").methods.single { it.name == "encoded" }.instructions()
+        check(registry.getOrNull(0)?.opcode == Opcode.CONST_STRING_JUMBO && registry.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT) {
+            "Registry.encoded() was not rewritten"
+        }
+        val encoded = registry[0].stringOrNull()!!.split('\n')
+        val wanted = HevalRegistryCodec.encode(expected).split('\n')
+        check(encoded.first() == wanted.first() && encoded.size == wanted.size && encoded.toSet() == wanted.toSet()) {
+            "Registry.encoded() is\n${encoded.joinToString("\n")}\nexpected (any record order)\n${wanted.joinToString("\n")}"
+        }
+
+        // 3. Manifest: the non-exported init provider (initOrder 1000) and the non-exported screen.
+        val manifestFile = workDir.walkTopDown()
+            .firstOrNull { it.name == "AndroidManifest.xml" && it.readText().contains("hevalcontrols") }
+            ?: error("no decoded AndroidManifest.xml with Heval Controls under $workDir")
+        val manifest = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(manifestFile).documentElement
+        fun elements(tag: String) = manifest.getElementsByTagName(tag).let { list -> (0 until list.length).map { list.item(it) as Element } }
+        val provider = elements("provider").single { it.getAttribute("android:name") == "app.template.extension.hevalcontrols.InitProvider" }
+        check(provider.getAttribute("android:authorities") == "$PKG.hevalcontrols" && provider.getAttribute("android:exported") == "false" &&
+            provider.getAttribute("android:initOrder") == "1000"
+        ) { "Heval Controls provider has the wrong authority, exported flag or initOrder" }
+        val activity = elements("activity").single { it.getAttribute("android:name") == "app.template.extension.hevalcontrols.ui.HevalControlsActivity" }
+        check(activity.getAttribute("android:exported") == "false") { "HevalControlsActivity is exported" }
+
+        // 4. The Settings row: CategoriesFragment.onViewCreated passes its root view (p1) to
+        // HevalControlsEntry.addRow right after super.onViewCreated.
+        val onViewCreated = (byType[CATEGORIES_FRAGMENT] ?: error("$CATEGORIES_FRAGMENT not found"))
+            .method("onViewCreated", listOf("Landroid/view/View;", "Landroid/os/Bundle;"))
+        val insns = onViewCreated.instructions()
+        val superCall = insns.indexOfFirst {
+            (it.opcode == Opcode.INVOKE_SUPER || it.opcode == Opcode.INVOKE_SUPER_RANGE) && it.call()?.name == "onViewCreated"
+        }
+        check(superCall >= 0) { "CategoriesFragment.onViewCreated does not call super.onViewCreated" }
+        val p1 = onViewCreated.implementation!!.registerCount - 2 // this, view, state
+        val entry = insns.getOrNull(superCall + 1)
+        check(entry?.opcode == Opcode.INVOKE_STATIC_RANGE && entry.call()?.definingClass == TRUECALLER_CONTROLS_ENTRY &&
+            entry.call()?.name == "addRow" && entry.call()?.parameterTypes?.map(CharSequence::toString) == listOf("Landroid/view/View;") &&
+            (entry as RegisterRangeInstruction).startRegister == p1 && entry.registerCount == 1
+        ) { "CategoriesFragment.onViewCreated does not call addRow(p1) after super.onViewCreated; got ${entry?.opcode} ${entry?.call()}" }
+        check(insns.count { it.call()?.definingClass == TRUECALLER_CONTROLS_ENTRY } == 1) { "addRow is called more than once" }
     }
 
     @Test
@@ -154,11 +271,13 @@ class TruecallerSmokeTest {
                 "Disable call button haptics",
                 "GmsCore support",
                 "Spoof signature",
+                "Heval Controls",
             ),
             allPatches = allPatches,
         )
         val byType = classes.associateBy { it.type }
 
+        assertHevalControls(byType, allPatches)
         assertEnablePremium(classes, byType)
         assertDisableAds(classes, byType)
         assertDisableTelemetry(classes, byType)
@@ -557,32 +676,44 @@ class TruecallerSmokeTest {
             it.returnType == "Ljava/lang/Object;" && it.params().size == 3 &&
                 it.params().take(2) == listOf("Landroid/app/Activity;", UPDATE_TRIGGER)
         }
+        // Both start with the Disable update prompts gate; its patched path is the early return.
+        val startLabel = "${manager.type}.${start.name}"
+        check(assertGate(start, DISABLE_UPDATE_PROMPTS, startLabel) == 6) { "$startLabel: the gate does not skip the early return" }
         val insns = start.instructions()
-        val value = insns.getOrNull(0)?.field()
-        check(insns.getOrNull(0)?.opcode == Opcode.SGET_OBJECT && value?.definingClass == "Ljava/lang/Boolean;" && value.name == "FALSE") {
-            "${manager.type}.${start.name} does not load Boolean.FALSE first; got ${insns.getOrNull(0)?.opcode} $value"
+        val value = insns.getOrNull(4)?.field()
+        check(insns.getOrNull(4)?.opcode == Opcode.SGET_OBJECT && value?.definingClass == "Ljava/lang/Boolean;" && value.name == "FALSE") {
+            "$startLabel does not load Boolean.FALSE after the gate; got ${insns.getOrNull(4)?.opcode} $value"
         }
-        check(insns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT) { "${manager.type}.${start.name} does not return at once" }
+        check(insns.getOrNull(5)?.opcode == Opcode.RETURN_OBJECT) { "$startLabel does not return after the gate" }
 
         // The stored server forced-update state always reads NONE.
         val (typeOwner, typeGetter) = classes.singleMethod("forced update type getter") { _, m ->
             m.returnType == "Lcom/truecaller/forcedupdate/UpdateType;" && m.parameterTypes.isEmpty() &&
                 "forcedUpdate_updateType" in m.strings()
         }
+        val typeLabel = "${typeOwner.type}.${typeGetter.name}()"
+        check(assertGate(typeGetter, DISABLE_UPDATE_PROMPTS, typeLabel) == 6) { "$typeLabel: the gate does not skip the early return" }
         val typeInsns = typeGetter.instructions()
-        val type = typeInsns.getOrNull(0)?.field()
-        check(typeInsns.getOrNull(0)?.opcode == Opcode.SGET_OBJECT && type?.name == "NONE" &&
+        val type = typeInsns.getOrNull(4)?.field()
+        check(typeInsns.getOrNull(4)?.opcode == Opcode.SGET_OBJECT && type?.name == "NONE" &&
             type.definingClass == "Lcom/truecaller/forcedupdate/UpdateType;" &&
-            typeInsns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT
-        ) { "${typeOwner.type}.${typeGetter.name}() does not return UpdateType.NONE at once; got ${typeInsns.getOrNull(0)?.opcode} $type" }
+            typeInsns.getOrNull(5)?.opcode == Opcode.RETURN_OBJECT
+        ) { "$typeLabel does not return UpdateType.NONE after the gate; got ${typeInsns.getOrNull(4)?.opcode} $type" }
     }
 
     private fun assertFeatureToggles(classes: List<ClassDef>) {
-        for (key in listOf("featureCallAssistant", "featureScamFeed")) {
+        // Each master switch starts with its feature's gate, whose patched path answers false.
+        for ((key, feature) in listOf("featureCallAssistant" to HIDE_ASSISTANT_TAB, "featureScamFeed" to HIDE_SCAM_FEED)) {
             val (cls, toggle) = classes.singleMethod("$key toggle") { _, m ->
                 m.returnType == "Z" && m.parameterTypes.isEmpty() && key in m.strings()
             }
-            assertForcedBoolean(toggle, expected = false, label = "${cls.type}.${toggle.name}() ($key)")
+            val label = "${cls.type}.${toggle.name}() ($key)"
+            check(assertGate(toggle, feature, label) == 6) { "$label: the gate does not skip the forced value" }
+            val insns = toggle.instructions()
+            check(insns[4].opcode == Opcode.CONST_4 && (insns[4] as NarrowLiteralInstruction).narrowLiteral == 0 &&
+                insns[5].opcode == Opcode.RETURN && (insns[5] as OneRegisterInstruction).registerA == (insns[4] as OneRegisterInstruction).registerA
+            ) { "$label does not answer false after the gate" }
+            check(key in insns.drop(6).mapNotNull { it.stringOrNull() }) { "$label lost its stock code" }
         }
     }
 
@@ -616,8 +747,19 @@ class TruecallerSmokeTest {
             check(helperInsns.any { it.call()?.returnType == BOTTOM_BAR_BUTTON_TYPE && it.call()?.definingClass == arrayType.removePrefix("[") }) {
                 "${builderClass.type}.${helper.name} does not read the tab type"
             }
-            hidden += helperInsns.filter { it.opcode == Opcode.SGET_OBJECT && it.field()?.definingClass == BOTTOM_BAR_BUTTON_TYPE }
+            val types = helperInsns.filter { it.opcode == Opcode.SGET_OBJECT && it.field()?.definingClass == BOTTOM_BAR_BUTTON_TYPE }
                 .map { it.field()!!.name }
+            hidden += types
+            // Only the Blocking helper is a Heval Controls feature: while it is off it returns at once.
+            val helperLabel = "${builderClass.type}.${helper.name}"
+            if ("BLOCKING" in types) {
+                val stock = assertGate(helper, HIDE_BLOCKING_TAB, helperLabel, branch = Opcode.IF_NEZ)
+                check(stock == 5 && helperInsns[4].opcode == Opcode.RETURN_VOID && helperInsns[5].opcode == Opcode.ARRAY_LENGTH) {
+                    "$helperLabel does not return at once while Hide Blocking tab is off"
+                }
+            } else {
+                check(helperInsns.none { it.call()?.definingClass == HEVAL_SETTINGS_CLASS }) { "$helperLabel ($types) is gated" }
+            }
         }
         check(hidden == setOf("PREMIUM", "BLOCKING", "FAMILY_PROTECTION_CONFIG", "MESSAGES")) { "$label hides $hidden" }
     }
@@ -784,7 +926,26 @@ class TruecallerSmokeTest {
             "featureShowACSAllOutgoing" to 0,
             "DisableWVMNotifications_65487" to 1,
         )
-        for ((cls, resolver) in resolvers) assertOverrideBlocks(cls, resolver, expected)
+        // The overrides of Heval Controls features apply only while their feature is on; the rest
+        // (Disable ads, Restore classic call log, Disable contact upload) are unconditional.
+        val gates = mapOf(
+            "featureFamilyProtect" to HIDE_FAMILY_BUTTON,
+            "featureAutoAppLaunchPassive" to DISABLE_AUTO_LAUNCH,
+            "DisableWVMNotifications_65487" to HIDE_PROMOTIONS,
+        ) + listOf(
+            "featureBizVerifiedCampaigns", "featureBizVerifiedCampaignForOutgoingCalls", "featureBizVerifiedCampaignInRevampedInCallUi",
+            "featureBizVerifiedCampaignsCarouselACS", "featureBizVerifiedCampaignsDetailsView",
+            "featureBizVerifiedCampaignsCarouselDetailsView", "featureBizVerifiedCampaignsDV3",
+        ).associateWith { HIDE_BUSINESS_MEDIA } + listOf(
+            "featureDefaultDialerInterstitial", "featureDefaultDialerPermanentSpace", "featureNotificationsPermissionBanner",
+            "featureDOOABanner", "featureDisableBatteryOptimizationBanner", "featurePeriodicallyCheckPermissions",
+            "featureRatingsAndReviewsSurveys", "featureBlockSurveyFlow", "featureFeedbackSurvey",
+        ).associateWith { DISABLE_NAGS } + listOf(
+            "featurePersonalSafetyPromo", "featureAcsWhoViewedMeBanner", "featureReferralNavDrawer", "featureRedeemPromo",
+        ).associateWith { HIDE_PROMOTIONS } + listOf(
+            "featureShowACSAllIncoming", "featureShowACSAllOutgoing",
+        ).associateWith { HIDE_AFTER_CALL_CONTACTS }
+        for ((cls, resolver) in resolvers) assertOverrideBlocks(cls, resolver, expected, gates)
         // The Firebase experiment and the SharedPreferences toggles are each read through some resolver.
         assertResolverReads(classes, resolvers, expected.keys)
     }
@@ -809,13 +970,16 @@ class TruecallerSmokeTest {
     /**
      * The [resolver] starts with "key.equals(p1) -> return value" blocks, each falling through to
      * the next and finally to the stock code; they are parsed until the pattern stops and must be
-     * exactly [expected].
+     * exactly [expected]. A key in [gates] has the 10-instruction gated shape (its Heval Controls
+     * gate between the key match and the value, jumping to the same stock path); every other key the
+     * plain 6-instruction one.
      */
-    private fun assertOverrideBlocks(cls: ClassDef, resolver: Method, expected: Map<String, Int>) {
+    private fun assertOverrideBlocks(cls: ClassDef, resolver: Method, expected: Map<String, Int>, gates: Map<String, String>) {
         val label = "${cls.type}.${resolver.name}(String, FeatureState)"
         val insns = resolver.instructions()
         val keyRegister = resolver.implementation!!.registerCount - 2 // this + key + state
         val overrides = mutableMapOf<String, Int>()
+        val gated = mutableMapOf<String, String>()
         var start = 0
         while (insns.getOrNull(start)?.opcode == Opcode.CONST_STRING && insns.getOrNull(start + 1)?.call()?.name == "equals") {
             val key = insns[start].stringOrNull()!!
@@ -824,13 +988,22 @@ class TruecallerSmokeTest {
                 (equals as FiveRegisterInstruction).registerD == keyRegister
             ) { "$label: $key is not compared with p1" }
             check(insns[start + 2].opcode == Opcode.MOVE_RESULT && insns[start + 3].opcode == Opcode.IF_EQZ) { "$label: $key has no branch" }
-            check(insns.branchTarget(start + 3) == start + 6) { "$label: a non-matching $key does not fall through" }
-            val value = insns[start + 4]
-            check(value.opcode == Opcode.CONST_4 && insns[start + 5].opcode == Opcode.RETURN) { "$label: $key does not return a constant" }
+            val isGated = insns[start + 4].opcode == Opcode.CONST_STRING && insns[start + 5].call()?.name == "isEnabled"
+            val size = if (isGated) 10 else 6
+            check(insns.branchTarget(start + 3) == start + size) { "$label: a non-matching $key does not fall through" }
+            if (isGated) {
+                check(assertGate(resolver, insns[start + 4].stringOrNull()!!, "$label ($key)", at = start + 4) == start + size) {
+                    "$label: $key does not resolve as stock while its feature is off"
+                }
+                gated[key] = insns[start + 4].stringOrNull()!!
+            }
+            val value = insns[start + size - 2]
+            check(value.opcode == Opcode.CONST_4 && insns[start + size - 1].opcode == Opcode.RETURN) { "$label: $key does not return a constant" }
             check(overrides.put(key, (value as NarrowLiteralInstruction).narrowLiteral) == null) { "$label overrides $key twice" }
-            start += 6
+            start += size
         }
         check(overrides == expected) { "$label overrides $overrides, expected $expected" }
+        check(gated == gates) { "$label gates $gated, expected $gates" }
     }
 
     private fun assertSwapCallButtons(classes: List<ClassDef>) {
@@ -1140,19 +1313,27 @@ class TruecallerSmokeTest {
         val label = "${cloneClass.type}.$T9_INCREMENTAL_HELPER(Context)"
         check(AccessFlags.PUBLIC.isSet(clone.accessFlags) && AccessFlags.STATIC.isSet(clone.accessFlags)) { "$label is not public static" }
 
-        fun Method.booleanLoads(name: String) = instructions().withIndex().filter { (_, insn) ->
+        fun List<Instruction>.booleanLoads(name: String) = withIndex().filter { (_, insn) ->
             insn.opcode == Opcode.SGET_OBJECT && insn.field()?.definingClass == "Ljava/lang/Boolean;" && insn.field()?.name == name
         }.map { it.index }
 
+        // The copy starts with the Fix T9 contact search gate: while the feature is off it returns
+        // at once (nothing is enqueued, as in stock).
+        val body = assertGate(clone, FIX_T9_SEARCH, label, branch = Opcode.IF_NEZ)
+        val cloneInsns = clone.instructions()
+        check(body == 5 && cloneInsns[4].opcode == Opcode.RETURN_VOID) { "$label does not return at once while its feature is off" }
+        val copy = cloneInsns.drop(body)
+
         // The original still enqueues RebuildAll = TRUE; the copy is identical except for FALSE there.
-        val original = helper.booleanLoads("TRUE")
-        check(original.size == 1 && helper.booleanLoads("FALSE").isEmpty()) {
+        val stock = helper.instructions()
+        val original = stock.booleanLoads("TRUE")
+        check(original.size == 1 && stock.booleanLoads("FALSE").isEmpty()) {
             "${helperClass.type}.${helper.name} (RebuildAll helper) was changed: TRUE at $original"
         }
-        check(clone.booleanLoads("FALSE") == original && clone.booleanLoads("TRUE").isEmpty()) {
-            "$label does not load Boolean.FALSE in place of TRUE; FALSE at ${clone.booleanLoads("FALSE")}, TRUE at ${clone.booleanLoads("TRUE")}"
+        check(copy.booleanLoads("FALSE") == original && copy.booleanLoads("TRUE").isEmpty()) {
+            "$label does not load Boolean.FALSE in place of TRUE; FALSE at ${copy.booleanLoads("FALSE")}, TRUE at ${copy.booleanLoads("TRUE")}"
         }
-        check(clone.instructions().map { it.opcode } == helper.instructions().map { it.opcode } && clone.strings() == helper.strings()) {
+        check(copy.map { it.opcode } == stock.map { it.opcode } && copy.mapNotNull { it.stringOrNull() } == helper.strings()) {
             "$label is not a copy of ${helperClass.type}.${helper.name}"
         }
 
@@ -1171,7 +1352,8 @@ class TruecallerSmokeTest {
     }
 
     private fun assertHideBusinessMedia(classes: List<ClassDef>) {
-        // 1. The BusinessDetailsModel constructor replaces brandMedia (p6) with a new empty ArrayList.
+        // 1. The BusinessDetailsModel constructor passes brandMedia (p6) through morpheBrandMedia,
+        // which returns a new empty ArrayList while Hide business media is on, the list otherwise.
         val (modelClass, _) = classes.singleMethod("BusinessDetailsModel.toString") { _, m ->
             m.name == "toString" && m.strings().any { it.startsWith("BusinessDetailsModel(description=") } &&
                 ", brandMedia=" in m.strings()
@@ -1183,17 +1365,32 @@ class TruecallerSmokeTest {
         val label = "${modelClass.type}.<init>"
         val p6 = constructor.implementation!!.registerCount - 1 // this + 6 single-register parameters, p6 last
         val insns = constructor.instructions()
-        val list = insns.getOrNull(0)
-        check(list?.opcode == Opcode.NEW_INSTANCE && (list as OneRegisterInstruction).registerA == p6 &&
-            ((list as ReferenceInstruction).reference as TypeReference).type == "Ljava/util/ArrayList;"
-        ) { "$label does not start with new-instance p6, ArrayList; got ${list?.opcode}" }
-        val init = insns.getOrNull(1)
-        check(init?.opcode == Opcode.INVOKE_DIRECT_RANGE && init.call()?.definingClass == "Ljava/util/ArrayList;" &&
-            init.call()?.name == "<init>" && init.call()?.parameterTypes?.isEmpty() == true &&
-            (init as RegisterRangeInstruction).startRegister == p6 && init.registerCount == 1
-        ) { "$label does not construct the empty ArrayList in p6; got ${init?.opcode} ${init?.call()}" }
+        val call = insns.getOrNull(0)
+        check(call?.opcode == Opcode.INVOKE_STATIC_RANGE && call.call()?.definingClass == modelClass.type &&
+            call.call()?.name == BRAND_MEDIA_HELPER && call.call()?.returnType == "Ljava/util/ArrayList;" &&
+            (call as RegisterRangeInstruction).startRegister == p6 && call.registerCount == 1
+        ) { "$label does not start with $BRAND_MEDIA_HELPER(p6); got ${call?.opcode} ${call?.call()}" }
+        val result = insns.getOrNull(1)
+        check(result?.opcode == Opcode.MOVE_RESULT_OBJECT && (result as OneRegisterInstruction).registerA == p6) {
+            "$label does not put the $BRAND_MEDIA_HELPER result in p6; got ${result?.opcode}"
+        }
         val stored = insns.drop(2).single { it.opcode == Opcode.IPUT_OBJECT && it.field()?.type == "Ljava/util/ArrayList;" }
         check((stored as TwoRegisterInstruction).registerA == p6) { "$label does not store p6 as brandMedia" }
+        val helper = modelClass.method(BRAND_MEDIA_HELPER, listOf("Ljava/util/ArrayList;"))
+        val helperLabel = "${modelClass.type}.$BRAND_MEDIA_HELPER"
+        check(AccessFlags.STATIC.isSet(helper.accessFlags) && helper.returnType == "Ljava/util/ArrayList;") { "$helperLabel is not a static ArrayList getter" }
+        val stockPath = assertGate(helper, HIDE_BUSINESS_MEDIA, helperLabel)
+        val h = helper.instructions()
+        val list = h[4]
+        check(stockPath == 7 && list.opcode == Opcode.NEW_INSTANCE && ((list as ReferenceInstruction).reference as TypeReference).type == "Ljava/util/ArrayList;" &&
+            h[5].opcode == Opcode.INVOKE_DIRECT_RANGE && h[5].call()?.definingClass == "Ljava/util/ArrayList;" && h[5].call()?.name == "<init>" &&
+            h[5].call()?.parameterTypes?.isEmpty() == true && h[6].opcode == Opcode.RETURN_OBJECT &&
+            (h[6] as OneRegisterInstruction).registerA == (list as OneRegisterInstruction).registerA
+        ) { "$helperLabel does not return a new empty ArrayList while its feature is on" }
+        val p0 = helper.implementation!!.registerCount - 1
+        check(h.size == 8 && h[7].opcode == Opcode.RETURN_OBJECT && (h[7] as OneRegisterInstruction).registerA == p0) {
+            "$helperLabel does not return the list unchanged while its feature is off"
+        }
 
         // 2. BusinessDetailsScreen clears its video thumbnail slot (Function2, p4) first.
         val (screenClass, screen) = classes.singleMethod("BusinessDetailsScreen") { _, m ->
@@ -1202,11 +1399,15 @@ class TruecallerSmokeTest {
                 m.strings().containsAll(listOf("BusinessDetailsScreen", "BusinessDesTitle"))
         }
         val p4 = screen.implementation!!.registerCount - 7 + 4 // static, 7 single-register parameters
-        val clear = screen.instructions().getOrNull(0)
+        // The gate's patched path clears p4 and falls through into the stock code.
+        check(assertGate(screen, HIDE_BUSINESS_MEDIA, "${screenClass.type}.${screen.name}") == 5) {
+            "${screenClass.type}.${screen.name}: the gate does not skip only the clear"
+        }
+        val clear = screen.instructions().getOrNull(4)
         check(clear?.opcode == Opcode.CONST_16 && (clear as OneRegisterInstruction).registerA == p4 &&
             (clear as NarrowLiteralInstruction).narrowLiteral == 0
-        ) { "${screenClass.type}.${screen.name} does not start with const/16 p4, 0x0; got ${clear?.opcode}" }
-        check(screen.instructions().drop(1).any { it.opcode == Opcode.MOVE_OBJECT_FROM16 && (it as TwoRegisterInstruction).registerB == p4 }) {
+        ) { "${screenClass.type}.${screen.name} does not clear p4 (const/16 p4, 0x0) after the gate; got ${clear?.opcode}" }
+        check(screen.instructions().drop(5).any { it.opcode == Opcode.MOVE_OBJECT_FROM16 && (it as TwoRegisterInstruction).registerB == p4 }) {
             "${screenClass.type}.${screen.name} no longer reads p4"
         }
 
@@ -1377,6 +1578,11 @@ class TruecallerSmokeTest {
         check(insns[keep].opcode == Opcode.RETURN_OBJECT && (insns[keep] as OneRegisterInstruction).registerA == p1) {
             "$label does not end with return-object p1"
         }
+        // While Show caller number in call log is off, the helper returns the label at once (stock).
+        val body = assertGate(helper, SHOW_CALLER_NUMBER, label, branch = Opcode.IF_NEZ)
+        check(body == 5 && insns[4].opcode == Opcode.RETURN_OBJECT && (insns[4] as OneRegisterInstruction).registerA == p1) {
+            "$label does not return the label unchanged while its feature is off"
+        }
         // Each check reads its field from p0, and its first branch after the read keeps the label.
         fun Instruction.reads(expected: FieldReference, opcode: Opcode) = this.opcode == opcode && field()?.let {
             it.definingClass == expected.definingClass && it.name == expected.name && it.type == expected.type
@@ -1426,11 +1632,11 @@ class TruecallerSmokeTest {
             textInit?.definingClass == textType && textInit.name == "<init>" && textInit.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;") &&
             insns[keep - 1].opcode == Opcode.RETURN_OBJECT
         ) { "$label does not return a new $textType" }
-        // One catch-all for Exception over the whole body, handled by the keep exit.
+        // One catch-all for Exception over the whole body after the gate, handled by the keep exit.
         val offsets = insns.runningFold(0) { offset, instruction -> offset + instruction.codeUnits }
         val tryBlock = helper.implementation!!.tryBlocks.singleOrNull() ?: error("$label has no single try block")
         val handler = tryBlock.exceptionHandlers.singleOrNull()
-        check(tryBlock.startCodeAddress == 0 && tryBlock.codeUnitCount == offsets[keep] &&
+        check(tryBlock.startCodeAddress == offsets[body] && tryBlock.codeUnitCount == offsets[keep] - offsets[body] &&
             handler?.exceptionType == "Ljava/lang/Exception;" && handler.handlerCodeAddress == offsets[keep]
         ) { "$label: the try block does not cover the body with an Exception handler at the keep exit" }
 

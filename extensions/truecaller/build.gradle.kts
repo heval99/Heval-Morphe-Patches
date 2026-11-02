@@ -1,0 +1,17 @@
+// Truecaller helpers for Heval Controls: the "Heval Controls" row on the main Settings screen.
+// Builds extensions/truecaller.mpe; the Heval Controls core is not bundled here (the host patch
+// merges extensions/hevalcontrols.mpe), and the row opens the screen by class name, so this module
+// needs no compile dependency on it. See docs/heval-controls.md.
+extension {
+    name = "extensions/truecaller.mpe"
+}
+
+android {
+    namespace = "app.template.extension"
+}
+
+// Pure-Java extension. AGP's built-in Kotlin adds kotlin-stdlib by default, which would grow the
+// .mpe by ~2 MB and merge an unobfuscated Kotlin stdlib into the target app's dex.
+configurations.configureEach {
+    exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+}

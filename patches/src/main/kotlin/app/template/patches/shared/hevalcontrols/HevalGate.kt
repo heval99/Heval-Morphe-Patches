@@ -43,6 +43,46 @@ fun MutableMethod.addHevalGate(
     index: Int = 0,
     register: Int? = null,
     whenEnabled: (register: String) -> String,
+) = insertHevalGate(featureId, index, register, "if-eqz", whenEnabled)
+
+/**
+ * The inverse of [addHevalGate], for code the patch generated itself (a helper method that only
+ * exists in the patched app): while [featureId] is off, [whenDisabled] runs instead of the
+ * instruction at [index] and what follows; while it is on, execution falls into that code.
+ * ```
+ * const-string vX, "<featureId>"
+ * invoke-static/range { vX .. vX }, HevalSettings;->isEnabled(Ljava/lang/String;)Z
+ * move-result vX
+ * if-nez vX, :heval_stock
+ * <whenDisabled(vX)>         # the stock behaviour; must end with a return, throw or goto
+ * :heval_stock
+ * <original instruction at index>
+ * ```
+ * The label keeps its name: it marks the original instruction in both helpers. Register rules are
+ * those of [addHevalGate].
+ */
+fun MutableMethod.addHevalStockPath(
+    featureId: String,
+    index: Int = 0,
+    register: Int? = null,
+    whenDisabled: (register: String) -> String,
+) = insertHevalGate(featureId, index, register, "if-nez") { v ->
+    val path = whenDisabled(v).trimIndent()
+    val last = path.lineSequence().map(String::trim).lastOrNull(String::isNotEmpty).orEmpty()
+    if (STOCK_PATH_ENDS.none { last.startsWith(it) }) {
+        throw PatchException("$definingClass->$name: the stock path must end with a return, throw or goto, not \"$last\"")
+    }
+    path
+}
+
+private val STOCK_PATH_ENDS = listOf("return", "throw ", "goto")
+
+private fun MutableMethod.insertHevalGate(
+    featureId: String,
+    index: Int,
+    register: Int?,
+    branch: String,
+    body: (register: String) -> String,
 ) {
     require(HevalFeature.ID_REGEX.matches(featureId)) { "Invalid Heval Controls feature id: $featureId" }
     val implementation = implementation
@@ -74,8 +114,8 @@ fun MutableMethod.addHevalGate(
             const-string $v, "$featureId"
             invoke-static/range { $v .. $v }, $HEVAL_SETTINGS_CLASS->isEnabled(Ljava/lang/String;)Z
             move-result $v
-            if-eqz $v, :heval_stock
-        """.trimIndent() + "\n" + whenEnabled(v).trimIndent(),
+            $branch $v, :heval_stock
+        """.trimIndent() + "\n" + body(v).trimIndent(),
         ExternalLabel("heval_stock", anchor),
     )
 }

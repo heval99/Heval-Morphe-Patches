@@ -2189,6 +2189,23 @@ object Constants {
     //   drawable before) only styles the system starting window; tje.U setTheme()s the real theme
     //   before super.onCreate, and there is no SplashScreen API, keep-on-screen condition, pre-draw hold
     //   or timed splash activity. The Lottie "Page_SplashScreen" is a one-time onboarding wizard page.
+    // - 2026-11-02 (26.42.5): "Heval Controls" (default on) with 12 runtime switches. Entry: a
+    //   "Heval Controls" row after Help on the main Settings screen, added by
+    //   extensions/truecaller HevalControlsEntry.addRow(root) right after super.onViewCreated in
+    //   CategoriesFragment.onViewCreated (kept class name + "Missing required view with ID: "; the
+    //   row finds Help/About by the resource entry names item_help/item_about and copies Help's
+    //   style). Converted (Manager name, description and default unchanged; each switch defaults
+    //   on): Hide promotions, Disable nags, Disable auto-launch, Hide after-call screen for
+    //   contacts and Hide family button (each toggle override gets the feature gate between the key
+    //   match and the forced value, in all three resolvers); Hide business media (the toggles, a
+    //   gate at the screen's entry, and morpheBrandMedia(list) on the model class because its
+    //   constructor has no local register); Disable update prompts, Hide Assistant tab and Hide
+    //   Scam feed (gate at index 0); Hide Blocking tab, Show caller number in call log and Fix T9
+    //   contact search (stock path at index 0 of their own generated helper). Off = stock code
+    //   path. Verified: smoke test (gate shapes, registry, manifest, entry call), CLI without -f
+    //   (all 20 patches applied), apkanalyzer smali of onViewCreated, doo.a, the tabs helper and
+    //   morpheBrandMedia, aapt2 manifest (provider exported=false initOrder=1000, activity
+    //   exported=false) and string values (identical to a GmsCore-only build). Not run on a device.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",

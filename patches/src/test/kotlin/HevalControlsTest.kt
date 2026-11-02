@@ -5,6 +5,7 @@ import app.template.patches.shared.hevalcontrols.HevalFeature
 import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
 import app.template.patches.shared.hevalcontrols.addHevalControlsComponents
 import app.template.patches.shared.hevalcontrols.addHevalGate
+import app.template.patches.shared.hevalcontrols.addHevalStockPath
 import app.template.patches.shared.hevalcontrols.hevalReturnEarly
 import app.template.patches.shared.hevalcontrols.hevalReturnNull
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -229,6 +230,28 @@ class HevalControlsTest {
             ),
             method.implementation!!.instructions.map { it.opcode },
         )
+    }
+
+    @Test
+    fun stockPathRunsWhileTheFeatureIsOff() {
+        // A generated helper: the patched behaviour is the body; while off it returns at once.
+        val method = method("V", registers = 2, ImmutableInstruction11n(Opcode.CONST_4, 0, 1), ImmutableInstruction10x(Opcode.RETURN_VOID))
+        method.addHevalStockPath("demo.helper") { "return-void" }
+        val instructions = method.implementation!!.instructions.toList()
+        assertEquals(
+            listOf(
+                Opcode.CONST_STRING, Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_NEZ,
+                Opcode.RETURN_VOID, Opcode.CONST_4, Opcode.RETURN_VOID,
+            ),
+            instructions.map { it.opcode },
+        )
+        assertEquals("demo.helper", ((instructions[0] as ReferenceInstruction).reference as StringReference).string)
+        // On: jump over the stock path into the original code.
+        assertEquals(instructions[5], branchTarget(method, 3))
+
+        // A stock path that would fall through into the patched code is refused.
+        val other = method("V", registers = 2, ImmutableInstruction10x(Opcode.RETURN_VOID))
+        assertThrows<PatchException> { other.addHevalStockPath("demo.helper") { "const/4 v0, 0x0" } }
     }
 
     /** `invoke-static {}, Lcom/example/Feed;->f()<returnType>`. */
