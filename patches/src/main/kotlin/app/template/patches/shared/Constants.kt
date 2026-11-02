@@ -2168,8 +2168,9 @@ object Constants {
     //   removed, and the progress is set to 0 right before its cmpg-float against 0.1f, so the
     //   handler always takes the stop path (j99.a, Vibrator.cancel) and never starts the looping
     //   one-shot.
-    // 2026-11-02 (#116, 26.42.5; TruecallerSmokeTest + CLI without -f; the notification itself NOT
-    //   runtime-tested, it needs a real incoming call): Swap call answer and decline buttons now
+    // 2026-11-02 (#116, 26.42.5; TruecallerSmokeTest + CLI without -f + emulator with Truecaller
+    //   holding the dialer role: the patched heads-up shows Answer left / Decline right and the left
+    //   button answers; stock shows Decline left): Swap call answer and decline buttons now
     //   also swaps them in the incoming call notification. The builder (m5m.x here; the only static
     //   void method with "incoming_calls", "Answer" and "Decline") asks a ()Z check (sy8.a: SDK 31+,
     //   Firebase experiment "featureCallStyleNotifications_44143", maker/device not excluded) whether
