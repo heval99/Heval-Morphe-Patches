@@ -1,3 +1,14 @@
+## [2.2.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.1.0...v2.2.0-dev.1) (2026-11-02)
+
+### 🐛 Bug Fixes
+
+* **fotmob:** resolve the device font once and record the font hooks ([746aca2](https://github.com/heval99/Heval-Morphe-Patches/commit/746aca2d6f288a22c8807e4bef67441176053cae))
+* **fotmob:** use the device font in Use system font ([fc76111](https://github.com/heval99/Heval-Morphe-Patches/commit/fc761113daafd0c8453f657e626124efdf67325c))
+
+### ✨ New Features
+
+* **truecaller:** swap the buttons in the incoming call notification too ([48dced7](https://github.com/heval99/Heval-Morphe-Patches/commit/48dced7b9d38d4d9296b52985eac4163d19a8d26))
+
 ## [2.1.0](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.0.0...v2.1.0) (2026-11-02)
 
 ### 🐛 Bug Fixes

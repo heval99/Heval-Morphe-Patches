@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.1.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.1.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**218** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-02
+> **[v2.2.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.2.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**218** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-02
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -611,7 +611,7 @@ Verified on: `26.42.5`
 | 🧩 **Restore classic call log** | Experimental: restores the classic call log. | ➖ |
 | 🧩 **Show caller number in call log** | Shows the caller's number in the new call log for callers who aren't in your contacts. | ➖ |
 | 🧩 **Spoof signature** | Fixes Google features that check the app's original signature. | ✅ |
-| 🧩 **Swap call answer and decline buttons** | Puts the answer button on the left and the decline button on the right. | ➖ |
+| 🧩 **Swap call answer and decline buttons** | Puts the answer button on the left and the decline button on the right for incoming calls. | ➖ |
 | 🧩 **Use SMS for verification codes** | Reads the verification code from SMS. Verification can still fail on patched apps. | ➖ |
 
 </details>
