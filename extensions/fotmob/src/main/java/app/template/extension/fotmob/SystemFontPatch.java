@@ -91,14 +91,17 @@ public final class SystemFontPatch {
                 final_ = true;
             }
         } catch (Throwable ignored) {
-            // Fall back to the system resources below.
+            // The reflection itself is unavailable, so asking again would fail the same way:
+            // settle for the system resources below once instead of retrying on every call.
+            final_ = true;
         }
         if (resources == null) resources = Resources.getSystem();
         String b = string(resources, "config_bodyFontFamily");
         String m = string(resources, "config_bodyFontFamilyMedium");
         body = b == null || b.isEmpty() || b.equals(SANS_SERIF) ? null : b;
         bodyMedium = body == null || m == null || m.isEmpty() || m.equals("sans-serif-medium") ? null : m;
-        // Before the Application exists only the system resources answer; ask again later.
+        // Before the Application exists (currentApplication() returned null) only the system
+        // resources answer; ask again later.
         resolved = final_;
     }
 

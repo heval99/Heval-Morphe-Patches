@@ -313,9 +313,24 @@ object Constants {
             // the static <clinit> that stores `SDK_INT > 27 && language != "my"` into a boolean of
             // its own class (mf5 in 240) stores false, the static (Context, I, String, I)Typeface
             // loader that reads SDK_INT and calls both Typeface.create overloads (pae.k, 16 View
-            // callers) returns Typeface.create(family, style) at once, and the resource part sets
-            // the six font items of style Base.Theme.FotMob.V26 (values-v26) to the base theme's
-            // sans-serif families and TextAppearance.FotMob.Switch to sans-serif-medium.
+            // callers) returns at once (since the 2026-11-02 follow-up below, through the
+            // extension), and the resource part sets the six font items of style
+            // Base.Theme.FotMob.V26 (values-v26) to the base theme's sans-serif families and
+            // TextAppearance.FotMob.Switch to sans-serif-medium.
+            // 2026-11-02 (#110 follow-up): plain sans-serif is still Roboto on devices with their
+            // own UI font, so the patch now carries extensions/fotmob. SystemFontPatch maps
+            // sans-serif / sans-serif-medium / sans-serif-black (and null or "") to the device font
+            // named by the framework strings config_bodyFontFamily / config_bodyFontFamilyMedium,
+            // and passes every call through unchanged when the device has none. The loader (pae.k)
+            // returns SystemFontPatch.create(p2, p3); Compose's PlatformTypefacesApi28 factory
+            // (ComposePlatformTypefaceFingerprint, a library-shape anchor) starts with
+            // p0 = composeFamily(p0); every app-dex Typeface.create(String, int) is redirected to
+            // SystemFontPatch.create (the extension package is excluded, so its own fallback call
+            // stays direct). FingerprintProbe on 240: AppFontFlag (mf5.<clinit>),
+            // ComposePlatformTypeface (n07.a) and TypefaceLoader (pae.k) each OK-unique.
+            // Verified: FotMobSmokeTest, CLI without -f, decompile, and the emulator
+            // with the AOSP font overlay (Source Sans) showing the device font on the match list.
+            // Not verified: a real Pixel (Google Sans Text), other screens, OEM font changers.
             AppTarget(
                 version = "240.17974.20261023",
                 versionCode = 17974

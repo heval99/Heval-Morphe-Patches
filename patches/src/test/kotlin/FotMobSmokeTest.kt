@@ -248,6 +248,20 @@ class FotMobSmokeTest {
         )
         fun MethodReference.isCreateByName() = definingClass == TYPEFACE && name == "create" &&
             parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", "I")
+        // The redirect skips the extension package: its fallbacks (create's original call, the
+        // device-font lookups in map/weighted) must stay direct framework calls, or every
+        // Typeface.create would recurse into itself.
+        val extensionCreate = extension.method("create", listOf("Ljava/lang/String;", "I"))
+        assertTrue(
+            extensionCreate.instructions().any { it.methodRef()?.isCreateByName() == true },
+            "SystemFontPatch.create no longer falls back to Typeface.create(String, int) directly"
+        )
+        val selfCalls = extension.methods.flatMap { m ->
+            m.instructions().mapNotNull { it.methodRef() }
+                .filter { it.definingClass == SYSTEM_FONT_EXTENSION && it.name == "create" }
+                .map { "${m.name} -> ${it.name}" }
+        }
+        assertTrue(selfCalls.isEmpty(), "SystemFontPatch calls its own create (would recurse): $selfCalls")
         val direct = classes.filter { it.type != SYSTEM_FONT_EXTENSION }.flatMap { cls ->
             cls.methods.filter { m -> m.instructions().any { it.methodRef()?.isCreateByName() == true } }
                 .map { "${cls.type}->${it.name}" }
