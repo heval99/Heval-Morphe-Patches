@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.1.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.1.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**214** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-10-30
+> **[v2.1.0-dev.6](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.1.0-dev.6)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**218** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-02
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -61,7 +61,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-000000?style=flat-square" height="14" alt=""> | **Eurosport** | 🚫 🛡️ 🧩 3 | `8.34.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.eurosport) |
 | <img src="https://img.shields.io/badge/-%20-1E88E5?style=flat-square" height="14" alt=""> | **Flashscore** | 🚫 🛡️ 🔕 🧩 6 | `26.10.2` | APKS | [Play](https://play.google.com/store/apps/details?id=eu.livesport.FlashScore_com) |
 | <img src="https://img.shields.io/badge/-%20-2BC4CC?style=flat-square" height="14" alt=""> | **Forza Football** | 🚫 🛡️ 💎 🧩 5 | `6.15.10` | APKM | [Play](https://play.google.com/store/apps/details?id=se.footballaddicts.livescore) |
-| <img src="https://img.shields.io/badge/-%20-00985F?style=flat-square" height="14" alt=""> | **FotMob** | 🚫 🛡️ 💎 🔕 🧩 8 | `240.17974.20261023` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mobilefootie.wc2010) |
+| <img src="https://img.shields.io/badge/-%20-00985F?style=flat-square" height="14" alt=""> | **FotMob** | 🚫 🛡️ 💎 🔕 🧩 9 | `240.17974.20261023` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mobilefootie.wc2010) |
 | <img src="https://img.shields.io/badge/-%20-26A69A?style=flat-square" height="14" alt=""> | **Futbin** | 🚫 1 | `27.08` | APK | [Play](https://play.google.com/store/apps/details?id=com.futbin) |
 | <img src="https://img.shields.io/badge/-%20-0A1E32?style=flat-square" height="14" alt=""> | **L'Équipe** | 🚫 🧪 1 | `10.70.0` | APKM | [Play](https://play.google.com/store/apps/details?id=lequipe.fr) |
 | <img src="https://img.shields.io/badge/-%20-C8102E?style=flat-square" height="14" alt=""> | **Livescore** | 🚫 1 | `10.4` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
@@ -92,7 +92,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-2196F3?style=flat-square" height="14" alt=""> | **FairEmail** | 💎 1 | `1.2339` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
 | <img src="https://img.shields.io/badge/-%20-283167?style=flat-square" height="14" alt=""> | **mail.com** | 🚫 🛡️ 🔕 🧩 4 | `9.19.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mail.mobile.android.mail) |
 | <img src="https://img.shields.io/badge/-%20-5C6BC0?style=flat-square" height="14" alt=""> | **Textra** | 💎 1 | `4.87` | APKM | [Play](https://play.google.com/store/apps/details?id=com.textra) |
-| <img src="https://img.shields.io/badge/-%20-0087FF?style=flat-square" height="14" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 26 | `26.41.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
+| <img src="https://img.shields.io/badge/-%20-0087FF?style=flat-square" height="14" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 28 | `26.42.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
 
 #### 🎵 Music, podcasts & radio <sub>7 apps</sub>
 
@@ -153,7 +153,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-FFC107?style=flat-square" height="14" alt=""> | **#Notepad** | 🚫 💎 2 | `5.4.4.19080` | APKM | [Play](https://play.google.com/store/apps/details?id=com.ztnstudio.notepad) |
 | <img src="https://img.shields.io/badge/-%20-4D6BFE?style=flat-square" height="14" alt=""> | **Structured** | 💎 🔑 2 | `3.9.6` | APKM | [Play](https://play.google.com/store/apps/details?id=io.unorderly.structured) |
 | <img src="https://img.shields.io/badge/-%20-4CAF50?style=flat-square" height="14" alt=""> | **Tasker** | 💎 1 | `6.6.20` | APK | [Play](https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm) |
-| <img src="https://img.shields.io/badge/-%20-2E7D32?style=flat-square" height="14" alt=""> | **Taskito** | 💎 1 | `1.3.3` | APK | [Play](https://play.google.com/store/apps/details?id=com.fenchtose.reflog) |
+| <img src="https://img.shields.io/badge/-%20-2E7D32?style=flat-square" height="14" alt=""> | **Taskito** | 💎 🧩 2 | `1.3.3` | APK | [Play](https://play.google.com/store/apps/details?id=com.fenchtose.reflog) |
 | <img src="https://img.shields.io/badge/-%20-1E88E5?style=flat-square" height="14" alt=""> | **TimeTune** | 💎 1 | `5.6.3` | APK | [Play](https://play.google.com/store/apps/details?id=com.gmail.jmartindev.timetune) |
 | <img src="https://img.shields.io/badge/-%20-2F6FED?style=flat-square" height="14" alt=""> | **UpNote** | 💎 1 | `9.22.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.getupnote.android) |
 
@@ -340,7 +340,7 @@ Verified on: `6.15.10`
 
 </details>
 <details>
-<summary><b>FotMob</b> &nbsp;·&nbsp; 8 patches &nbsp;·&nbsp; <code>com.mobilefootie.wc2010</code></summary>
+<summary><b>FotMob</b> &nbsp;·&nbsp; 9 patches &nbsp;·&nbsp; <code>com.mobilefootie.wc2010</code></summary>
 
 Verified on: `240.17974.20261023`
 
@@ -354,6 +354,7 @@ Verified on: `240.17974.20261023`
 | 🧩 **GmsCore support** | Makes Google sign-in and Google services work. Requires MicroG RE. Sign in with the Sign in with Google button. | ➖ |
 | 🧩 **Hide betting content** | Hides odds and betting content. | ➖ |
 | 🧩 **Spoof signature** | Fixes Google features that check the app's original signature. | ➖ |
+| 🧩 **Use system font** | Uses the system font instead of the app's own font. | ➖ |
 
 </details>
 <details>
@@ -578,14 +579,15 @@ Verified on: `4.87`
 
 </details>
 <details>
-<summary><b>Truecaller</b> &nbsp;·&nbsp; 26 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
+<summary><b>Truecaller</b> &nbsp;·&nbsp; 28 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
 
-Verified on: `26.41.5`
+Verified on: `26.42.5`
 
 | Patch | What it does | Default |
 |---|---|:-:|
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
 | 🧩 **Disable auto-launch** | Stops Truecaller from opening itself in the background. | ✅ |
+| 🧩 **Disable call button haptics** | Stops the vibration when you answer or decline a call. | ➖ |
 | 🧩 **Disable contact upload** | Stops uploading your contacts. Chat can no longer find which contacts use it. | ✅ |
 | 🧩 **Disable nags** | Disables default dialer, permission and survey prompts. | ✅ |
 | 🛡️ **Disable telemetry** | Disables analytics, tracking and crash reporting. | ✅ |
@@ -609,6 +611,7 @@ Verified on: `26.41.5`
 | 🧩 **Restore classic call log** | Experimental: restores the classic call log. | ➖ |
 | 🧩 **Show caller number in call log** | Shows the caller's number in the new call log for callers who aren't in your contacts. | ➖ |
 | 🧩 **Spoof signature** | Fixes Google features that check the app's original signature. | ✅ |
+| 🧩 **Swap call answer and decline buttons** | Puts the answer button on the left and the decline button on the right. | ➖ |
 | 🧩 **Use SMS for verification codes** | Reads the verification code from SMS. Verification can still fail on patched apps. | ➖ |
 
 </details>
@@ -952,13 +955,14 @@ Verified on: `6.6.20`
 
 </details>
 <details>
-<summary><b>Taskito</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.fenchtose.reflog</code></summary>
+<summary><b>Taskito</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.fenchtose.reflog</code></summary>
 
 Verified on: `1.3.3`
 
 | Patch | What it does | Default |
 |---|---|:-:|
 | 💎 **Enable Premium** | Unlocks Taskito's premium features locally (account sync still needs an account). | ✅ |
+| 🧩 **Hide Premium tab** | Hides the Premium tab in the bottom bar. | ✅ |
 
 </details>
 <details>

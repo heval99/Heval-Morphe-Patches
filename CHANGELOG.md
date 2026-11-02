@@ -1,3 +1,17 @@
+## [2.1.0-dev.6](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.1.0-dev.5...v2.1.0-dev.6) (2026-11-02)
+
+### 🐛 Bug Fixes
+
+* **fotmob:** correct the 240.17974 versionCode ([0bc1de4](https://github.com/heval99/Heval-Morphe-Patches/commit/0bc1de42066de10e55537e6337f0d558305b7322))
+* **truecaller:** guard the toggle override and button swap inserts ([2986696](https://github.com/heval99/Heval-Morphe-Patches/commit/2986696e636bdca368bc01f8881904e7ce86f580))
+
+### ✨ New Features
+
+* **fotmob:** add Use system font ([386ad92](https://github.com/heval99/Heval-Morphe-Patches/commit/386ad92a422ec244a711de6448dd6ec04a20a772))
+* **taskito:** add Hide Premium tab ([6ec0fdc](https://github.com/heval99/Heval-Morphe-Patches/commit/6ec0fdc182a1f3112c06636ca7b27b41e49373ac))
+* **truecaller:** add Disable call button haptics ([8843842](https://github.com/heval99/Heval-Morphe-Patches/commit/88438423400adff7f1da257776d091815dd9aad4))
+* **truecaller:** add Swap call answer and decline buttons, updated to version 26.42.5 ([e5866d2](https://github.com/heval99/Heval-Morphe-Patches/commit/e5866d280b601b512205cb2a52ffb4bb23fd8681))
+
 ## [2.1.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.1.0-dev.4...v2.1.0-dev.5) (2026-10-30)
 
 ### 🐛 Bug Fixes
