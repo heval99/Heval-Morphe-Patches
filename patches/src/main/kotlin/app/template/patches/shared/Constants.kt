@@ -307,6 +307,15 @@ object Constants {
             // CN=Christer Nordvik cert). StaffAccountFingerprint gained the no-arg Boolean shape:
             // 240 has a second method holding the staff address (ks4.b(Lir4;)Z), which made the
             // string-only fingerprint match twice. All eight patches apply unchanged.
+            // 2026-11-02: "Use system font" (opt-in, issue #110) added on 240.17974.20261023,
+            // verified by FotMobSmokeTest and the Morphe matcher (FingerprintProbe, both
+            // OK-unique). It moves the app onto FotMob's own system-font path (its Burmese path):
+            // the static <clinit> that stores `SDK_INT > 27 && language != "my"` into a boolean of
+            // its own class (mf5 in 240) stores false, the static (Context, I, String, I)Typeface
+            // loader that reads SDK_INT and calls both Typeface.create overloads (pae.k, 16 View
+            // callers) returns Typeface.create(family, style) at once, and the resource part sets
+            // the six font items of style Base.Theme.FotMob.V26 (values-v26) to the base theme's
+            // sans-serif families and TextAppearance.FotMob.Switch to sans-serif-medium.
             AppTarget(
                 version = "240.17974.20261023",
                 versionCode = 17834
