@@ -507,8 +507,11 @@ object Constants {
         // per-activity presence check uses GameCenterBaseActivity (BaseActionBarActivity was renamed
         // u41). Disable update prompts anchors on the onCreate(Bundle) shape (both extras) instead
         // of the two class names.
+        // 2026-11-03: updated to 14.9.9 (versionCode 1499, Play arm64 build via gplaydl, same
+        // signer). All five patches apply unchanged (the ads-removed gate is oij.e in 14.9.9):
+        // Scores365SmokeTest passes and a CLI run without -f applied all five. Not runtime-tested.
         targets = listOf(
-            AppTarget(version = "14.9.8", versionCode = 1498)
+            AppTarget(version = "14.9.9", versionCode = 1499)
         )
     )
 
@@ -969,6 +972,15 @@ object Constants {
     // info were not shown by stock in that region, so they are untested.
     // 2026-10-14: Disable ads also no-ops the next-gen MobileAds (and Companion) setRequestConfiguration,
     // setUserMutedApp and setUserControlledAppVolume, which throw without init (rule 9).
+    // 2026-11-03: 26.11.4 (versionCode 525, Play arm64 build, same signer) checked and NOT taken;
+    // the target stays 26.10.2. Disable ads no longer holds: like 365Scores 14.9.8, R8 repackaged
+    // the next-gen Ads SDK into ads_mobile_sdk.* (only AdActivity and 6 internal classes keep
+    // their names), so the MobileAds, preloader and load hooks find nothing to patch, while the
+    // app's own interstitial manager ("ads_interstitial_display_count") still runs outside
+    // AdvertZone. Block marketing popups also drifted (the dialog show logic moved into
+    // EventListActivity.onResume, and the InAppStrip model moved to
+    // flashplatform/repository/inappStrip/models); both have a tested re-anchor, but the app is
+    // held until Disable ads gets a new app-layer anchor (lead: the ADS_ENABLED remote-config key).
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",
@@ -1721,13 +1733,17 @@ object Constants {
     // not-initialised branch (the one it uses when no WebView is available): app-open and
     // interstitial/rewarded fail at once and the user action continues, banner and native slots
     // wait at most 30 s. Smoke test and CLI disassembly pass; not runtime-tested.
+    // 2026-11-03: target moved to 6.7.1 (versionCode 23005545, Play arm64 build via gplaydl, same
+    // signing certificate). Both patches apply unchanged: BeSoccerSmokeTest passes (the app still
+    // makes the same nine next-gen SDK calls) and a CLI run without -f applied both; checkLicense
+    // and the MobileAds/load methods disassemble to an immediate return. Not runtime-tested.
     val COMPATIBILITY_BESOCCER = Compatibility(
         name = "BeSoccer",
         packageName = "com.resultadosfutbol.mobile",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x2E7D32,
         signatures = setOf("97f9d6deb3d9d3ca623528b77dddc530c49516c90e948628e0354bb530cc3b6f"), // CN=Alejandro Sanchez Blanes, O=Resultados-Futbol.com
-        targets = listOf(AppTarget(version = "6.7.0", versionCode = 23005544))
+        targets = listOf(AppTarget(version = "6.7.1", versionCode = 23005545))
     )
 
     // Verified 2026-10-07 against com.rawcam.app 1.4.3 (versionCode 55, APKPure split bundle
@@ -2789,13 +2805,19 @@ object Constants {
     // patched has every SportsAdCardView GONE, no ad containers, 0 IMA log lines, and videos
     // play. No BetMGM banner appeared on either build, so Hide betting promotions is
     // bytecode-verified only.
+    // 2026-11-03: target moved to 12.27.0 (versionCode 11168613, Play arm64 build via gplaydl, same
+    // signer). R8 now renames SapiMediaItem's methods (getAdTagUri is X2()) but keeps its field
+    // names, so the ad-tag getter is found by shape: the only no-arg String method reading the
+    // adTagUri field. The other three anchors are unchanged. YahooSportsSmokeTest passes, a CLI
+    // run without -f applied both patches, and X2() disassembles to const/4 0 + return-object.
+    // Not runtime-tested.
     val COMPATIBILITY_YAHOO_SPORTS = Compatibility(
         name = "Yahoo Sports",
         packageName = "com.yahoo.mobile.client.android.sportacular",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x6001D2, // Yahoo purple.
         signatures = setOf("d3f1fb1b2c81e096e3f5809a503afda0cfaf56b9d39dedc656ee2660acef614c"), // CN=Yahoo! mobile CA, O=Yahoo! Inc.
-        targets = listOf(AppTarget(version = "12.26.1", versionCode = 11168590))
+        targets = listOf(AppTarget(version = "12.27.0", versionCode = 11168613))
     )
 
     // Smoke-tested 2026-10-15 against com.pzolee.bluetoothscanner 1.9.3 (versionCode 93, APKPure
