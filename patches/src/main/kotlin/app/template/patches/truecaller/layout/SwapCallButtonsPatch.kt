@@ -6,6 +6,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.template.patches.shared.Constants.COMPATIBILITY_TRUECALLER
 import app.template.patches.shared.addInstructionsChecked
+import app.template.patches.shared.requireNoBranchTargetAt
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -46,6 +47,7 @@ val swapCallButtonsPatch = bytecodePatch(
             } ?: throw PatchException("No offset modifier before the \"$tag\" swipe button")
             // offset's first argument is x; neg-float takes 4-bit registers (checked).
             val x = method.getInstruction<FiveRegisterInstruction>(offsetIndex).registerC
+            method.requireNoBranchTargetAt(offsetIndex, "Swap call answer and decline buttons")
             method.addInstructionsChecked(offsetIndex, "neg-float v$x, v$x")
         }
     }

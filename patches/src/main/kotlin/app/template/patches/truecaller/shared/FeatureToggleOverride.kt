@@ -9,6 +9,7 @@ import app.morphe.patcher.string
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.template.patches.shared.addInstructionsWithLabelsChecked
+import com.android.tools.smali.dexlib2.AccessFlags
 
 private const val FEATURE_STATE = "Lcom/truecaller/featuretoggles/FeatureState;"
 
@@ -21,7 +22,7 @@ private const val FEATURE_STATE = "Lcom/truecaller/featuretoggles/FeatureState;"
 internal object FeatureToggleResolverFingerprint : Fingerprint(
     returnType = "Z",
     parameters = listOf("Ljava/lang/String;", FEATURE_STATE),
-    custom = { method, _ -> method.implementation != null },
+    custom = { method, _ -> method.implementation != null && !AccessFlags.STATIC.isSet(method.accessFlags) },
 )
 
 /** Every concrete feature-toggle resolver; fails when there is none. */
@@ -53,6 +54,10 @@ internal fun BytecodePatchContext.requireFeatureToggleRead(key: String) {
  */
 internal fun BytecodePatchContext.overrideFeatureToggle(key: String, value: Boolean) {
     for (resolver in featureToggleResolvers()) {
+        // v0 must be a local, not this/key/state (a thin wrapper without locals would be clobbered).
+        if (resolver.implementation!!.registerCount <= 3) {
+            throw PatchException("Feature toggle resolver $resolver has no local register for the override")
+        }
         // p1 is the key (compared null-safely); v0 is a local every resolver writes before reading.
         resolver.addInstructionsWithLabelsChecked(
             0,
