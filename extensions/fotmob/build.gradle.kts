@@ -1,9 +1,18 @@
+// FotMob helpers: "Use system font", the animation speed and activity hooks, and the "Patch
+// settings" row on FotMob's Settings screen. Builds extensions/fotmob.mpe; the Heval Controls core
+// is not bundled here (the host patch merges extensions/hevalcontrols.mpe), so it is a compileOnly
+// dependency. See docs/heval-controls.md.
 extension {
     name = "extensions/fotmob.mpe"
 }
 
 android {
     namespace = "app.template.extension"
+}
+
+dependencies {
+    // HevalSettings. compileOnly: one copy of the core, from hevalcontrols.mpe.
+    compileOnly(project(":extensions:hevalcontrols:core"))
 }
 
 // Pure-Java extension. AGP's built-in Kotlin adds kotlin-stdlib by default, which would grow the
