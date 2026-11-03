@@ -1,5 +1,5 @@
 // Sofascore helpers for Patch settings: the "Patch settings" row on the Settings screen and the
-// runtime hooks of the Sofascore features (modal queue, match tabs, sports list, animation speed,
+// runtime hooks of the Sofascore features (modal queue, match tabs, sports list, hidden countries, animation speed,
 // widget refresh). Builds
 // extensions/sofascore.mpe; the Heval Controls core is compileOnly (the host patch merges
 // extensions/hevalcontrols.mpe), so this .mpe never carries a second copy of it.

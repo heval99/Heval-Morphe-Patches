@@ -35,6 +35,13 @@ object Constants {
 
     // 2026-10-12 APK-finder audit: only distributed as a split bundle (APKMirror BUNDLE /
     // APKPure-Uptodown XAPK), so apkFileType is APKM; any "universal APK" note below is outdated.
+    // 2026-11-03: "Hide countries" (opt-in, Patch settings list sofascore.hidden_countries) on
+    // 26.10.19. Anchors: the kept model getters SportCategoriesResponse/CategoriesForDateResponse
+    // .getCategories and SearchResponse.getResults, the request lambdas calling the kept Retrofit
+    // methods NetworkCoroutineAPI.sportLiveEvents / getIndexedEventsPage (their case's return), the
+    // country list <clinit> (Country constructor calls, read at patch time for the picker seeds) and
+    // ReleaseApp.onCreate; all OK-unique in FingerprintProbe. Smoke test, CLI without -f (all 18
+    // Sofascore patches) and a disassembly of every hook pass; NOT runtime-tested yet.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",
