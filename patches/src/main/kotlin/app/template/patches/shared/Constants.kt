@@ -221,7 +221,7 @@ object Constants {
             //     shows was read from call sites only.
             // FingerprintProbe: SettingsFragmentViewCreated and HomeSport OK-unique; all older ones
             // unchanged (TennisPromoSheet stays the documented optional miss). Smoke test green.
-            // Not run on the emulator.
+            // 2026-11-03 emulator (patched build of the release batch, stock control): cold start OK, the Patch settings row sits after Preferences, Hide Tennis removed Tennis from the sport strip and picker after a restart.
             AppTarget(
                 version = "26.10.19",
                 versionCode = 261019002
@@ -541,7 +541,7 @@ object Constants {
         // of the two class names.
         // 2026-11-03: updated to 14.9.9 (versionCode 1499, Play arm64 build via gplaydl, same
         // signer). All five patches apply unchanged (the ads-removed gate is oij.e in 14.9.9):
-        // Scores365SmokeTest passes and a CLI run without -f applied all five. Not runtime-tested.
+        // Scores365SmokeTest passes and the smoke test applies all five; a CLI run without -f applied the three default ones. 2026-11-03 emulator (patched build of the release batch, stock control): two cold starts, no crash.
         targets = listOf(
             AppTarget(version = "14.9.9", versionCode = 1499)
         )
@@ -813,7 +813,7 @@ object Constants {
     // kept com.google.android.gms.auth.api.signin classes and the "<<default account>>" methods.
     // isGooglePlayServicesAvailable, location, Home/Matter, Maps, Dynamite, FCM and the c2dm
     // manifest entries are untouched. Smoke test (bytecode + manifest) and a CLI run without -f;
-    // NOT runtime-tested (needs a Google account signed in to MicroG RE on the emulator).
+    // 2026-11-03 emulator (patched build of the release batch, stock control): Google Drive backup sign-in showed MicroG RE's account picker and signed in.
     val COMPATIBILITY_TASKER = Compatibility(
         name = "Tasker",
         packageName = "net.dinglisch.android.taskerm",
@@ -1745,7 +1745,7 @@ object Constants {
     // 2026-11-03: target moved to 6.7.1 (versionCode 23005545, Play arm64 build via gplaydl, same
     // signing certificate). Both patches apply unchanged: BeSoccerSmokeTest passes (the app still
     // makes the same nine next-gen SDK calls) and a CLI run without -f applied both; checkLicense
-    // and the MobileAds/load methods disassemble to an immediate return. Not runtime-tested.
+    // and the MobileAds/load methods disassemble to an immediate return. 2026-11-03 emulator (patched build of the release batch, stock control): two cold starts, no crash.
     val COMPATIBILITY_BESOCCER = Compatibility(
         name = "BeSoccer",
         packageName = "com.resultadosfutbol.mobile",
@@ -2276,9 +2276,9 @@ object Constants {
     //   layouts), HevalControlsTest (skip gate, value helper), CLI without -f (defaults + all 20
     //   features applied), apkanalyzer smali of every site above, aapt2 resource table (9 new
     //   layouts, stock ids unchanged) and xmltree (stock layouts decline-first, copies answer-first,
-    //   copy includes point at the copies). Not run on a device (no emulator in this pass).
+    //   copy includes point at the copies). 2026-11-03 emulator (patched build of the release batch, stock control): the Patch settings screen lists all 20 switches and a toggle is stored.
     // 2026-11-03 (#116 follow-up, 26.42.5; TruecallerSmokeTest + CLI without -f + aapt2 xmltree,
-    //   NOT run on a device): with Swap call answer and decline buttons on, the Android 12+ heads-up
+    //   emulator 2026-11-03: Answer left and Decline right fully inside the card at font scale 1.0 and 1.3, stock order with the switch off): with Swap call answer and decline buttons on, the Android 12+ heads-up
     //   clipped the bottom of Truecaller's text buttons (the system caps a decorated custom view at
     //   136dp, 96dp of content; notification_call_incoming_big needs ~95dp). In the
     //   notification_call_incoming_big_heval_swapped copy only, the button row's marginTop is 8dp
@@ -2856,7 +2856,7 @@ object Constants {
     // names, so the ad-tag getter is found by shape: the only no-arg String method reading the
     // adTagUri field. The other three anchors are unchanged. YahooSportsSmokeTest passes, a CLI
     // run without -f applied both patches, and X2() disassembles to const/4 0 + return-object.
-    // Not runtime-tested.
+    // 2026-11-03 emulator (patched build of the release batch, stock control): two cold starts, no crash.
     val COMPATIBILITY_YAHOO_SPORTS = Compatibility(
         name = "Yahoo Sports",
         packageName = "com.yahoo.mobile.client.android.sportacular",

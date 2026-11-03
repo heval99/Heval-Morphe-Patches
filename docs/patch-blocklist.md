@@ -105,8 +105,7 @@ not the story.
 
 ## Known fingerprint drift (re-anchor later, app stays supported)
 
-| App | Last good | Failing on |
-|---|---|---|
+None at the moment.
 
 Re-anchored and bytecode-verified on 2026-09-18 (removed from this table):
 - FotMob 237.17536.20260911 (storage-agnostic getter search)
