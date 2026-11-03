@@ -21,7 +21,8 @@ Status (2026-11-03): Truecaller 26.42.5 ships it. Its "Patch settings" patch (de
 are runtime switches (`truecaller/controls/TruecallerControls.kt` and the patches that use
 `truecallerControls.featurePatch`; list in [Truecaller features](#truecaller-features)). Sofascore
 26.10.19 ships it too: a "Patch settings" row after Preferences on its Settings screen, with
-switches for sports, match tabs, pop-ups, promo sections and three converted patches
+switches for sports, match tabs, pop-ups, promo sections, animation speed, widget refresh and
+three converted patches
 (`sofascore/controls/SofascoreControls.kt`; list in [Sofascore features](#sofascore-features)). LinkedIn
 4.1.1261 was the first app (an in-app entry row in
 the home nav panel and runtime features). It was removed on 2026-10-15 after the test account was
@@ -322,9 +323,26 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.hide_betting_content` | Hide betting content | on | no | its forced values |
 | `sofascore.block_marketing_notifications` | Block marketing notifications | on | no | its dismiss, keep-gone and in-app message sites |
 | `sofascore.disable_rating_prompts` | Disable rating prompts | on | no | its forced value |
+| `sofascore.animations_off` | Animation speed | off | yes | `AnimationSpeed.init` first in ReleaseApp.onCreate, every app call to `Settings.Global.getFloat` (`AnimationSpeed.getFloat`) |
+| `sofascore.animations_fast` | Animation speed | off | yes | the same sites |
+| `sofascore.slower_widget_refresh` | Slower widget refresh | off | yes | widget refresh interval (`widgetRefreshInterval`) |
 
 A hidden sport never empties the sport list: if every sport is hidden, the filter returns the full
-list, and a hidden home sport falls back to the first visible one. Not converted: Disable ads,
+list, and a hidden home sport falls back to the first visible one.
+
+Animation speed (2026-11-03) is a three-way choice made of two switches, because the registry only
+has on/off switches: "Turn off animations" (scale 0, no activity transitions) wins over "Faster
+animations" (the system animator scale times 0.5), and with both off every hook passes the system
+value through. `extensions/sofascore` `AnimationSpeed` scales only the "animator_duration_scale"
+key in the redirected `getFloat` calls (Compose's motion scale, Material indicators, Lottie), sets
+ValueAnimator's duration scale through the hidden `setDurationScale` (reflection; a blocked call is
+logged once under the `HevalControls` tag and the getFloat part still works) and keeps it set when
+the framework resets it (a duration-scale listener on API 33+, and before each activity is created).
+Slower widget refresh changes the widget work's repeat interval from 30 minutes to one hour; the
+app enqueues it with the UPDATE policy from the widget receiver's onEnabled/onUpdate, so a change
+applies at the widget's next update.
+
+Not converted: Disable ads,
 Enable Premium, Disable telemetry, Disable Facebook SDK, GmsCore support and Spoof signature.
 
 ## App-specific Java helpers

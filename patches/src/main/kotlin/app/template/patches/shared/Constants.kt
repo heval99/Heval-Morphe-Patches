@@ -222,6 +222,32 @@ object Constants {
             // FingerprintProbe: SettingsFragmentViewCreated and HomeSport OK-unique; all older ones
             // unchanged (TennisPromoSheet stays the documented optional miss). Smoke test green.
             // Not run on the emulator.
+            // 2026-11-03 speed work on 26.10.19 (owner-approved):
+            //   - Disable ads also skips the ad SDK start-up components, in bytecode (the patch has
+            //     no resource pass): onCreate()Z of IronsourceLifecycleProvider,
+            //     LevelPlayActivityLifecycleProvider, MBComponentLifecycleProvider and VungleProvider
+            //     returns true, and Unity's AdsSdkInitializer.create(Context)Object returns
+            //     Boolean.FALSE (all manifest-named, so the names are kept). An absent class is
+            //     skipped. PicassoProvider is left alone (only stores a context; Picasso.get()
+            //     throws without it).
+            //   - Disable telemetry: FIAM's data-collection getter (no-arg Z holding
+            //     "firebase_inapp_messaging_auto_data_collection_enabled" + "auto_init", p5d.T here)
+            //     returns false, so no campaign fetch; EmojiCompatInitializer.create returns
+            //     Boolean.FALSE (all 17 EmojiCompat.get() users are androidx code behind
+            //     isConfigured()). AppsFlyer init is left: start/logEvent/logSession are already
+            //     no-ops, init only sets local state in an obfuscated coroutine (with the deep-link
+            //     subscription), and the invite-link generator reads its UID.
+            //   - New Animation speed (opt-in; switches "Turn off animations" and "Faster
+            //     animations", both off, restart): ReleaseApp.onCreate()V calls AnimationSpeed.init
+            //     first, and all 12 Settings.Global.getFloat(ContentResolver, String, F) callers
+            //     (all read "animator_duration_scale") call the extension's same-signature getFloat.
+            //   - New Slower widget refresh (opt-in switch, off): the static (Context)V holding
+            //     "enqueueUniquePeriodic_widget_periodic_refresh" and const-class
+            //     WidgetPeriodicRefreshWorker (kv9.U here) passes its 1800000 interval through
+            //     widgetRefreshInterval before the iput-wide (1 h while on; flex stays 30 min).
+            //   FingerprintProbe: ReleaseAppOnCreate, InAppMessagingDataCollection and
+            //   WidgetPeriodicRefresh OK-unique. Smoke test and CLI without -f (all 17 patches) pass,
+            //   and every changed site was checked in the patched APK. Not run on the emulator.
             AppTarget(
                 version = "26.10.19",
                 versionCode = 261019002

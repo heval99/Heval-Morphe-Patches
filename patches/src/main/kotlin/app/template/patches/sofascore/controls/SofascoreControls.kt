@@ -11,6 +11,9 @@ internal const val SOFASCORE_CONTROLS_ENTRY = "Lapp/template/extension/sofascore
 /** The Sofascore runtime hooks (modal queue, match tabs, sports list) in extensions/sofascore. */
 internal const val SOFASCORE_CONTROLS = "Lapp/template/extension/sofascore/SofascoreControls;"
 
+/** The "Animation speed" hooks (getFloat redirect, ValueAnimator scale, transitions) in extensions/sofascore. */
+internal const val SOFASCORE_ANIMATION_SPEED = "Lapp/template/extension/sofascore/AnimationSpeed;"
+
 /** Categories of the Sofascore features, in the order a full patch set usually registers them. */
 internal object SofascoreControlsCategory {
     const val POPUPS = "Pop-ups & promotions"
@@ -18,6 +21,7 @@ internal object SofascoreControlsCategory {
     const val SPORTS = "Sports"
     const val BETTING = "Betting"
     const val PROMO_SECTIONS = "Promo sections"
+    const val PERFORMANCE = "Speed & battery"
 }
 
 /**
