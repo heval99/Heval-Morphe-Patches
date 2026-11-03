@@ -8,7 +8,10 @@ only at startup.
 Status (2026-11-03): Truecaller 26.42.5 ships it. Its "Heval Controls" patch (default on) adds a
 "Heval Controls" row below Help on the main Settings screen, and 20 converted Truecaller patches
 are runtime switches (`truecaller/controls/TruecallerControls.kt` and the patches that use
-`truecallerControls.featurePatch`; list in [Truecaller features](#truecaller-features)). LinkedIn
+`truecallerControls.featurePatch`; list in [Truecaller features](#truecaller-features)). Sofascore
+26.10.19 ships it too: a "Heval Controls" row after Preferences on its Settings screen, with
+switches for sports, match tabs, pop-ups, promo sections and three converted patches
+(`sofascore/controls/SofascoreControls.kt`; list in [Sofascore features](#sofascore-features)). LinkedIn
 4.1.1261 was the first app (an in-app entry row in
 the home nav panel and runtime features). It was removed on 2026-10-15 after the test account was
 banned, so the LinkedIn names below are examples only. The design study, with alternatives and the
@@ -21,6 +24,7 @@ HushMessenger analysis, is kept outside the repo; this page is the developer gui
 - [Adding Heval Controls to an app](#adding-heval-controls-to-an-app)
 - [Feature hook example](#feature-hook-example)
 - [Truecaller features](#truecaller-features)
+- [Sofascore features](#sofascore-features)
 - [App-specific Java helpers](#app-specific-java-helpers)
 - [What cannot be toggled at runtime](#what-cannot-be-toggled-at-runtime)
 - [Crash guard and safe mode](#crash-guard-and-safe-mode)
@@ -290,6 +294,27 @@ the feature is on, the stock id while it is off.
 
 Not converted: Disable ads, Disable telemetry, Disable contact upload, Enable Premium, GmsCore
 support, Spoof signature, Hide Wear OS settings and Use SMS for verification codes.
+
+## Sofascore features
+
+Sofascore 26.10.19 (2026-11-03). Unlike Truecaller, most Sofascore patches hold several
+switches: each switch is registered only when its anchor exists in the app. Switches marked
+"off" start off, so the app is stock until the user turns them on.
+
+| Feature id | Patch | Default | Restart | Gated sites |
+|---|---|---|---|---|
+| `sofascore.hide_sport_<slug>` (25, `-` as `_`) | Hide sports | off | yes | sport_order queries (`filterSportOrders`, `filterSportNames`), home sport getter (`visibleSport`) |
+| `sofascore.hide_ai_insights` | Hide AI insights | on | no | EventHeadFlags `getAiInsights` (flag and not switch) |
+| `sofascore.hide_tab_<tab>` (commentary, crowdsourcing, media, graphs, standings, cup_tree, matches) | Hide match tabs | off | no | EventHeadFlags getters, the match page tab check (`isEventTabHidden`) |
+| `sofascore.hide_modal_<key>` (match_of_the_week, remove_ads, promotion, weekly_challenge, survey, propose_follow) | Hide promo pop-ups | on | no | modal queue enqueue and evaluator (`hideModal`) |
+| `sofascore.hide_promo_<id>` (10 Remote Config keys) | Hide promo sections | off | yes | Remote Config boolean getter (`hidePromoSection`) |
+| `sofascore.hide_betting_content` | Hide betting content | on | no | its forced values |
+| `sofascore.block_marketing_notifications` | Block marketing notifications | on | no | its dismiss, keep-gone and in-app message sites |
+| `sofascore.disable_rating_prompts` | Disable rating prompts | on | no | its forced value |
+
+A hidden sport never empties the sport list: if every sport is hidden, the filter returns the full
+list, and a hidden home sport falls back to the first visible one. Not converted: Disable ads,
+Enable Premium, Disable telemetry, Disable Facebook SDK, GmsCore support and Spoof signature.
 
 ## App-specific Java helpers
 
