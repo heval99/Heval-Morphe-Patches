@@ -75,12 +75,14 @@ public final class CountryFilter {
 
     /**
      * Patched in before every return of ReleaseApp.onCreate (and called by the hooks if they run
-     * first): offers the app's countries in the picker.
+     * first): offers the app's countries in the picker, with their flags (CountryIcons).
      */
     public static void init() {
         if (seeded) return;
         seeded = true;
         try {
+            // The picker's flags (never saved, never used for filtering).
+            HevalSettings.setOptionIconProvider(LIST_ID, CountryIcons.INSTANCE);
             String encoded = seeds();
             if (encoded == null || encoded.isEmpty()) return;
             Map<String, String> options = new HashMap<>(512);

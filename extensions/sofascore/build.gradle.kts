@@ -14,6 +14,10 @@ android {
 
 dependencies {
     compileOnly(project(":extensions:hevalcontrols:core"))
+
+    // JVM unit tests of the pure-Java flag helpers (CountryIconsTest): .\gradlew :extensions:sofascore:testDebugUnitTest
+    testImplementation(project(":extensions:hevalcontrols:core"))
+    testImplementation(libs.junit)
 }
 
 // Pure-Java extension. AGP's built-in Kotlin adds kotlin-stdlib by default, which would grow the

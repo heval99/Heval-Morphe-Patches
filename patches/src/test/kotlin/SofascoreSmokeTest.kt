@@ -767,6 +767,15 @@ class SofascoreSmokeTest {
         }) { "ReleaseApp.onCreate does not call CountryFilter.init() before every return-void" }
         check(onCreateInsns.count { it.call()?.definingClass == COUNTRY_FILTER } == returns.size) { "CountryFilter.init() called off a return" }
 
+        // Picker flags (2026-11-03): CountryFilter.init registers CountryIcons. Codes outside ISO
+        // alpha-2 need their own case in CountryIcons (SX is ISO, Sint Maarten, but Scotland here).
+        assertOptionIconsWired(byType, filter.methods.single { it.name == "init" }, "Lapp/template/extension/sofascore/CountryIcons;")
+        val iso = java.util.Locale.getISOCountries().toSet() + "XK"
+        val nonIso = lines.map { it.substringBefore('\t') }.filterNot { it in iso }.toSet()
+        check((nonIso - setOf("EN", "WA", "NX", "TU", "SW")).isEmpty()) {
+            "Sofascore codes outside ISO alpha-2: $nonIso; give the new ones a flag in CountryIcons"
+        }
+
         // Getters: iget-object vX; vX = CountryFilter.<helper>(vX); return-object vX.
         for ((type, getter, helper) in listOf(
             Triple("Lcom/sofascore/model/newNetwork/SportCategoriesResponse;", "getCategories", "filterCategories"),

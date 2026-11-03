@@ -259,10 +259,13 @@ final class ListPicker {
 
     static final class Option {
         final String key, label, folded;
+        /** Drawn before the label (an emoji flag), or null. Not searched, sorted on or spoken. */
+        final String icon;
 
-        Option(String key, String label) {
+        Option(String key, String label, String icon) {
             this.key = key;
             this.label = label;
+            this.icon = icon;
             this.folded = fold(label) + "\n" + fold(key);
         }
     }
@@ -283,10 +286,17 @@ final class ListPicker {
     private final class OptionAdapter extends BaseAdapter {
         private final List<Option> all = new ArrayList<>();
         private final List<Option> visible = new ArrayList<>();
+        /** Whether any option has an icon: then every row keeps an icon column, so labels line up. */
+        private boolean icons;
 
         void load(Map<String, String> options) {
             all.clear();
-            for (Map.Entry<String, String> entry : options.entrySet()) all.add(new Option(entry.getKey(), entry.getValue()));
+            icons = false;
+            for (Map.Entry<String, String> entry : options.entrySet()) {
+                String icon = HevalSettings.optionIcon(feature.id, entry.getKey());
+                if (icon != null) icons = true;
+                all.add(new Option(entry.getKey(), entry.getValue(), icon));
+            }
             final Collator collator = Collator.getInstance();
             collator.setStrength(Collator.SECONDARY);
             Collections.sort(all, new Comparator<Option>() {
@@ -335,6 +345,9 @@ final class ListPicker {
             holder.option = option;
             holder.hidden = hidden;
             holder.label.setText(option.label);
+            holder.icon.setText(option.icon == null ? "" : option.icon);
+            // No icon column at all when the list has none (the original look).
+            holder.icon.setVisibility(!icons ? View.GONE : option.icon == null ? View.INVISIBLE : View.VISIBLE);
             holder.check.setChecked(hidden);
             if (Build.VERSION.SDK_INT >= 30) {
                 holder.row.setContentDescription(option.label);
@@ -346,9 +359,13 @@ final class ListPicker {
         }
     }
 
-    /** One checklist row: the label and a checkbox that only shows the state (the row is the target). */
+    /**
+     * One checklist row: an optional icon, the label and a checkbox that only shows the state (the
+     * row is the target). The row is spoken by its content description, so the icon is not read.
+     */
     private final class Holder {
         final LinearLayout row = views.row();
+        final TextView icon = views.text("", 20, palette.text, false);
         final TextView label = views.text("", 16, palette.text, false);
         final CheckBox check = new CheckBox(activity);
         Option option;
@@ -357,6 +374,15 @@ final class ListPicker {
         Holder() {
             row.setMinimumHeight(views.dp(52));
             row.setPaddingRelative(views.dp(16), views.dp(4), views.dp(8), views.dp(4));
+            // A fixed-width column, so the labels line up whatever the icon's width.
+            icon.setGravity(Gravity.CENTER);
+            icon.setSingleLine(true);
+            icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            icon.setVisibility(View.GONE);
+            LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(
+                    views.dp(32), ViewGroup.LayoutParams.WRAP_CONTENT);
+            iconParams.setMarginEnd(views.dp(12));
+            row.addView(icon, iconParams);
             row.addView(label, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
             check.setFocusable(false);
             check.setClickable(false);

@@ -64,6 +64,7 @@ Java classes (package `app.template.extension.hevalcontrols`):
 | `HevalSettings` (core) | The engine. `isEnabled(String)` is the hot path that every hook calls. |
 | `Registry`, `RegistryCodec`, `Feature` (core) | Hold the feature list that the patch writes at patch time, and decode it. |
 | `CrashGuard` (core) | Counts quick crashes at startup and turns on safe mode. |
+| `OptionIcons` (core) | Builds emoji flags for list pickers (see [List settings](#list-settings-pickers)). |
 | `PrefsStore`, `Store`, `AppContext` (core) | Store choices in SharedPreferences, and provide the context and process helpers. |
 | `InitProvider` | A non-exported ContentProvider that starts the engine and the crash guard before `Application.onCreate`. |
 | `ui.HevalControlsActivity`, `ui.Views`, `ui.Palette`, `ui.Diagnostics` | The settings screen, with every view built in code. |
@@ -466,6 +467,7 @@ can never be on by default (an empty list is the default and is stock) or build-
 | `static void registerOptions(String listId, Map<String,String> keyToLabel)` | Static seed options (a bundled list), in memory for this process only, merged across calls. Call it from code that runs at process start so the picker has them. |
 | `static void reportOptionsSeen(String listId, String key, String label)` | The app showed this option; the picker will offer it. Persisted under `o.<id>`, written in a background batch about 1.5 s after the first new option. A known key with the same label costs two map lookups and no IO. |
 | `static void reportOptionsSeen(String listId, Map<String,String> keyToLabel)` | The same for several options. |
+| `static void setOptionIconProvider(String listId, HevalSettings.OptionIconProvider provider)` | Optional per-option icon (null removes it): `provider.iconFor(key)` returns a short text such as an emoji flag, or null. In memory for this process only, like the seeds; icons are never saved and never decide what is hidden. Register it with the seeds. |
 
 For the settings screen (also public): `setHidden(String, Set<String>)`, `setHidden(String, String,
 boolean)`, `clearHidden(String)`, `pickedHidden(String)` (the picks ignoring pause and safe mode)
@@ -513,6 +515,19 @@ alphabetical checklist (locale collation). Every tap is saved at once. Each chec
 48 dp+ focus stop, announced as a checkbox with its label and "Hidden" or "Shown". Back or Done
 returns to the main screen; the open picker and its search survive rotation and theme changes.
 With no options yet it says "Nothing to pick yet. Items appear here after the app has shown them."
+
+**Icons** (2026-11-03, for country flags): when the list has an icon provider, each row draws its
+icon in a fixed-width column before the label (a row without one keeps the column empty, so labels
+line up; a list without any icons looks as before). Sorting and search use only the label and the
+key, and the row is spoken by its label, never the icon. `HevalSettings.optionIcon(listId, key)`
+is the picker's lookup: it drops a blank, multi-line or over-32-character answer and a provider
+that throws. `OptionIcons` (core) builds the emoji: `countryFlag("DE")` (regional-indicator pair,
+only for two letters A-Z), `subdivisionFlag("gbeng")` and the `ENGLAND`, `SCOTLAND`, `WALES`,
+globe and trophy constants. Sofascore maps its alpha2 keys (EN, SX = Scotland, WA, NX = United
+Kingdom, TU = Tuvalu, SW = Sint Maarten) and region slugs in `extensions/sofascore` `CountryIcons`;
+FotMob maps its FIFA codes through a FIFA -> ISO table in `extensions/fotmob` `CountryIcons` (ANT,
+Netherlands Antilles, has no flag). Both are checked by `CountryIconsTest`
+(`:extensions:<app>:testDebugUnitTest`). A font without a flag shows the two letters instead.
 
 **Diagnostics** list a list feature as `<id>: <state>, list, picked=N, hidden_now=N, options=N`:
 counts only, never keys or labels.

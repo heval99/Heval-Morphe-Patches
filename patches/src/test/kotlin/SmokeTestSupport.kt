@@ -361,3 +361,29 @@ fun patchedApkClasses(apk: File): List<ClassDef> {
     )
     return classes
 }
+
+/**
+ * Picker icons of a Heval Controls list setting (2026-11-03): [init] hands [provider]'s INSTANCE to
+ * HevalSettings.setOptionIconProvider, [provider] implements HevalSettings.OptionIconProvider, and
+ * the core (OptionIcons, HevalSettings.optionIcon) and the picker that draws the icons were merged.
+ */
+fun assertOptionIconsWired(byType: Map<String, ClassDef>, init: Method, provider: String) {
+    val settings = "Lapp/template/extension/hevalcontrols/HevalSettings;"
+    val providerInterface = "Lapp/template/extension/hevalcontrols/HevalSettings\$OptionIconProvider;"
+    val icons = byType[provider] ?: error("$provider not found in the emitted dexes")
+    assertTrue(providerInterface in icons.interfaces, "$provider does not implement $providerInterface")
+    assertTrue(byType.containsKey("Lapp/template/extension/hevalcontrols/OptionIcons;"), "OptionIcons was not merged")
+    fun Instruction.call() = ((this as? ReferenceInstruction)?.reference as? MethodReference)
+    val insns = init.instructions()
+    val register = insns.indexOfFirst {
+        it.call()?.let { r -> r.definingClass == settings && r.name == "setOptionIconProvider" } == true
+    }
+    assertTrue(register > 0, "${init.definingClass}->${init.name} does not call HevalSettings.setOptionIconProvider")
+    assertTrue(insns.subList(0, register).any {
+        it.opcode == Opcode.SGET_OBJECT && ((it as ReferenceInstruction).reference as FieldReference).definingClass == provider
+    }, "${init.definingClass}->${init.name} does not pass $provider's instance")
+    val picker = byType.filterKeys { it.startsWith("Lapp/template/extension/hevalcontrols/ui/ListPicker") }.values
+    assertTrue(picker.flatMap { it.methods }.flatMap { it.instructions() }.any {
+        it.call()?.let { r -> r.definingClass == settings && r.name == "optionIcon" } == true
+    }, "ListPicker does not ask HevalSettings.optionIcon")
+}

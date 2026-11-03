@@ -51,11 +51,13 @@ public final class CountryFilter {
     private CountryFilter() {
     }
 
-    /** From ActivityHooks.register (FotMobApp.onCreate): the picker's country list. */
+    /** From ActivityHooks.register (FotMobApp.onCreate): the picker's country list and flags. */
     public static void init(Application application) {
         try {
             if (application != null) context = application.getApplicationContext();
             HevalSettings.registerOptions(LIST_ID, CountrySeeds.NAMES);
+            // The picker's flags (never saved, never used for filtering).
+            HevalSettings.setOptionIconProvider(LIST_ID, CountryIcons.INSTANCE);
         } catch (Throwable failure) {
             Log.w(TAG, "Country seeds not registered: " + failure.getClass().getName());
         }

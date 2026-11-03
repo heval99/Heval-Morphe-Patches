@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * effective set is non-empty. The picker lists the options that app extensions supply through
  * {@link #registerOptions(String, Map)} (static seeds, this process only) and
  * {@link #reportOptionsSeen(String, String, String)} (persisted, at most {@value #MAX_OPTIONS} per
- * list).
+ * list), each optionally with an icon from {@link #setOptionIconProvider} (in memory, never saved).
  */
 @SuppressWarnings("unused")
 public final class HevalSettings {
@@ -94,6 +94,10 @@ public final class HevalSettings {
     private static final Map<String, String> failures = new ConcurrentHashMap<>();
     /** Static options per list, from {@link #registerOptions}. Each value is immutable. */
     private static final Map<String, Map<String, String>> seeds = new ConcurrentHashMap<>();
+    /** Option icons per list, from {@link #setOptionIconProvider}. In memory only. */
+    private static final Map<String, OptionIconProvider> iconProviders = new ConcurrentHashMap<>();
+    /** The longest icon {@link #optionIcon} passes on (a tag-sequence flag is 14 chars). */
+    public static final int MAX_ICON_LENGTH = 32;
     /** Seen options not yet persisted, per list. */
     private static final Map<String, ConcurrentHashMap<String, String>> pendingOptions = new ConcurrentHashMap<>();
     private static final AtomicBoolean flushScheduled = new AtomicBoolean();
@@ -427,6 +431,54 @@ public final class HevalSettings {
             if (!all.containsKey(key)) all.put(key, key);
         }
         return all;
+    }
+
+    /**
+     * Supplies the icon of a picker option: a short text drawn before its label, such as an emoji
+     * flag ({@link OptionIcons}). Called by the picker while it loads, never by a hook.
+     */
+    public interface OptionIconProvider {
+        /** The icon of option {@code key}, or null for none. */
+        String iconFor(String key);
+    }
+
+    /**
+     * Sets the icon provider of list feature {@code listId} (null removes it). Kept in memory for
+     * this process only, like {@link #registerOptions}: icons are never saved and never change what
+     * is hidden. Register it from the same process-start code as the seeds. Never throws.
+     */
+    public static void setOptionIconProvider(String listId, OptionIconProvider provider) {
+        try {
+            if (listId == null) return;
+            if (provider == null) iconProviders.remove(listId);
+            else iconProviders.put(listId, provider);
+        } catch (Throwable ignored) {
+            // Icons are cosmetic.
+        }
+    }
+
+    /**
+     * The icon of option {@code key} of list feature {@code listId}, trimmed, or null: when no
+     * provider is set, or it answers null, blank, longer than {@value #MAX_ICON_LENGTH} chars or with
+     * a tab or line break, or it throws. Never throws.
+     */
+    public static String optionIcon(String listId, String key) {
+        try {
+            if (listId == null || key == null) return null;
+            OptionIconProvider provider = iconProviders.get(listId);
+            if (provider == null) return null;
+            String icon = provider.iconFor(key);
+            if (icon == null) return null;
+            icon = icon.trim();
+            if (icon.isEmpty() || icon.length() > MAX_ICON_LENGTH) return null;
+            for (int i = 0; i < icon.length(); i++) {
+                char c = icon.charAt(i);
+                if (c == '\t' || c == '\n' || c == '\r') return null;
+            }
+            return icon;
+        } catch (Throwable ignored) {
+            return null;
+        }
     }
 
     private static void scheduleOptionsFlush() {
@@ -809,6 +861,7 @@ public final class HevalSettings {
             engineError = null;
             failures.clear();
             seeds.clear();
+            iconProviders.clear();
             pendingOptions.clear();
             flushScheduled.set(false);
             synchronousOptionsFlush = false;

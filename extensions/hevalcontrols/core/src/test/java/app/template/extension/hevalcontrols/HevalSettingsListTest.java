@@ -305,4 +305,70 @@ public class HevalSettingsListTest {
         // Seeds are not persisted.
         assertEquals(set("ES\tSpain"), store.values.get("o.countries"));
     }
+
+    @Test
+    public void optionIconsComeFromTheListsProviderAndAreNeverPersisted() {
+        HevalSettings.initForTests(store);
+        // No provider: no icon, also before one is set or for a null id/key.
+        assertNull(HevalSettings.optionIcon("countries", "ES"));
+        assertNull(HevalSettings.optionIcon(null, "ES"));
+
+        HevalSettings.setOptionIconProvider("countries", new HevalSettings.OptionIconProvider() {
+            @Override
+            public String iconFor(String key) {
+                switch (key) {
+                    case "boom": throw new IllegalStateException("provider bug");
+                    case "blank": return "  ";
+                    case "tab": return "a\tb";
+                    case "long": return "123456789012345678901234567890123";
+                    case "padded": return " x ";
+                    default: return OptionIcons.countryFlag(key);
+                }
+            }
+        });
+        assertEquals("🇪🇸", HevalSettings.optionIcon("countries", "ES"));
+        assertNull(HevalSettings.optionIcon("countries", null));
+        assertNull(HevalSettings.optionIcon("countries", "slug:world")); // the provider's null
+        assertNull(HevalSettings.optionIcon("countries", "boom"));       // a throwing provider
+        assertNull(HevalSettings.optionIcon("countries", "blank"));
+        assertNull(HevalSettings.optionIcon("countries", "tab"));
+        assertNull(HevalSettings.optionIcon("countries", "long"));
+        assertEquals("x", HevalSettings.optionIcon("countries", "padded"));
+        // Per list: another list has no provider.
+        assertNull(HevalSettings.optionIcon("late.list", "ES"));
+
+        // Icons never reach storage, the options or the picks.
+        HevalSettings.reportOptionsSeen("countries", "ES", "Spain");
+        HevalSettings.setHidden("countries", set("ES"));
+        assertEquals(set("ES\tSpain"), store.values.get("o.countries"));
+        assertEquals("Spain", HevalSettings.options("countries").get("ES"));
+        assertEquals(set("ES"), HevalSettings.getHidden("countries"));
+
+        // Null removes the provider.
+        HevalSettings.setOptionIconProvider("countries", null);
+        assertNull(HevalSettings.optionIcon("countries", "ES"));
+    }
+
+    @Test
+    public void optionIconsBuildFlags() {
+        assertEquals("🇩🇪", OptionIcons.countryFlag("DE"));
+        assertEquals("🇩🇪", OptionIcons.countryFlag("de"));
+        assertEquals("🇽🇰", OptionIcons.countryFlag("XK"));
+        assertNull(OptionIcons.countryFlag(null));
+        assertNull(OptionIcons.countryFlag("D"));
+        assertNull(OptionIcons.countryFlag("DEU"));
+        assertNull(OptionIcons.countryFlag("D1"));
+        assertNull(OptionIcons.countryFlag("ÄD"));
+        // England: black flag, tags g b e n g, cancel tag.
+        assertEquals(new String(new int[] {0x1F3F4, 0xE0067, 0xE0062, 0xE0065, 0xE006E, 0xE0067, 0xE007F}, 0, 7),
+                OptionIcons.ENGLAND);
+        assertEquals(new String(new int[] {0x1F3F4, 0xE0067, 0xE0062, 0xE0073, 0xE0063, 0xE0074, 0xE007F}, 0, 7),
+                OptionIcons.SCOTLAND);
+        assertEquals(new String(new int[] {0x1F3F4, 0xE0067, 0xE0062, 0xE0077, 0xE006C, 0xE0073, 0xE007F}, 0, 7),
+                OptionIcons.WALES);
+        assertTrue(OptionIcons.ENGLAND.length() <= HevalSettings.MAX_ICON_LENGTH);
+        assertNull(OptionIcons.subdivisionFlag("GBENG"));
+        assertNull(OptionIcons.subdivisionFlag("gb"));
+        assertNull(OptionIcons.subdivisionFlag("gb-eng"));
+    }
 }

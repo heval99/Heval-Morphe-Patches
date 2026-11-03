@@ -366,6 +366,10 @@ class FotMobSmokeTest {
         val register = byType.getValue(ACTIVITY_HOOKS).method("register", listOf("Landroid/app/Application;")).instructions()
         assertTrue(register.any { it.methodRef()?.let { r -> r.definingClass == COUNTRY_FILTER && r.name == "init" } == true },
             "ActivityHooks.register does not call CountryFilter.init")
+        // Picker flags (2026-11-03): CountryFilter.init registers CountryIcons (FIFA -> ISO table,
+        // every seed code covered: extensions/fotmob CountryIconsTest).
+        assertOptionIconsWired(byType, byType.getValue(COUNTRY_FILTER).method("init", listOf("Landroid/app/Application;")),
+            "Lapp/template/extension/fotmob/CountryIcons;")
     }
 
     // Slower live refresh: in the match page ticker (found like the fingerprint), the const/16 15
