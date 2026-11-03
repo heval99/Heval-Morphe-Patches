@@ -363,6 +363,35 @@ object Constants {
             // Verified: FotMobSmokeTest, CLI without -f, decompile, and the emulator
             // with the AOSP font overlay (Source Sans) showing the device font on the match list.
             // Not verified: a real Pixel (Google Sans Text), other screens, OEM font changers.
+            // 2026-11-03 (owner-approved speed work + Patch settings), on 240.17974.20261023,
+            // verified by FotMobSmokeTest (CLI/decompile/runtime status: see that day's report):
+            // - "Patch settings" (host, default on): a row after Support on SettingsActivity
+            //   (manifest activity, name kept): onCreate calls HevalControlsEntry.addRow(this) right
+            //   after setContentView, and the row inflates the stock settings_line_left_icon layout.
+            //   FotMobApp.onCreate (manifest Application) registers extensions/fotmob ActivityHooks
+            //   after super.onCreate() for the display features.
+            // - Converted to switches (ids fotmob.<feature>, default on, Manager defaults unchanged):
+            //   Hide betting content, Disable rating prompts, Disable FotMob+ promo popup (gates at
+            //   index 0) and Use system font (restart; the font flag store goes through a (Z)Z value
+            //   helper, the loader is gated, the extension checks the switch, and the resource part
+            //   no longer edits Base.Theme.FotMob.V26 / TextAppearance.FotMob.Switch in place: it adds
+            //   HevalSystemFontOverlay (+ HevalSystemFontSwitch/-SwitchText), applied to each
+            //   activity's theme in onActivityCreated while the switch is on).
+            // - New switches (opt-in): "Turn off animations" / "Faster animations" (restart; every
+            //   app Settings.Global.getFloat(ContentResolver, String, float) - 11 methods - calls
+            //   AnimationSpeed.getFloat, which changes only animator_duration_scale; ValueAnimator
+            //   duration scale set by reflection on resume, API 33+ listener, API 34+ no activity
+            //   transitions for Off; Off wins) and "Slower live refresh" (MatchActivity's 1 s ticker
+            //   in a switch-merged Runnable, pz.run in 240: the const/16 15 before the if-lt that
+            //   leads to "Refreshing match facts!" goes through an (I)I helper answering 30).
+            // - Disable ads also returns true at once from AudienceNetworkContentProvider.onCreate
+            //   and VungleProvider.onCreate (manifest names). Disable telemetry also stops the
+            //   Remote Config realtime stream (the synchronized (J)V of the class holding
+            //   "/namespaces/firebase:streamFetchInvalidations", p82.e), forces the
+            //   "enable_appsflyer_sdk" read to false (rb5.invokeSuspend; AppsFlyer is never
+            //   initialised, so click.fotmob.com OneLink deep links no longer resolve in the app;
+            //   the firebase.test.lab check is untouched) and returns TRUE from
+            //   EmojiCompatInitializer.create (EmojiCompat stays unconfigured).
             AppTarget(
                 version = "240.17974.20261023",
                 versionCode = 17974

@@ -36,6 +36,7 @@ HushMessenger analysis, is kept outside the repo; this page is the developer gui
 - [Feature hook example](#feature-hook-example)
 - [Truecaller features](#truecaller-features)
 - [Sofascore features](#sofascore-features)
+- [FotMob features](#fotmob-features)
 - [App-specific Java helpers](#app-specific-java-helpers)
 - [What cannot be toggled at runtime](#what-cannot-be-toggled-at-runtime)
 - [Crash guard and safe mode](#crash-guard-and-safe-mode)
@@ -326,6 +327,29 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 A hidden sport never empties the sport list: if every sport is hidden, the filter returns the full
 list, and a hidden home sport falls back to the first visible one. Not converted: Disable ads,
 Enable Premium, Disable telemetry, Disable Facebook SDK, GmsCore support and Spoof signature.
+
+## FotMob features
+
+FotMob 240.17974.20261023 (2026-11-03). The "Patch settings" row sits after Support on FotMob's
+Settings screen (`fotmob/controls/FotMobControls.kt`, `HevalControlsEntry` in `extensions/fotmob`).
+Every switch defaults on once its patch is selected; the Manager names, descriptions and defaults
+did not change for the converted patches.
+
+| Feature id | Patch | Manager default | Restart | Gated sites |
+|---|---|---|---|---|
+| `fotmob.hide_betting_content` | Hide betting content | off | no | odds gate (index 0) |
+| `fotmob.disable_rating_prompts` | Disable rating prompts | on | no | RatingAppMessage producer (index 0) |
+| `fotmob.disable_plus_promo_popup` | Disable FotMob+ promo popup | on | no | PlusPromoConfig reader (index 0) |
+| `fotmob.use_system_font` | Use system font | off | yes | font flag store (value helper), Typeface loader (index 0), `SystemFontPatch` (create, composeFamily, theme overlay) |
+| `fotmob.disable_animations` | Turn off animations | off | yes | `AnimationSpeed` (getFloat redirect, ValueAnimator scale, transitions) |
+| `fotmob.faster_animations` | Faster animations | off | yes | `AnimationSpeed` (half the system animator scale) |
+| `fotmob.slower_live_refresh` | Slower live refresh | off | no | match page ticker limit 15 -> 30 (value helper) |
+
+Turn off animations wins when both animation switches are on. Use system font keeps the stock theme
+resources: its resource part only adds the `HevalSystemFontOverlay` styles, and
+`ActivityHooks.onActivityCreated` applies them to each new screen while the switch is on. The
+activity hooks are registered from `FotMobApp.onCreate`. Not converted: Disable ads, Disable
+telemetry, Enable FotMob+, GmsCore support and Spoof signature.
 
 ## App-specific Java helpers
 
