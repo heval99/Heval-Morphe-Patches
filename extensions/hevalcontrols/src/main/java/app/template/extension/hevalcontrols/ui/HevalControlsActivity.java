@@ -3,6 +3,7 @@
 // banner with Resume, sensitive clipboard copy and a restart through Intent.makeRestartActivityTask;
 // modified 2026-10-14: new, much smaller screen for the patch-time registry (categories, states, restart badge),
 // minSdk 23 guards, light/dark/AMOLED palettes, OnBackInvokedCallback on API 33+, row-level accessibility.
+// 2026-11-03: list settings (a row per list feature and the ListPicker panel).
 
 package app.template.extension.hevalcontrols.ui;
 
@@ -23,6 +24,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -47,6 +49,9 @@ import app.template.extension.hevalcontrols.Registry;
  * The Patch settings screen. Declared {@code exported="false"} by the patch: only the
  * patched app itself can open it, through {@link #open(Context)} from an in-app entry point. It
  * reads nothing from its intent, so starting it can never change a setting.
+ *
+ * <p>A list feature gets a row with an "N hidden" summary; tapping it shows {@link ListPicker} in
+ * place of the main screen (back or Done returns).
  *
  * <p>Extension points for later steps (not built yet): search above the categories, import and
  * export next to "Copy diagnostics", and profiles as a section after the master pause.
@@ -76,6 +81,13 @@ public final class HevalControlsActivity extends Activity {
     private LinearLayout pauseRow;
     private final List<FeatureRow> rows = new ArrayList<>();
     private Object backCallback;
+    private LinearLayout root;
+    private ScrollView scroll;
+    /** The open list picker, or null. */
+    private ListPicker picker;
+
+    private static final String STATE_PICKER = "heval_picker";
+    private static final String STATE_QUERY = "heval_picker_query";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +99,7 @@ public final class HevalControlsActivity extends Activity {
         setTitle(TITLE);
         views = new Views(this, palette);
 
-        LinearLayout root = views.column();
+        root = views.column();
         root.setBackgroundColor(palette.background);
         // Follows the locale; the host's android:supportsRtl still decides whether RTL applies.
         root.setLayoutDirection(View.LAYOUT_DIRECTION_LOCALE);
@@ -95,7 +107,7 @@ public final class HevalControlsActivity extends Activity {
         root.setFilterTouchesWhenObscured(true);
         applyInsets(root);
 
-        ScrollView scroll = new ScrollView(this);
+        scroll = new ScrollView(this);
         scroll.setFillViewport(true);
         scroll.setClipToPadding(false);
         LinearLayout content = views.column();
@@ -104,9 +116,27 @@ public final class HevalControlsActivity extends Activity {
         root.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
         setContentView(root);
         configureSystemBars();
+        // The picker's search field: below API 30 the window resizes for the keyboard; on API 30+
+        // the root is padded by the IME inset instead (edge-to-edge windows are not resized).
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+                | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         build(content);
         refresh();
+
+        // Reopen the picker after a configuration change (rotation, theme switch).
+        String open = savedInstanceState == null ? null : savedInstanceState.getString(STATE_PICKER);
+        Feature reopen = open == null ? null : Registry.get().feature(open);
+        if (reopen != null && reopen.isList()) openPicker(reopen, savedInstanceState.getString(STATE_QUERY));
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (picker != null) {
+            outState.putString(STATE_PICKER, picker.feature.id);
+            outState.putString(STATE_QUERY, picker.query());
+        }
     }
 
     // -------------------------------------------------------------------------------------------
@@ -233,7 +263,7 @@ public final class HevalControlsActivity extends Activity {
             for (Feature feature : category.getValue()) {
                 if (!first) views.divider(card);
                 first = false;
-                card.addView(featureRow(feature));
+                card.addView(feature.isList() ? listRow(feature) : featureRow(feature));
             }
             views.add(content, card, 8);
         }
@@ -301,12 +331,14 @@ public final class HevalControlsActivity extends Activity {
     }
 
     private static String featureCounts(Registry registry) {
-        int runtime = 0, buildTime = 0;
+        int runtime = 0, buildTime = 0, lists = 0;
         for (Feature feature : registry.features()) {
             if (feature.buildTimeOnly) buildTime++;
+            else if (feature.isList()) lists++;
             else runtime++;
         }
-        return runtime + " runtime, " + buildTime + " patch-time";
+        return runtime + " runtime, " + (lists > 0 ? lists + (lists == 1 ? " list, " : " lists, ") : "")
+                + buildTime + " patch-time";
     }
 
     private View notice(String title, String body, int color, int fill) {
@@ -469,6 +501,53 @@ public final class HevalControlsActivity extends Activity {
         return row;
     }
 
+    /**
+     * A list feature: name, description and an "N hidden" state line; tapping opens the picker.
+     * Spoken as a button with the summary as its state.
+     */
+    private View listRow(final Feature feature) {
+        LinearLayout stateLine = views.row();
+        TextView state = views.text("", 12, palette.muted, true);
+        stateLine.addView(state);
+        if (feature.restartRequired) {
+            TextView badge = views.badge("Restart", palette.warning, palette.warningSurface);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.setMarginStart(views.dp(8));
+            stateLine.addView(badge, params);
+        }
+        final LinearLayout row = switchRow(feature.name, feature.description, null, null);
+        ((LinearLayout) row.getChildAt(0)).addView(stateLine, topMargin(6));
+        TextView edit = views.text("Edit", 14, palette.accent, true);
+        edit.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.setMarginStart(views.dp(12));
+        row.addView(edit, params);
+        rows.add(new FeatureRow(feature, row, null, state));
+        row.setClickable(true);
+        row.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (HevalSettings.missingDependency(feature) != null) return;
+                openPicker(feature, null);
+            }
+        });
+        row.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setClassName(Button.class.getName());
+            }
+        });
+        return row;
+    }
+
+    /** "None hidden", "1 hidden", "12 hidden". */
+    static String hiddenSummary(int count) {
+        return count == 0 ? "None hidden" : count + " hidden";
+    }
+
     private LinearLayout.LayoutParams topMargin(int dp) {
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -529,6 +608,10 @@ public final class HevalControlsActivity extends Activity {
             boolean chosen = HevalSettings.isChosen(feature.id);
             String text;
             int color;
+            if (feature.isList()) {
+                updateList(current, inactive, paused, safeMode, failed);
+                return;
+            }
             switch (current) {
                 case ENABLED:
                     text = "On";
@@ -564,6 +647,98 @@ public final class HevalControlsActivity extends Activity {
             }
             row.setAlpha(inactive && !feature.buildTimeOnly ? 0.6f : 1f);
             describe(row, feature.name + (feature.description.isEmpty() ? "" : ". " + feature.description), text);
+        }
+
+        private void updateList(HevalSettings.State current, boolean inactive, boolean paused, boolean safeMode, boolean failed) {
+            int count = HevalSettings.pickedHidden(feature.id).size();
+            String picked = hiddenSummary(count);
+            String text;
+            int color;
+            switch (current) {
+                case UNSUPPORTED:
+                    text = "Unsupported: needs " + HevalSettings.missingDependency(feature) + ", which is not in this app";
+                    color = palette.error;
+                    break;
+                case FAILED:
+                    text = picked + ". Failed, using stock behaviour";
+                    color = palette.error;
+                    break;
+                case RESTART_REQUIRED:
+                    text = picked + ", restart required";
+                    color = palette.warning;
+                    break;
+                case ENABLED:
+                    text = picked;
+                    color = palette.success;
+                    break;
+                default:
+                    text = count == 0 ? picked : picked + (failed ? " (settings unavailable)" : safeMode ? " (safe mode)"
+                            : paused ? " (paused)" : " (needs " + dependencyNames(feature) + ")");
+                    color = palette.muted;
+                    break;
+            }
+            state.setText(text);
+            state.setTextColor(color);
+            row.setAlpha(inactive ? 0.6f : 1f);
+            describe(row, feature.name + (feature.description.isEmpty() ? "" : ". " + feature.description), text);
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------
+    // List picker
+    // -------------------------------------------------------------------------------------------
+
+    /** Shows the picker of a list feature in place of the main screen. */
+    void openPicker(Feature feature, String query) {
+        if (picker != null) closePicker(false);
+        picker = new ListPicker(this, views, palette, feature);
+        scroll.setVisibility(View.GONE);
+        root.addView(picker.panel, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+        picker.start(query);
+        updateBackCallback();
+    }
+
+    /** Back to the main screen, with the list row focused again. */
+    void closePicker(boolean restoreFocus) {
+        ListPicker open = picker;
+        if (open == null) return;
+        picker = null;
+        open.dismissKeyboard();
+        root.removeView(open.panel);
+        scroll.setVisibility(View.VISIBLE);
+        refresh();
+        updateBackCallback();
+        if (restoreFocus) {
+            for (FeatureRow row : rows) {
+                if (row.feature == open.feature) {
+                    row.row.requestFocus();
+                    row.row.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED);
+                    break;
+                }
+            }
+        }
+    }
+
+    /** Back closes the picker, then the reset confirmation; otherwise the system back applies. */
+    boolean handleBack() {
+        if (picker != null) {
+            closePicker(true);
+            return true;
+        }
+        if (resetConfirm != null && resetConfirm.getVisibility() == View.VISIBLE) {
+            setResetConfirmation(false);
+            return true;
+        }
+        return false;
+    }
+
+    private void updateBackCallback() {
+        if (Build.VERSION.SDK_INT < 33) return;
+        boolean wanted = picker != null || (resetConfirm != null && resetConfirm.getVisibility() == View.VISIBLE);
+        if (wanted && backCallback == null) backCallback = Api33.register(this);
+        else if (!wanted && backCallback != null) {
+            Api33.unregister(this, backCallback);
+            backCallback = null;
         }
     }
 
@@ -633,29 +808,20 @@ public final class HevalControlsActivity extends Activity {
         else resetButton.requestFocus();
         // Back closes the confirmation while it is open; otherwise the system back (and its
         // predictive animation) applies.
-        if (Build.VERSION.SDK_INT >= 33) {
-            if (open && backCallback == null) backCallback = Api33.register(this);
-            else if (!open && backCallback != null) {
-                Api33.unregister(this, backCallback);
-                backCallback = null;
-            }
-        }
+        updateBackCallback();
     }
 
     /**
      * Below API 33, or when the host has not opted in to OnBackInvokedCallback. With predictive
      * back (targetSdk 36+ on Android 16) this is not called; the callback registered in
-     * {@link #setResetConfirmation(boolean)} handles back instead, so lint's migration advice
+     * {@link #updateBackCallback()} handles back instead, so lint's migration advice
      * (androidx OnBackPressedDispatcher, unavailable here) does not apply.
      */
     @Override
     @SuppressWarnings("deprecation")
     @android.annotation.SuppressLint("GestureBackNavigation")
     public void onBackPressed() {
-        if (resetConfirm != null && resetConfirm.getVisibility() == View.VISIBLE) {
-            setResetConfirmation(false);
-            return;
-        }
+        if (handleBack()) return;
         super.onBackPressed();
     }
 
@@ -668,7 +834,7 @@ public final class HevalControlsActivity extends Activity {
         super.onDestroy();
     }
 
-    private void toast(String message) {
+    void toast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
@@ -707,7 +873,9 @@ public final class HevalControlsActivity extends Activity {
     @TargetApi(30)
     private static final class Api30 {
         static void padForSystemBars(View view, WindowInsets insets) {
-            android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+            // The keyboard (the picker's search field) counts as a bottom bar.
+            android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars()
+                    | WindowInsets.Type.displayCutout() | WindowInsets.Type.ime());
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
         }
 
@@ -733,7 +901,7 @@ public final class HevalControlsActivity extends Activity {
             OnBackInvokedCallback callback = new OnBackInvokedCallback() {
                 @Override
                 public void onBackInvoked() {
-                    activity.setResetConfirmation(false);
+                    activity.handleBack();
                 }
             };
             activity.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, callback);

@@ -6,6 +6,8 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.template.patches.shared.hevalcontrols.HEVAL_SETTINGS_CLASS
 import app.template.patches.shared.hevalcontrols.HevalFeature
+import app.template.patches.shared.hevalcontrols.HevalFeatureKind
+import app.template.patches.shared.hevalcontrols.HevalListFeature
 import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
 import app.template.patches.shared.hevalcontrols.addHevalControlsComponents
 import app.template.patches.shared.hevalcontrols.addHevalGate
@@ -72,6 +74,45 @@ class HevalControlsTest {
         assertTrue(fixture.isFile, "missing ${fixture.path}")
         // core.autocrlf may check the fixture out with CRLF; the encoder (and the dex) use LF.
         assertEquals(fixture.readText(Charsets.UTF_8).replace("\r\n", "\n"), HevalRegistryCodec.encode(fixtureFeatures))
+    }
+
+    @Test
+    fun listEncoderMatchesTheListFixtureSharedWithTheJavaDecoder() {
+        val features = listOf(
+            HevalFeature("demo.hide_ads", "Hide ads", "Removes banner and feed ads.", "Ads"),
+            HevalListFeature(
+                "demo.hidden_countries", "Hidden countries",
+                "Leagues from the picked countries are hidden.", "Leagues", restartRequired = true,
+            ),
+            HevalListFeature("demo.hidden_teams", "Hidden teams", "Needs ads off.", "Teams", dependencies = listOf("demo.hide_ads")),
+        )
+        val fixture = File(repoRoot(), "extensions/hevalcontrols/core/src/test/resources/registry-v1-lists.txt")
+        assertTrue(fixture.isFile, "missing ${fixture.path}")
+        assertEquals(fixture.readText(Charsets.UTF_8).replace("\r\n", "\n"), HevalRegistryCodec.encode(features))
+    }
+
+    @Test
+    fun switchRecordsKeepTheirEightFields() {
+        // Codec compatibility: adding list settings must not change how switches are written, so
+        // feature ids and registries encoded before 2026-11-03 decode the same.
+        val switches = HevalRegistryCodec.encode(fixtureFeatures).lines().drop(1).filter { it.isNotEmpty() }
+        switches.forEach { assertEquals(8, it.split('\t').size, it) }
+        val list = HevalRegistryCodec.encode(listOf(HevalListFeature("demo.list", "List", "", "X"))).lines()[1]
+        assertEquals(listOf("demo.list", "List", "", "X", "0", "0", "0", "", "list"), list.split('\t'))
+    }
+
+    @Test
+    fun listFeatureValidation() {
+        val list = HevalListFeature("demo.countries", "Hidden countries", "", "Leagues")
+        assertEquals(HevalFeatureKind.LIST, list.kind)
+        assertEquals(false, list.default)
+        assertEquals(false, list.buildTimeOnly)
+        assertEquals(HevalFeatureKind.SWITCH, HevalFeature("demo.a", "A", "", "X").kind)
+        assertThrows<IllegalArgumentException> { HevalFeature("demo.a", "A", "", "X", kind = HevalFeatureKind.LIST) }
+        assertThrows<IllegalArgumentException> {
+            HevalFeature("demo.a", "A", "", "X", default = false, buildTimeOnly = true, kind = HevalFeatureKind.LIST)
+        }
+        assertThrows<IllegalArgumentException> { HevalListFeature("Bad-Id", "A", "", "X") }
     }
 
     @Test
