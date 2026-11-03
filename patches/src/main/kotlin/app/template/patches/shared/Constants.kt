@@ -632,7 +632,10 @@ object Constants {
             // update-scout row said 1.100.36, but that tag is a Nightly build
             // (com.brave.browser_nightly); the stable "Latest" release is 1.98.62, so that is the
             // target. Brave Origin applies unchanged.
-            AppTarget(version = "1.98.62"),
+            // 2026-11-03: updated to 1.98.63 (versionCode 429806304, GitHub "Latest" release
+            // Bravearm64Universal.apk, same signer); Brave Origin applies unchanged; smoke + CLI
+            // without -f.
+            AppTarget(version = "1.98.63"),
         )
     )
 
@@ -674,8 +677,11 @@ object Constants {
             // 2026-10-29: target moved 1.98.60 -> 1.98.62 (versionCode 429806204, GitHub release
             // Bravearm64Universal.apk). All three experimental patches apply unchanged without -f;
             // BraveSmokeTest passes.
+            // 2026-11-03: updated to 1.98.63 (versionCode 429806304, GitHub "Latest" release
+            // Bravearm64Universal.apk), all three experimental patches apply unchanged; smoke +
+            // CLI without -f.
             AppTarget(
-                version = "1.98.62",
+                version = "1.98.63",
                 isExperimental = true,
             ),
         )
@@ -1123,7 +1129,9 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFF6D00,
         signatures = setOf("6bd7d17bd3553400ef40222f4a7cd4cee0c0b276e97e3ce831baa7f1d0b71b4b"), // CN=JetAudio Team, O=JetAppFactory
-        targets = listOf(AppTarget(version = "13.1.2", versionCode = 261320))
+        // 2026-11-03: updated to 13.2.0 (versionCode 261370, Play build via gplaydl, same
+        // signer), Enable Pro applies unchanged; smoke + CLI without -f.
+        targets = listOf(AppTarget(version = "13.2.0", versionCode = 261370))
     )
 
 // Verified 2026-09-19 against com.Relmtech.Remote 3.25.1 (versionCode 325001) from
@@ -1343,7 +1351,9 @@ object Constants {
         // Premium apply unchanged: both smoke tests green and CLI without -f applied them. The
         // APKPure bundle is armeabi-v7a only (no arm64 build on APKPure; the APKMirror slug was not
         // found), so this update is bytecode-verified only.
-        targets = listOf(AppTarget(version = "11.4.0", versionCode = 311))
+        // 2026-11-03: updated to 11.6.1 (versionCode 315, Play arm64 build via gplaydl, same Play
+        // signer), both patches apply unchanged; smoke + CLI without -f.
+        targets = listOf(AppTarget(version = "11.6.1", versionCode = 315))
     )
 
     // Verified 2026-09-29 against com.streema.simpleradio 6.2.0 (versionCode 872,
@@ -1808,7 +1818,11 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x333333,
         signatures = setOf("0c002344faaad0e17db0deca425519632476f7d2d9ebda4fb99f6828d9c73f99"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "1.46.9", versionCode = 10000399))
+        // 2026-11-03: updated to 1.47.1 (versionCode 10000403, Play arm64 build via gplaydl, same
+        // Play signer), both patches apply unchanged; smoke + CLI without -f. Its newer GMA has one
+        // AppOpenAd.load overload instead of three (the patch already neuters every overload; only
+        // the smoke test's expected count changed).
+        targets = listOf(AppTarget(version = "1.47.1", versionCode = 10000403))
     )
 
     // Verified 2026-10-12 against me.bluemail.mail 2.2.408 (versionCode 47587, APKMirror bundle
@@ -2469,7 +2483,10 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3A362F,
         signatures = setOf("f7430d18f3745825b6a7a21171d1bc6d6fa2320fb1c9d094d022d66fb372346d"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "4.8", versionCode = 77))
+        // 2026-11-03: updated to "2026/10/22" (versionCode 100, Play arm64 build via gplaydl, same
+        // Play signer; the developer now uses the release date as versionName), both patches apply
+        // unchanged; smoke + CLI without -f.
+        targets = listOf(AppTarget(version = "2026/10/22", versionCode = 100))
     )
 
     // Added 2026-10-14 from the Reddit request queue (ads only: premium is an account role from
@@ -3410,6 +3427,9 @@ object Constants {
     // 2016191574 read from Mozilla's x86_64 build; same Mozilla signer). FirefoxSmokeTest passes;
     // CLI (no -f) applies all 6 patches and only the intended 37 methods change (+1 helper).
     // Emulator not re-run for this bump.
+    // 2026-11-03: updated to 159.0 (Play arm64 build via gplaydl, versionCode 2016191887; x86_64
+    // 2016191886 read from Mozilla's archive x86_64 build, same signer; Mozilla's archive arm64
+    // build is 2016191882), all 6 patches apply unchanged; smoke + CLI without -f.
     val COMPATIBILITY_FIREFOX = Compatibility(
         name = "Firefox",
         packageName = "org.mozilla.firefox",
@@ -3418,8 +3438,8 @@ object Constants {
         signatures = setOf("a78b62a5165b4494b2fead9e76a280d22d937fee6251aece599446b2ea319b04"), // O=Mozilla Corporation
         targets = listOf(
             AppTarget(
-                version = "158.0.2",
-                versionCodes = mapOf(SupportedAbi.X86_64 to 2016191574, SupportedAbi.ARM64_V8A to 2016191570),
+                version = "159.0",
+                versionCodes = mapOf(SupportedAbi.X86_64 to 2016191886, SupportedAbi.ARM64_V8A to 2016191887),
             )
         )
     )
@@ -3501,7 +3521,9 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x4D6BFE,
         signatures = setOf("9e808bcb0eed0fb8620403fbf174186a5fe3a7ade002d547a79ce3beea7e36bc"),
-        targets = listOf(AppTarget(version = "3.9.6", versionCode = 30533))
+        // 2026-11-03: updated to 3.9.6 build 30537 (versionCode 30533 -> 30537, Play arm64 build
+        // via gplaydl, same Play signer), both patches apply unchanged; smoke + CLI without -f.
+        targets = listOf(AppTarget(version = "3.9.6", versionCode = 30537))
     )
 
     // Verified 2026-10-27 against com.twodoor.bookly 2.4.2 (versionCode 505, APKPure XAPK merged with
@@ -3621,7 +3643,9 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFF6D00,
         signatures = setOf("42947b25f3b0a5fc1b3905ba33f7e61cfc4b1fab9be3cc2173edf4103f2231cd"),
-        targets = listOf(AppTarget(version = "1.0.92", versionCode = 92))
+        // 2026-11-03: updated to 1.0.95 (versionCode 95, Play build via gplaydl, same Play signer),
+        // both patches apply unchanged; smoke + CLI without -f.
+        targets = listOf(AppTarget(version = "1.0.95", versionCode = 95))
     )
 
     // Verified 2026-10-26 against se.footballaddicts.livescore 6.15.10 (versionCode 731,
