@@ -190,6 +190,37 @@ object Constants {
             // CLI without -f applies all seven, and the patched UserAccount gates decompile to
             // getForceAds=false, getForceHideAds=true, getHasServerAds=false. No emulator run (the
             // bundle is 32-bit ARM only).
+            // 2026-11-03: Heval Controls on 26.10.19 (Play arm64 fixture, vc 261019002). Host:
+            // "Heval Controls" with a row after "Preferences" in Settings (SettingsFragment's
+            // (View, Bundle)V onViewCreated work, O here, calls HevalControlsEntry.addRow(root) first;
+            // the row is a second ProfileClickableRowView). Runtime switches (Manager defaults kept):
+            //   - Disable rating prompts, Hide betting content, Block marketing notifications are now
+            //     feature patches (same names/descriptions). Rating no longer forces "ask_review_v3":
+            //     the modal queue hook below drops "Rating Info". Betting: the same 5 sites, gated;
+            //     the three EventHeadFlags getters have no local register, so they answer
+            //     `flag && !isEnabled` right before their return. Marketing: the same sheets, banners
+            //     and FIAM displays, gated (FIAM stubs that are already return-void are skipped).
+            //   - New Hide AI insights (EventHeadFlags.getAiInsights) and Hide match tabs (7 getters:
+            //     commentary, crowdsourcing, media, graphs, standings, cup tree, matches), plus a guard
+            //     in navigateToTab (inlined into a Function1 lambda: the cast to the tab enum, found by
+            //     its <clinit> names, followed by a cast to EventActivity) so a hidden tab is not added
+            //     back.
+            //   - New Hide promo pop-ups: the modal queue's enqueue ((descriptor)Z holding
+            //     "last_shown_pop_up_timestamp", for the MANUAL modals) and its suspend evaluator
+            //     ((descriptor, ...)Serializable in the same class, for the startup list) ask
+            //     hideModal(name) first. The descriptor base is the "Rating Info" descriptor's
+            //     superclass. Consent and Active subscription modals have no switch.
+            //   - New Hide sports (25 switches, restart required): the Room results of
+            //     "SELECT * FROM sport_order ..." and "SELECT sportName ... ORDER BY" (two lambdas) are
+            //     filtered, the "isSelected = 1" results and the PREF_HOME_SPORT_V2 getter map a hidden
+            //     selection to the first visible sport. Never empty; no DELETE exists, so no row is lost.
+            //   - New Hide promo sections (10 Remote Config keys, restart required): Remote Config
+            //     getBoolean (instance (String)Z reading the value handler's Patterns; the handler is
+            //     found by "^(1|true|t|yes|y|on)$") asks hidePromoSection(key) first. What each key
+            //     shows was read from call sites only.
+            // FingerprintProbe: SettingsFragmentViewCreated and HomeSport OK-unique; all older ones
+            // unchanged (TennisPromoSheet stays the documented optional miss). Smoke test green.
+            // Not run on the emulator.
             AppTarget(
                 version = "26.10.19",
                 versionCode = 261019002
