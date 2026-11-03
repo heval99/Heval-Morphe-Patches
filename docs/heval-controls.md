@@ -5,10 +5,11 @@ patch features on or off at runtime without patching again. A choice is a saved 
 the patched code reads, so a change takes effect at once, or after a restart for features read
 only at startup.
 
-Status (2026-11-02): Truecaller 26.42.5 ships it. Its "Heval Controls" patch (default on) adds a
-"Heval Controls" row below Help on the main Settings screen, and 12 converted Truecaller patches
+Status (2026-11-03): Truecaller 26.42.5 ships it. Its "Heval Controls" patch (default on) adds a
+"Heval Controls" row below Help on the main Settings screen, and 20 converted Truecaller patches
 are runtime switches (`truecaller/controls/TruecallerControls.kt` and the patches that use
-`truecallerControls.featurePatch`). LinkedIn 4.1.1261 was the first app (an in-app entry row in
+`truecallerControls.featurePatch`; list in [Truecaller features](#truecaller-features)). LinkedIn
+4.1.1261 was the first app (an in-app entry row in
 the home nav panel and runtime features). It was removed on 2026-10-15 after the test account was
 banned, so the LinkedIn names below are examples only. The design study, with alternatives and the
 HushMessenger analysis, is kept outside the repo; this page is the developer guide.
@@ -19,6 +20,7 @@ HushMessenger analysis, is kept outside the repo; this page is the developer gui
 - [How a feature answers at runtime](#how-a-feature-answers-at-runtime)
 - [Adding Heval Controls to an app](#adding-heval-controls-to-an-app)
 - [Feature hook example](#feature-hook-example)
+- [Truecaller features](#truecaller-features)
 - [App-specific Java helpers](#app-specific-java-helpers)
 - [What cannot be toggled at runtime](#what-cannot-be-toggled-at-runtime)
 - [Crash guard and safe mode](#crash-guard-and-safe-mode)
@@ -220,12 +222,74 @@ method.addHevalGate("app.feature", index = 0) { v -> "return-void" }
 helper.addHevalStockPath("app.feature") { v -> "return-void" }
 ```
 
+Two more shapes keep a stock path where the original patch removed or overwrote code:
+
+- `addHevalSkip(id, index, target)` jumps from `index` to `target` while the feature is on
+  (`if-nez` on the isEnabled result) and falls through to the original code while it is off. Use it
+  instead of removing an instruction (Disable call button haptics keeps each haptic dispatch and
+  jumps over it) or instead of an unconditional `goto` (the LazyColumn item skips of Hide frequently
+  called contacts and Hide important senders). The scratch register comes from `findFreeRegister`,
+  so pick an `index` whose own code already reaches `target`.
+- `MutableClass.addHevalValueHelper(id, name, type) { v -> ... }` adds a static `(T)T` helper (`Z`,
+  `I` or `F`) that returns its argument unchanged while the feature is off, and
+  `MutableMethod.filterThroughHevalHelper(index, register, helper)` passes a register through it
+  (`invoke-static/range`, `move-result`). Use it where the patch forced or changed a value in place
+  (`const/4 vX, 0x0` before a branch or a store, `neg-float`): the site needs no free register.
+
+```smali
+# Restore classic call log: the "featureFavouriteContacts" result before the swipe guard
+invoke-virtual {v1}, Lgj9;->a()Z
+move-result v1
+invoke-static/range {v1 .. v1}, Lz78;->morpheClassicCallLogSwipe(Z)Z   # false while on, v1 while off
+move-result v1
+if-nez v1, :cond_43
+```
+
 The usual rules still apply (AGENTS.md):
 
 - Gate only concrete methods (`implementation != null`).
 - Use `.method`, not `methodOrNull`, for mandatory anchors.
 - Gate every overload that matters.
 - Use stable anchors.
+
+## Truecaller features
+
+Truecaller 26.42.5 (2026-11-03). Every switch defaults on; its Manager patch keeps its name,
+description and default. A shipped id is never renamed.
+
+| Feature id | Patch | Restart | Gated sites |
+|---|---|---|---|
+| `truecaller.hide_promotions` | Hide promotions | yes | toggle overrides |
+| `truecaller.disable_nags` | Disable nags | no | toggle overrides |
+| `truecaller.disable_auto_launch` | Disable auto-launch | no | toggle override |
+| `truecaller.disable_update_prompts` | Disable update prompts | no | gates at index 0 |
+| `truecaller.hide_assistant_tab` | Hide Assistant tab | yes | gate at index 0 (answers false) |
+| `truecaller.hide_scam_feed` | Hide Scam feed | yes | gate at index 0 (answers false) |
+| `truecaller.hide_blocking_tab` | Hide Blocking tab | yes | its tabs helper (stock path) |
+| `truecaller.hide_family_button` | Hide family button | yes | toggle override |
+| `truecaller.show_caller_number` | Show caller number in call log | no | its subtitle helper (stock path) |
+| `truecaller.fix_t9_search` | Fix T9 contact search | yes | its refresh helper (stock path) |
+| `truecaller.hide_after_call_contacts` | Hide after-call screen for contacts | no | toggle overrides |
+| `truecaller.hide_business_media` | Hide business media | no | toggle overrides, screen entry gate, media helper |
+| `truecaller.hide_messages_tab` | Hide Messages tab | yes | its tabs helper, default tab getter, selectTab, bar helper |
+| `truecaller.hide_premium_tab` | Hide Premium tab | yes | its tabs helper, Settings `isPremiumItemVisible` store (value helper) |
+| `truecaller.restore_classic_call_log` | Restore classic call log | yes | toggle override, swipe guard (value helper) |
+| `truecaller.hide_call_log_filters` | Hide call log filters | yes | filter row composable and filter setter (index 0) |
+| `truecaller.hide_frequent_contacts` | Hide frequently called contacts | no | LazyColumn item skip |
+| `truecaller.hide_important_senders` | Hide important senders | no | LazyColumn item skip |
+| `truecaller.disable_call_button_haptics` | Disable call button haptics | no | haptic dispatch skips, drag progress (value helper) |
+| `truecaller.swap_call_buttons` | Swap call answer and decline buttons | no | offsets and call style check (value helpers), notification layouts |
+
+Hide call log filters is marked restart because its row is a composable: an open call log screen
+keeps the row it composed until the screen composes it again. Swap call answer and decline buttons
+also has a resource part. It cannot be switched in place, so the patch adds swapped copies of the
+notification layouts (`<name>_heval_swapped`) and leaves the stock ones untouched. The notification
+class asks `SwapCallButtons.layout(int)` in `extensions/truecaller` for each layout id: the copy's
+id (found by name at runtime, because the patcher assigns new resource ids when it encodes) while
+the feature is on, the stock id while it is off.
+
+Not converted: Disable ads, Disable telemetry, Disable contact upload, Enable Premium, GmsCore
+support, Spoof signature, Hide Wear OS settings and Use SMS for verification codes.
 
 ## App-specific Java helpers
 

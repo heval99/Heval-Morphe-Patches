@@ -1,13 +1,18 @@
-// Truecaller helpers for Heval Controls: the "Heval Controls" row on the main Settings screen.
-// Builds extensions/truecaller.mpe; the Heval Controls core is not bundled here (the host patch
-// merges extensions/hevalcontrols.mpe), and the row opens the screen by class name, so this module
-// needs no compile dependency on it. See docs/heval-controls.md.
+// Truecaller helpers for Heval Controls: the "Heval Controls" row on the main Settings screen and
+// the swapped incoming call notification layouts. Builds extensions/truecaller.mpe; the Heval
+// Controls core is not bundled here (the host patch merges extensions/hevalcontrols.mpe), so it is a
+// compileOnly dependency. See docs/heval-controls.md.
 extension {
     name = "extensions/truecaller.mpe"
 }
 
 android {
     namespace = "app.template.extension"
+}
+
+dependencies {
+    // HevalSettings and AppContext. compileOnly: one copy of the core, from hevalcontrols.mpe.
+    compileOnly(project(":extensions:hevalcontrols:core"))
 }
 
 // Pure-Java extension. AGP's built-in Kotlin adds kotlin-stdlib by default, which would grow the

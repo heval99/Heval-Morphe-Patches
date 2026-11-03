@@ -2223,6 +2223,34 @@ object Constants {
     //   standard/STANDARD, plus string/dismiss + string/Dismiss), values unchanged. A GmsCore-only
     //   build renames exactly the same 36 entries, so it is the shared re-encode, not this patch;
     //   item_help/item_about keep their names.
+    // - 2026-11-03 (26.42.5): Heval Controls phase 2, 8 more runtime switches (20 in total; Manager
+    //   name, description and default unchanged, each switch defaults on, off = stock code path):
+    //   Hide Messages tab (its tabs helper, the default tab getter and selectTab gated at index 0,
+    //   and morpheShowBottomBarWithTwoTabs returns at once while off unless this process collapsed
+    //   the bar, which it then restores) and Hide Premium tab (its tabs helper, and the Settings
+    //   state stores isPremiumItemVisible through a (Z)Z helper r8a.morpheHide_isPremiumItemVisible)
+    //   - both restart; Restore classic call log (gated toggle override, swipe guard through
+    //   z78.morpheClassicCallLogSwipe(Z)Z; restart); Hide call log filters (gate at index 0 of the
+    //   row composable g660.c and of the filter setter td8.f; restart, so an open call log screen is
+    //   not flipped mid-composition); Hide frequently called contacts and Hide important senders
+    //   (skipLazyListItem now emits "if-nez isEnabled, :skip_item" before the stock guard, scratch
+    //   register from findFreeRegister: v3 in ph8.invoke, v15 in b67.invoke); Disable call button
+    //   haptics (each answer/decline and drag-start dispatch is kept and jumped over while on, the
+    //   drag progress goes through tb6.morpheCallButtonDragProgress(F)F); Swap call answer and
+    //   decline buttons (offset x through iis.morpheSwapCallButtonOffset(F)F, the call style check
+    //   through m5m.morpheSwapCallButtonsCallStyle(Z)Z). The notification layouts are no longer
+    //   edited in place (supersedes the 2026-11-02 #116 resource note): the resource part adds
+    //   <name>_heval_swapped copies of the 9 notification_call_incoming* layouts (the 2 button
+    //   layouts swapped, the 7 including layouts include the swapped copies) and leaves the stock
+    //   files untouched; the patcher assigns the new ids at encode time (0x7f0d0ae6..0aee here), so
+    //   itd.<init> passes each of its 6 RemoteViews layout constants (checked against
+    //   resourceId(LAYOUT, name)) through extensions/truecaller SwapCallButtons.layout(I)I, which
+    //   answers getIdentifier(<entry name>_heval_swapped) while on and the stock id while off.
+    //   Verified: TruecallerSmokeTest (registry of 20, every gate/skip/helper shape, stock and copy
+    //   layouts), HevalControlsTest (skip gate, value helper), CLI without -f (defaults + all 20
+    //   features applied), apkanalyzer smali of every site above, aapt2 resource table (9 new
+    //   layouts, stock ids unchanged) and xmltree (stock layouts decline-first, copies answer-first,
+    //   copy includes point at the copies). Not run on a device (no emulator in this pass).
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",

@@ -2,13 +2,17 @@ import app.morphe.patcher.patch.ApkArchitecture
 import app.morphe.patcher.patch.InstallerType
 import app.morphe.patcher.patch.PatchAvailability
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.template.patches.shared.hevalcontrols.HEVAL_SETTINGS_CLASS
 import app.template.patches.shared.hevalcontrols.HevalFeature
 import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
 import app.template.patches.shared.hevalcontrols.addHevalControlsComponents
 import app.template.patches.shared.hevalcontrols.addHevalGate
+import app.template.patches.shared.hevalcontrols.addHevalSkip
 import app.template.patches.shared.hevalcontrols.addHevalStockPath
+import app.template.patches.shared.hevalcontrols.addHevalValueHelper
+import app.template.patches.shared.hevalcontrols.filterThroughHevalHelper
 import app.template.patches.shared.hevalcontrols.hevalReturnEarly
 import app.template.patches.shared.hevalcontrols.hevalReturnNull
 import app.template.patches.truecaller.controls.truecallerHevalControlsPatch
@@ -21,6 +25,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
@@ -271,6 +276,64 @@ class HevalControlsTest {
         // A stock path that would fall through into the patched code is refused.
         val other = method("V", registers = 2, ImmutableInstruction10x(Opcode.RETURN_VOID))
         assertThrows<PatchException> { other.addHevalStockPath("demo.helper") { "const/4 v0, 0x0" } }
+    }
+
+    @Test
+    fun skipGateJumpsOverTheSkippedCodeWhileOn() {
+        // invoke-static {}, f()V (the call to skip); const/4 v1, 1; return-void
+        val method = method("V", registers = 4, invoke("V"), ImmutableInstruction11n(Opcode.CONST_4, 1, 1), ImmutableInstruction10x(Opcode.RETURN_VOID))
+        method.addHevalSkip("demo.skip", index = 0, target = 1, register = 2)
+        val instructions = method.implementation!!.instructions.toList()
+        assertEquals(
+            listOf(
+                Opcode.CONST_STRING, Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_NEZ,
+                Opcode.INVOKE_STATIC, Opcode.CONST_4, Opcode.RETURN_VOID,
+            ),
+            instructions.map { it.opcode },
+        )
+        assertEquals("demo.skip", ((instructions[0] as ReferenceInstruction).reference as StringReference).string)
+        assertEquals(2, (instructions[3] as OneRegisterInstruction).registerA)
+        // On: over the call; off: the call runs (fall-through).
+        assertEquals(instructions[5], branchTarget(method, 3))
+
+        // The target must come after the index.
+        assertThrows<PatchException> { method.addHevalSkip("demo.skip", index = 5, target = 4, register = 2) }
+        assertThrows<PatchException> { method.addHevalSkip("demo.skip", index = 0, target = 99, register = 2) }
+    }
+
+    @Test
+    fun valueHelperPassesTheStockValueThroughWhileOff() {
+        val cls = MutableClass(
+            ImmutableClassDef("Lcom/example/Feed;", AccessFlags.PUBLIC.value, "Ljava/lang/Object;", null, null, null, null, null),
+        )
+        val forceFalse = cls.addHevalValueHelper("demo.flag", "morpheFlag", "Z") { v -> "const/4 $v, 0x0\nreturn $v" }
+        assertEquals("Lcom/example/Feed;->morpheFlag(Z)Z", forceFalse.toString())
+        // A second call reuses the helper.
+        cls.addHevalValueHelper("demo.flag", "morpheFlag", "Z") { error("not rebuilt") }
+        val helper = cls.methods.single { it.name == "morpheFlag" }
+        assertTrue(AccessFlags.STATIC.isSet(helper.accessFlags))
+        val body = helper.implementation!!.instructions.toList()
+        assertEquals(
+            listOf(
+                Opcode.CONST_STRING, Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_EQZ,
+                Opcode.CONST_4, Opcode.RETURN, Opcode.RETURN,
+            ),
+            body.map { it.opcode },
+        )
+        // Off: return p0 (v1), the stock value.
+        assertEquals(body[6], branchTarget(helper, 3))
+        assertEquals(1, (body[6] as OneRegisterInstruction).registerA)
+        assertThrows<PatchException> { cls.addHevalValueHelper("demo.flag", "morpheWide", "J") { "return-wide p0" } }
+
+        // const/4 v1, 1; return v1  ->  const/4 v1, 1; invoke-static/range {v1 .. v1}, helper; move-result v1; return v1
+        val site = method("Z", registers = 3, ImmutableInstruction11n(Opcode.CONST_4, 1, 1), ImmutableInstruction11x(Opcode.RETURN, 1))
+        site.filterThroughHevalHelper(1, 1, forceFalse)
+        val instructions = site.implementation!!.instructions.toList()
+        assertEquals(listOf(Opcode.CONST_4, Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.RETURN), instructions.map { it.opcode })
+        assertEquals(forceFalse.toString(), (instructions[1] as ReferenceInstruction).reference.toString())
+        assertEquals(1, (instructions[1] as RegisterRangeInstruction).startRegister)
+        assertEquals(1, (instructions[2] as OneRegisterInstruction).registerA)
+        assertThrows<PatchException> { site.filterThroughHevalHelper(1, 3, forceFalse) }
     }
 
     /** `invoke-static {}, Lcom/example/Feed;->f()<returnType>`. */
