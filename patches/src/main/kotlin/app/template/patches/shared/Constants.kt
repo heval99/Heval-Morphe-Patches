@@ -1030,7 +1030,13 @@ object Constants {
             // skeleton. It is a Dart-only placeholder (feed fetched and decorated in Dart; stock
             // shows the same skeleton on any no-fill) and no native lever removes it. Other Dart
             // feeds (e.g. a competition News feed) were not rechecked and likely behave the same.
-            AppTarget(version = "15.147.0", versionCode = 1045019512)
+            // 2026-11-03: updated to version 15.148.0 (versionCode 1045029590; owner-supplied
+            // APKCube .apks merged, arm64-v8a; same signer CN=Appsolute OU=SD, 5099231f...56ab).
+            // Disable ads applies unchanged: every GMA hook, both ad component parsers and both
+            // Flutter bridge handlers still match. OneFootballSmokeTest passes; CLI (no -f)
+            // Applied and the changed methods decompile as intended. 15.147.0 dropped (latest
+            // verified version only). Not run on the emulator.
+            AppTarget(version = "15.148.0", versionCode = 1045029590)
         )
     )
 
