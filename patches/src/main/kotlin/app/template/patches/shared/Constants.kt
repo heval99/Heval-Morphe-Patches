@@ -833,6 +833,16 @@ object Constants {
     // used until you purchase it"; patched shows no licence dialog or notification and runs a
     // Flash task; no crashes. A real NOT_LICENSED response and the timeout path were not reachable.
     // Enable Full Version is a pre-rule licence bypass the owner kept (2026-10-19).
+    // 2026-11-03: "GmsCore support" (opt-in, owner decision: login-only) uses the shared builder's
+    // scoped mode against 6.6.20 (5445). Only the sign-in and token clients move to MicroG RE: the
+    // BaseGmsClient subclasses for auth.account.authapi / auth.service / auth.api.signin.service /
+    // signin.service START (found by those action strings; the package and dynamic-lookup getter
+    // names are read from BaseGmsClient's connect step, anchored on its "too low to support dynamic
+    // lookup" message), the classes holding the GetToken component or the GOOGLE_SIGN_IN action, the
+    // kept com.google.android.gms.auth.api.signin classes and the "<<default account>>" methods.
+    // isGooglePlayServicesAvailable, location, Home/Matter, Maps, Dynamite, FCM and the c2dm
+    // manifest entries are untouched. Smoke test (bytecode + manifest) and a CLI run without -f;
+    // NOT runtime-tested (needs a Google account signed in to MicroG RE on the emulator).
     val COMPATIBILITY_TASKER = Compatibility(
         name = "Tasker",
         packageName = "net.dinglisch.android.taskerm",
