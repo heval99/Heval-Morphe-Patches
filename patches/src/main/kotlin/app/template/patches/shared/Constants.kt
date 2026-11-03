@@ -3861,4 +3861,34 @@ object Constants {
         signatures = setOf("4a82f8d055489660354920bffe80b57f851093b16e98d51043ca564468b28d3c"), // O=Bold.dk
         targets = listOf(AppTarget(version = "6.5.2", versionCode = 261))
     )
+
+    // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
+    // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
+    // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
+    // Kotlin app whose own classes keep their names (a keep rule; only R8's synthetic lambdas get
+    // letters), so the anchors are those kept names plus PairIP's library API (GitHub issue #118).
+    //   - Disable license check: PairIP is the licence-check wrapper only (Application subclass,
+    //     LicenseActivity, CHECK_LICENSE; no VMRunner, SignatureCheck or libpairipcore), so
+    //     LicenseClient.checkLicense(Context) returns at its entry.
+    //   - Disable ads: Google Mobile Ads only (the other networks are mediation adapters). The
+    //     canShowAds() gate of AdManager and AppOpenAdManager answers false, the app's own
+    //     subscriber/no-consent path: no MobileAds.initialize, no loads, banner containers empty
+    //     or GONE, and the rewarded "Advanced search" step reports "Ad failed" at once. The shared
+    //     GMA load hooks are neutered as a backstop. The splash waits on no ad.
+    //   - Enable Premium: SubscriptionManager.isSubscribed() answers true; every gate reads it
+    //     (the Remote Config customize / photo EXIF switches are ANDed with it). The daily
+    //     place-search limit applies to subscribers too and is not touched.
+    //   - Spoof signature: the Play certificate is injected for every getPackageInfo call, so the
+    //     Places SDK and Firebase send the original X-Android-Cert. The Google Maps tiles are
+    //     authorised inside Google Play services, not in the app dex, so a re-signed map may still
+    //     fail to load; not runtime-verified.
+    // GpsMapCameraSmokeTest asserts every hook; not run on the emulator.
+    val COMPATIBILITY_GPSMAPCAMERA = Compatibility(
+        name = "GPS Map Camera Editor",
+        packageName = "com.gkfriend.gpsmapcameraeditor",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x3FA9E0,
+        signatures = setOf("ad0e198835238d37a5519b4cc50173c2a28a556b8806c3ab963fcbd516238d37"),
+        targets = listOf(AppTarget(version = "1.0.31", versionCode = 89))
+    )
 }
