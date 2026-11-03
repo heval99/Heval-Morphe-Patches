@@ -5,6 +5,8 @@ import app.template.patches.fotmob.misc.font.USE_SYSTEM_FONT
 import app.template.patches.fotmob.misc.promotions.DISABLE_PLUS_PROMO_POPUP
 import app.template.patches.fotmob.misc.rating.DISABLE_RATING_PROMPTS
 import app.template.patches.fotmob.misc.refresh.SLOWER_LIVE_REFRESH
+import app.template.patches.fotmob.competitions.HIDDEN_COMPETITIONS
+import app.template.patches.fotmob.countries.COMPETITION_FILTER
 import app.template.patches.fotmob.countries.COUNTRY_FILTER
 import app.template.patches.fotmob.countries.HIDDEN_COUNTRIES
 import app.template.patches.fotmob.countries.SUGGESTION_FILTERS
@@ -107,7 +109,7 @@ class FotMobSmokeTest {
                 "Disable ads", "Disable telemetry", "Enable FotMob+", "GmsCore support", "Spoof signature",
                 "Hide betting content", "Disable rating prompts", "Disable FotMob+ promo popup",
                 "Use system font", "Patch settings", "Turn off animations", "Faster animations", "Slower live refresh",
-                "Hide countries",
+                "Hide countries", "Hide competitions",
             ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -362,14 +364,62 @@ class FotMobSmokeTest {
         }
         assertEquals(SUGGESTION_FILTERS.keys, seen, "Suggestion fields stored by a constructor")
 
+        // Both list patches are selected, yet each site is filtered once (the shared hooks patch).
+        fun List<Instruction>.filterCalls() = count { it.methodRef()?.definingClass == COUNTRY_FILTER }
+        assertEquals(1, holder.filterCalls(), "CountryFilter calls in LiveMatchesAndLeagueRank.<init>")
+        assertEquals(returns.size, convert.filterCalls(), "CountryFilter calls in LeagueConverter.convert")
+        val suggestionStores = suggestion.methods.filter { it.name == "<init>" && it.implementation != null }.sumOf { ctor ->
+            ctor.instructions().count { it.opcode == Opcode.IPUT_OBJECT && it.fieldRef()?.name in SUGGESTION_FILTERS.keys }
+        }
+        assertEquals(suggestionStores, suggestion.methods.sumOf { it.instructions().filterCalls() }, "CountryFilter calls in Suggestion constructors")
+
         // The picker seeds come from ActivityHooks.register (FotMobApp.onCreate).
         val register = byType.getValue(ACTIVITY_HOOKS).method("register", listOf("Landroid/app/Application;")).instructions()
         assertTrue(register.any { it.methodRef()?.let { r -> r.definingClass == COUNTRY_FILTER && r.name == "init" } == true },
             "ActivityHooks.register does not call CountryFilter.init")
         // Picker flags (2026-11-03): CountryFilter.init registers CountryIcons (FIFA -> ISO table,
         // every seed code covered: extensions/fotmob CountryIconsTest).
-        assertOptionIconsWired(byType, byType.getValue(COUNTRY_FILTER).method("init", listOf("Landroid/app/Application;")),
-            "Lapp/template/extension/fotmob/CountryIcons;", images = true)
+        val init = byType.getValue(COUNTRY_FILTER).method("init", listOf("Landroid/app/Application;"))
+        assertOptionIconsWired(byType, init, "Lapp/template/extension/fotmob/CountryIcons;", images = true)
+
+        // Hide competitions (2026-11-03) shares every hook above (fotMobListFiltersPatch, edited
+        // once: one filter call per site, checked by assertFilteredAt's exact positions and below).
+        // Each feature patch turns its part on: patched() returns true.
+        for (type in listOf(COUNTRY_FILTER, COMPETITION_FILTER)) {
+            val patched = byType.getValue(type).methods.single { it.name == "patched" && it.returnType == "Z" && it.parameterTypes.isEmpty() }
+            assertForcedBoolean(patched, expected = true, label = "$type.patched()")
+        }
+        assertEquals("fotmob.hidden_competitions", HIDDEN_COMPETITIONS.id, "the Hidden competitions list id changed")
+        val competition = byType.getValue(COMPETITION_FILTER)
+        assertTrue(competition.methods.flatMap { m -> m.instructions().mapNotNull { it.stringOrNull() } }
+            .contains("https://images.fotmob.com/image_resources/logo/leaguelogo/%s.png"), "CompetitionFilter lost its logo URL")
+        assertTrue(competition.methods.flatMap { m -> m.instructions().mapNotNull { it.stringOrNull() } }
+            .contains("fotmob.hidden_competitions"), "CompetitionFilter does not use the fotmob.hidden_competitions list")
+        assertTrue(init.instructions().any { it.methodRef()?.let { r -> r.definingClass == COMPETITION_FILTER && r.name == "init" } == true },
+            "CountryFilter.init does not call CompetitionFilter.init")
+        val competitionInit = competition.methods.single { it.name == "init" }
+        assertOptionIconsWired(byType, competitionInit, "Lapp/template/extension/fotmob/CompetitionIcons;", images = true)
+        // The seeds: the bundled leagues file (CountryData.competitionSeeds) goes to registerOptions
+        // on a background thread started by CompetitionFilter.init.
+        assertTrue(competitionInit.instructions().any { it.methodRef()?.let { r -> r.definingClass == "Ljava/lang/Thread;" && r.name == "start" } == true },
+            "CompetitionFilter.init does not start the seed thread")
+        val seedRunner = classes.filter { it.type.startsWith("Lapp/template/extension/fotmob/CompetitionFilter$") }
+            .flatMap { it.methods }.flatMap { it.instructions() }.mapNotNull { it.methodRef() }
+        assertTrue(seedRunner.any { it.definingClass == "Lapp/template/extension/fotmob/CountryData;" && it.name == "competitionSeeds" } &&
+            seedRunner.any { it.definingClass == HEVAL_SETTINGS_CLASS && it.name == "registerOptions" },
+            "the seed thread does not register CountryData.competitionSeeds")
+
+        // Every hook consults the competition list too (and the countries list through patched()).
+        val filter = byType.getValue(COUNTRY_FILTER)
+        for (hook in listOf("filterLiveMatches", "filterLeagues") + SUGGESTION_FILTERS.values) {
+            val calls = filter.methods.single { it.name == hook }.instructions().mapNotNull { it.methodRef() }
+            assertTrue(calls.any { it.definingClass == COMPETITION_FILTER && (it.name == "hidden" || it.name == "patched") },
+                "CountryFilter.$hook does not consult CompetitionFilter")
+        }
+        // Competition logos are offered from the leagues list and search, never from match lists.
+        val reporters = filter.methods.filter { m -> m.instructions().any { it.methodRef()?.let { r -> r.definingClass == COMPETITION_FILTER && r.name == "reportSeen" } == true } }
+            .map { it.name }.toSet()
+        assertEquals(setOf("filterLeagues", "filterLeagueSuggestions"), reporters, "CompetitionFilter.reportSeen callers")
     }
 
     // Slower live refresh: in the match page ticker (found like the fingerprint), the const/16 15
@@ -400,7 +450,8 @@ class FotMobSmokeTest {
         val byType = classes.associateBy { it.type }
         for (type in listOf(HEVAL_SETTINGS_CLASS, "${HEVAL_EXTENSION}Registry;", "${HEVAL_EXTENSION}InitProvider;",
             "${HEVAL_EXTENSION}ui/HevalControlsActivity;", FOTMOB_CONTROLS_ENTRY, ACTIVITY_HOOKS, ANIMATION_SPEED, SYSTEM_FONT_EXTENSION,
-            COUNTRY_FILTER, "Lapp/template/extension/fotmob/CountryData;", "Lapp/template/extension/fotmob/CountrySeeds;")) {
+            COUNTRY_FILTER, "Lapp/template/extension/fotmob/CountryData;", "Lapp/template/extension/fotmob/CountrySeeds;",
+            COMPETITION_FILTER, "Lapp/template/extension/fotmob/CompetitionIcons;")) {
             assertTrue(type in byType, "$type is not in the patched dex")
         }
         val entryStrings = byType.getValue(FOTMOB_CONTROLS_ENTRY).methods.flatMap { m -> m.instructions().mapNotNull { it.stringOrNull() } }
@@ -413,7 +464,7 @@ class FotMobSmokeTest {
         val wanted = HevalRegistryCodec.encode(
             listOf(
                 HIDE_BETTING_CONTENT, DISABLE_RATING_PROMPTS, DISABLE_PLUS_PROMO_POPUP, USE_SYSTEM_FONT,
-                DISABLE_ANIMATIONS, FASTER_ANIMATIONS, SLOWER_LIVE_REFRESH, HIDDEN_COUNTRIES,
+                DISABLE_ANIMATIONS, FASTER_ANIMATIONS, SLOWER_LIVE_REFRESH, HIDDEN_COUNTRIES, HIDDEN_COMPETITIONS,
             ),
         ).split('\n')
         assertTrue(

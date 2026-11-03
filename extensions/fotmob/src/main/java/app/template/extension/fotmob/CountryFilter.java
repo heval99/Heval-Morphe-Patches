@@ -8,6 +8,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,11 @@ import app.template.extension.hevalcontrols.HevalSettings;
  * picked countries from the match lists, the leagues list and search. Keys are FotMob's league
  * country codes (FIFA three-letter codes; "INT" national-team competitions, "INT-2" club
  * competitions). Favourite leagues, and matches of favourite teams, always stay.
+ *
+ * <p>These are also the hooks of "Hide competitions" ({@code fotmob.hidden_competitions}, keys and
+ * checks in CompetitionFilter): both patches share the hook sites, and each hook runs the list of
+ * every patch that is in ({@link #patched()}, CompetitionFilter.patched()). A league goes when its
+ * country or its competition is picked; favourites win over both.
  *
  * <p>Every hook returns its argument unchanged while nothing is picked, and on any failure (stock
  * behaviour, the feature shows as failed). FotMob's models keep their field names (Gson and
@@ -51,16 +57,39 @@ public final class CountryFilter {
     private CountryFilter() {
     }
 
-    /** From ActivityHooks.register (FotMobApp.onCreate): the picker's country list and flags. */
+    /**
+     * Whether "Hide countries" is patched in. The patch rewrites this to return true; while it is
+     * false the hooks skip countries (only "Hide competitions" is patched).
+     */
+    public static boolean patched() {
+        return false;
+    }
+
+    /**
+     * From ActivityHooks.register (FotMobApp.onCreate): the country picker's list and flags, and the
+     * competition picker's logos and seeds (CompetitionFilter.init), for the patches that are in.
+     */
     public static void init(Application application) {
         try {
             if (application != null) context = application.getApplicationContext();
-            HevalSettings.registerOptions(LIST_ID, CountrySeeds.NAMES);
-            // The picker's flags (never saved, never used for filtering).
-            HevalSettings.setOptionIconProvider(LIST_ID, CountryIcons.INSTANCE);
+            if (patched()) {
+                HevalSettings.registerOptions(LIST_ID, CountrySeeds.NAMES);
+                // The picker's flags (never saved, never used for filtering).
+                HevalSettings.setOptionIconProvider(LIST_ID, CountryIcons.INSTANCE);
+            }
         } catch (Throwable failure) {
             Log.w(TAG, "Country seeds not registered: " + failure.getClass().getName());
         }
+        try {
+            CompetitionFilter.init(context);
+        } catch (Throwable failure) {
+            Log.w(TAG, "Competition seeds not registered: " + failure.getClass().getName());
+        }
+    }
+
+    /** The picked countries right now; empty when "Hide countries" is not patched in. */
+    private static Set<String> countries() {
+        return patched() ? HevalSettings.getHidden(LIST_ID) : Collections.<String>emptySet();
     }
 
     // ---------------------------------------------------------------------------------------
@@ -70,8 +99,9 @@ public final class CountryFilter {
     /** A new LiveMatches without the hidden leagues; the cached original stays untouched. */
     public static Object filterLiveMatches(Object liveMatches) {
         if (liveMatches == null) return null;
-        Set<String> hidden = HevalSettings.getHidden(LIST_ID);
-        if (hidden.isEmpty()) return liveMatches;
+        Set<String> hidden = countries();
+        Set<String> competitions = CompetitionFilter.hidden();
+        if (hidden.isEmpty() && competitions.isEmpty()) return liveMatches;
         try {
             List leagues = (List) field(LIVE_MATCHES, "leagueMatches").get(liveMatches);
             if (leagues == null || leagues.isEmpty()) return liveMatches;
@@ -80,7 +110,7 @@ public final class CountryFilter {
             List<Object> kept = new ArrayList<>(leagues.size());
             boolean changed = false;
             for (Object leagueMatches : leagues.toArray()) {
-                Object result = filterLeagueMatches(app, leagueMatches, hidden, favourites);
+                Object result = filterLeagueMatches(app, leagueMatches, hidden, competitions, favourites);
                 if (result != leagueMatches) changed = true;
                 if (result != null) kept.add(result);
             }
@@ -94,7 +124,7 @@ public final class CountryFilter {
 
     /** The LeagueMatches itself, null to drop it, or a copy with only the favourite teams' matches. */
     private static Object filterLeagueMatches(Context app, Object leagueMatches, Set<String> hidden,
-                                              CountryData.Favourites favourites) throws Exception {
+                                              Set<String> competitions, CountryData.Favourites favourites) throws Exception {
         if (leagueMatches == null) return null;
         Object league = field(LEAGUE_MATCHES, "league").get(leagueMatches);
         if (league == null) return leagueMatches;
@@ -102,7 +132,9 @@ public final class CountryFilter {
         int id = field(LEAGUE, "Id").getInt(league);
         int parentId = field(LEAGUE, "ParentId").getInt(league);
         CountryData.learn(id, code);
-        if (!isHidden(app, hidden, code, id, parentId) || favourites.league(id, parentId)) return leagueMatches;
+        CompetitionFilter.learnParent(id, parentId);
+        boolean drop = CompetitionFilter.isHidden(competitions, id, parentId) || isHidden(app, hidden, code, id, parentId);
+        if (!drop || favourites.league(id, parentId)) return leagueMatches;
 
         Object matches = field(LEAGUE_MATCHES, "Matches").get(leagueMatches);
         if (!(matches instanceof List)) return null;
@@ -132,17 +164,21 @@ public final class CountryFilter {
     // ---------------------------------------------------------------------------------------
 
     /**
-     * Reports every country of the list to the picker and remembers each league's country, then
-     * drops the hidden ones (favourites stay). If that would leave nothing, the full list stays, so
-     * the Leagues tab is never empty.
+     * Reports every country and competition of the list to the pickers and remembers each league's
+     * country, then drops the hidden ones (favourites stay). If that would leave nothing, the full
+     * list stays, so the Leagues tab is never empty.
      */
     public static List filterLeagues(List leagues) {
         if (leagues == null || leagues.isEmpty()) return leagues;
+        boolean reportCountries = patched();
+        boolean reportCompetitions = CompetitionFilter.patched();
+        if (!reportCountries && !reportCompetitions) return leagues;
         try {
             Context app = context();
             Object[] all = leagues.toArray();
             Map<Integer, String> fresh = new HashMap<>(all.length * 2);
             Map<String, String> seen = new HashMap<>();
+            Map<String, String> seenCompetitions = new HashMap<>(all.length * 2);
             for (Object league : all) {
                 if (league == null) continue;
                 String code = (String) field(LEAGUE, "CountryCode").get(league);
@@ -151,17 +187,24 @@ public final class CountryFilter {
                 if (code == null || code.isEmpty() || isPseudoCode(code) || field(LEAGUE, "isSuggested").getBoolean(league)) continue;
                 int id = field(LEAGUE, "Id").getInt(league);
                 if (id > 0) fresh.put(id, code);
+                String countryName = (String) field(LEAGUE, "CountryName").get(league);
                 if (!seen.containsKey(code)) {
                     String label = CountrySeeds.NAMES.get(code);
-                    if (label == null) label = (String) field(LEAGUE, "CountryName").get(league);
+                    if (label == null) label = countryName;
                     seen.put(code, label);
                 }
+                String key = CompetitionFilter.key(id, field(LEAGUE, "ParentId").getInt(league));
+                String label = CompetitionFilter.label(CompetitionFilter.countryLabel(code, countryName),
+                        (String) field(LEAGUE, "Name").get(league));
+                if (key != null && label != null) seenCompetitions.put(key, label);
             }
             CountryData.remember(app, fresh);
-            HevalSettings.reportOptionsSeen(LIST_ID, seen);
+            if (reportCountries) HevalSettings.reportOptionsSeen(LIST_ID, seen);
+            if (reportCompetitions) CompetitionFilter.reportSeen(app, seenCompetitions);
 
-            Set<String> hidden = HevalSettings.getHidden(LIST_ID);
-            if (hidden.isEmpty()) return leagues;
+            Set<String> hidden = countries();
+            Set<String> competitions = CompetitionFilter.hidden();
+            if (hidden.isEmpty() && competitions.isEmpty()) return leagues;
             CountryData.Favourites favourites = CountryData.favourites(app);
             List<Object> kept = new ArrayList<>(all.length);
             for (Object league : all) {
@@ -169,7 +212,8 @@ public final class CountryFilter {
                 String code = (String) field(LEAGUE, "CountryCode").get(league);
                 int id = field(LEAGUE, "Id").getInt(league);
                 int parentId = field(LEAGUE, "ParentId").getInt(league);
-                if (!isHidden(app, hidden, code, id, parentId) || favourites.league(id, parentId)) kept.add(league);
+                boolean drop = CompetitionFilter.isHidden(competitions, id, parentId) || isHidden(app, hidden, code, id, parentId);
+                if (!drop || favourites.league(id, parentId)) kept.add(league);
             }
             if (kept.size() == all.length || kept.isEmpty()) return leagues;
             return kept;
@@ -187,33 +231,49 @@ public final class CountryFilter {
         boolean keep(Object item) throws Exception;
     }
 
-    /** List<LeagueSuggestions>: drops league hits of hidden countries (their payload's countryCode). */
+    /**
+     * List<LeagueSuggestions>: drops league hits of hidden countries (their payload's countryCode)
+     * and of hidden competitions (their id); every league hit is offered in the competition picker.
+     */
     public static List filterLeagueSuggestions(List groups) {
-        final Set<String> hidden = HevalSettings.getHidden(LIST_ID);
-        if (hidden.isEmpty() || groups == null || groups.isEmpty()) return groups;
+        final Set<String> hidden = countries();
+        final Set<String> competitions = CompetitionFilter.hidden();
+        final boolean report = CompetitionFilter.patched();
+        if ((hidden.isEmpty() && competitions.isEmpty() && !report) || groups == null || groups.isEmpty()) return groups;
         try {
             final Context app = context();
-            final CountryData.Favourites favourites = CountryData.favourites(app);
-            return filterGroups(groups, "LeagueSuggestions", "leagues", new Keep() {
+            final Map<String, String> seen = new HashMap<>();
+            final CountryData.Favourites favourites = hidden.isEmpty() && competitions.isEmpty()
+                    ? CountryData.Favourites.NONE : CountryData.favourites(app);
+            List result = filterGroups(groups, "LeagueSuggestions", "leagues", new Keep() {
                 @Override
                 public boolean keep(Object hit) throws Exception {
-                    int id = idOf((String) field(SEARCH + "LeagueSuggestion", "nameAndId").get(hit));
+                    String nameAndId = (String) field(SEARCH + "LeagueSuggestion", "nameAndId").get(hit);
+                    int id = idOf(nameAndId);
                     Object payload = field(SEARCH + "LeagueSuggestion", "payload").get(hit);
                     String code = payload == null ? null : (String) field(SEARCH + "LeagueSuggestionPayload", "countryCode").get(payload);
                     CountryData.learn(id, code);
-                    return !isHidden(app, hidden, code, id, 0) || favourites.league(id, 0);
+                    if (report && id > 0) {
+                        String label = CompetitionFilter.label(searchCountryLabel(app, code, id), nameOf(nameAndId));
+                        if (label != null) seen.put(Integer.toString(id), label);
+                    }
+                    boolean drop = CompetitionFilter.isHidden(competitions, id, 0) || isHidden(app, hidden, code, id, 0);
+                    return !drop || favourites.league(id, 0);
                 }
             });
+            if (report) CompetitionFilter.reportSeen(app, seen);
+            return result;
         } catch (Throwable failure) {
             fail(failure);
             return groups;
         }
     }
 
-    /** List<TeamSuggestions>: drops teams whose league belongs to a hidden country (favourites stay). */
+    /** List<TeamSuggestions>: drops teams whose league is hidden or of a hidden country (favourites stay). */
     public static List filterTeamSuggestions(List groups) {
-        final Set<String> hidden = HevalSettings.getHidden(LIST_ID);
-        if (hidden.isEmpty() || groups == null || groups.isEmpty()) return groups;
+        final Set<String> hidden = countries();
+        final Set<String> competitions = CompetitionFilter.hidden();
+        if ((hidden.isEmpty() && competitions.isEmpty()) || groups == null || groups.isEmpty()) return groups;
         try {
             final Context app = context();
             final CountryData.Favourites favourites = CountryData.favourites(app);
@@ -224,7 +284,8 @@ public final class CountryFilter {
                     Object payload = field(SEARCH + "TeamSuggestion", "payload").get(hit);
                     if (payload == null) return true;
                     int league = CountryData.parseInt((String) field(SEARCH + "TeamSuggestionPayload", "leagueId").get(payload));
-                    return !isLeagueIdHidden(app, hidden, league) || favourites.league(league, 0);
+                    boolean drop = CompetitionFilter.isHidden(competitions, league, 0) || isLeagueIdHidden(app, hidden, league);
+                    return !drop || favourites.league(league, 0);
                 }
             });
         } catch (Throwable failure) {
@@ -233,10 +294,11 @@ public final class CountryFilter {
         }
     }
 
-    /** List<MatchSuggestions>: drops matches of hidden countries' leagues unless a favourite team plays. */
+    /** List<MatchSuggestions>: drops matches of hidden leagues and countries unless a favourite team plays. */
     public static List filterMatchSuggestions(List groups) {
-        final Set<String> hidden = HevalSettings.getHidden(LIST_ID);
-        if (hidden.isEmpty() || groups == null || groups.isEmpty()) return groups;
+        final Set<String> hidden = countries();
+        final Set<String> competitions = CompetitionFilter.hidden();
+        if ((hidden.isEmpty() && competitions.isEmpty()) || groups == null || groups.isEmpty()) return groups;
         try {
             final Context app = context();
             final CountryData.Favourites favourites = CountryData.favourites(app);
@@ -247,7 +309,8 @@ public final class CountryFilter {
                     Object payload = field(SEARCH + "MatchSuggestion", "payload").get(hit);
                     if (payload == null) return true;
                     int league = CountryData.parseInt((String) field(payloadClass, "leagueId").get(payload));
-                    if (!isLeagueIdHidden(app, hidden, league) || favourites.league(league, 0)) return true;
+                    boolean drop = CompetitionFilter.isHidden(competitions, league, 0) || isLeagueIdHidden(app, hidden, league);
+                    if (!drop || favourites.league(league, 0)) return true;
                     return favourites.team(CountryData.parseInt((String) field(payloadClass, "homeTeamId").get(payload)))
                             || favourites.team(CountryData.parseInt((String) field(payloadClass, "awayTeamId").get(payload)));
                 }
@@ -292,6 +355,24 @@ public final class CountryFilter {
         return bar < 0 ? 0 : CountryData.parseInt(nameAndId.substring(bar + 1));
     }
 
+    /** "Name|123" -> "Name". */
+    static String nameOf(String nameAndId) {
+        if (nameAndId == null) return null;
+        int bar = nameAndId.lastIndexOf('|');
+        return bar < 0 ? nameAndId : nameAndId.substring(0, bar);
+    }
+
+    /**
+     * The country part of a search league's label. Search calls every International league "INT",
+     * so it is resolved by league id; while that is unknown it is just "International".
+     */
+    private static String searchCountryLabel(Context app, String code, int id) {
+        if (code == null || code.isEmpty() || isPseudoCode(code)) return null;
+        if (!CountrySeeds.INTERNATIONAL.equalsIgnoreCase(code)) return CompetitionFilter.countryLabel(code, null);
+        String resolved = international(CountryData.code(app, id));
+        return resolved == null ? CompetitionFilter.INTERNATIONAL_LABEL : CompetitionFilter.countryLabel(resolved, null);
+    }
+
     // ---------------------------------------------------------------------------------------
     // Decisions
     // ---------------------------------------------------------------------------------------
@@ -330,7 +411,7 @@ public final class CountryFilter {
     // Reflection and plumbing
     // ---------------------------------------------------------------------------------------
 
-    private static Context context() {
+    static Context context() {
         Context current = context;
         if (current == null) {
             current = AppContext.currentApplication();
@@ -361,7 +442,9 @@ public final class CountryFilter {
         return constructor;
     }
 
+    /** Reports the failure for every list whose patch is in (both share these hooks). */
     private static void fail(Throwable failure) {
-        HevalSettings.reportFailure(LIST_ID, failure);
+        if (patched()) HevalSettings.reportFailure(LIST_ID, failure);
+        if (CompetitionFilter.patched()) HevalSettings.reportFailure(CompetitionFilter.LIST_ID, failure);
     }
 }

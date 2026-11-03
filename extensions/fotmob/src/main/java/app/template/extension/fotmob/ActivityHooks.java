@@ -30,7 +30,7 @@ public final class ActivityHooks implements Application.ActivityLifecycleCallbac
         } catch (Throwable failure) {
             Log.e(TAG, "Activity hooks not registered: " + failure.getClass().getName());
         }
-        // The "Hidden countries" picker's country list (unused while that list is not patched in).
+        // The "Hidden countries" and "Hidden competitions" pickers (each only when its patch is in).
         CountryFilter.init(application);
     }
 

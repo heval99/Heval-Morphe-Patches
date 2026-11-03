@@ -14,7 +14,7 @@ dependencies {
     // HevalSettings. compileOnly: one copy of the core, from hevalcontrols.mpe.
     compileOnly(project(":extensions:hevalcontrols:core"))
 
-    // JVM unit tests of the pure-Java flag helpers (CountryIconsTest): .\gradlew :extensions:fotmob:testDebugUnitTest
+    // JVM unit tests of the pure-Java picker helpers (CountryIconsTest, CompetitionFilterTest): .\gradlew :extensions:fotmob:testDebugUnitTest
     testImplementation(project(":extensions:hevalcontrols:core"))
     testImplementation(libs.junit)
 }
