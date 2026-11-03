@@ -13,7 +13,7 @@ import app.template.patches.sofascore.controls.sofascoreControls
  * One switch per promotional modal: the modal's name in the queue and its feature. The ids are
  * mapped back to the names in the extension's SofascoreControls.modalFeature. The consent modals
  * (Regulatory Age Consent, Google Consent) and Active subscription (handled by Disable ads) have no
- * switch. All start on: they are nags, and each can be switched back in Heval Controls.
+ * switch. All start on: they are nags, and each can be switched back in Patch settings.
  */
 internal val PROMO_POPUP_FEATURES: List<Pair<String, HevalFeature>> = listOf(
     Triple("Match of the Week", "match_of_the_week", "Match of the Week"),

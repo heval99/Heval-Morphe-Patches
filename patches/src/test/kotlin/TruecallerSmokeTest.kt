@@ -235,6 +235,12 @@ class TruecallerSmokeTest {
             "${HEVAL_EXTENSION}ui/HevalControlsActivity;", TRUECALLER_CONTROLS_ENTRY)) {
             check(type in byType) { "$type is not in the patched dex" }
         }
+        // The screen title and the Settings row label use the UI name "Patch settings".
+        for (type in listOf("${HEVAL_EXTENSION}ui/HevalControlsActivity;", TRUECALLER_CONTROLS_ENTRY)) {
+            val strings = byType.getValue(type).methods.flatMap { it.strings() }
+            check("Patch settings" in strings) { "$type does not use the \"Patch settings\" name" }
+            check(strings.none { "Heval Controls" in it }) { "$type still shows \"Heval Controls\"" }
+        }
 
         // 2. The registry lists exactly the twenty features, with each patch's Manager name and
         // description, default on. They are written in registration (patch execution) order, so the
@@ -265,6 +271,7 @@ class TruecallerSmokeTest {
         ) { "Heval Controls provider has the wrong authority, exported flag or initOrder" }
         val activity = elements("activity").single { it.getAttribute("android:name") == "app.template.extension.hevalcontrols.ui.HevalControlsActivity" }
         check(activity.getAttribute("android:exported") == "false") { "HevalControlsActivity is exported" }
+        check(activity.getAttribute("android:label") == "Patch settings") { "HevalControlsActivity label is ${activity.getAttribute("android:label")}" }
 
         // 4. The Settings row: CategoriesFragment.onViewCreated passes its root view (p1) to
         // HevalControlsEntry.addRow right after super.onViewCreated.
@@ -334,7 +341,7 @@ class TruecallerSmokeTest {
                 "Disable call button haptics",
                 "GmsCore support",
                 "Spoof signature",
-                "Heval Controls",
+                "Patch settings",
             ),
             allPatches = allPatches,
         )

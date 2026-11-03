@@ -58,12 +58,12 @@ internal fun BytecodePatchContext.eventHeadFlag(name: String): MutableMethod =
  * So the getter answers `flag && !isEnabled(featureId)`: the stock flag while the feature is off.
  */
 internal fun MutableMethod.hevalFlagGetter(featureId: String) {
-    require(HevalFeature.ID_REGEX.matches(featureId)) { "Invalid Heval Controls feature id: $featureId" }
+    require(HevalFeature.ID_REGEX.matches(featureId)) { "Invalid Patch settings feature id: $featureId" }
     if (returnType != "Z") throw PatchException("$definingClass->$name returns $returnType, not Z")
     val returns = instructions.withIndex().filter { it.value.opcode == Opcode.RETURN }
     val ret = returns.singleOrNull()?.index
         ?: throw PatchException("$definingClass->$name has ${returns.size} returns, expected one")
-    requireNoBranchTargetAt(ret, "Heval Controls flag gate")
+    requireNoBranchTargetAt(ret, "Patch settings flag gate")
     val register = (getInstruction(ret) as OneRegisterInstruction).registerA
     // xor-int/lit8 and if-eqz take 8-bit registers.
     if (register > 255) throw PatchException("$definingClass->$name returns v$register, above v255")

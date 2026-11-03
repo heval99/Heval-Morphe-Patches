@@ -1,4 +1,4 @@
-// Sofascore helpers for Heval Controls: the "Heval Controls" row on the Settings screen and the
+// Sofascore helpers for Patch settings: the "Patch settings" row on the Settings screen and the
 // runtime hooks of the Sofascore features (modal queue, match tabs, sports list). Builds
 // extensions/sofascore.mpe; the Heval Controls core is compileOnly (the host patch merges
 // extensions/hevalcontrols.mpe), so this .mpe never carries a second copy of it.

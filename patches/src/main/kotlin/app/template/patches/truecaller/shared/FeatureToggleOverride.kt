@@ -60,7 +60,7 @@ internal fun BytecodePatchContext.requireFeatureToggleRead(key: String) {
  * was.
  */
 internal fun BytecodePatchContext.overrideFeatureToggle(key: String, value: Boolean, featureId: String? = null) {
-    if (featureId != null) require(HevalFeature.ID_REGEX.matches(featureId)) { "Invalid Heval Controls feature id: $featureId" }
+    if (featureId != null) require(HevalFeature.ID_REGEX.matches(featureId)) { "Invalid Patch settings feature id: $featureId" }
     // const-string, /range invoke and move-result take any v0; the gate goes between the key match
     // and the forced value.
     val gate = featureId?.let { id ->

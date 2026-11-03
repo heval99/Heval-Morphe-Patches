@@ -71,7 +71,7 @@ private val SOFASCORE_PATCHES = setOf(
     "Disable telemetry",
     "Enable Premium",
     "GmsCore support",
-    "Heval Controls",
+    "Patch settings",
     "Hide AI insights",
     "Hide betting content",
     "Hide match tabs",
@@ -256,6 +256,12 @@ class SofascoreSmokeTest {
             "${HEVAL_EXTENSION}ui/HevalControlsActivity;", SOFASCORE_CONTROLS_ENTRY, SOFASCORE_CONTROLS)) {
             check(type in byType) { "$type is not in the patched dex" }
         }
+        // The screen title and the Settings row label use the UI name "Patch settings".
+        for (type in listOf("${HEVAL_EXTENSION}ui/HevalControlsActivity;", SOFASCORE_CONTROLS_ENTRY)) {
+            val strings = byType.getValue(type).methods.flatMap { it.strings() }
+            check("Patch settings" in strings) { "$type does not use the \"Patch settings\" name" }
+            check(strings.none { "Heval Controls" in it }) { "$type still shows \"Heval Controls\"" }
+        }
 
         // 2. The registry lists exactly the Sofascore features. They are written in registration
         // (patch execution) order, so the records are compared as a set.
@@ -281,6 +287,7 @@ class SofascoreSmokeTest {
         ) { "Heval Controls provider has the wrong authority, exported flag or initOrder" }
         val activity = elements("activity").single { it.getAttribute("android:name") == "app.template.extension.hevalcontrols.ui.HevalControlsActivity" }
         check(activity.getAttribute("android:exported") == "false") { "HevalControlsActivity is exported" }
+        check(activity.getAttribute("android:label") == "Patch settings") { "HevalControlsActivity label is ${activity.getAttribute("android:label")}" }
 
         // 4. The Settings row: SettingsFragment's (View, Bundle)V onViewCreated work (R8-renamed,
         // found by shape like the fingerprint) passes its root view (p1) to addRow first.

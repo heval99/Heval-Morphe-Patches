@@ -44,7 +44,7 @@ import app.template.extension.hevalcontrols.HevalSettings;
 import app.template.extension.hevalcontrols.Registry;
 
 /**
- * The Heval Controls settings screen. Declared {@code exported="false"} by the patch: only the
+ * The Patch settings screen. Declared {@code exported="false"} by the patch: only the
  * patched app itself can open it, through {@link #open(Context)} from an in-app entry point. It
  * reads nothing from its intent, so starting it can never change a setting.
  *
@@ -53,7 +53,7 @@ import app.template.extension.hevalcontrols.Registry;
  */
 @SuppressWarnings("unused")
 public final class HevalControlsActivity extends Activity {
-    static final String TITLE = "Heval Controls";
+    static final String TITLE = "Patch settings";
 
     /** Opens the screen; for in-app menu hooks. Never throws. */
     public static void open(Context context) {
@@ -62,7 +62,7 @@ public final class HevalControlsActivity extends Activity {
             if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         } catch (Throwable failure) {
-            android.util.Log.e("HevalControls", "Cannot open Heval Controls: " + failure.getClass().getName());
+            android.util.Log.e("HevalControls", "Cannot open Patch settings: " + failure.getClass().getName());
         }
     }
 
@@ -185,7 +185,7 @@ public final class HevalControlsActivity extends Activity {
         safeModeCard = safeModeCard();
         views.add(content, safeModeCard, 12);
         engineCard = notice("Settings unavailable",
-                "Heval Controls could not read its settings, so every feature uses the app's stock behaviour until the app restarts.",
+                "Patch settings could not be read, so every feature uses the app's stock behaviour until the app restarts.",
                 palette.error, palette.errorSurface);
         views.add(content, engineCard, 12);
         if (!registry.decoded.supported) {
@@ -193,7 +193,7 @@ public final class HevalControlsActivity extends Activity {
                     "This app was patched with a feature list this version cannot read. Every feature uses stock behaviour. Patch the app again.",
                     palette.error, palette.errorSurface), 12);
         } else if (registry.features().isEmpty()) {
-            views.add(content, notice("No features", "No Heval Controls feature was patched into this app.",
+            views.add(content, notice("No features", "No switchable feature was patched into this app.",
                     palette.muted, palette.surface), 12);
         }
         restartCard = restartCard();
@@ -202,7 +202,7 @@ public final class HevalControlsActivity extends Activity {
         LinearLayout pauseCard = views.card(palette.surface, palette.line);
         pauseCard.setPadding(0, 0, 0, 0);
         pauseSwitch = views.toggle(false);
-        pauseRow = switchRow("Pause all Heval modifications",
+        pauseRow = switchRow("Pause all patches",
                 "Every runtime feature behaves like the stock app. Your choices are kept.", null, pauseSwitch);
         pauseRow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -210,7 +210,7 @@ public final class HevalControlsActivity extends Activity {
                 boolean paused = !HevalSettings.isPaused();
                 if (!HevalSettings.setPaused(paused)) toast("Could not save the change");
                 refresh();
-                view.announceForAccessibility(paused ? "All Heval modifications paused" : "Heval modifications resumed");
+                view.announceForAccessibility(paused ? "All patches paused" : "Patches resumed");
             }
         });
         pauseRow.setAccessibilityDelegate(new View.AccessibilityDelegate() {
@@ -323,10 +323,10 @@ public final class HevalControlsActivity extends Activity {
         TextView heading = views.text("Safe mode is on", 15, palette.error, true);
         Views.markHeading(heading);
         card.addView(heading);
-        views.add(card, views.text("The app crashed three times in a row within a minute of starting, so Heval Controls "
+        views.add(card, views.text("The app crashed three times in a row within a minute of starting, so Patch settings "
                 + "switched every runtime feature off. The app now uses its stock behaviour everywhere below.", 13, palette.text, false), 6);
         views.add(card, views.text("Safe mode cannot help when the crash comes from a change made at patch time, happens "
-                + "before Heval Controls starts, or is a native crash on Android 10 or older. If the app still crashes, "
+                + "before Patch settings starts, or is a native crash on Android 10 or older. If the app still crashes, "
                 + "patch it again without the feature that causes it.", 12, palette.muted, false), 8);
         LinearLayout buttons = views.row();
         Button resume = views.primaryButton("Resume");
@@ -505,7 +505,7 @@ public final class HevalControlsActivity extends Activity {
         restartText.setText(pending == 1 ? "1 change needs a restart" : pending + " changes need a restart");
 
         pauseSwitch.setChecked(paused);
-        describe(pauseRow, "Pause all Heval modifications", paused ? "On" : "Off");
+        describe(pauseRow, "Pause all patches", paused ? "On" : "Off");
 
         boolean inactive = paused || safeMode || failed;
         for (FeatureRow row : rows) row.update(inactive, paused, safeMode, failed);
@@ -595,7 +595,7 @@ public final class HevalControlsActivity extends Activity {
     private void copyDiagnostics() {
         try {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("Heval Controls diagnostics", Diagnostics.report(this));
+            ClipData clip = ClipData.newPlainText("Patch settings diagnostics", Diagnostics.report(this));
             if (Build.VERSION.SDK_INT >= 24) {
                 // Keeps the text out of clipboard previews (honoured from Android 13).
                 PersistableBundle extras = new PersistableBundle();

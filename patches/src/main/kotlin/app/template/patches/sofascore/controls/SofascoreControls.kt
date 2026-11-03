@@ -21,12 +21,12 @@ internal object SofascoreControlsCategory {
 }
 
 /**
- * The in-app entry point: a "Heval Controls" row after "Preferences" on Sofascore's Settings
+ * The in-app entry point: a "Patch settings" row after "Preferences" on Sofascore's Settings
  * screen, built like the stock rows (HevalControlsEntry in extensions/sofascore). It is part of
- * the "Heval Controls" patch, so the screen can always be reached.
+ * the "Patch settings" patch, so the screen can always be reached.
  */
 private val sofascoreControlsEntryPatch = bytecodePatch(
-    description = "Adds a \"Heval Controls\" row to Sofascore's Settings screen.",
+    description = "Adds a \"Patch settings\" row to Sofascore's Settings screen.",
 ) {
     compatibleWith(COMPATIBILITY_SOFASCORE)
 
@@ -40,7 +40,7 @@ private val sofascoreControlsEntryPatch = bytecodePatch(
         // rows are already inflated (onCreateView built the binding). p1 may be a high register in
         // a later build, hence /range.
         val onViewCreated = SettingsFragmentViewCreatedFingerprint.method
-        onViewCreated.requireNoBranchTargetAt(0, "Heval Controls row")
+        onViewCreated.requireNoBranchTargetAt(0, "Patch settings row")
         onViewCreated.addInstructionsChecked(
             0,
             "invoke-static/range {p1 .. p1}, $SOFASCORE_CONTROLS_ENTRY->addRow(Landroid/view/View;)V",
@@ -54,6 +54,6 @@ internal val sofascoreControls = hevalControlsPatch(
     dependencies = setOf(sofascoreControlsEntryPatch),
 )
 
-// Expose the host patch, so Manager lists "Heval Controls".
+// Expose the host patch, so Manager lists "Patch settings".
 @Suppress("unused")
 val sofascoreHevalControlsPatch = sofascoreControls.patch

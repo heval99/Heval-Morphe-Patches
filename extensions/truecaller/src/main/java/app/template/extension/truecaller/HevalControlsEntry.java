@@ -20,9 +20,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /**
- * The "Heval Controls" row on Truecaller's main Settings screen (CategoriesFragment). It goes right
+ * The "Patch settings" row on Truecaller's main Settings screen (CategoriesFragment). It goes right
  * after "Help" (the last row), with a divider like the stock rows, and is styled after Help: same
- * text size, colours, font, padding, height and icon size. A tap opens the Heval Controls screen.
+ * text size, colours, font, padding, height and icon size. A tap opens the Patch settings screen.
  * Stock rows are found by their resource entry names, which survive R8 and a package rename. Any
  * error leaves the screen as it is. No row on a Root Mount install: it keeps the stock manifest, so
  * the screen is not registered there (the features still run with their saved or default state).
@@ -34,7 +34,7 @@ public final class HevalControlsEntry {
     /** Marks the added row, so a second call on the same view tree adds nothing. */
     static final String ROW_TAG = "heval_controls_row";
 
-    private static final String LABEL = "Heval Controls";
+    private static final String LABEL = "Patch settings";
 
     private static final String ACTIVITY = "app.template.extension.hevalcontrols.ui.HevalControlsActivity";
 
@@ -43,25 +43,25 @@ public final class HevalControlsEntry {
 
     /**
      * Patched in right after CategoriesFragment.onViewCreated calls super.onViewCreated, with the
-     * fragment's root view: adds a divider and the "Heval Controls" row after "Help" (or "About").
+     * fragment's root view: adds a divider and the "Patch settings" row after "Help" (or "About").
      */
     public static void addRow(View root) {
         try {
             if (root == null) return;
             if (!isActivityRegistered(root.getContext())) {
-                Log.w(TAG, "Heval Controls row not added: the screen is not in the manifest (Root Mount install?)");
+                Log.w(TAG, "Patch settings row not added: the screen is not in the manifest (Root Mount install?)");
                 return;
             }
             Resources resources = root.getResources();
             View anchor = findByEntryName(root, "item_help", resources);
             if (anchor == null) anchor = findByEntryName(root, "item_about", resources);
             if (!(anchor instanceof TextView)) {
-                Log.w(TAG, "Heval Controls row not added: no Help or About row");
+                Log.w(TAG, "Patch settings row not added: no Help or About row");
                 return;
             }
             ViewParent parent = anchor.getParent();
             if (!(parent instanceof LinearLayout) || ((LinearLayout) parent).getOrientation() != LinearLayout.VERTICAL) {
-                Log.w(TAG, "Heval Controls row not added: the settings rows are not in a vertical LinearLayout");
+                Log.w(TAG, "Patch settings row not added: the settings rows are not in a vertical LinearLayout");
                 return;
             }
             LinearLayout list = (LinearLayout) parent;
@@ -103,11 +103,11 @@ public final class HevalControlsEntry {
             if (divider != null) list.addView(divider, at++);
             list.addView(row, at);
         } catch (Throwable failure) {
-            Log.e(TAG, "Heval Controls row not added: " + failure.getClass().getName());
+            Log.e(TAG, "Patch settings row not added: " + failure.getClass().getName());
         }
     }
 
-    /** Whether this install's manifest has the Heval Controls screen (not the case on Root Mount). */
+    /** Whether this install's manifest has the Patch settings screen (not the case on Root Mount). */
     private static boolean isActivityRegistered(Context context) {
         Boolean known = activityRegistered;
         if (known != null) return known;
@@ -189,7 +189,7 @@ public final class HevalControlsEntry {
         return null;
     }
 
-    /** Starts the (non-exported) Heval Controls screen on top of the current Truecaller activity. */
+    /** Starts the (non-exported) Patch settings screen on top of the current Truecaller activity. */
     static void open(Context context) {
         try {
             Activity activity = activityOf(context);
@@ -200,9 +200,9 @@ public final class HevalControlsEntry {
                 context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             }
         } catch (Throwable failure) {
-            Log.e(TAG, "Cannot open Heval Controls: " + failure.getClass().getName());
+            Log.e(TAG, "Cannot open Patch settings: " + failure.getClass().getName());
             try {
-                Toast.makeText(context, "Heval Controls could not be opened", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Patch settings could not be opened", Toast.LENGTH_SHORT).show();
             } catch (Throwable ignored) {
                 // The notice is optional.
             }

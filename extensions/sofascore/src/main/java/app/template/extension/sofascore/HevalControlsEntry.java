@@ -21,7 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /**
- * The "Heval Controls" row on Sofascore's Settings screen (SettingsFragment). It goes right after
+ * The "Patch settings" row on Sofascore's Settings screen (SettingsFragment). It goes right after
  * "Preferences" in the first card. The stock rows are ProfileClickableRowView, a LinearLayout that
  * inflates its own icon, label and info views; the new row is a second instance of the same class
  * built in code, so it keeps the stock padding, ripple and chevron, with the label and a gear icon
@@ -36,7 +36,7 @@ public final class HevalControlsEntry {
     /** Marks the added row, so a second call on the same view tree adds nothing. */
     static final String ROW_TAG = "heval_controls_row";
 
-    private static final String LABEL = "Heval Controls";
+    private static final String LABEL = "Patch settings";
 
     private static final String ACTIVITY = "app.template.extension.hevalcontrols.ui.HevalControlsActivity";
 
@@ -45,25 +45,25 @@ public final class HevalControlsEntry {
 
     /**
      * Patched in at the start of SettingsFragment's onViewCreated implementation, with the
-     * fragment's root view: adds the "Heval Controls" row after "Preferences" (or "Notifications").
+     * fragment's root view: adds the "Patch settings" row after "Preferences" (or "Notifications").
      */
     public static void addRow(View root) {
         try {
             if (root == null) return;
             if (!isActivityRegistered(root.getContext())) {
-                Log.w(TAG, "Heval Controls row not added: the screen is not in the manifest (Root Mount install?)");
+                Log.w(TAG, "Patch settings row not added: the screen is not in the manifest (Root Mount install?)");
                 return;
             }
             Resources resources = root.getResources();
             View anchor = findByEntryName(root, "button_preferences", resources);
             if (anchor == null) anchor = findByEntryName(root, "button_notifications", resources);
             if (anchor == null) {
-                Log.w(TAG, "Heval Controls row not added: no Preferences or Notifications row");
+                Log.w(TAG, "Patch settings row not added: no Preferences or Notifications row");
                 return;
             }
             ViewParent parent = anchor.getParent();
             if (!(parent instanceof LinearLayout) || ((LinearLayout) parent).getOrientation() != LinearLayout.VERTICAL) {
-                Log.w(TAG, "Heval Controls row not added: the settings rows are not in a vertical LinearLayout");
+                Log.w(TAG, "Patch settings row not added: the settings rows are not in a vertical LinearLayout");
                 return;
             }
             LinearLayout list = (LinearLayout) parent;
@@ -72,14 +72,14 @@ public final class HevalControlsEntry {
             View row = cloneRow(anchor, resources);
             if (row == null) row = plainRow(anchor, resources);
             if (row == null) {
-                Log.w(TAG, "Heval Controls row not added: the stock row has no label");
+                Log.w(TAG, "Patch settings row not added: the stock row has no label");
                 return;
             }
             row.setTag(ROW_TAG);
             row.setOnClickListener(new OpenControls());
             list.addView(row, list.indexOfChild(anchor) + 1);
         } catch (Throwable failure) {
-            Log.e(TAG, "Heval Controls row not added: " + failure.getClass().getName());
+            Log.e(TAG, "Patch settings row not added: " + failure.getClass().getName());
         }
     }
 
@@ -110,7 +110,7 @@ public final class HevalControlsEntry {
             row.setLayoutParams(copyParams(stock.getLayoutParams()));
             return row;
         } catch (Throwable failure) {
-            Log.w(TAG, "Heval Controls row: cloning the stock row failed: " + failure.getClass().getName());
+            Log.w(TAG, "Patch settings row: cloning the stock row failed: " + failure.getClass().getName());
             return null;
         }
     }
@@ -133,7 +133,7 @@ public final class HevalControlsEntry {
         return row;
     }
 
-    /** Whether this install's manifest has the Heval Controls screen (not the case on Root Mount). */
+    /** Whether this install's manifest has the Patch settings screen (not the case on Root Mount). */
     private static boolean isActivityRegistered(Context context) {
         Boolean known = activityRegistered;
         if (known != null) return known;
@@ -185,7 +185,7 @@ public final class HevalControlsEntry {
         return null;
     }
 
-    /** Starts the (non-exported) Heval Controls screen on top of the current Sofascore activity. */
+    /** Starts the (non-exported) Patch settings screen on top of the current Sofascore activity. */
     static void open(Context context) {
         try {
             Activity activity = activityOf(context);
@@ -196,9 +196,9 @@ public final class HevalControlsEntry {
                 context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             }
         } catch (Throwable failure) {
-            Log.e(TAG, "Cannot open Heval Controls: " + failure.getClass().getName());
+            Log.e(TAG, "Cannot open Patch settings: " + failure.getClass().getName());
             try {
-                Toast.makeText(context, "Heval Controls could not be opened", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Patch settings could not be opened", Toast.LENGTH_SHORT).show();
             } catch (Throwable ignored) {
                 // The notice is optional.
             }

@@ -123,6 +123,7 @@ class HevalControlsTest {
         val activity = document.getElementsByTagName("activity").item(0) as Element
         assertEquals("app.template.extension.hevalcontrols.ui.HevalControlsActivity", activity.getAttribute("android:name"))
         assertEquals("false", activity.getAttribute("android:exported"))
+        assertEquals("Patch settings", activity.getAttribute("android:label"))
         assertEquals(0, document.getElementsByTagName("activity-alias").length)
         assertEquals(0, document.getElementsByTagName("intent-filter").length)
 
@@ -139,7 +140,7 @@ class HevalControlsTest {
             ApkArchitecture.entries.forEach { architecture ->
                 assertTrue(
                     availability.resolve(installer, architecture) != PatchAvailability.UNAVAILABLE,
-                    "Heval Controls is unavailable for $installer / $architecture",
+                    "Patch settings is unavailable for $installer / $architecture",
                 )
             }
         }

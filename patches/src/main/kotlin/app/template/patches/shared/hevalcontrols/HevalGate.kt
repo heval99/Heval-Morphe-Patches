@@ -126,7 +126,7 @@ private fun MutableMethod.insertHevalGate(
     label: String,
     body: (register: String) -> String,
 ) {
-    require(HevalFeature.ID_REGEX.matches(featureId)) { "Invalid Heval Controls feature id: $featureId" }
+    require(HevalFeature.ID_REGEX.matches(featureId)) { "Invalid Patch settings feature id: $featureId" }
     val implementation = implementation
         ?: throw PatchException("$definingClass->$name has no code (abstract or native)")
     if (index !in 0 until implementation.instructions.size) {
@@ -142,7 +142,7 @@ private fun MutableMethod.insertHevalGate(
     val scratch = register ?: when {
         index == 0 && locals >= 1 -> 0
         index == 0 -> throw PatchException(
-            "$definingClass->$name has no local register for the Heval Controls gate (registers are all parameters)",
+            "$definingClass->$name has no local register for the Patch settings gate (registers are all parameters)",
         )
         else -> findFreeRegister(index)
     }

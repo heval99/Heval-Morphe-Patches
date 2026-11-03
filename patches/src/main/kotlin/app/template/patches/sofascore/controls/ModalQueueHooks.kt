@@ -59,7 +59,7 @@ internal fun BytecodePatchContext.hasModal(name: String): Boolean {
  * switch off, hideModal answers false and the queue is stock.
  */
 internal val modalQueueHookPatch = bytecodePatch(
-    description = "Lets Heval Controls drop Sofascore's one-time pop-ups before they are queued.",
+    description = "Lets Patch settings drop Sofascore's one-time pop-ups before they are queued.",
 ) {
     compatibleWith(COMPATIBILITY_SOFASCORE)
 

@@ -18,7 +18,7 @@ final class Diagnostics {
     static String report(Context context) {
         Registry registry = Registry.get();
         StringBuilder out = new StringBuilder(1024);
-        out.append("Heval Controls diagnostics\n");
+        out.append("Patch settings diagnostics\n");
         line(out, "app", context.getPackageName() + " " + runningVersion(context));
         line(out, "patched_for", orUnknown(Registry.patchedAppVersion()));
         line(out, "bundle", orUnknown(Registry.bundleVersion()));

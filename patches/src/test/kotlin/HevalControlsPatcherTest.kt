@@ -39,7 +39,7 @@ class HevalControlsPatcherTest {
     private val feature = HevalFeature(
         id = "test.gate",
         name = "Test gate",
-        description = "Gated at runtime by the Heval Controls test.",
+        description = "Gated at runtime by the Patch settings test.",
         category = "Test",
         default = false,
     )
@@ -78,7 +78,7 @@ class HevalControlsPatcherTest {
             workDir = workDir.resolve(run),
             pkg = PKG,
             version = "1.4.5",
-            patchNames = setOf("Heval Controls", feature.name),
+            patchNames = setOf("Patch settings", feature.name),
             allPatches = setOf(host.patch, featurePatch),
         )
     }
@@ -121,6 +121,7 @@ class HevalControlsPatcherTest {
         assertEquals("1000", provider.getAttribute("android:initOrder"))
         val activity = elements("activity").single { it.getAttribute("android:name").endsWith(".ui.HevalControlsActivity") }
         assertEquals("false", activity.getAttribute("android:exported"))
+        assertEquals("Patch settings", activity.getAttribute("android:label"))
         assertTrue(elements("activity-alias").none { it.getAttribute("android:targetActivity").contains("hevalcontrols") })
 
         // A second run in the same JVM writes the same registry (the host starts empty each run).

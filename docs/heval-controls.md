@@ -1,15 +1,26 @@
-# Heval Controls
+# Patch settings (Heval Controls framework)
 
-Heval Controls is an in-app settings screen for patched apps. The user can switch supported
+Patch settings is an in-app settings screen for patched apps. The user can switch supported
 patch features on or off at runtime without patching again. A choice is a saved preference that
 the patched code reads, so a change takes effect at once, or after a restart for features read
 only at startup.
 
-Status (2026-11-03): Truecaller 26.42.5 ships it. Its "Heval Controls" patch (default on) adds a
-"Heval Controls" row below Help on the main Settings screen, and 20 converted Truecaller patches
+Users see the name "Patch settings": the Manager patch, the screen title, the Settings row and
+every message on screen. The code keeps the internal framework name Heval Controls
+(`hevalcontrols` packages and module paths, `HevalSettings`, `HevalControlsActivity`,
+`hevalControlsPatch`, the `heval_controls` SharedPreferences file, the
+`<package>.hevalcontrols` provider authority and the `HevalControls` log tag), so saved choices
+and existing installs are unaffected.
+
+2026-11-03: renamed in the UI from "Heval Controls" to "Patch settings" at the owner's request.
+Feature ids, preference keys and the registry format did not change. Manager selections keyed on
+the old patch name reset to the default (on).
+
+Status (2026-11-03): Truecaller 26.42.5 ships it. Its "Patch settings" patch (default on) adds a
+"Patch settings" row below Help on the main Settings screen, and 20 converted Truecaller patches
 are runtime switches (`truecaller/controls/TruecallerControls.kt` and the patches that use
 `truecallerControls.featurePatch`; list in [Truecaller features](#truecaller-features)). Sofascore
-26.10.19 ships it too: a "Heval Controls" row after Preferences on its Settings screen, with
+26.10.19 ships it too: a "Patch settings" row after Preferences on its Settings screen, with
 switches for sports, match tabs, pop-ups, promo sections and three converted patches
 (`sofascore/controls/SofascoreControls.kt`; list in [Sofascore features](#sofascore-features)). LinkedIn
 4.1.1261 was the first app (an in-app entry row in
@@ -112,7 +123,7 @@ Writes use `commit()`, so a restart or a crash cannot lose them. Crash-guard rec
 
    internal val linkedInControls = hevalControlsPatch(COMPATIBILITY_LINKEDIN)
 
-   // Expose the host patch, so Manager lists "Heval Controls".
+   // Expose the host patch, so Manager lists "Patch settings".
    @Suppress("unused")
    val linkedInHevalControlsPatch = linkedInControls.patch
    ```
@@ -145,8 +156,8 @@ Writes use `commit()`, so a restart or a crash cannot lose them. Crash-guard rec
    Patches that cannot be switched at runtime can still be listed. Register them with
    `buildTimeOnly = true`, and they show as "Applied at patch time".
 
-   A feature patch `dependsOn` the host, so selecting any converted patch also applies "Heval
-   Controls". The host is selected by default; deselecting it in Manager while a converted patch
+   A feature patch `dependsOn` the host, so selecting any converted patch also applies "Patch
+   settings". The host is selected by default; deselecting it in Manager while a converted patch
    is selected still applies it. It also means a broken host anchor (for Truecaller, the Settings
    entry point) makes every converted patch fail loudly, not only the host.
 
@@ -156,7 +167,7 @@ Writes use `commit()`, so a restart or a crash cannot lose them. Crash-guard rec
    (or starts the activity by class name). The activity is `exported="false"`, so only the app
    itself can open it. Pass the unnamed entry-point patch to the host,
    `hevalControlsPatch(COMPATIBILITY_X, dependencies = setOf(entryPatch))`, so the entry is always
-   part of "Heval Controls". Truecaller's entry (`truecaller/controls/TruecallerControls.kt` and
+   part of "Patch settings". Truecaller's entry (`truecaller/controls/TruecallerControls.kt` and
    `HevalControlsEntry` in `extensions/truecaller`) adds a row styled like Help right after it on
    the main Settings screen. An entry must first check that the activity is registered
    (`PackageManager.getActivityInfo` for the component; `NameNotFoundException` means a Root Mount
@@ -405,7 +416,7 @@ The limits are stated in the UI, too. Safe mode cannot help when:
    the feature counts and the runtime status.
 2. **Banners**: safe mode, engine failure, unreadable registry, and pending restarts with a
    "Restart now" button.
-3. **Master switch**: "Pause all Heval modifications".
+3. **Master switch**: "Pause all patches".
 4. **Feature rows**, one section per category. Each row has a name, a description, a state line
    and, for restart-required features, a "Restart" badge.
 5. **Appearance**: a theme cycle (System, Light, Dark, AMOLED black).

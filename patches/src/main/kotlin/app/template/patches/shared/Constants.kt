@@ -190,9 +190,10 @@ object Constants {
             // CLI without -f applies all seven, and the patched UserAccount gates decompile to
             // getForceAds=false, getForceHideAds=true, getHasServerAds=false. No emulator run (the
             // bundle is 32-bit ARM only).
-            // 2026-11-03: Heval Controls on 26.10.19 (Play arm64 fixture, vc 261019002). Host:
-            // "Heval Controls" with a row after "Preferences" in Settings (SettingsFragment's
-            // (View, Bundle)V onViewCreated work, O here, calls HevalControlsEntry.addRow(root) first;
+            // 2026-11-03: Heval Controls framework on 26.10.19 (Play arm64 fixture, vc 261019002).
+            // Host: "Patch settings" (the UI name since 2026-11-03, was "Heval Controls") with a row
+            // after "Preferences" in Settings (SettingsFragment's (View, Bundle)V onViewCreated
+            // work, O here, calls HevalControlsEntry.addRow(root) first;
             // the row is a second ProfileClickableRowView). Runtime switches (Manager defaults kept):
             //   - Disable rating prompts, Hide betting content, Block marketing notifications are now
             //     feature patches (same names/descriptions). Rating no longer forces "ask_review_v3":
@@ -2213,8 +2214,9 @@ object Constants {
     //   drawable before) only styles the system starting window; tje.U setTheme()s the real theme
     //   before super.onCreate, and there is no SplashScreen API, keep-on-screen condition, pre-draw hold
     //   or timed splash activity. The Lottie "Page_SplashScreen" is a one-time onboarding wizard page.
-    // - 2026-11-02 (26.42.5): "Heval Controls" (default on) with 12 runtime switches. Entry: a
-    //   "Heval Controls" row after Help on the main Settings screen, added by
+    // - 2026-11-02 (26.42.5): "Patch settings" (default on; named "Heval Controls" until the
+    //   2026-11-03 UI rename) with 12 runtime switches. Entry: a "Patch settings" row after Help on
+    //   the main Settings screen, added by
     //   extensions/truecaller HevalControlsEntry.addRow(root) right after super.onViewCreated in
     //   CategoriesFragment.onViewCreated (kept class name + "Missing required view with ID: "; the
     //   row finds Help/About by the resource entry names item_help/item_about and copies Help's
@@ -2230,18 +2232,18 @@ object Constants {
     //   (all 20 patches applied), apkanalyzer smali of onViewCreated, doo.a, the tabs helper and
     //   morpheBrandMedia, aapt2 manifest (provider exported=false initOrder=1000, activity
     //   exported=false) and string values (identical to a GmsCore-only build). Emulator (7756584):
-    //   2 clean cold starts, InitProvider ran, the Controls screen (opened directly) lists the 12
+    //   2 clean cold starts, InitProvider ran, the settings screen (opened directly) lists the 12
     //   switches with 6 Restart badges, a toggle persists, Pause all and Reset work. The Settings
     //   row itself needs a phone-verified account, so it is checked in bytecode only.
     //   The host is a hard dependency of the 12 converted patches (featurePatch dependsOn it): if
     //   the Settings entry anchor (CategoriesFragmentViewCreatedFingerprint) drifts, all 12 fail
-    //   loudly, not only "Heval Controls" - accepted, the target is pinned. Root Mount: the host is
+    //   loudly, not only "Patch settings" - accepted, the target is pinned. Root Mount: the host is
     //   available there too (it was UNAVAILABLE, which would have taken the 12 patches away); mount
     //   keeps the stock manifest, so InitProvider/HevalControlsActivity are not registered, the
     //   engine starts lazily on the first hook, the crash guard stays off, and HevalControlsEntry
     //   skips its row when getActivityInfo finds no activity (features stay at their defaults).
     //   Rule 12 (2026-11-02): the string baseline above was GmsCore-only, so a build with ONLY
-    //   "Heval Controls" + "Disable nags" (CLI without -f, both applied) was diffed against stock:
+    //   "Patch settings" + "Disable nags" (CLI without -f, both applied) was diffed against stock:
     //   the aapt2 string pool is byte-identical; the only table change is 36 entry names of
     //   case-colliding pairs renamed to <type>_0x<id> (17 id pairs such as toolbar/toolBar,
     //   standard/STANDARD, plus string/dismiss + string/Dismiss), values unchanged. A GmsCore-only

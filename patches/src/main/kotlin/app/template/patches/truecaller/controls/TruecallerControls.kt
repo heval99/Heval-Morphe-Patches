@@ -23,12 +23,12 @@ internal object TruecallerControlsCategory {
 }
 
 /**
- * The in-app entry point: a "Heval Controls" row after "Help" on Truecaller's main Settings screen,
- * styled like the stock rows (HevalControlsEntry in extensions/truecaller). It is part of the "Heval
- * Controls" patch, so the screen can always be reached.
+ * The in-app entry point: a "Patch settings" row after "Help" on Truecaller's main Settings screen,
+ * styled like the stock rows (HevalControlsEntry in extensions/truecaller). It is part of the "Patch
+ * settings" patch, so the screen can always be reached.
  */
 private val truecallerControlsEntryPatch = bytecodePatch(
-    description = "Adds a \"Heval Controls\" row to Truecaller's Settings screen.",
+    description = "Adds a \"Patch settings\" row to Truecaller's Settings screen.",
 ) {
     compatibleWith(COMPATIBILITY_TRUECALLER)
 
@@ -49,7 +49,7 @@ private val truecallerControlsEntryPatch = bytecodePatch(
         }
         val superCall = superCalls.singleOrNull()?.index
             ?: throw PatchException("CategoriesFragment.onViewCreated calls super.onViewCreated ${superCalls.size} times, expected once")
-        onViewCreated.requireNoBranchTargetAt(superCall + 1, "Heval Controls row")
+        onViewCreated.requireNoBranchTargetAt(superCall + 1, "Patch settings row")
         onViewCreated.addInstructionsChecked(
             superCall + 1,
             "invoke-static/range {p1 .. p1}, $TRUECALLER_CONTROLS_ENTRY->addRow(Landroid/view/View;)V",
@@ -63,6 +63,6 @@ internal val truecallerControls = hevalControlsPatch(
     dependencies = setOf(truecallerControlsEntryPatch),
 )
 
-// Expose the host patch, so Manager lists "Heval Controls".
+// Expose the host patch, so Manager lists "Patch settings".
 @Suppress("unused")
 val truecallerHevalControlsPatch = truecallerControls.patch

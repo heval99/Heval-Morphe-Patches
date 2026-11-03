@@ -1,4 +1,4 @@
-// Truecaller helpers for Heval Controls: the "Heval Controls" row on the main Settings screen and
+// Truecaller helpers for Patch settings: the "Patch settings" row on the main Settings screen and
 // the swapped incoming call notification layouts. Builds extensions/truecaller.mpe; the Heval
 // Controls core is not bundled here (the host patch merges extensions/hevalcontrols.mpe), so it is a
 // compileOnly dependency. See docs/heval-controls.md.

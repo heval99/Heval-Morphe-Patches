@@ -1,7 +1,7 @@
 package app.template.patches.shared.hevalcontrols
 
 /**
- * One feature shown in Heval Controls, registered by the patch that implements it.
+ * One feature shown on the Patch settings screen, registered by the patch that implements it.
  *
  * @param id Stable key, `^[a-z][a-z0-9_.]{0,63}$`, conventionally `<app>.<feature>` (for example
  *        `linkedin.hide_promoted`). It names the saved choice, so never rename a shipped id.
@@ -29,7 +29,7 @@ data class HevalFeature(
     val dependencies: List<String> = emptyList(),
 ) {
     init {
-        require(ID_REGEX.matches(id)) { "Invalid Heval Controls feature id: $id" }
+        require(ID_REGEX.matches(id)) { "Invalid Patch settings feature id: $id" }
         require(name.isNotBlank()) { "Feature $id has no name" }
         require(category.isNotBlank()) { "Feature $id has no category" }
         dependencies.forEach { dependency ->
@@ -61,7 +61,7 @@ object HevalRegistryCodec {
 
     fun encode(features: List<HevalFeature>): String {
         val duplicates = features.groupBy { it.id }.filterValues { it.size > 1 }.keys
-        require(duplicates.isEmpty()) { "Duplicate Heval Controls feature ids: $duplicates" }
+        require(duplicates.isEmpty()) { "Duplicate Patch settings feature ids: $duplicates" }
 
         return buildString {
             append(HEADER_PREFIX).append(VERSION).append('\n')
