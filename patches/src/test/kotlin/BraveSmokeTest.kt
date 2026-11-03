@@ -71,7 +71,7 @@ class BraveSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "1.98.62",
+            version = "1.98.63",
             patchNames = setOf(
                 "Brave Origin",
                 "Disable telemetry",

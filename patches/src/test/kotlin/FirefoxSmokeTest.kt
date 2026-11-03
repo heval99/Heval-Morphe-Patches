@@ -93,7 +93,7 @@ class FirefoxSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "158.0.2",
+            version = "159.0",
             patchNames = setOf(
                 "Disable telemetry",
                 "Hide sponsored content",
