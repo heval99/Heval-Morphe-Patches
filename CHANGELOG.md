@@ -1,3 +1,56 @@
+## 2.2.0-dev.3 (2026-11-03)
+
+### 🆕 New apps
+- **GPS Map Camera Editor** `1.0.31` - Disable ads, Disable license check, Enable Premium, GmsCore support, Spoof signature
+
+### 📱 FotMob `240.17974.20261023`
+- New: Faster animations, Hide countries, Patch settings, Slower live refresh, Turn off animations
+- New: Add Patch settings, animation and refresh switches, and lighter startup
+
+### 📱 Sofascore `26.10.19`
+- New: Animation speed, Hide AI insights, Hide countries, Hide match tabs, Hide promo pop-ups, Hide promo sections, Hide sports, Patch settings, Slower widget refresh
+- New: Add Heval Controls with sport, match tab and promo switches
+- New: Add animation and widget refresh switches, and lighter startup
+- Fixed: Hide teams and players of hidden countries in search
+- Fixed: Hide players of hidden countries and keep country names in the picker
+
+### 📱 Tasker `6.6.20`
+- New: GmsCore support
+- New: Add GmsCore support for Google sign-in
+
+### 📱 Truecaller `26.42.5`
+- New: Hide profile menu items, Patch settings
+- New: Add tab, call log and call screen switches to Heval Controls
+- Fixed: Stop the swapped call notification cutting off its buttons
+- New: Add Hide profile menu items ([#120](https://github.com/heval99/Heval-Morphe-Patches/issues/120))
+- Fixed: Make the profile Premium banner helper callable from its renderers
+- Removed: Heval Controls
+
+### ⬆️ Updated apps
+| App | From | To |
+|---|---|---|
+| 365Scores | `14.9.8` | `15.0.0` |
+| BeSoccer | `6.7.0` | `6.7.1` |
+| Brave Browser | `1.98.62` | `1.98.63` |
+| Firefox | `158.0.2` | `159.0` |
+| jetAudio | `13.1.2` | `13.2.0` |
+| LuckyClick | `4.8` | `2026/10/22` |
+| Niagara Launcher | `1.16.33` | `1.16.34` |
+| OneFootball | `15.147.0` | `15.148.0` |
+| RareCam | `1.0.92` | `1.0.95` |
+| SmartWOD Timer | `1.46.9` | `1.47.1` |
+| TV Smarters Player Expert | `11.4.0` | `11.6.1` |
+| Yahoo Sports | `12.26.1` | `12.27.0` |
+
+### 🗑️ Removed apps
+- LibrePods
+
+### 🔧 Other
+- New: Rename Heval Controls to Patch settings
+- New: Add list pickers to Patch settings
+
+**Download:** [patches-2.2.0-dev.3.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.2.0-dev.3/patches-2.2.0-dev.3.mpp)
+
 ## [2.2.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/compare/v2.2.0-dev.1...v2.2.0-dev.2) (2026-11-02)
 
 ### 🐛 Bug Fixes
