@@ -21,7 +21,8 @@ Status (2026-11-03): Truecaller 26.42.5 ships it. Its "Patch settings" patch (de
 are runtime switches (`truecaller/controls/TruecallerControls.kt` and the patches that use
 `truecallerControls.featurePatch`; list in [Truecaller features](#truecaller-features)). Sofascore
 26.10.19 ships it too: a "Patch settings" row after Preferences on its Settings screen, with
-switches for sports, match tabs, pop-ups, promo sections and three converted patches
+switches for sports, match tabs, pop-ups, promo sections, animation speed, widget refresh and
+three converted patches
 (`sofascore/controls/SofascoreControls.kt`; list in [Sofascore features](#sofascore-features)). LinkedIn
 4.1.1261 was the first app (an in-app entry row in
 the home nav panel and runtime features). It was removed on 2026-10-15 after the test account was
@@ -36,7 +37,9 @@ HushMessenger analysis, is kept outside the repo; this page is the developer gui
 - [Feature hook example](#feature-hook-example)
 - [Truecaller features](#truecaller-features)
 - [Sofascore features](#sofascore-features)
+- [FotMob features](#fotmob-features)
 - [App-specific Java helpers](#app-specific-java-helpers)
+- [List settings (pickers)](#list-settings-pickers)
 - [What cannot be toggled at runtime](#what-cannot-be-toggled-at-runtime)
 - [Crash guard and safe mode](#crash-guard-and-safe-mode)
 - [Settings screen](#settings-screen)
@@ -103,6 +106,8 @@ Storage is the private SharedPreferences file `heval_controls`, with these keys:
 | Key | Holds |
 |---|---|
 | `f.<id>` | A feature choice (boolean). |
+| `l.<id>` | A list feature's picked keys (string set; missing or empty = stock). See [List settings](#list-settings-pickers). |
+| `o.<id>` | A list feature's seen options (string set of `key TAB label`, at most 500). |
 | `_paused` | The global pause. |
 | `_safe_mode` | Safe mode. |
 | `_theme` | The theme: `system`, `light`, `dark` or `amoled`. |
@@ -322,10 +327,51 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.hide_betting_content` | Hide betting content | on | no | its forced values |
 | `sofascore.block_marketing_notifications` | Block marketing notifications | on | no | its dismiss, keep-gone and in-app message sites |
 | `sofascore.disable_rating_prompts` | Disable rating prompts | on | no | its forced value |
+| `sofascore.animations_off` | Animation speed | off | yes | `AnimationSpeed.init` first in ReleaseApp.onCreate, every app call to `Settings.Global.getFloat` (`AnimationSpeed.getFloat`) |
+| `sofascore.animations_fast` | Animation speed | off | yes | the same sites |
+| `sofascore.slower_widget_refresh` | Slower widget refresh | off | yes | widget refresh interval (`widgetRefreshInterval`) |
 
 A hidden sport never empties the sport list: if every sport is hidden, the filter returns the full
-list, and a hidden home sport falls back to the first visible one. Not converted: Disable ads,
+list, and a hidden home sport falls back to the first visible one.
+
+Animation speed (2026-11-03) is a three-way choice made of two switches, because the registry only
+has on/off switches: "Turn off animations" (scale 0, no activity transitions) wins over "Faster
+animations" (the system animator scale times 0.5), and with both off every hook passes the system
+value through. `extensions/sofascore` `AnimationSpeed` scales only the "animator_duration_scale"
+key in the redirected `getFloat` calls (Compose's motion scale, Material indicators, Lottie), sets
+ValueAnimator's duration scale through the hidden `setDurationScale` (reflection; a blocked call is
+logged once under the `HevalControls` tag and the getFloat part still works) and keeps it set when
+the framework resets it (a duration-scale listener on API 33+, and before each activity is created).
+Slower widget refresh changes the widget work's repeat interval from 30 minutes to one hour; the
+app enqueues it with the UPDATE policy from the widget receiver's onEnabled/onUpdate, so a change
+applies at the widget's next update.
+
+Not converted: Disable ads,
 Enable Premium, Disable telemetry, Disable Facebook SDK, GmsCore support and Spoof signature.
+
+## FotMob features
+
+FotMob 240.17974.20261023 (2026-11-03). The "Patch settings" row sits after Support on FotMob's
+Settings screen (`fotmob/controls/FotMobControls.kt`, `HevalControlsEntry` in `extensions/fotmob`).
+Every switch defaults on once its patch is selected; the Manager names, descriptions and defaults
+did not change for the converted patches.
+
+| Feature id | Patch | Manager default | Restart | Gated sites |
+|---|---|---|---|---|
+| `fotmob.hide_betting_content` | Hide betting content | off | no | odds gate (index 0) |
+| `fotmob.disable_rating_prompts` | Disable rating prompts | on | no | RatingAppMessage producer (index 0) |
+| `fotmob.disable_plus_promo_popup` | Disable FotMob+ promo popup | on | no | PlusPromoConfig reader (index 0) |
+| `fotmob.use_system_font` | Use system font | off | yes | font flag store (value helper), Typeface loader (index 0), `SystemFontPatch` (create, composeFamily, theme overlay) |
+| `fotmob.disable_animations` | Turn off animations | off | yes | `AnimationSpeed` (getFloat redirect, ValueAnimator scale, transitions) |
+| `fotmob.faster_animations` | Faster animations | off | yes | `AnimationSpeed` (half the system animator scale) |
+| `fotmob.slower_live_refresh` | Slower live refresh | off | no | match page ticker limit 15 -> 30 (value helper) |
+| `fotmob.hidden_countries` (list) | Hide countries | off | yes | LiveMatchesAndLeagueRank.<init> (`filterLiveMatches`), LeagueConverter.convert returns (`filterLeagues`), Suggestion constructors' league/team/match stores (`filterLeagueSuggestions`, `filterTeamSuggestions`, `filterMatchSuggestions`) |
+
+Hidden countries (2026-11-03) keys are FotMob's league country codes (FIFA three-letter codes; `INT` national-team and `INT-2` club competitions, which match lists and search both call `INT`: `CountryData` in `extensions/fotmob` tells them apart by league id from the bundled `res/raw/available_leagues`, the last leagues list (saved in `heval_fotmob_countries`) and every leagues list loaded; while a league is unknown, a raw `INT` is hidden only when both are picked). Favourite leagues and favourite teams' matches always stay (FotMob's `FAVORITE_LEAGUES_JSON` / `FAVORITE_TEAMS_JSON`, re-read when they change). The picker is seeded with 217 FIFA codes plus the two International groups by `CountryFilter.init` from `ActivityHooks.register`, and the leagues list reports what it sees. The Leagues tab never goes empty (if every league would be hidden, the full list stays). The onboarding league picker uses the same leagues list, so it is filtered too; search filters leagues, teams (by league id) and matches, not players or referees; the widget and notifications are not filtered. Turn off animations wins when both animation switches are on. Use system font keeps the stock theme
+resources: its resource part only adds the `HevalSystemFontOverlay` styles, and
+`ActivityHooks.onActivityCreated` applies them to each new screen while the switch is on. The
+activity hooks are registered from `FotMobApp.onCreate`. Not converted: Disable ads, Disable
+telemetry, Enable FotMob+, GmsCore support and Spoof signature.
 
 ## App-specific Java helpers
 
@@ -354,6 +400,94 @@ public static List<Object> filterFeed(List<Object> items) {
 `reportFailure` keeps only the exception class and the first `app.template.extension` frame,
 never the message. The screen then shows the feature as "Failed, using stock behaviour" for the
 rest of the process.
+
+## List settings (pickers)
+
+Added 2026-11-03 for "Hidden countries" in Sofascore and FotMob. A list setting is not a switch: the
+user picks items to hide from a checklist, and the app extension asks whether a key is hidden. The
+app-side hooks live in the per-app extensions; the framework only stores the picks, offers the
+options and draws the picker.
+
+**Declare** it with `HevalListFeature` and register it like a switch, through `featurePatch` or
+`host.register` from a patch that already edited the hook sites:
+
+```kotlin
+internal val HIDDEN_COUNTRIES = HevalListFeature(
+    id = "sofascore.hidden_countries",          // permanent: names the saved picks
+    name = "Hidden countries",
+    description = "Leagues and matches from the countries you pick are hidden.",
+    category = "Leagues",
+    restartRequired = false,                    // true when the app reads the list once per process
+    dependencies = emptyList(),                 // switches that must be on for the list to apply
+)
+
+val hideCountriesPatch = sofascoreControls.featurePatch(HIDDEN_COUNTRIES) { /* hook sites */ }
+```
+
+`HevalListFeature(...)` is `HevalFeature(kind = HevalFeatureKind.LIST, default = false)`. A list
+can never be on by default (an empty list is the default and is stock) or build-time-only; the
+`HevalFeature` constructor rejects both.
+
+**Read** it from the app extension (`compileOnly(project(":extensions:hevalcontrols:core"))`):
+
+| Java API (`HevalSettings`) | What it does |
+|---|---|
+| `static Set<String> getHidden(String listId)` | The keys to hide right now. Immutable, shared, never null: one volatile read and one map lookup, no IO, no allocation. Empty before the engine starts, on engine failure, pause, safe mode, an unknown or switch id, or a dependency that is off. A change replaces the set, so don't cache it. |
+| `static boolean isHidden(String listId, String key)` | `getHidden(listId).contains(key)`; false for a null key. Never throws. |
+| `static boolean isEnabled(String listId)` | True while the effective list is non-empty, so a smali gate can skip the filter cheaply. |
+| `static void registerOptions(String listId, Map<String,String> keyToLabel)` | Static seed options (a bundled list), in memory for this process only, merged across calls. Call it from code that runs at process start so the picker has them. |
+| `static void reportOptionsSeen(String listId, String key, String label)` | The app showed this option; the picker will offer it. Persisted under `o.<id>`, written in a background batch about 1.5 s after the first new option. A known key with the same label costs two map lookups and no IO. |
+| `static void reportOptionsSeen(String listId, Map<String,String> keyToLabel)` | The same for several options. |
+
+For the settings screen (also public): `setHidden(String, Set<String>)`, `setHidden(String, String,
+boolean)`, `clearHidden(String)`, `pickedHidden(String)` (the picks ignoring pause and safe mode)
+and `options(String)` (seeds, then persisted and pending seen options, whose labels win, plus every
+picked key, labelled by its key when nothing names it, so a pick can always be undone).
+
+Rules and limits:
+
+- Keys are any non-empty string up to 100 characters without a tab or line break (use a stable
+  key such as a country code or the app's own id, not the label). Labels are trimmed, have tabs and
+  line breaks replaced and are cut to 120 characters; an empty label becomes the key.
+- At most 500 picks and 500 persisted options per list; further new options are dropped. Unknown
+  and switch ids are ignored by every call.
+- "Reset all to defaults" empties every list; the seen options stay (they are not a choice).
+- A restart-required list counts as pending when its effective picks differ from the process
+  start, not only when it turns on or off.
+- The app should never let the list hide everything it needs (Sofascore's sports filter keeps the
+  full list when every item is hidden); that rule belongs in the app extension.
+
+Example (app extension):
+
+```java
+public static List<Country> filterCountries(List<Country> countries) {
+    if (!HevalSettings.isEnabled("sofascore.hidden_countries")) {
+        for (Country c : countries) HevalSettings.reportOptionsSeen("sofascore.hidden_countries", c.alpha2, c.name);
+        return countries;                                         // stock
+    }
+    Set<String> hidden = HevalSettings.getHidden("sofascore.hidden_countries");
+    List<Country> kept = new ArrayList<>(countries.size());
+    for (Country c : countries) {
+        HevalSettings.reportOptionsSeen("sofascore.hidden_countries", c.alpha2, c.name);
+        if (!hidden.contains(c.alpha2)) kept.add(c);
+    }
+    return kept.isEmpty() ? countries : kept;
+}
+```
+
+**Screen.** A list row shows the name, the description and a state line ("None hidden", "3
+hidden", "3 hidden (paused)", "3 hidden, restart required") with an "Edit" hint; it is spoken as a
+button. Tapping it shows the picker in place of the main screen: the name and a "Done" button, the
+description, the "N hidden" summary (a polite live region), a note when pause, safe mode or a
+dependency keeps the picks from applying, a search field (case- and accent-insensitive, on the
+label and the key), "Clear all" (it turns into "Undo clear" until the next change) and an
+alphabetical checklist (locale collation). Every tap is saved at once. Each checklist row is one
+48 dp+ focus stop, announced as a checkbox with its label and "Hidden" or "Shown". Back or Done
+returns to the main screen; the open picker and its search survive rotation and theme changes.
+With no options yet it says "Nothing to pick yet. Items appear here after the app has shown them."
+
+**Diagnostics** list a list feature as `<id>: <state>, list, picked=N, hidden_now=N, options=N`:
+counts only, never keys or labels.
 
 ## What cannot be toggled at runtime
 
@@ -418,7 +552,8 @@ The limits are stated in the UI, too. Safe mode cannot help when:
    "Restart now" button.
 3. **Master switch**: "Pause all patches".
 4. **Feature rows**, one section per category. Each row has a name, a description, a state line
-   and, for restart-required features, a "Restart" badge.
+   and, for restart-required features, a "Restart" badge. A list feature's row opens its picker
+   (see [List settings](#list-settings-pickers)).
 5. **Appearance**: a theme cycle (System, Light, Dark, AMOLED black).
 6. **Diagnostics**: "Copy diagnostics".
 7. **App**: "Restart app", and "Reset all to defaults" with an inline confirmation.
@@ -429,7 +564,8 @@ dependency that is not in this APK), Failed, and Applied at patch time.
 **Accessibility:**
 
 - Each row is one focus stop, announced as a switch with its state (`setStateDescription` on
-  API 30+).
+  API 30+). A list row is announced as a button with its "N hidden" state; picker rows as
+  checkboxes.
 - Headings are marked on API 28+.
 - Touch targets are at least 48 dp.
 - Changes are announced.
@@ -444,8 +580,9 @@ dependency that is not in this APK), Failed, and Applied at patch time.
 - The layout direction follows the locale. The host's `supportsRtl` still decides whether RTL
   applies.
 
-**Diagnostics** contain versions, the device model, flags and feature states. Failures appear as
-an exception class and frame only. The report has no account data, app content or identifiers.
+**Diagnostics** contain versions, the device model, flags and feature states (list settings as
+counts only). Failures appear as an exception class and frame only. The report has no account data,
+app content or identifiers.
 The clipboard copy is marked sensitive.
 
 **Extension points** (not built yet): search above the categories, import and export next to
@@ -471,16 +608,21 @@ Rules:
   trailing fields (so appending a field stays version 1), and never throws.
 - A different header version gives an empty, unsupported registry. Every hook then answers
   stock, and the screen asks for a repatch.
+- An optional ninth field is the kind (2026-11-03): `list` marks a list setting; empty, missing or
+  any other value is a switch. The encoder writes it only for lists, so a registry of switches
+  encodes byte-for-byte as before and stays version 1. A list record is always default off; one
+  with buildTimeOnly `1` is skipped as malformed.
 
 The fixture `extensions/hevalcontrols/core/src/test/resources/registry-v1.txt` pins the format on
-both sides. The Kotlin encoder test and the Java decoder test both read it.
+both sides (switches only, unchanged since version 1), and `registry-v1-lists.txt` pins a registry
+with lists. The Kotlin encoder test and the Java decoder test both read them.
 
 ## Testing
 
 | What | Command | What it covers |
 |---|---|---|
-| Core JVM unit tests | `.\gradlew :extensions:hevalcontrols:core:testDebugUnitTest` | Registry decode and versioning, defaults, toggle and persistence on a fake store, pause, safe mode, fail-open, dependencies, restart-pending, unknown ids, crash-guard counting and resume. |
-| Patch-side tests | `.\gradlew :patches:buildAndroid :patches:cleanTest :patches:test --tests "HevalControls*" --no-build-cache` | `HevalControlsTest` covers the encoder against the fixture, feature validation, the manifest components, the gate helpers and that the Truecaller host is available on every installer (Root Mount included). `HevalControlsPatcherTest` runs a test-only host and feature through the real patcher on `apks/nativecamera/base.apk` (skipped without it). |
+| Core JVM unit tests | `.\gradlew :extensions:hevalcontrols:core:testDebugUnitTest` | Registry decode and versioning, defaults, toggle and persistence on a fake store, pause, safe mode, fail-open, dependencies, restart-pending, unknown ids, crash-guard counting and resume. `HevalSettingsListTest`: list picks, pause, safe mode, dependencies, reset, seen options (persistence, bounds, background batch) and seeds. |
+| Patch-side tests | `.\gradlew :patches:buildAndroid :patches:cleanTest :patches:test --tests "HevalControls*" --no-build-cache` | `HevalControlsTest` covers the encoder against both fixtures, that switch records keep eight fields, feature and list validation, the manifest components, the gate helpers and that the Truecaller host is available on every installer (Root Mount included). `HevalControlsPatcherTest` runs a test-only host, a switch and a list feature through the real patcher on `apks/nativecamera/base.apk` (skipped without it). |
 | Lint | `.\gradlew :extensions:hevalcontrols:core:lintRelease :extensions:hevalcontrols:lintRelease` | Checks API levels against minSdk 23. |
 
 CI (`release.yml`) runs no tests. Consider adding the core unit-test task there.

@@ -31,6 +31,27 @@ object GetHasServerAdsFingerprint : Fingerprint(
     name = "getHasServerAds",
 )
 
+/**
+ * Ad SDK content providers the manifest starts in every process before Application.onCreate
+ * (2026-11-03, 26.10.19). Their class names are kept because the manifest names them. Each
+ * onCreate()Z only registers the SDK's activity/process lifecycle tracking (IronSource, LevelPlay,
+ * Mintegral, Vungle), which nothing needs once the ad SDKs are never started. PicassoProvider is
+ * deliberately not here: its onCreate only stores the context, and Picasso.get() throws without it.
+ */
+internal val AD_SDK_LIFECYCLE_PROVIDERS = listOf(
+    "Lcom/ironsource/lifecycle/IronsourceLifecycleProvider;",
+    "Lcom/ironsource/lifecycle/LevelPlayActivityLifecycleProvider;",
+    "Lcom/mbridge/msdk/config/component/status/MBComponentLifecycleProvider;",
+    "Lcom/vungle/ads/VungleProvider;",
+)
+
+/**
+ * Unity Ads' androidx.startup Initializer (a meta-data entry of InitializationProvider, so the
+ * class name is kept). Its create(Context) stores the application and starts Unity's start-up
+ * coroutine; the Unity SDK itself is only started by the ad start-up thread Disable ads removes.
+ */
+internal const val UNITY_ADS_INITIALIZER = "Lcom/unity3d/services/core/configuration/AdsSdkInitializer;"
+
 internal const val RELEASE_APP_CLASS = "Lcom/sofascore/results/ReleaseApp;"
 
 /**

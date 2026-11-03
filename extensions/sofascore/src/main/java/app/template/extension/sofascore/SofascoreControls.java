@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Runtime hooks of the Sofascore Heval Controls features. Every method answers the stock value
+ * Runtime hooks of the Sofascore Heval Controls features (the animation switches are in
+ * AnimationSpeed). Every method answers the stock value
  * when its feature is off, unknown (its patch was not applied) or on any error.
  */
 @SuppressWarnings("unused")
@@ -212,6 +213,23 @@ public final class SofascoreControls {
         if (key == null) return false;
         String feature = promoSectionFeature(key);
         return feature != null && HevalSettings.isEnabled(feature);
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Widgets: the periodic refresh work.
+    // ---------------------------------------------------------------------------------------
+
+    /** One hour, the widget refresh interval while "Slower widget refresh" is on. */
+    private static final long SLOW_WIDGET_REFRESH_MILLIS = 60L * 60L * 1000L;
+
+    /**
+     * Patched in after the widget refresh work's repeat interval (30 minutes in 26.10.19) is
+     * loaded: answers one hour while the switch is on (never shorter than the app's own value),
+     * the app's value otherwise.
+     */
+    public static long widgetRefreshInterval(long interval) {
+        if (!HevalSettings.isEnabled("sofascore.slower_widget_refresh")) return interval;
+        return Math.max(interval, SLOW_WIDGET_REFRESH_MILLIS);
     }
 
     private SofascoreControls() { }

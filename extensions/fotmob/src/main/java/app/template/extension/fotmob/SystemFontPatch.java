@@ -1,8 +1,12 @@
 package app.template.extension.fotmob;
 
+import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.util.Log;
+
+import app.template.extension.hevalcontrols.HevalSettings;
 
 /**
  * "Use system font" for FotMob: maps the generic sans-serif families the app asks for to the
@@ -13,27 +17,67 @@ import android.os.Build;
  *
  * When the device has no separate UI font (config_bodyFontFamily is missing or "sans-serif"),
  * every call returns exactly what the original call would have returned.
+ *
+ * A Patch settings switch (fotmob.use_system_font, restart required): while it is off every call
+ * here answers what the stock code got, and the system font theme overlay is not applied.
  */
 @SuppressWarnings("unused")
 public final class SystemFontPatch {
+    static final String FEATURE = "fotmob.use_system_font";
+
+    /** The theme overlay the resource patch adds: the font attributes set to system families. */
+    private static final String THEME_OVERLAY = "HevalSystemFontOverlay";
+
     private static final String SANS_SERIF = "sans-serif";
 
     private static volatile boolean resolved;
     private static String body;
     private static String bodyMedium;
+    private static volatile int overlayId = -1;
 
     private SystemFontPatch() {
+    }
+
+    /** Whether the feature is on (stock when the settings engine answers off or fails). */
+    public static boolean isEnabled() {
+        try {
+            return HevalSettings.isEnabled(FEATURE);
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     /** Replaces Typeface.create(String, int) everywhere in the app. */
     public static Typeface create(String family, int style) {
         try {
-            Typeface mapped = map(family, style);
-            if (mapped != null) return mapped;
+            if (isEnabled()) {
+                Typeface mapped = map(family, style);
+                if (mapped != null) return mapped;
+            }
         } catch (Throwable ignored) {
             // Fall through to the original call.
         }
         return Typeface.create(family, style);
+    }
+
+    /**
+     * XML Views: applies the system font theme overlay (the API 26+ theme's font attributes and the
+     * switch style pointed at the system families, like FotMob's own Burmese theme) to the
+     * activity's theme. Called from ActivityHooks.onActivityCreated, inside super.onCreate and
+     * before the content view is inflated.
+     */
+    static void applyTheme(Activity activity) {
+        try {
+            if (!isEnabled()) return;
+            int id = overlayId;
+            if (id == -1) {
+                id = activity.getResources().getIdentifier(THEME_OVERLAY, "style", activity.getPackageName());
+                overlayId = id;
+            }
+            if (id != 0) activity.getTheme().applyStyle(id, true);
+        } catch (Throwable failure) {
+            Log.w("Morphe-FotMob", "System font theme not applied: " + failure.getClass().getName());
+        }
     }
 
     /**
@@ -44,7 +88,7 @@ public final class SystemFontPatch {
      */
     public static String composeFamily(String family) {
         try {
-            if ((family == null || family.isEmpty()) && deviceFont() != null) return SANS_SERIF;
+            if ((family == null || family.isEmpty()) && isEnabled() && deviceFont() != null) return SANS_SERIF;
         } catch (Throwable ignored) {
             // Keep the original family.
         }

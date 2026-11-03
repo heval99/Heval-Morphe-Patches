@@ -11,6 +11,9 @@ import app.template.patches.sofascore.misc.rating.DISABLE_RATING_PROMPTS
 import app.template.patches.sofascore.misc.notifications.BLOCK_MARKETING_NOTIFICATIONS
 import app.template.patches.sofascore.betting.HIDE_BETTING_CONTENT
 import app.template.patches.sofascore.misc.promo.PROMO_SECTION_FEATURES
+import app.template.patches.sofascore.misc.animations.ANIMATION_FEATURES
+import app.template.patches.sofascore.misc.widget.SLOWER_WIDGET_REFRESH
+import app.template.patches.sofascore.controls.SOFASCORE_ANIMATION_SPEED
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -64,6 +67,7 @@ private const val START_ACTIVITY = "Lcom/sofascore/results/main/start/StartActiv
 private const val SIGNATURE_SHA1 = "e235776bc0ad3837b01359177c438658b1424d23"
 
 private val SOFASCORE_PATCHES = setOf(
+    "Animation speed",
     "Block marketing notifications",
     "Disable Facebook SDK",
     "Disable ads",
@@ -78,8 +82,22 @@ private val SOFASCORE_PATCHES = setOf(
     "Hide promo pop-ups",
     "Hide promo sections",
     "Hide sports",
+    "Slower widget refresh",
     "Spoof signature",
 )
+
+private val AD_SDK_PROVIDERS = listOf(
+    "Lcom/ironsource/lifecycle/IronsourceLifecycleProvider;",
+    "Lcom/ironsource/lifecycle/LevelPlayActivityLifecycleProvider;",
+    "Lcom/mbridge/msdk/config/component/status/MBComponentLifecycleProvider;",
+    "Lcom/vungle/ads/VungleProvider;",
+)
+private const val UNITY_ADS_INITIALIZER = "Lcom/unity3d/services/core/configuration/AdsSdkInitializer;"
+private const val PICASSO_PROVIDER = "Lcom/squareup/picasso/PicassoProvider;"
+private const val EMOJI_COMPAT_INITIALIZER = "Landroidx/emoji2/text/EmojiCompatInitializer;"
+private const val FIAM_DATA_COLLECTION_KEY = "firebase_inapp_messaging_auto_data_collection_enabled"
+private const val GLOBAL_SETTINGS = "Landroid/provider/Settings\$Global;"
+private const val WIDGET_REFRESH_WORKER = "Lcom/sofascore/results/service/WidgetPeriodicRefreshWorker;"
 
 private const val SETTINGS_FRAGMENT = "Lcom/sofascore/results/settings/SettingsFragment;"
 private const val HEVAL_EXTENSION = "Lapp/template/extension/hevalcontrols/"
@@ -95,7 +113,9 @@ private val HEVAL_FEATURES: List<HevalFeature> = listOf(HIDE_AI_INSIGHTS) +
     BLOCK_MARKETING_NOTIFICATIONS +
     HIDE_BETTING_CONTENT +
     PROMO_POPUP_FEATURES.map { it.second } +
-    PROMO_SECTION_FEATURES.map { it.second }
+    PROMO_SECTION_FEATURES.map { it.second } +
+    ANIMATION_FEATURES +
+    SLOWER_WIDGET_REFRESH
 
 class SofascoreSmokeTest {
 
@@ -708,7 +728,99 @@ class SofascoreSmokeTest {
                 guardInsns[guard + 4].opcode == Opcode.RETURN_OBJECT
         ) { "the navigateToTab guard is malformed: ${guardInsns.subList(guard - 1, guard + 5).map { it.opcode }}" }
 
+        // Start-up work, animation speed and widget refresh (2026-11-03).
+        assertStartupAndSpeed(classes, byType, diagnostics)
+
         // Heval Controls: extension, registry, manifest components and the Settings row.
         assertHevalControls(byType)
+    }
+
+    /** `sget-object Boolean.FALSE` into some register, then `return-object` of that register. */
+    private fun assertReturnsBooleanFalse(method: Method, label: String) {
+        val insns = method.instructions()
+        val load = insns.getOrNull(0)
+        val field = (load as? ReferenceInstruction)?.reference as? FieldReference
+        check(
+            load?.opcode == Opcode.SGET_OBJECT && field?.definingClass == "Ljava/lang/Boolean;" && field.name == "FALSE" &&
+                insns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT &&
+                (insns[1] as OneRegisterInstruction).registerA == (load as OneRegisterInstruction).registerA
+        ) { "$label does not return Boolean.FALSE first; got ${insns.take(2).map { it.opcode }}" }
+    }
+
+    private fun assertStartupAndSpeed(classes: List<ClassDef>, byType: Map<String, ClassDef>, diagnostics: String) {
+        fun require(type: String): ClassDef = byType[type] ?: error("$type not found in emitted dexes\n$diagnostics")
+        fun ClassDef.single(name: String, returnType: String, params: List<String>) =
+            methods.single { it.name == name && it.returnType == returnType && it.params() == params }
+
+        // Disable ads: the ad SDK lifecycle providers report success without starting anything,
+        // and Unity's androidx.startup Initializer returns at once. PicassoProvider stays stock.
+        for (provider in AD_SDK_PROVIDERS) {
+            assertForcedBoolean(require(provider).single("onCreate", "Z", emptyList()), expected = true, label = "$provider.onCreate()", diagnostics)
+        }
+        assertReturnsBooleanFalse(require(UNITY_ADS_INITIALIZER).single("create", "Ljava/lang/Object;", listOf(CONTEXT)), "AdsSdkInitializer.create(Context)")
+        check(require(PICASSO_PROVIDER).single("onCreate", "Z", emptyList()).instructions().first().opcode != Opcode.CONST_4) {
+            "PicassoProvider.onCreate() must stay stock (Picasso.get() needs its context)"
+        }
+
+        // Disable telemetry: FIAM's data-collection getter (the no-arg boolean holding the manifest
+        // key and "auto_init") answers false; the EmojiCompat Initializer returns at once.
+        val fiam = classes.flatMap { it.methods }.filter { m ->
+            m.returnType == "Z" && m.parameterTypes.isEmpty() && m.strings().containsAll(listOf(FIAM_DATA_COLLECTION_KEY, "auto_init"))
+        }
+        check(fiam.size == 1) { "expected one FIAM data-collection getter, found ${fiam.size}\n$diagnostics" }
+        assertForcedBoolean(fiam.single(), expected = false, label = "FIAM isAutomaticDataCollectionEnabled()", diagnostics)
+        assertReturnsBooleanFalse(require(EMOJI_COMPAT_INITIALIZER).single("create", "Ljava/lang/Object;", listOf(CONTEXT)), "EmojiCompatInitializer.create(Context)")
+
+        // Animation speed: the extension is merged; ReleaseApp.onCreate starts with init(p0).
+        val speed = require(SOFASCORE_ANIMATION_SPEED)
+        val onCreate = require(RELEASE_APP).single("onCreate", "V", emptyList())
+        val p0 = onCreate.implementation!!.registerCount - 1
+        val init = onCreate.instructions().first()
+        check(init.opcode == Opcode.INVOKE_STATIC_RANGE && init.call()?.definingClass == SOFASCORE_ANIMATION_SPEED &&
+            init.call()?.name == "init" && (init as RegisterRangeInstruction).startRegister == p0 && init.registerCount == 1
+        ) { "ReleaseApp.onCreate() does not call AnimationSpeed.init(p0) first; got ${init.opcode} ${init.call()}" }
+
+        // Every app call to Settings.Global.getFloat(ContentResolver, String, F) now goes to the
+        // extension's getFloat with the same signature; only the extension still calls the framework.
+        fun Method.isGlobalGetFloat(owner: String) = instructions().count { insn ->
+            insn.call()?.let { it.definingClass == owner && it.name == "getFloat" && it.returnType == "F" &&
+                it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/ContentResolver;", "Ljava/lang/String;", "F") } == true
+        }
+        val leftover = classes.filterNot { it.type.startsWith("Lapp/template/extension/") }.flatMap { it.methods }
+            .filter { it.isGlobalGetFloat(GLOBAL_SETTINGS) > 0 }
+        check(leftover.isEmpty()) { "Settings.Global.getFloat is still called from ${leftover.map { "${it.definingClass}->${it.name}" }}" }
+        val redirected = classes.flatMap { it.methods }.filter { it.isGlobalGetFloat(SOFASCORE_ANIMATION_SPEED) > 0 }
+        check(redirected.size >= 10) { "AnimationSpeed.getFloat is called from only ${redirected.size} methods" }
+        // Every caller is one of the "animator_duration_scale" readers.
+        check(redirected.all { "animator_duration_scale" in it.strings() }) {
+            "a redirected getFloat caller does not read animator_duration_scale: " +
+                redirected.filterNot { "animator_duration_scale" in it.strings() }.map { "${it.definingClass}->${it.name}" }
+        }
+        check(speed.single("getFloat", "F", listOf("Landroid/content/ContentResolver;", "Ljava/lang/String;", "F")).isGlobalGetFloat(GLOBAL_SETTINGS) == 1) {
+            "AnimationSpeed.getFloat no longer calls through to Settings.Global.getFloat"
+        }
+
+        // Slower widget refresh: in the widget scheduler (static (Context)V holding the unique work
+        // label and the worker class), the 30-minute interval passes through widgetRefreshInterval
+        // before it is stored: const-wide vX, 1800000; invoke-static/range {vX .. vX+1}; move-result-wide vX; iput-wide vX.
+        val scheduler = classes.flatMap { it.methods }.filter { m ->
+            m.isStatic() && m.returnType == "V" && m.params() == listOf(CONTEXT) &&
+                "enqueueUniquePeriodic_widget_periodic_refresh" in m.strings() &&
+                m.instructions().any { (it as? ReferenceInstruction)?.reference.let { r -> r is TypeReference && r.type == WIDGET_REFRESH_WORKER } }
+        }
+        check(scheduler.size == 1) { "expected one widget refresh scheduler, found ${scheduler.size}\n$diagnostics" }
+        val wInsns = scheduler.single().instructions()
+        val hook = wInsns.indexOfFirst { it.call()?.let { c -> c.definingClass == SOFASCORE_CONTROLS && c.name == "widgetRefreshInterval" } == true }
+        check(hook > 0) { "the widget scheduler does not call widgetRefreshInterval" }
+        val load = wInsns[hook - 1]
+        val register = (load as OneRegisterInstruction).registerA
+        check(
+            (load as? com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction)?.wideLiteral == 1_800_000L &&
+                wInsns[hook].opcode == Opcode.INVOKE_STATIC_RANGE && (wInsns[hook] as RegisterRangeInstruction).startRegister == register &&
+                (wInsns[hook] as RegisterRangeInstruction).registerCount == 2 &&
+                wInsns[hook + 1].opcode == Opcode.MOVE_RESULT_WIDE && (wInsns[hook + 1] as OneRegisterInstruction).registerA == register &&
+                wInsns[hook + 2].opcode == Opcode.IPUT_WIDE && (wInsns[hook + 2] as OneRegisterInstruction).registerA == register
+        ) { "the widget interval hook is malformed: ${wInsns.subList(hook - 1, hook + 3).map { it.opcode }}" }
+        check(wInsns.count { it.call()?.name == "widgetRefreshInterval" } == 1) { "widgetRefreshInterval is called more than once" }
     }
 }
