@@ -3880,9 +3880,13 @@ object Constants {
     //     place-search limit applies to subscribers too and is not touched.
     //   - Spoof signature: the Play certificate is injected for every getPackageInfo call, so the
     //     Places SDK and Firebase send the original X-Android-Cert. The Google Maps tiles are
-    //     authorised inside Google Play services, not in the app dex, so a re-signed map may still
-    //     fail to load; not runtime-verified.
-    // GpsMapCameraSmokeTest asserts every hook; not run on the emulator.
+    //     authorised inside Google Play services, not in the app dex, so the re-signed map stays
+    //     blank ("Authorization failure", emulator 2026-11-03); place search works.
+    //   - GmsCore support (added 2026-11-03, opt-in, pulls in Spoof signature): the shared builder
+    //     with the MicroG RE check at the start of SplashActivity.onCreate (the manifest
+    //     MAIN/LAUNCHER class). The Maps module then loads from MicroG RE, which draws its own map
+    //     without Google's key check. No clone option (the Places key is tied to the package).
+    // GpsMapCameraSmokeTest asserts every hook.
     val COMPATIBILITY_GPSMAPCAMERA = Compatibility(
         name = "GPS Map Camera Editor",
         packageName = "com.gkfriend.gpsmapcameraeditor",

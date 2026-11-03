@@ -13,6 +13,7 @@ private const val ADS = "Lcom/gkfriend/gpsmapcameraeditor/ads/"
 private const val SUBSCRIPTION_MANAGER = "Lcom/gkfriend/gpsmapcameraeditor/billing/SubscriptionManager;"
 private const val LICENSE_CLIENT = "Lcom/pairip/licensecheck/LicenseClient;"
 private const val SIGNATURE_SHA1 = "9195b65a6300de633b99a1fd84a9c191ab8a4fa4"
+private const val SPLASH_ACTIVITY = "Lcom/gkfriend/gpsmapcameraeditor/SplashActivity;"
 
 private val GMA_HOOKS = mapOf(
     "Lcom/google/android/gms/ads/BaseAdView;" to setOf("loadAd"),
@@ -39,7 +40,7 @@ class GpsMapCameraSmokeTest {
     }
 
     @Test
-    fun `GPS Map Camera patches skip the licence check, unlock premium, stop ads and spoof the signature`() {
+    fun `GPS Map Camera patches skip the licence check, unlock premium, stop ads, spoof the signature and route to MicroG RE`() {
         val root = repoRoot()
         val apk = File(root, "apks/gpsmapcamera/base.apk")
 
@@ -52,7 +53,9 @@ class GpsMapCameraSmokeTest {
             workDir = workDir,
             pkg = PKG,
             version = "1.0.31",
-            patchNames = setOf("Disable license check", "Disable ads", "Enable Premium", "Spoof signature"),
+            patchNames = setOf(
+                "Disable license check", "Disable ads", "Enable Premium", "Spoof signature", "GmsCore support",
+            ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
         val diagnostics = "emitted classes=${classes.size}"
@@ -90,5 +93,11 @@ class GpsMapCameraSmokeTest {
         // PackageManager.getPackageInfo(String, ...) call (the Places SDK's X-Android-Cert among
         // them) goes through it.
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
+
+        // GmsCore support (the map through MicroG RE's Maps module): the MicroG RE check runs first
+        // in SplashActivity.onCreate, every GMS package/action/authority constant (the Maps
+        // dynamite loader's "com.google.android.gms" among them) points at MicroG RE, and the
+        // manifest carries the spoofing meta-data.
+        assertGmsCoreSupport(classes, workDir, PKG, SPLASH_ACTIVITY, SIGNATURE_SHA1)
     }
 }
