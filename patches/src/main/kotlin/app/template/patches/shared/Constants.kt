@@ -510,8 +510,14 @@ object Constants {
         // 2026-11-03: updated to 14.9.9 (versionCode 1499, Play arm64 build via gplaydl, same
         // signer). All five patches apply unchanged (the ads-removed gate is oij.e in 14.9.9):
         // Scores365SmokeTest passes and a CLI run without -f applied all five. Not runtime-tested.
+        // 2026-11-03: updated to 15.0.0 (versionCode 1500, Play arm64 build via gplaydl, same
+        // signer 08ab8092...963b). All five patches apply unchanged (the ads-removed gate is wij.e,
+        // the two update readers are x41/y41.onCreate): Scores365SmokeTest passes and a CLI run
+        // without -f applied all five; the gates, readers, EntitlementState and Splash hook
+        // decompile as patched. Rule 12 (aapt2, with GmsCore support): no value changes, only the
+        // same three case-twin id pairs come back as id_0x... names. Not runtime-tested.
         targets = listOf(
-            AppTarget(version = "14.9.9", versionCode = 1499)
+            AppTarget(version = "15.0.0", versionCode = 1500)
         )
     )
 
