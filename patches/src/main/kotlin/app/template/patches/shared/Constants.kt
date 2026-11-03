@@ -771,6 +771,16 @@ object Constants {
             // 2026-11-03: updated to 1.98.63 (versionCode 429806304, GitHub "Latest" release
             // Bravearm64Universal.apk, same signer); Brave Origin applies unchanged; smoke + CLI
             // without -f.
+            // 2026-11-03 (#121): "DNS filter" (opt-in; options dohUrl, default CleanBrowsing
+            // Family, and dohMode strict|fallback). Chromium's PolicyProvider.notifySettingsAvailable
+            // (Bundle) (R8-merged, 1.98.63: bbf.a; found by the "#notifySettingsAvailable()" log
+            // prefix + (Bundle)V shape) puts the enterprise policies DnsOverHttpsMode
+            // ("secure", or "automatic" for fallback) and DnsOverHttpsTemplates (the URL) into
+            // every non-null policy bundle before Chromium reads it, so the Secure DNS screen is
+            // managed and locked and Brave says it is managed by an organisation. The app
+            // restriction getters are untouched (no managed first run). Strict means nothing
+            // resolves while the resolver is unreachable. Verified on 1.98.63 by BraveSmokeTest
+            // (default and fallback options); not runtime-tested.
             AppTarget(version = "1.98.63"),
         )
     )
@@ -3582,6 +3592,15 @@ object Constants {
     // Emulator (morphe-test, arm64 158.0.2 merged from APKMirror, same signer, all 5 patches):
     // Dark Reader 4.9.133 installs from the manager, darkens example.com, its popup and Open
     // settings render, On/Off works, and it survives Erase and a relaunch; no crash.
+    // 2026-11-03 (#121): "DNS filter" (opt-in; options dohUrl, default CleanBrowsing Family, and
+    // dohMode strict|fallback), shared with Firefox (shared/misc/dns): GeckoRuntimeSettings
+    // setTrustedRecursiveResolverMode / Uri / ExcludedDomains overwrite their argument at entry (3
+    // TRR only, or 2 TRR first for fallback; the URL; an empty list), and GeckoRuntime.create
+    // (Context, GeckoRuntimeSettings) calls the mode and URI setters first (Focus never sets them).
+    // Focus has no Secure DNS setting to hide. GeckoView sets these as default prefs and resets
+    // their user values on every start, so with Enable about:config a network.trr.* edit lasts
+    // until the next restart. Strict means nothing resolves while the resolver is unreachable.
+    // FirefoxFocusSmokeTest (default and fallback options) passes on 158.0.2; not runtime-tested.
     val COMPATIBILITY_FIREFOX_FOCUS = Compatibility(
         name = "Firefox Focus",
         packageName = "org.mozilla.focus",
@@ -3632,6 +3651,16 @@ object Constants {
     // 2016191886 read from Mozilla's archive x86_64 build, same signer; Mozilla's archive arm64
     // build is 2016191882), all 6 patches apply unchanged; smoke + CLI without -f.
     // 2026-11-03 emulator: stock and patched cold starts OK, no crash.
+    // 2026-11-03 (#121): "DNS filter" (opt-in; options dohUrl, default CleanBrowsing Family, and
+    // dohMode strict|fallback). The GeckoView half is shared with Focus (see there: the TRR mode /
+    // URI / excluded-domains setters are pinned and GeckoRuntime.create applies them). Fenix only:
+    // Settings.getDohSettingsMode() returns Engine$DohSettingsMode MAX (INCREASED for fallback),
+    // and SettingsFragment.onResume passes false to the DNS over HTTPS preference's setVisible
+    // (the value read from showDohEntryPoint$delegate), so the entry is hidden, not removed.
+    // DoH exceptions the user adds are dropped. With Enable about:config a network.trr.* edit
+    // lasts until the next restart. Strict means nothing resolves while the resolver is
+    // unreachable. FirefoxSmokeTest (default and fallback options) passes on 159.0; not
+    // runtime-tested.
     val COMPATIBILITY_FIREFOX = Compatibility(
         name = "Firefox",
         packageName = "org.mozilla.firefox",
