@@ -44,8 +44,12 @@ object Constants {
     // Sofascore patches) and a disassembly of every hook pass. Emulator
     // 2026-11-03: the picker lists ~241 entries (England, Scotland, Wales, NI separate, plus regions);
     // with England hidden it is gone from the Today feed, Leagues and competition search after a
-    // restart, back after Clear all; hiding World works. Team/player search results carry no
-    // category there, so teams now fall back to Team.getCountry() (added after that run). The Live
+    // restart, back after Clear all; hiding World works. Search teams carry no category, so
+    // teams fall back to Team.getCountry(); players (whose team has no country in search) are
+    // dropped via a team id -> country map filled from team and event results. Seeded country
+    // names win over seen labels ("England Amateur" shares EN). Re-run on the emulator the same
+    // day: England listed on first open, "Arsenal" shows no English teams or players, Clear all
+    // restores them. The Live
     // tab had no English matches live, so it was not observed.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.

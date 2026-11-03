@@ -5,7 +5,9 @@ import android.util.Log;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +41,22 @@ public final class CountryFilter {
     private static final ConcurrentHashMap<String, Method> methods = new ConcurrentHashMap<>();
     private static volatile Constructor<?> eventListConstructor;
     private static volatile boolean seeded;
+    /** The baked country list, code to the country's own name; empty until init() ran. */
+    private static volatile Map<String, String> seedLabels = Collections.emptyMap();
+
+    /** At most this many remembered team countries (an id and a short key each). */
+    private static final int MAX_TEAMS = 4096;
+    /**
+     * Team id to the key of the team's country, from every team the hooks see while something is
+     * hidden. Search payloads carry a player's team without its category or country, so a player is
+     * matched through this map. Bounded, oldest entries go first.
+     */
+    private static final Map<Integer, String> teamKeys = new LinkedHashMap<Integer, String>(256, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Integer, String> eldest) {
+            return size() > MAX_TEAMS;
+        }
+    };
 
     private CountryFilter() {
     }
@@ -55,7 +73,10 @@ public final class CountryFilter {
         return "";
     }
 
-    /** Patched in before every return of ReleaseApp.onCreate: offers the app's countries in the picker. */
+    /**
+     * Patched in before every return of ReleaseApp.onCreate (and called by the hooks if they run
+     * first): offers the app's countries in the picker.
+     */
     public static void init() {
         if (seeded) return;
         seeded = true;
@@ -67,6 +88,7 @@ public final class CountryFilter {
                 int tab = line.indexOf('\t');
                 if (tab > 0 && tab < line.length() - 1) options.put(line.substring(0, tab), line.substring(tab + 1));
             }
+            seedLabels = Collections.unmodifiableMap(options);
             HevalSettings.registerOptions(LIST_ID, options);
         } catch (Throwable failure) {
             Log.w(TAG, "Country seeds not registered: " + failure.getClass().getName());
@@ -120,15 +142,23 @@ public final class CountryFilter {
     /**
      * SearchResponse.getResults (List of SearchEntity): drops events, competitions, teams and
      * players of hidden countries. Managers, referees, venues, sports and stages stay.
+     *
+     * <p>A player's team comes without its category or country in search payloads (emulator
+     * 2026-11-03: Saka, Rice and Odegaard stayed with England hidden), so while something is hidden
+     * a first pass remembers the country of every team in the results (and of the teams of event
+     * results), and a player is matched by his team's id. A player whose team is unknown stays.
      */
     public static List filterSearchResults(List results) {
         if (results == null || results.isEmpty()) return results;
         try {
             Set<String> hidden = HevalSettings.getHidden(LIST_ID);
             Object[] all = results.toArray();
+            if (!hidden.isEmpty()) {
+                for (Object result : all) rememberSearchTeams(result);
+            }
             List<Object> kept = new ArrayList<>(all.length);
             for (Object result : all) {
-                if (!hiddenCategory(searchCategory(result), hidden)) kept.add(result);
+                if (!hiddenCategory(searchCategory(result), hidden) && !hiddenPlayer(result, hidden)) kept.add(result);
             }
             return kept.size() == all.length ? results : kept;
         } catch (Throwable failure) {
@@ -150,6 +180,10 @@ public final class CountryFilter {
             if (!(events instanceof List) || ((List) events).isEmpty()) return response;
             Set<String> hidden = HevalSettings.getHidden(LIST_ID);
             Object[] all = ((List) events).toArray();
+            if (!hidden.isEmpty()) {
+                // For search: the players of these teams.
+                for (Object event : all) rememberEventTeams(event);
+            }
             List<Object> kept = new ArrayList<>(all.length);
             for (Object event : all) {
                 if (!hiddenCategory(eventCategory(event), hidden)) kept.add(event);
@@ -171,14 +205,99 @@ public final class CountryFilter {
     // Keys
     // ---------------------------------------------------------------------------------------
 
-    /** Reports {@code category} to the picker; true when its key is picked. */
+    /**
+     * Reports {@code category} to the picker; true when its key is picked. A key of the baked
+     * country list is reported with the country's name: Sofascore's "X Amateur" categories share
+     * the country's alpha2 (England Amateur is EN too), and as the picker lets a seen label win,
+     * the date feed's "England Amateur" used to replace "England" (emulator 2026-11-03). Reporting
+     * the country's name also repairs a label saved that way.
+     */
     private static boolean hiddenCategory(Object category, Set<String> hidden) throws Exception {
         if (category == null) return false;
         String key = key(category);
         if (key == null) return false;
-        Object name = call(category, "getName");
-        HevalSettings.reportOptionsSeen(LIST_ID, key, name instanceof String ? (String) name : key);
+        String label = seedLabel(key);
+        if (label == null) {
+            Object name = call(category, "getName");
+            label = name instanceof String ? (String) name : key;
+        }
+        HevalSettings.reportOptionsSeen(LIST_ID, key, label);
         return hidden.contains(key);
+    }
+
+    /** The baked country name of {@code key}, or null. */
+    private static String seedLabel(String key) {
+        if (!seeded) init();
+        return seedLabels.get(key);
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Team countries (players in search)
+    // ---------------------------------------------------------------------------------------
+
+    /** Remembers the teams of a search result: a team, or an event's home and away team. */
+    private static void rememberSearchTeams(Object result) {
+        try {
+            if (result == null) return;
+            Object type = call(result, "getType");
+            Object entity = call(result, "getEntity");
+            if (entity == null) return;
+            if ("team".equals(type)) rememberTeam(entity, null);
+            else if ("event".equals(type)) rememberEventTeams(entity);
+        } catch (Throwable ignored) {
+            // Only a hint for the player pass.
+        }
+    }
+
+    /**
+     * Remembers an event's home and away team, by their own country, else by the tournament's
+     * category when it is a country (an alpha2 key; never World, Europe, ... which hold clubs of
+     * every country). The tournament's country never replaces a team's own.
+     */
+    private static void rememberEventTeams(Object event) {
+        try {
+            if (event == null) return;
+            Object category = eventCategory(event);
+            String fallback = category == null ? null : key(category);
+            if (fallback != null && fallback.startsWith(SLUG_PREFIX)) fallback = null;
+            rememberTeam(call(event, "getHomeTeam"), fallback);
+            rememberTeam(call(event, "getAwayTeam"), fallback);
+        } catch (Throwable ignored) {
+            // Only a hint for the player pass.
+        }
+    }
+
+    /** teamKeys[team id] = the team's own country key, else {@code fallback} if none is known yet. */
+    private static void rememberTeam(Object team, String fallback) throws Exception {
+        if (team == null) return;
+        Integer id = teamId(team);
+        if (id == null) return;
+        Object country = teamCountry(team);
+        String own = country == null ? null : key(country);
+        synchronized (teamKeys) {
+            if (own != null) teamKeys.put(id, own);
+            else if (fallback != null && !teamKeys.containsKey(id)) teamKeys.put(id, fallback);
+        }
+    }
+
+    /** Whether {@code result} is a player whose team is remembered with a hidden country. */
+    private static boolean hiddenPlayer(Object result, Set<String> hidden) throws Exception {
+        if (hidden.isEmpty() || result == null || !"player".equals(call(result, "getType"))) return false;
+        Object player = call(result, "getEntity");
+        Object team = player == null ? null : call(player, "getTeam");
+        Integer id = team == null ? null : teamId(team);
+        if (id == null) return false;
+        String key;
+        synchronized (teamKeys) {
+            key = teamKeys.get(id);
+        }
+        return key != null && hidden.contains(key);
+    }
+
+    /** Team.getId(), or null for a team without an id. */
+    private static Integer teamId(Object team) throws Exception {
+        Object id = call(team, "getId");
+        return id instanceof Integer && (Integer) id != 0 ? (Integer) id : null;
     }
 
     /** The category's alpha2 code, else "slug:" + its slug, else null. */

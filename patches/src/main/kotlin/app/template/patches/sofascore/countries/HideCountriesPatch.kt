@@ -40,11 +40,11 @@ internal val REFLECTED_METHODS = mapOf(
     "${MODEL}Category;" to listOf("getAlpha2", "getSlug", "getName"),
     "Lcom/sofascore/model/newNetwork/CategoryWrapper;" to listOf("getCategory"),
     "Lcom/sofascore/model/network/response/SearchEntity;" to listOf("getType", "getEntity"),
-    "${MODEL}Event;" to listOf("getTournament"),
+    "${MODEL}Event;" to listOf("getTournament", "getHomeTeam", "getAwayTeam"),
     "${MODEL}Tournament;" to listOf("getCategory"),
     "${MODEL}UniqueTournament;" to listOf("getCategory"),
     "${MODEL}UniqueStage;" to listOf("getCategory"),
-    "${MODEL}Team;" to listOf("getCategory", "getCountry"),
+    "${MODEL}Team;" to listOf("getCategory", "getCountry", "getId"),
     "${MODEL}Country;" to listOf("getAlpha2", "getSlug", "getName"),
     "${MODEL}Player;" to listOf("getTeam"),
     EVENT_LIST_RESPONSE to listOf("getEvents"),
@@ -203,7 +203,10 @@ private fun filterSmali(register: Int, helper: String) =
 // tournament requests, team/player/tournament pages, the widget and notifications. Favourites are
 // not exempt in the filtered lists. The picker is seeded with the app's own country list (read at
 // patch time) by CountryFilter.init at the end of ReleaseApp.onCreate; every filtered category is
-// reported as seen, also while nothing is picked.
+// reported as seen, also while nothing is picked, under the seed's name when its key is a seeded
+// country (the "X Amateur" categories share the country's alpha2 and used to rename it in the
+// picker). Search players carry their team without a country, so they are matched by team id
+// against the teams seen in the same results and in the Live/chronological events (2026-11-03).
 @Suppress("unused")
 val hideCountriesPatch = sofascoreControls.featurePatch(
     HIDDEN_COUNTRIES,
