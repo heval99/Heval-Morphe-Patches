@@ -2959,13 +2959,21 @@ object Constants {
     // screen offers the trial; patched shows no "Free version" line and the Pro screen reads
     // "Thank you for your support." (Discover features / Manage membership), no crash, the home
     // screen works. Account sync is server-backed and still needs a real account.
+    // 2026-11-03: updated to version 1.16.34 (versionCode 1640; Google Play arm64 splits via
+    // gplaydl, merged; same CN=Peter Huber cert ccb91800...98ed). Both patches apply unchanged:
+    // NiagaraSmokeTest passes all five steps (the account state is now b/yqYBor9KUlEcq5s13TeGY4W4Qv1i),
+    // and the CLI (no -f) applies Disable telemetry + Enable Premium; apkanalyzer shows the six
+    // workers' doWork returning Result.success(), the Singular sender returning Unit, the
+    // Crashlytics enable method's return-void, the analytics read forced to Boolean.TRUE and the
+    // (Z,Z,Z) constructor starting with const/4 p1/p2 = 1; resources.arsc and AndroidManifest.xml
+    // stay byte-identical. Not run on the emulator.
     val COMPATIBILITY_NIAGARA = Compatibility(
         name = "Niagara Launcher",
         packageName = "bitpit.launcher",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x03004C, // The adaptive icon's background colour (ic_launcher_background).
         signatures = setOf("ccb918002c40334b416899258de4f730a36c5d38821b3cb6fcb8c15a4b8198ed"), // CN=Peter Huber
-        targets = listOf(AppTarget(version = "1.16.33", versionCode = 1639))
+        targets = listOf(AppTarget(version = "1.16.34", versionCode = 1640))
     )
 
     // Verified 2026-10-15 against mark.via.gp 7.3.3 (versionCode 20260823, single universal
