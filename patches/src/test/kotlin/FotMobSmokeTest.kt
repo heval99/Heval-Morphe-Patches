@@ -369,7 +369,7 @@ class FotMobSmokeTest {
         // Picker flags (2026-11-03): CountryFilter.init registers CountryIcons (FIFA -> ISO table,
         // every seed code covered: extensions/fotmob CountryIconsTest).
         assertOptionIconsWired(byType, byType.getValue(COUNTRY_FILTER).method("init", listOf("Landroid/app/Application;")),
-            "Lapp/template/extension/fotmob/CountryIcons;")
+            "Lapp/template/extension/fotmob/CountryIcons;", images = true)
     }
 
     // Slower live refresh: in the match page ticker (found like the fingerprint), the const/16 15

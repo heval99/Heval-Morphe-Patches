@@ -20,9 +20,17 @@ import app.template.extension.hevalcontrols.OptionIcons;
  * England, Scotland and Wales flags, NIR the United Kingdom's, INT a globe and INT-2 (club
  * competitions) a trophy. ANT (Netherlands Antilles, dissolved 2010) has no flag of its own and
  * gets none, like any unknown code.
+ *
+ * <p>Images (2026-11-03): every country code also names FotMob's own national-team crest-flag,
+ * {@value #FLAG_URL} with the code in lower case in place of {@code %s} (the picture the app shows
+ * next to a country; checked 200 image/png for eng, ger, nir, kvx and ant, so ANT gets an image even
+ * without an emoji). INT and INT-2 are not countries and have none; the picker swaps the image in for
+ * the emoji once loaded.
  */
-final class CountryIcons implements HevalSettings.OptionIconProvider {
+final class CountryIcons implements HevalSettings.OptionImageProvider {
     static final CountryIcons INSTANCE = new CountryIcons();
+
+    static final String FLAG_URL = "https://images.fotmob.com/image_resources/logo/teamlogo/%s.png";
 
     /** "FIFA:ISO" pairs, space separated. */
     private static final String FIFA_TO_ISO = ""
@@ -57,6 +65,25 @@ final class CountryIcons implements HevalSettings.OptionIconProvider {
     @Override
     public String iconFor(String key) {
         return icon(key);
+    }
+
+    @Override
+    public String imageUrlFor(String key) {
+        return imageUrl(key);
+    }
+
+    /**
+     * FotMob's image of a country code (2 to 4 letters A-Z or digits, any case), else null; INT and
+     * INT-2 have none (the hyphen already rules INT-2 out).
+     */
+    static String imageUrl(String key) {
+        if (key == null || key.length() < 2 || key.length() > 4 || key.equalsIgnoreCase(CountrySeeds.INTERNATIONAL)) return null;
+        String code = key.toLowerCase(Locale.ROOT);
+        for (int i = 0; i < code.length(); i++) {
+            char c = code.charAt(i);
+            if ((c < 'a' || c > 'z') && (c < '0' || c > '9')) return null;
+        }
+        return FLAG_URL.replace("%s", code);
     }
 
     static String icon(String key) {

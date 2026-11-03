@@ -102,7 +102,7 @@ class HevalControlsPatcherTest {
         // The extension classes are merged into the emitted dex.
         listOf(
             "HevalSettings;", "Registry;", "RegistryCodec;", "CrashGuard;", "InitProvider;", "PrefsStore;",
-            "ui/HevalControlsActivity;", "ui/ListPicker;", "ui/Views;", "ui/Palette;", "ui/Diagnostics;",
+            "ui/HevalControlsActivity;", "ui/ListPicker;", "ui/OptionImageLoader;", "ui/Views;", "ui/Palette;", "ui/Diagnostics;",
         ).forEach { assertTrue("$EXTENSION$it" in byType, "$EXTENSION$it is not in the patched dex") }
 
         // Registry getters were rewritten.

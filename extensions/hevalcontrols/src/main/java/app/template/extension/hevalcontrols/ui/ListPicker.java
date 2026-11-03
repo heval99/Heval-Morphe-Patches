@@ -18,6 +18,8 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -164,6 +166,7 @@ final class ListPicker {
 
     /** Loads the options and applies a restored search. */
     void start(String query) {
+        OptionImageLoader.retryFailed();
         adapter.load(HevalSettings.options(feature.id));
         if (query != null && !query.isEmpty()) {
             search.setText(query);
@@ -261,11 +264,14 @@ final class ListPicker {
         final String key, label, folded;
         /** Drawn before the label (an emoji flag), or null. Not searched, sorted on or spoken. */
         final String icon;
+        /** Shown in place of {@link #icon} once loaded (OptionImageLoader), or null. Never spoken. */
+        final String imageUrl;
 
-        Option(String key, String label, String icon) {
+        Option(String key, String label, String icon, String imageUrl) {
             this.key = key;
             this.label = label;
             this.icon = icon;
+            this.imageUrl = imageUrl;
             this.folded = fold(label) + "\n" + fold(key);
         }
     }
@@ -294,8 +300,9 @@ final class ListPicker {
             icons = false;
             for (Map.Entry<String, String> entry : options.entrySet()) {
                 String icon = HevalSettings.optionIcon(feature.id, entry.getKey());
-                if (icon != null) icons = true;
-                all.add(new Option(entry.getKey(), entry.getValue(), icon));
+                String imageUrl = HevalSettings.optionImageUrl(feature.id, entry.getKey());
+                if (icon != null || imageUrl != null) icons = true;
+                all.add(new Option(entry.getKey(), entry.getValue(), icon, imageUrl));
             }
             final Collator collator = Collator.getInstance();
             collator.setStrength(Collator.SECONDARY);
@@ -346,8 +353,10 @@ final class ListPicker {
             holder.hidden = hidden;
             holder.label.setText(option.label);
             holder.icon.setText(option.icon == null ? "" : option.icon);
-            // No icon column at all when the list has none (the original look).
-            holder.icon.setVisibility(!icons ? View.GONE : option.icon == null ? View.INVISIBLE : View.VISIBLE);
+            // No icon column at all when the list has none (the original look). The text icon shows
+            // at once; the image, if any, replaces it once loaded and the text stays on a failure.
+            holder.iconColumn.setVisibility(icons ? View.VISIBLE : View.GONE);
+            OptionImageLoader.bind(holder.image, holder.icon, icons ? option.imageUrl : null, holder.imageSize);
             holder.check.setChecked(hidden);
             if (Build.VERSION.SDK_INT >= 30) {
                 holder.row.setContentDescription(option.label);
@@ -360,12 +369,16 @@ final class ListPicker {
     }
 
     /**
-     * One checklist row: an optional icon, the label and a checkbox that only shows the state (the
-     * row is the target). The row is spoken by its content description, so the icon is not read.
+     * One checklist row: an optional icon (text, or an image over it once loaded), the label and a
+     * checkbox that only shows the state (the row is the target). The row is spoken by its content
+     * description, so neither the icon nor the image is read.
      */
     private final class Holder {
         final LinearLayout row = views.row();
+        final FrameLayout iconColumn = new FrameLayout(activity);
         final TextView icon = views.text("", 20, palette.text, false);
+        final ImageView image = new ImageView(activity);
+        final int imageSize = views.dp(32);
         final TextView label = views.text("", 16, palette.text, false);
         final CheckBox check = new CheckBox(activity);
         Option option;
@@ -378,11 +391,18 @@ final class ListPicker {
             icon.setGravity(Gravity.CENTER);
             icon.setSingleLine(true);
             icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-            icon.setVisibility(View.GONE);
+            iconColumn.addView(icon, new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+            image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            image.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            image.setVisibility(View.GONE);
+            iconColumn.addView(image, new FrameLayout.LayoutParams(imageSize, imageSize, Gravity.CENTER));
+            iconColumn.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            iconColumn.setVisibility(View.GONE);
             LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(
                     views.dp(32), ViewGroup.LayoutParams.WRAP_CONTENT);
             iconParams.setMarginEnd(views.dp(12));
-            row.addView(icon, iconParams);
+            row.addView(iconColumn, iconParams);
             row.addView(label, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
             check.setFocusable(false);
             check.setClickable(false);

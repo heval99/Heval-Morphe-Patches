@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import app.template.extension.hevalcontrols.HevalSettings;
 import app.template.extension.hevalcontrols.OptionIcons;
 
 /** The "Hidden countries" picker flags: every seeded FIFA code has one, except the documented ANT. */
@@ -92,5 +93,34 @@ public class CountryIconsTest {
         assertNull(CountryIcons.icon("XYZ"));
         assertNull(CountryIcons.icon(""));
         assertNull(CountryIcons.icon(null));
+    }
+
+    @Test
+    public void countryCodesNameFotMobsImage() {
+        String base = "https://images.fotmob.com/image_resources/logo/teamlogo/";
+        assertEquals(base + "eng.png", CountryIcons.INSTANCE.imageUrlFor("ENG"));
+        assertEquals(base + "ger.png", CountryIcons.imageUrl("GER"));
+        assertEquals(base + "esp.png", CountryIcons.imageUrl("esp"));
+        assertEquals(base + "ant.png", CountryIcons.imageUrl("ANT")); // an image even without an emoji
+        assertNull(CountryIcons.imageUrl(CountrySeeds.INTERNATIONAL));
+        assertNull(CountryIcons.imageUrl(CountrySeeds.INTERNATIONAL_CLUBS));
+        assertNull(CountryIcons.imageUrl("int"));
+        assertNull(CountryIcons.imageUrl("E"));
+        assertNull(CountryIcons.imageUrl("ENGLA"));
+        assertNull(CountryIcons.imageUrl("E/G"));
+        assertNull(CountryIcons.imageUrl(""));
+        assertNull(CountryIcons.imageUrl(null));
+        // Every seeded country has one, through the picker's filter too.
+        HevalSettings.setOptionIconProvider("test.flags", CountryIcons.INSTANCE);
+        try {
+            for (String code : CountrySeeds.NAMES.keySet()) {
+                boolean country = !code.equals(CountrySeeds.INTERNATIONAL) && !code.equals(CountrySeeds.INTERNATIONAL_CLUBS);
+                String url = HevalSettings.optionImageUrl("test.flags", code);
+                if (country) assertEquals(code, base + code.toLowerCase(Locale.ROOT) + ".png", url);
+                else assertNull(code, url);
+            }
+        } finally {
+            HevalSettings.setOptionIconProvider("test.flags", null);
+        }
     }
 }

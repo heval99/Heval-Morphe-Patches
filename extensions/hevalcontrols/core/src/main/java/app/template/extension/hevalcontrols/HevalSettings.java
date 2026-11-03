@@ -98,6 +98,9 @@ public final class HevalSettings {
     private static final Map<String, OptionIconProvider> iconProviders = new ConcurrentHashMap<>();
     /** The longest icon {@link #optionIcon} passes on (a tag-sequence flag is 14 chars). */
     public static final int MAX_ICON_LENGTH = 32;
+    /** The longest image URL {@link #optionImageUrl} passes on. */
+    public static final int MAX_IMAGE_URL_LENGTH = 512;
+    private static final String HTTPS = "https://";
     /** Seen options not yet persisted, per list. */
     private static final Map<String, ConcurrentHashMap<String, String>> pendingOptions = new ConcurrentHashMap<>();
     private static final AtomicBoolean flushScheduled = new AtomicBoolean();
@@ -443,6 +446,18 @@ public final class HevalSettings {
     }
 
     /**
+     * An icon provider that also names an image for an option, such as a flag on the app's own image
+     * server. The picker shows {@link #iconFor} at once and swaps in the image once it has loaded
+     * (off the main thread, cached); a failed load keeps the text icon. A separate interface rather
+     * than a default method, so a provider built without it keeps working however the extensions
+     * were desugared. Register it with {@link #setOptionIconProvider}.
+     */
+    public interface OptionImageProvider extends OptionIconProvider {
+        /** The https URL of option {@code key}'s image, or null for none. */
+        String imageUrlFor(String key);
+    }
+
+    /**
      * Sets the icon provider of list feature {@code listId} (null removes it). Kept in memory for
      * this process only, like {@link #registerOptions}: icons are never saved and never change what
      * is hidden. Register it from the same process-start code as the seeds. Never throws.
@@ -476,6 +491,35 @@ public final class HevalSettings {
                 if (c == '\t' || c == '\n' || c == '\r') return null;
             }
             return icon;
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    /**
+     * The image URL of option {@code key} of list feature {@code listId}, trimmed, or null: when the
+     * list's provider is not an {@link OptionImageProvider}, or it answers null, a URL that is not
+     * {@code https://<host>...}, longer than {@value #MAX_IMAGE_URL_LENGTH} chars or with a character
+     * outside printable ASCII (spaces included), or it throws. Never throws.
+     */
+    public static String optionImageUrl(String listId, String key) {
+        try {
+            if (listId == null || key == null) return null;
+            OptionIconProvider provider = iconProviders.get(listId);
+            if (!(provider instanceof OptionImageProvider)) return null;
+            String url = ((OptionImageProvider) provider).imageUrlFor(key);
+            if (url == null) return null;
+            url = url.trim();
+            if (url.length() > MAX_IMAGE_URL_LENGTH || !url.regionMatches(true, 0, HTTPS, 0, HTTPS.length())) return null;
+            for (int i = 0; i < url.length(); i++) {
+                char c = url.charAt(i);
+                if (c <= ' ' || c > '~') return null;
+            }
+            // A host must follow the scheme: "https://", "https:///x" and "https://@x" have none.
+            int hostEnd = HTTPS.length();
+            while (hostEnd < url.length() && "/?#@".indexOf(url.charAt(hostEnd)) < 0) hostEnd++;
+            if (hostEnd == HTTPS.length()) return null;
+            return url;
         } catch (Throwable ignored) {
             return null;
         }

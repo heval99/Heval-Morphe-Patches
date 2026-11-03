@@ -350,6 +350,69 @@ public class HevalSettingsListTest {
     }
 
     @Test
+    public void optionImageUrlsComeOnlyFromImageProvidersAndAreFiltered() {
+        HevalSettings.initForTests(store);
+        assertNull(HevalSettings.optionImageUrl("countries", "ES"));
+        // A plain icon provider has no images.
+        HevalSettings.setOptionIconProvider("countries", new HevalSettings.OptionIconProvider() {
+            @Override
+            public String iconFor(String key) {
+                return OptionIcons.countryFlag(key);
+            }
+        });
+        assertNull(HevalSettings.optionImageUrl("countries", "ES"));
+
+        final StringBuilder longUrl = new StringBuilder("https://img.example.com/");
+        while (longUrl.length() <= HevalSettings.MAX_IMAGE_URL_LENGTH) longUrl.append('a');
+        HevalSettings.setOptionIconProvider("countries", new HevalSettings.OptionImageProvider() {
+            @Override
+            public String iconFor(String key) {
+                return OptionIcons.countryFlag(key);
+            }
+
+            @Override
+            public String imageUrlFor(String key) {
+                switch (key) {
+                    case "boom": throw new IllegalStateException("provider bug");
+                    case "none": return null;
+                    case "padded": return "  https://img.example.com/x.png ";
+                    case "upper": return "HTTPS://img.example.com/x.png";
+                    case "http": return "http://img.example.com/x.png";
+                    case "file": return "file:///sdcard/x.png";
+                    case "relative": return "/x.png";
+                    case "nohost": return "https:///x.png";
+                    case "empty": return "https://";
+                    case "userinfo": return "https://@x.png";
+                    case "space": return "https://img.example.com/a b.png";
+                    case "newline": return "https://img.example.com/a\n.png";
+                    case "unicode": return "https://img.example.com/é.png";
+                    case "long": return longUrl.toString();
+                    default: return "https://img.example.com/country/" + key + "/flag";
+                }
+            }
+        });
+        assertEquals("https://img.example.com/country/ES/flag", HevalSettings.optionImageUrl("countries", "ES"));
+        // The text icon still comes from the same provider.
+        assertEquals("🇪🇸", HevalSettings.optionIcon("countries", "ES"));
+        assertEquals("https://img.example.com/x.png", HevalSettings.optionImageUrl("countries", "padded"));
+        assertEquals("HTTPS://img.example.com/x.png", HevalSettings.optionImageUrl("countries", "upper"));
+        for (String bad : new String[] {"boom", "none", "http", "file", "relative", "nohost", "empty", "userinfo",
+                "space", "newline", "unicode", "long"}) {
+            assertNull(bad, HevalSettings.optionImageUrl("countries", bad));
+        }
+        assertNull(HevalSettings.optionImageUrl("countries", null));
+        assertNull(HevalSettings.optionImageUrl(null, "ES"));
+        assertNull(HevalSettings.optionImageUrl("late.list", "ES"));
+
+        // Image URLs never reach storage either.
+        HevalSettings.reportOptionsSeen("countries", "ES", "Spain");
+        assertEquals(set("ES\tSpain"), store.values.get("o.countries"));
+
+        HevalSettings.setOptionIconProvider("countries", null);
+        assertNull(HevalSettings.optionImageUrl("countries", "ES"));
+    }
+
+    @Test
     public void optionIconsBuildFlags() {
         assertEquals("🇩🇪", OptionIcons.countryFlag("DE"));
         assertEquals("🇩🇪", OptionIcons.countryFlag("de"));

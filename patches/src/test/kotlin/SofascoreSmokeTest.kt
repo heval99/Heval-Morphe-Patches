@@ -769,7 +769,8 @@ class SofascoreSmokeTest {
 
         // Picker flags (2026-11-03): CountryFilter.init registers CountryIcons. Codes outside ISO
         // alpha-2 need their own case in CountryIcons (SX is ISO, Sint Maarten, but Scotland here).
-        assertOptionIconsWired(byType, filter.methods.single { it.name == "init" }, "Lapp/template/extension/sofascore/CountryIcons;")
+        // With images (2026-11-03): CountryIcons also names Sofascore's flag image per alpha2 key.
+        assertOptionIconsWired(byType, filter.methods.single { it.name == "init" }, "Lapp/template/extension/sofascore/CountryIcons;", images = true)
         val iso = java.util.Locale.getISOCountries().toSet() + "XK"
         val nonIso = lines.map { it.substringBefore('\t') }.filterNot { it in iso }.toSet()
         check((nonIso - setOf("EN", "WA", "NX", "TU", "SW")).isEmpty()) {

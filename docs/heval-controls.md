@@ -68,6 +68,7 @@ Java classes (package `app.template.extension.hevalcontrols`):
 | `PrefsStore`, `Store`, `AppContext` (core) | Store choices in SharedPreferences, and provide the context and process helpers. |
 | `InitProvider` | A non-exported ContentProvider that starts the engine and the crash guard before `Application.onCreate`. |
 | `ui.HevalControlsActivity`, `ui.Views`, `ui.Palette`, `ui.Diagnostics` | The settings screen, with every view built in code. |
+| `ui.ListPicker`, `ui.OptionImageLoader` | The picker of a list setting, and the loader and cache of its option images (see [List settings](#list-settings-pickers)). |
 
 The extension is pure Java (minSdk 23, no androidx, no kotlin-stdlib, no resources). An `.mpe`
 is a single dex file. Its resources and manifest are discarded, so every string and colour lives
@@ -467,7 +468,8 @@ can never be on by default (an empty list is the default and is stock) or build-
 | `static void registerOptions(String listId, Map<String,String> keyToLabel)` | Static seed options (a bundled list), in memory for this process only, merged across calls. Call it from code that runs at process start so the picker has them. |
 | `static void reportOptionsSeen(String listId, String key, String label)` | The app showed this option; the picker will offer it. Persisted under `o.<id>`, written in a background batch about 1.5 s after the first new option. A known key with the same label costs two map lookups and no IO. |
 | `static void reportOptionsSeen(String listId, Map<String,String> keyToLabel)` | The same for several options. |
-| `static void setOptionIconProvider(String listId, HevalSettings.OptionIconProvider provider)` | Optional per-option icon (null removes it): `provider.iconFor(key)` returns a short text such as an emoji flag, or null. In memory for this process only, like the seeds; icons are never saved and never decide what is hidden. Register it with the seeds. |
+| `static void setOptionIconProvider(String listId, HevalSettings.OptionIconProvider provider)` | Optional per-option icon (null removes it): `provider.iconFor(key)` returns a short text such as an emoji flag, or null. In memory for this process only, like the seeds; icons are never saved and never decide what is hidden. Register it with the seeds. A provider that implements `HevalSettings.OptionImageProvider` (which extends `OptionIconProvider`) also answers `imageUrlFor(key)`: an https image the picker swaps in for the text icon once loaded. |
+| `static String optionImageUrl(String listId, String key)` | The picker's image lookup: the provider's URL, trimmed, or null when the provider has no images, answers null, or answers anything but `https://<host>...` of at most 512 printable-ASCII chars. Never throws. |
 
 For the settings screen (also public): `setHidden(String, Set<String>)`, `setHidden(String, String,
 boolean)`, `clearHidden(String)`, `pickedHidden(String)` (the picks ignoring pause and safe mode)
@@ -528,6 +530,28 @@ Kingdom, TU = Tuvalu, SW = Sint Maarten) and region slugs in `extensions/sofasco
 FotMob maps its FIFA codes through a FIFA -> ISO table in `extensions/fotmob` `CountryIcons` (ANT,
 Netherlands Antilles, has no flag). Both are checked by `CountryIconsTest`
 (`:extensions:<app>:testDebugUnitTest`). A font without a flag shows the two letters instead.
+
+**Images** (2026-11-03): a provider that implements `HevalSettings.OptionImageProvider` also names
+an image per option, from the app's own image server (the same picture the app shows), and the
+picker uses the emoji as the instant and offline fallback. `HevalSettings.optionImageUrl(listId,
+key)` keeps only `https://<host>...` URLs of at most 512 printable-ASCII chars and never throws. A
+separate interface, not a default method, so a provider without images needs no change whatever the
+extensions' desugaring. `ui.OptionImageLoader` draws a row's text icon at once and loads the image
+off the main thread: a pool of 3 background-priority daemon threads that takes the newest request
+first (rows on screen before the ones scrolled past), `HttpURLConnection` with a mobile browser
+User-Agent, 5 s connect and read timeouts, only a 200 answer that is still https after redirects,
+at most 256 KB. `BitmapFactory` decodes it with `inSampleSize` and the result is scaled to fit the
+32 dp column (an `ImageView` over the text icon in the same `FrameLayout`, so rows stay aligned).
+Cache: an `LruCache` of 4 MB of bitmaps, plus PNGs in `getCacheDir()/heval_icons/<sha1(url)>.png`
+(5 MB at most, the oldest written go first; a file older than 30 days is fetched again and kept if
+that fails). The image view is tagged with its URL, so a recycled row never gets the image of the
+option it showed before. A failure keeps the emoji, silently, and is not retried until the picker
+opens again. The image is not focusable or spoken; the row is still read by its label. Sofascore:
+`https://img.sofascore.com/api/v1/country/{alpha2}/flag` for every two-letter key (slug keys have
+none). FotMob: `https://images.fotmob.com/image_resources/logo/teamlogo/{code lower case}.png` for
+every country code, ANT included (INT and INT-2 have none). Both are checked by `CountryIconsTest`,
+and `assertOptionIconsWired(..., images = true)` in the smoke tests checks the provider implements
+`OptionImageProvider` and `ListPicker` calls `optionImageUrl` and `OptionImageLoader.bind`.
 
 **Diagnostics** list a list feature as `<id>: <state>, list, picked=N, hidden_now=N, options=N`:
 counts only, never keys or labels.

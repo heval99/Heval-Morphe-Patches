@@ -11,15 +11,37 @@ import app.template.extension.hevalcontrols.OptionIcons;
  * SX Scotland (ISO SX is Sint Maarten), WA Wales, NX Northern Ireland, TU Tuvalu (ISO TV) and SW
  * Sint Maarten (ISO SX); XK Kosovo is the common user-assigned code. Any other two-letter A-Z key
  * gets its regional-indicator flag; anything else gets none.
+ *
+ * <p>Images (2026-11-03): every alpha2 key also names Sofascore's own flag image,
+ * {@value #FLAG_URL} with the code in place of {@code %s} (the same picture the app shows; checked
+ * 200 image/png for EN, ES, SX, NX and XK), which the picker swaps in for the emoji once loaded.
+ * Slug keys have no image.
  */
-final class CountryIcons implements HevalSettings.OptionIconProvider {
+final class CountryIcons implements HevalSettings.OptionImageProvider {
     static final CountryIcons INSTANCE = new CountryIcons();
 
     private static final String SLUG_PREFIX = "slug:";
+    static final String FLAG_URL = "https://img.sofascore.com/api/v1/country/%s/flag";
 
     @Override
     public String iconFor(String key) {
         return icon(key);
+    }
+
+    @Override
+    public String imageUrlFor(String key) {
+        return imageUrl(key);
+    }
+
+    /** Sofascore's flag image of an alpha2 key (exactly two letters A-Z, any case), else null. */
+    static String imageUrl(String key) {
+        if (key == null || key.length() != 2) return null;
+        String code = key.toUpperCase(java.util.Locale.ROOT);
+        for (int i = 0; i < 2; i++) {
+            char c = code.charAt(i);
+            if (c < 'A' || c > 'Z') return null;
+        }
+        return FLAG_URL.replace("%s", code);
     }
 
     static String icon(String key) {

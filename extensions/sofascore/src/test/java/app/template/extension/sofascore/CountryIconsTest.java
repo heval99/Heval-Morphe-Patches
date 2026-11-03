@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
+import app.template.extension.hevalcontrols.HevalSettings;
 import app.template.extension.hevalcontrols.OptionIcons;
 
 /** The "Hidden countries" picker flags for Sofascore's alpha2 and slug keys. */
@@ -47,5 +48,31 @@ public class CountryIconsTest {
         assertEquals(OptionIcons.GLOBE, CountryIcons.icon("slug:international-youth"));
         assertNull(CountryIcons.icon("slug:atp"));
         assertNull(CountryIcons.icon("slug:"));
+    }
+
+    @Test
+    public void alpha2KeysNameSofascoresFlagImage() {
+        assertEquals("https://img.sofascore.com/api/v1/country/EN/flag", CountryIcons.INSTANCE.imageUrlFor("EN"));
+        assertEquals("https://img.sofascore.com/api/v1/country/ES/flag", CountryIcons.imageUrl("ES"));
+        assertEquals("https://img.sofascore.com/api/v1/country/SX/flag", CountryIcons.imageUrl("SX")); // Scotland here
+        assertEquals("https://img.sofascore.com/api/v1/country/XK/flag", CountryIcons.imageUrl("xk"));
+        assertNull(CountryIcons.imageUrl("slug:world"));
+        assertNull(CountryIcons.imageUrl("slug:atp"));
+        assertNull(CountryIcons.imageUrl("ESP"));
+        assertNull(CountryIcons.imageUrl("E1"));
+        assertNull(CountryIcons.imageUrl("E"));
+        assertNull(CountryIcons.imageUrl(""));
+        assertNull(CountryIcons.imageUrl(null));
+    }
+
+    @Test
+    public void theImageUrlPassesThePickersFilter() {
+        HevalSettings.setOptionIconProvider("test.flags", CountryIcons.INSTANCE);
+        try {
+            assertEquals("https://img.sofascore.com/api/v1/country/DE/flag", HevalSettings.optionImageUrl("test.flags", "DE"));
+            assertNull(HevalSettings.optionImageUrl("test.flags", "slug:europe"));
+        } finally {
+            HevalSettings.setOptionIconProvider("test.flags", null);
+        }
     }
 }
