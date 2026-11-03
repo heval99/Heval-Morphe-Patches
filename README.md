@@ -1282,6 +1282,9 @@ they are **off by default**; enable them yourself and report anything odd.
   other Google services can stop working. Use email login where the app offers it.
 - **Push notifications** in some apps need [MicroG](https://github.com/microg/GmsCore) with
   signature spoofing after patching.
+- **LibrePods is not patched any more.** At the developer's request, use the free FOSS build
+  from the [LibrePods releases](https://github.com/librepods-org/librepods/releases) instead;
+  it needs no patch.
 - **Use the APK type Morphe Manager suggests.** Some apps are only published as split bundles
   (APKM); patch the full bundle, not just the base APK.
 
