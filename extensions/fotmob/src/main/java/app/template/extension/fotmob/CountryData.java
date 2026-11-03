@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <p>Favourites are FotMob's own files FAVORITE_LEAGUES_JSON (Gson League: "Id") and
  * FAVORITE_TEAMS_JSON (Gson Team: "ID") in the app's files dir, re-read when they change.
+ *
+ * <p>"Hidden competitions" seeds: the same bundled file names each league, so it also gives the
+ * picker's starting list of competitions (key and "country · name" label, CompetitionFilter).
  */
 final class CountryData {
     private static final String TAG = "Morphe-FotMob";
@@ -47,6 +51,8 @@ final class CountryData {
     private static final ConcurrentHashMap<Integer, String> codes = new ConcurrentHashMap<>();
     private static volatile boolean loaded;
     private static volatile int savedHash;
+    /** Competition key -> picker label of every league in the bundled leagues file. */
+    private static volatile Map<String, String> bundledCompetitions = Collections.emptyMap();
 
     private static volatile Favourites favourites;
     private static volatile long favouritesCheckedAt;
@@ -113,7 +119,13 @@ final class CountryData {
         }
     }
 
-    private static void ensureLoaded(Context context) {
+    /** The bundled leagues as "Hidden competitions" options (key -> label); empty without a context. */
+    static Map<String, String> competitionSeeds(Context context) {
+        ensureLoaded(context);
+        return bundledCompetitions;
+    }
+
+    static void ensureLoaded(Context context) {
         if (loaded || context == null) return;
         synchronized (CountryData.class) {
             if (loaded) return;
@@ -151,11 +163,14 @@ final class CountryData {
             XmlPullParser parser = Xml.newPullParser();
             parser.setInput(in, "UTF-8");
             String group = null;
+            String groupName = null;
+            Map<String, String> competitions = new HashMap<>(512);
             for (int event = parser.getEventType(); event != XmlPullParser.END_DOCUMENT; event = parser.next()) {
                 if (event != XmlPullParser.START_TAG) continue;
                 String tag = parser.getName();
                 if ("group".equals(tag)) {
                     group = parser.getAttributeValue(null, "ccode");
+                    groupName = parser.getAttributeValue(null, "cname");
                 } else if ("league".equals(tag) && group != null && !CountryFilter.isPseudoCode(group)) {
                     int league = parseInt(parser.getAttributeValue(null, "id"));
                     if (league <= 0) continue;
@@ -165,8 +180,12 @@ final class CountryData {
                                 ? CountrySeeds.INTERNATIONAL : CountrySeeds.INTERNATIONAL_CLUBS;
                     }
                     codes.putIfAbsent(league, code);
+                    String label = CompetitionFilter.label(CompetitionFilter.countryLabel(code, groupName),
+                            parser.getAttributeValue(null, "name"));
+                    if (label != null) competitions.put(Integer.toString(league), label);
                 }
             }
+            bundledCompetitions = Collections.unmodifiableMap(competitions);
         } catch (Throwable failure) {
             Log.w(TAG, "Bundled leagues not read: " + failure.getClass().getName());
         } finally {

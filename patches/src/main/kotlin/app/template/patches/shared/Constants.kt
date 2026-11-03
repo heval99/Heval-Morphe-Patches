@@ -384,6 +384,14 @@ object Constants {
     // 2026-11-03: the picker lists about 219 countries; with England hidden it is gone from the
     // Leagues tab and search after a restart and back after Clear all (the day's match list had no
     // English matches, so match lists were not observed).
+    // 2026-11-03: "Hide competitions" (opt-in, Patch settings list fotmob.hidden_competitions,
+    // keys = league ids, a stage keyed by its ParentId; labels "country · name"; picker logo
+    // images.fotmob.com/image_resources/logo/leaguelogo/{id}.png) on 240.17974.20261023. No new
+    // anchors: the three Hide countries hook sites moved into one unnamed patch
+    // (fotMobListFiltersPatch) that both list patches depend on, and each feature patch only rewrites
+    // its patched()Z flag (CountryFilter / CompetitionFilter) to true. Seeds: the app's bundled
+    // res/raw/available_leagues (388 leagues). Smoke test (both list patches, one filter call per
+    // site) and CLI without -f (all 15 FotMob patches) pass. Not run on the emulator yet.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",
