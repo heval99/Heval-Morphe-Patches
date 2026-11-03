@@ -681,39 +681,6 @@ object Constants {
         )
     )
 
-    // Verified 2026-08-27 against librepods_1.0.0-rc1-play-63 .apkm from APKMirror
-    // (arm64-v8a + x86, Android 16+ / minSdk 36). App logic is R8-obfuscated into
-    // top-level classes (e.g. PlayBillingProvider -> uo) around native protocol
-    // libs (libbluetooth_socket.so, libl2c_fcr_hook.so). Premium gates all read
-    // PurchaseUiState.isPremium which is fed solely by PlayBillingProvider's
-    // _isPremium StateFlow written in processPurchases(); a FOSS variant of the
-    // provider also ships in this build. In-app product:
-    // "librepods.advanced_features.v2". No license server (upstream GPL-3.0,
-    // github.com/librepods-org/librepods).
-    // 2026-10-13, 1.0.1-rc1-play (versionCode 64): premium logic unchanged; the CLI applies
-    // Enable Premium without -f and the patched processPurchases() (uo.e(List)) loads true
-    // before Boolean.valueOf feeds the premium state on every path, including the empty list.
-    // 2026-10-19: older target 1.0.0-rc1-play dropped (latest version only, owner).
-    // 2026-10-24, 1.0.4-play (versionCode 100040301, owner-supplied APKMirror .apkm, merged;
-    // signer CN=Kavish Devar, cert SHA-256 b1b8511c...4428e): replaces 1.0.1-rc1-play. The
-    // ProcessPurchasesFingerprint (product id + productIds/productId/purchaseState, V(List))
-    // is OK-unique under the real matcher (now so.e(List)). The gate is unchanged: the premium
-    // StateFlow starts as Boolean.FALSE in LibrePodsApplication.onCreate and its only writer
-    // is the single Boolean.valueOf in that method. LibrePodsSmokeTest runs against 1.0.4-play.
-    val COMPATIBILITY_LIBREPODS = Compatibility(
-        name = "LibrePods",
-        packageName = "me.kavishdevar.librepods",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0x406C5C,
-        signatures = setOf("b1b8511c0ff7b488458fa9c20622cdb2dea9205532f893ec1b90e6504bf4428e"), // CN=Kavish Devar
-        targets = listOf(
-            AppTarget(
-                version = "1.0.4-play",
-                versionCode = 100040301
-            )
-        )
-    )
-
     // Verified 2026-08-30 against easynotes..._1.3.59.0819-10565 .apkm from APKMirror
     // (arm64-v8a + armeabi-v7a, Android 6.0+ / minSdk 23). App code is NOT obfuscated:
     // 3,589 readable classes under notes.easy.android.mynotes.
