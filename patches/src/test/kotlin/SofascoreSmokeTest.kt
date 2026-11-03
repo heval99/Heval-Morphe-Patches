@@ -14,6 +14,8 @@ import app.template.patches.sofascore.misc.promo.PROMO_SECTION_FEATURES
 import app.template.patches.sofascore.misc.animations.ANIMATION_FEATURES
 import app.template.patches.sofascore.misc.widget.SLOWER_WIDGET_REFRESH
 import app.template.patches.sofascore.controls.SOFASCORE_ANIMATION_SPEED
+import app.template.patches.sofascore.competitions.HIDDEN_COMPETITIONS
+import app.template.patches.sofascore.countries.COMPETITION_FILTER
 import app.template.patches.sofascore.countries.COUNTRY_FILTER
 import app.template.patches.sofascore.countries.HIDDEN_COUNTRIES
 import app.template.patches.sofascore.countries.NETWORK_COROUTINE_API
@@ -28,6 +30,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -81,6 +84,7 @@ private val SOFASCORE_PATCHES = setOf(
     "Patch settings",
     "Hide AI insights",
     "Hide betting content",
+    "Hide competitions",
     "Hide countries",
     "Hide match tabs",
     "Hide promo pop-ups",
@@ -120,7 +124,8 @@ private val HEVAL_FEATURES: List<HevalFeature> = listOf(HIDE_AI_INSIGHTS) +
     PROMO_SECTION_FEATURES.map { it.second } +
     ANIMATION_FEATURES +
     SLOWER_WIDGET_REFRESH +
-    HIDDEN_COUNTRIES
+    HIDDEN_COUNTRIES +
+    HIDDEN_COMPETITIONS
 
 class SofascoreSmokeTest {
 
@@ -777,11 +782,30 @@ class SofascoreSmokeTest {
             "Sofascore codes outside ISO alpha-2: $nonIso; give the new ones a flag in CountryIcons"
         }
 
+        // Each feature patch turns its part of the shared hooks on: patched() returns true.
+        for (type in listOf(COUNTRY_FILTER, COMPETITION_FILTER)) {
+            val patched = require(type).methods.single { it.name == "patched" && it.returnType == "Z" && it.parameterTypes.isEmpty() }
+            assertForcedBoolean(patched, expected = true, label = "$type.patched()", diagnostics = diagnostics)
+        }
+
+        // Hide competitions (2026-11-03): CountryFilter.init also registers the competition logos
+        // (CompetitionIcons: Sofascore's unique-tournament image, the country's flag or a trophy).
+        check(HIDDEN_COMPETITIONS.id == "sofascore.hidden_competitions") { "the Hidden competitions list id changed" }
+        check(require(COMPETITION_FILTER).methods.flatMap { it.strings() }
+            .contains("https://img.sofascore.com/api/v1/unique-tournament/%s/image")) { "CompetitionFilter lost its logo URL" }
+        check(filter.methods.single { it.name == "init" }.instructions().any {
+            it.call()?.let { c -> c.definingClass == COMPETITION_FILTER && c.name == "init" } == true
+        }) { "CountryFilter.init() does not call CompetitionFilter.init()" }
+        assertOptionIconsWired(byType, require(COMPETITION_FILTER).methods.single { it.name == "init" },
+            "Lapp/template/extension/sofascore/CompetitionIcons;", images = true)
+
         // Getters: iget-object vX; vX = CountryFilter.<helper>(vX); return-object vX.
         for ((type, getter, helper) in listOf(
             Triple("Lcom/sofascore/model/newNetwork/SportCategoriesResponse;", "getCategories", "filterCategories"),
             Triple("Lcom/sofascore/model/newNetwork/CategoriesForDateResponse;", "getCategories", "filterCategoryWrappers"),
             Triple("Lcom/sofascore/model/network/response/SearchResponse;", "getResults", "filterSearchResults"),
+            // A country's competitions in Leagues (Hide competitions).
+            Triple("Lcom/sofascore/model/newNetwork/UniqueTournamentGroupResponse;", "getUniqueTournaments", "filterUniqueTournaments"),
         )) {
             val insns = require(type).methods.single { it.name == getter && it.parameterTypes.isEmpty() }.instructions()
             val register = (insns[0] as OneRegisterInstruction).registerA
@@ -794,31 +818,41 @@ class SofascoreSmokeTest {
             ) { "$type.$getter is not filtered through $helper: ${insns.map { it.opcode }}" }
         }
 
-        // Live tab and chronological view: in the lambda calling the request, the request's result
-        // register goes through filterEventList right before its return, and every branch that
-        // returned it now jumps to the filter.
-        for (api in listOf("sportLiveEvents", "getIndexedEventsPage")) {
+        // Live tab, chronological view and an expanded country of the date feed: in the lambda
+        // calling the request, the register returning the request's result (the result register, or
+        // a move-object copy of it: categoryScheduledEvents in ro3) goes through the filter right
+        // before its return, and every branch that returned it now jumps to the filter.
+        for ((api, helper) in listOf(
+            "sportLiveEvents" to "filterEventList",
+            "getIndexedEventsPage" to "filterEventList",
+            "categoryScheduledEvents" to "filterCategoryEvents",
+        )) {
             val callers = classes.flatMap { it.methods }.filter { m ->
                 m.instructions().any { it.call()?.let { c -> c.definingClass == NETWORK_COROUTINE_API && c.name == api } == true }
             }
             check(callers.size == 1) { "expected one caller of $api, found ${callers.map { it.definingClass }}" }
             val insns = callers.single().instructions()
-            val call = insns.indexOfFirst { it.call()?.name == api }
+            val call = insns.indexOfFirst { it.call()?.let { c -> c.definingClass == NETWORK_COROUTINE_API && c.name == api } == true }
             val result = (insns[call + 1] as OneRegisterInstruction).registerA
             val hook = (call + 2 until insns.size).first {
                 insns[it].opcode == Opcode.RETURN_OBJECT || insns[it].call()?.definingClass == COUNTRY_FILTER
             }
-            check(insns[hook].opcode == Opcode.INVOKE_STATIC_RANGE && insns[hook].call()?.name == "filterEventList" &&
-                (insns[hook] as RegisterRangeInstruction).startRegister == result &&
-                insns[hook + 1].opcode == Opcode.MOVE_RESULT_OBJECT && (insns[hook + 1] as OneRegisterInstruction).registerA == result &&
-                insns[hook + 2].opcode == Opcode.RETURN_OBJECT && (insns[hook + 2] as OneRegisterInstruction).registerA == result
-            ) { "$api's result is not passed through filterEventList before its return" }
+            val returned = (insns.getOrNull(hook + 2) as? OneRegisterInstruction)?.registerA
+            check(insns[hook].opcode == Opcode.INVOKE_STATIC_RANGE && insns[hook].call()?.name == helper &&
+                (insns[hook] as RegisterRangeInstruction).startRegister == returned &&
+                (insns[hook] as RegisterRangeInstruction).registerCount == 1 &&
+                insns[hook + 1].opcode == Opcode.MOVE_RESULT_OBJECT && (insns[hook + 1] as OneRegisterInstruction).registerA == returned &&
+                insns[hook + 2].opcode == Opcode.RETURN_OBJECT
+            ) { "$api's result is not passed through $helper before its return" }
+            check(returned == result || (call + 2 until hook).any { i ->
+                insns[i].opcode == Opcode.MOVE_OBJECT && (insns[i] as TwoRegisterInstruction).let { it.registerA == returned && it.registerB == result }
+            }) { "$api: the filtered register v$returned does not hold the result v$result" }
             val targets = insns.indices.filter { i ->
                 insns[i] is OffsetInstruction &&
                     insns[i].opcode !in setOf(Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH, Opcode.FILL_ARRAY_DATA)
             }.map { insns.branchTarget(it) }
-            check(hook in targets && (hook + 2) !in targets) { "$api: a branch skips filterEventList" }
-            check(insns.count { it.call()?.name == "filterEventList" } == 1) { "$api's lambda calls filterEventList more than once" }
+            check(hook in targets && (hook + 2) !in targets) { "$api: a branch skips $helper" }
+            check(insns.count { it.call()?.definingClass == COUNTRY_FILTER } == 1) { "$api's lambda calls CountryFilter more than once" }
         }
     }
 

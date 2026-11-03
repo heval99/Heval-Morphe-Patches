@@ -20,6 +20,12 @@ import app.template.extension.hevalcontrols.HevalSettings;
  * the picked countries from the leagues list, the date feed's country rows, the Live tab, the
  * chronological view and search.
  *
+ * <p>These are also the hooks of "Hide competitions" ({@code sofascore.hidden_competitions}, keys
+ * and checks in CompetitionFilter): both patches share the hook sites, and each hook runs the list of
+ * every patch that is in ({@link #patched()}, CompetitionFilter.patched()). Competitions are also
+ * dropped from an expanded country of the date feed (the category's scheduled events) and from a
+ * country's competitions in Leagues.
+ *
  * <p>The key of a Sofascore category is its {@code alpha2} code (Sofascore's own codes, e.g. EN
  * England, SX Scotland, WA Wales, NX Northern Ireland, XK Kosovo). Categories without one (World,
  * Europe, International, tennis tours, ...) are keyed {@code "slug:" + slug}, so they can be hidden
@@ -66,6 +72,14 @@ public final class CountryFilter {
     // ---------------------------------------------------------------------------------------
 
     /**
+     * Whether "Hide countries" is patched in. The patch rewrites this to return true; while it is
+     * false the hooks skip countries (only "Hide competitions" is patched).
+     */
+    public static boolean patched() {
+        return false;
+    }
+
+    /**
      * The app's own country list, "code TAB name" lines. The patch rewrites this method to return
      * the list it read from the app at patch time; the source version is empty.
      */
@@ -75,11 +89,17 @@ public final class CountryFilter {
 
     /**
      * Patched in before every return of ReleaseApp.onCreate (and called by the hooks if they run
-     * first): offers the app's countries in the picker, with their flags (CountryIcons).
+     * first): offers the app's countries in the picker, with their flags (CountryIcons), and
+     * registers the competition logos (CompetitionFilter.init).
      */
     public static void init() {
         if (seeded) return;
         seeded = true;
+        try {
+            CompetitionFilter.init();
+        } catch (Throwable failure) {
+            Log.w(TAG, "Competition icons not registered: " + failure.getClass().getName());
+        }
         try {
             // The picker's flags (never saved, never used for filtering).
             HevalSettings.setOptionIconProvider(LIST_ID, CountryIcons.INSTANCE);
@@ -107,7 +127,7 @@ public final class CountryFilter {
      * stays.
      */
     public static List filterCategories(List categories) {
-        if (categories == null || categories.isEmpty()) return categories;
+        if (categories == null || categories.isEmpty() || !patched()) return categories;
         try {
             Set<String> hidden = HevalSettings.getHidden(LIST_ID);
             Object[] all = categories.toArray();
@@ -123,16 +143,26 @@ public final class CountryFilter {
         }
     }
 
-    /** CategoriesForDateResponse.getCategories (List of CategoryWrapper): the date feed's country rows. */
+    /**
+     * CategoriesForDateResponse.getCategories (List of CategoryWrapper): the date feed's country
+     * rows. A row also goes when every competition it lists ({@code uniqueTournamentIds}, all
+     * timezones) is a hidden competition; a row without that list stays.
+     */
     public static List filterCategoryWrappers(List wrappers) {
         if (wrappers == null || wrappers.isEmpty()) return wrappers;
         try {
-            Set<String> hidden = HevalSettings.getHidden(LIST_ID);
+            boolean countries = patched();
+            Set<String> hidden = countries ? HevalSettings.getHidden(LIST_ID) : Collections.<String>emptySet();
+            Set<String> competitions = CompetitionFilter.hidden();
+            if (!countries && competitions.isEmpty()) return wrappers;
             Object[] all = wrappers.toArray();
             List<Object> kept = new ArrayList<>(all.length);
             for (Object wrapper : all) {
-                Object category = wrapper == null ? null : call(wrapper, "getCategory");
-                if (!hiddenCategory(category, hidden)) kept.add(wrapper);
+                if (wrapper != null) {
+                    if (countries && hiddenCategory(call(wrapper, "getCategory"), hidden)) continue;
+                    if (CompetitionFilter.allHidden(call(wrapper, "getUniqueTournamentIds"), competitions)) continue;
+                }
+                kept.add(wrapper);
             }
             return kept.size() == all.length ? wrappers : kept;
         } catch (Throwable failure) {
@@ -149,18 +179,27 @@ public final class CountryFilter {
      * 2026-11-03: Saka, Rice and Odegaard stayed with England hidden), so while something is hidden
      * a first pass remembers the country of every team in the results (and of the teams of event
      * results), and a player is matched by his team's id. A player whose team is unknown stays.
+     *
+     * <p>Hidden competitions: competition results and events of a hidden competition go; every
+     * competition in the results is offered in the picker.
      */
     public static List filterSearchResults(List results) {
         if (results == null || results.isEmpty()) return results;
         try {
-            Set<String> hidden = HevalSettings.getHidden(LIST_ID);
+            boolean countries = patched();
+            boolean competitions = CompetitionFilter.patched();
+            if (!countries && !competitions) return results;
+            Set<String> hidden = countries ? HevalSettings.getHidden(LIST_ID) : Collections.<String>emptySet();
+            Set<String> hiddenCompetitions = CompetitionFilter.hidden();
             Object[] all = results.toArray();
             if (!hidden.isEmpty()) {
                 for (Object result : all) rememberSearchTeams(result);
             }
             List<Object> kept = new ArrayList<>(all.length);
             for (Object result : all) {
-                if (!hiddenCategory(searchCategory(result), hidden) && !hiddenPlayer(result, hidden)) kept.add(result);
+                if (countries && (hiddenCategory(searchCategory(result), hidden) || hiddenPlayer(result, hidden))) continue;
+                if (competitions && hiddenSearchCompetition(result, hiddenCompetitions)) continue;
+                kept.add(result);
             }
             return kept.size() == all.length ? results : kept;
         } catch (Throwable failure) {
@@ -173,14 +212,58 @@ public final class CountryFilter {
      * The result of NetworkCoroutineAPI.sportLiveEvents (Live tab) and getIndexedEventsPage (the
      * chronological view), at the return of the request lambda. Anything that is not an
      * EventListResponse (the coroutine's suspend marker, null) passes through; otherwise a new
-     * EventListResponse without the events of hidden countries is returned when any is hidden.
+     * EventListResponse without the events of hidden countries and hidden competitions is returned
+     * when any is hidden. These lists hold hundreds of competitions a day, so they offer only the
+     * picked competitions in the picker (see CompetitionFilter).
      */
     public static Object filterEventList(Object response) {
+        return filterEvents(response, false);
+    }
+
+    /**
+     * The result of NetworkCoroutineAPI.categoryScheduledEvents: the matches of an expanded country
+     * in the date feed. Filtered like {@link #filterEventList}, and every competition in it is
+     * offered in the competitions picker.
+     */
+    public static Object filterCategoryEvents(Object response) {
+        return filterEvents(response, true);
+    }
+
+    /**
+     * UniqueTournamentGroupResponse.getUniqueTournaments (List of UniqueTournament): a country's
+     * competitions in Leagues (one list per group; tennis has several) and the league pickers built
+     * from the same request. Drops hidden competitions and offers every one in the picker. May
+     * return an empty list: the app skips an empty group and shows an empty country.
+     */
+    public static List filterUniqueTournaments(List uniqueTournaments) {
+        if (uniqueTournaments == null || uniqueTournaments.isEmpty() || !CompetitionFilter.patched()) {
+            return uniqueTournaments;
+        }
+        try {
+            Set<String> hidden = CompetitionFilter.hidden();
+            Object[] all = uniqueTournaments.toArray();
+            List<Object> kept = new ArrayList<>(all.length);
+            for (Object uniqueTournament : all) {
+                if (!CompetitionFilter.hiddenUniqueTournament(uniqueTournament, null, hidden, true)) kept.add(uniqueTournament);
+            }
+            return kept.size() == all.length ? uniqueTournaments : kept;
+        } catch (Throwable failure) {
+            HevalSettings.reportFailure(CompetitionFilter.LIST_ID, failure);
+            return uniqueTournaments;
+        }
+    }
+
+    /** filterEventList and filterCategoryEvents; {@code report}: offer every competition seen. */
+    private static Object filterEvents(Object response, boolean report) {
         if (response == null || !EVENT_LIST_RESPONSE.equals(response.getClass().getName())) return response;
         try {
+            boolean countries = patched();
+            boolean competitions = CompetitionFilter.patched();
+            if (!countries && !competitions) return response;
             Object events = call(response, "getEvents");
             if (!(events instanceof List) || ((List) events).isEmpty()) return response;
-            Set<String> hidden = HevalSettings.getHidden(LIST_ID);
+            Set<String> hidden = countries ? HevalSettings.getHidden(LIST_ID) : Collections.<String>emptySet();
+            Set<String> hiddenCompetitions = CompetitionFilter.hidden();
             Object[] all = ((List) events).toArray();
             if (!hidden.isEmpty()) {
                 // For search: the players of these teams.
@@ -188,7 +271,9 @@ public final class CountryFilter {
             }
             List<Object> kept = new ArrayList<>(all.length);
             for (Object event : all) {
-                if (!hiddenCategory(eventCategory(event), hidden)) kept.add(event);
+                if (countries && hiddenCategory(eventCategory(event), hidden)) continue;
+                if (competitions && CompetitionFilter.hiddenEvent(event, hiddenCompetitions, report)) continue;
+                kept.add(event);
             }
             if (kept.size() == all.length) return response;
             Constructor<?> constructor = eventListConstructor;
@@ -215,7 +300,7 @@ public final class CountryFilter {
      * the country's name also repairs a label saved that way.
      */
     private static boolean hiddenCategory(Object category, Set<String> hidden) throws Exception {
-        if (category == null) return false;
+        if (category == null || !patched()) return false;
         String key = key(category);
         if (key == null) return false;
         String label = seedLabel(key);
@@ -340,6 +425,17 @@ public final class CountryFilter {
         }
     }
 
+    /** Whether a search result is a hidden competition or an event of one; offers competitions. */
+    private static boolean hiddenSearchCompetition(Object result, Set<String> hidden) throws Exception {
+        if (result == null) return false;
+        Object type = call(result, "getType");
+        Object entity = call(result, "getEntity");
+        if (entity == null) return false;
+        if ("uniqueTournament".equals(type)) return CompetitionFilter.hiddenUniqueTournament(entity, null, hidden, true);
+        if ("event".equals(type)) return CompetitionFilter.hiddenEvent(entity, hidden, true);
+        return false;
+    }
+
     /**
      * A team's category, or its country when search results carry no category (seen on the
      * emulator 2026-11-03: Arsenal stayed in search with England hidden). Country has the same
@@ -356,7 +452,7 @@ public final class CountryFilter {
     }
 
     /** {@code target.<name>()}, a public no-argument getter, cached per class. */
-    private static Object call(Object target, String name) throws Exception {
+    static Object call(Object target, String name) throws Exception {
         Class<?> type = target.getClass();
         String id = type.getName() + '#' + name;
         Method method = methods.get(id);
@@ -367,7 +463,9 @@ public final class CountryFilter {
         return method.invoke(target);
     }
 
+    /** Marks the list of every patch that is in as failed (the hooks are shared). */
     private static void fail(Throwable failure) {
-        HevalSettings.reportFailure(LIST_ID, failure);
+        if (patched()) HevalSettings.reportFailure(LIST_ID, failure);
+        if (CompetitionFilter.patched()) HevalSettings.reportFailure(CompetitionFilter.LIST_ID, failure);
     }
 }

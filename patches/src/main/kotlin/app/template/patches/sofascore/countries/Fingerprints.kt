@@ -12,6 +12,7 @@ internal const val SPORT_CATEGORIES_RESPONSE = "Lcom/sofascore/model/newNetwork/
 internal const val CATEGORIES_FOR_DATE_RESPONSE = "Lcom/sofascore/model/newNetwork/CategoriesForDateResponse;"
 internal const val SEARCH_RESPONSE = "Lcom/sofascore/model/network/response/SearchResponse;"
 internal const val COUNTRY = "Lcom/sofascore/model/Country;"
+internal const val UNIQUE_TOURNAMENT_GROUP_RESPONSE = "Lcom/sofascore/model/newNetwork/UniqueTournamentGroupResponse;"
 
 /** A kept response model's `List` getter (`iget-object` + `return-object`). */
 private fun listGetter(type: String, getter: String) = object : Fingerprint(
@@ -34,6 +35,13 @@ internal val CategoriesForDateGetterFingerprint = listGetter(CATEGORIES_FOR_DATE
 internal val SearchResultsGetterFingerprint = listGetter(SEARCH_RESPONSE, "getResults")
 
 /**
+ * A country's competitions, one group each (`api/v1/category/{id}/unique-tournaments`,
+ * CategoryUniqueTournamentResponse.groups), List<UniqueTournament>. 26.10.19: read only through
+ * CategoryUniqueTournamentResponse (Leagues and two league pickers).
+ */
+internal val UniqueTournamentGroupGetterFingerprint = listGetter(UNIQUE_TOURNAMENT_GROUP_RESPONSE, "getUniqueTournaments")
+
+/**
  * The request lambda that calls the Retrofit method [api] of NetworkCoroutineAPI (kept interface
  * names). In 26.10.19 both are R8-merged invokeSuspend switches (sportLiveEvents in bnk,
  * getIndexedEventsPage in t93), one case per request; each request's case returns its result,
@@ -49,6 +57,12 @@ internal val SportLiveEventsCallFingerprint = apiCaller("sportLiveEvents")
 
 /** The chronological view's pages (`api/v1/sport/{sport}/{date}/events/{page}`, EventListResponse). */
 internal val IndexedEventsPageCallFingerprint = apiCaller("getIndexedEventsPage")
+
+/**
+ * The matches of an expanded country in the date feed (`api/v1/category/{cid}/scheduled-events/{date}`,
+ * EventListResponse). 26.10.19: case of the merged lambda ro3, returning through `move-object v0, v1`.
+ */
+internal val CategoryScheduledEventsCallFingerprint = apiCaller("categoryScheduledEvents")
 
 private fun ReferenceInstruction.isCountryInit() =
     (reference as? MethodReference)?.let { it.definingClass == COUNTRY && it.name == "<init>" } == true

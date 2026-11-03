@@ -347,7 +347,8 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.animations_off` | Animation speed | off | yes | `AnimationSpeed.init` first in ReleaseApp.onCreate, every app call to `Settings.Global.getFloat` (`AnimationSpeed.getFloat`) |
 | `sofascore.animations_fast` | Animation speed | off | yes | the same sites |
 | `sofascore.slower_widget_refresh` | Slower widget refresh | off | yes | widget refresh interval (`widgetRefreshInterval`) |
-| `sofascore.hidden_countries` (list) | Hide countries | off | yes | SportCategoriesResponse.getCategories (`filterCategories`), CategoriesForDateResponse.getCategories (`filterCategoryWrappers`), SearchResponse.getResults (`filterSearchResults`), the sportLiveEvents and getIndexedEventsPage request returns (`filterEventList`), seeds by `CountryFilter.init` at the end of ReleaseApp.onCreate |
+| `sofascore.hidden_countries` (list) | Hide countries | off | yes | SportCategoriesResponse.getCategories (`filterCategories`), CategoriesForDateResponse.getCategories (`filterCategoryWrappers`), SearchResponse.getResults (`filterSearchResults`), the sportLiveEvents and getIndexedEventsPage request returns (`filterEventList`), the categoryScheduledEvents request return (`filterCategoryEvents`), seeds by `CountryFilter.init` at the end of ReleaseApp.onCreate |
+| `sofascore.hidden_competitions` (list) | Hide competitions | off | yes | the same shared sites minus the leagues list, plus UniqueTournamentGroupResponse.getUniqueTournaments (`filterUniqueTournaments`); icons by `CompetitionFilter.init` (called from `CountryFilter.init`) |
 
 Hidden countries (2026-11-03) keys are the categories' `alpha2` codes (Sofascore's own, e.g. EN
 England, SX Scotland, WA Wales, NX Northern Ireland, XK Kosovo); categories without one (World,
@@ -360,6 +361,25 @@ the Live tab and the chronological view (a new EventListResponse). Not filtered:
 (`LiveCategoriesResponse`, category id -> count, no country), pinned leagues fetched by their own
 tournament requests, team/player/tournament pages, the widget and notifications. Favourites are not
 exempt: a hidden country wins.
+
+Hidden competitions (2026-11-03) keys are UniqueTournament ids ("17" is the Premier League) and the
+labels are "category · name" ("England · Premier League"), so the alphabetical picker groups them by
+country. Both list patches depend on one unnamed hook patch (`sofascoreListFiltersPatch` in
+`sofascore/countries/ListFilterHooks.kt`) that edits every site once; `CountryFilter` in
+`extensions/sofascore` holds the hooks, and each feature patch only rewrites its `patched()` getter
+(`CountryFilter.patched`, `CompetitionFilter.patched`) to true, so a hook skips the list whose patch is
+not in. Filtered: the Live tab, the chronological view and an expanded country of the date feed (the
+`categoryScheduledEvents` request, `api/v1/category/{cid}/scheduled-events/{date}`; events by
+`tournament.uniqueTournament.id`), a date-feed country row when every id in its
+`uniqueTournamentIds` is hidden (the row's match count stays stock), search (competition results and
+events) and a country's competitions in Leagues (`UniqueTournamentGroupResponse.getUniqueTournaments`,
+which may become empty: the app skips an empty group). Options are reported from Leagues, expanded
+countries and search only, not from the Live tab or the chronological view: those carry hundreds of
+competitions a day and a list keeps at most 500 seen options, which would leave no room for the ones
+the user looks for. A picked competition is reported wherever it is filtered, so its label stays
+saved. Not filtered: pinned/favourite leagues fetched by their own requests, team/player/tournament
+pages, the widget and notifications. No static seed: Sofascore has no bundled competition list (one
+could be baked at patch time only from a hand-made list, which would go stale).
 
 A hidden sport never empties the sport list: if every sport is hidden, the filter returns the full
 list, and a hidden home sport falls back to the first visible one.
@@ -548,7 +568,9 @@ that fails). The image view is tagged with its URL, so a recycled row never gets
 option it showed before. A failure keeps the emoji, silently, and is not retried until the picker
 opens again. The image is not focusable or spoken; the row is still read by its label. Sofascore:
 `https://img.sofascore.com/api/v1/country/{alpha2}/flag` for every two-letter key (slug keys have
-none). FotMob: `https://images.fotmob.com/image_resources/logo/teamlogo/{code lower case}.png` for
+none); its competitions picker uses `https://img.sofascore.com/api/v1/unique-tournament/{id}/image`
+over the country's flag (from the category seen with the competition in this process) or a trophy
+(`CompetitionIcons`, checked by `CompetitionFilterTest`). FotMob: `https://images.fotmob.com/image_resources/logo/teamlogo/{code lower case}.png` for
 every country code, ANT included (INT and INT-2 have none). Both are checked by `CountryIconsTest`,
 and `assertOptionIconsWired(..., images = true)` in the smoke tests checks the provider implements
 `OptionImageProvider` and `ListPicker` calls `optionImageUrl` and `OptionImageLoader.bind`.

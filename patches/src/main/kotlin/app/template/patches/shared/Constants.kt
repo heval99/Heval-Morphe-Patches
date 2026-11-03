@@ -51,6 +51,14 @@ object Constants {
     // day: England listed on first open, "Arsenal" shows no English teams or players, Clear all
     // restores them. The Live
     // tab had no English matches live, so it was not observed.
+    // 2026-11-03: "Hide competitions" (opt-in, Patch settings list sofascore.hidden_competitions,
+    // keys = UniqueTournament ids, labels "category · name") on 26.10.19. The hook sites of both
+    // list patches moved into one unnamed patch (sofascoreListFiltersPatch); new anchors there: the
+    // kept getter UniqueTournamentGroupResponse.getUniqueTournaments (a country's competitions in
+    // Leagues) and the request lambda calling NetworkCoroutineAPI.categoryScheduledEvents (an
+    // expanded country of the date feed; ro3, which returns the result via move-object v0, v1).
+    // All eight list anchors OK-unique in FingerprintProbe; smoke test, CLI without -f (all 19
+    // Sofascore patches) and a disassembly of the new sites pass. Not run on the emulator yet.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",
