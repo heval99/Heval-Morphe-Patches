@@ -25,6 +25,7 @@ internal object FotMobControlsCategory {
     const val POPUPS = "Pop-ups & promotions"
     const val DISPLAY = "Display"
     const val MATCH_PAGE = "Match page"
+    const val LEAGUES = "Leagues"
 }
 
 /** The index right after the only `invoke-super` of [name] in [this] method. */

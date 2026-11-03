@@ -7,7 +7,8 @@ import android.util.Log;
 
 /**
  * Activity lifecycle hooks for the FotMob Patch settings features, registered once from
- * FotMobApp.onCreate (patched in right after super.onCreate()). onActivityCreated runs inside the
+ * FotMobApp.onCreate (patched in right after super.onCreate()), which also seeds the "Hidden
+ * countries" picker (CountryFilter.init). onActivityCreated runs inside the
  * activity's super.onCreate, after any setTheme and before its content is inflated, so the system
  * font theme overlay reaches every view of the screen.
  */
@@ -29,6 +30,8 @@ public final class ActivityHooks implements Application.ActivityLifecycleCallbac
         } catch (Throwable failure) {
             Log.e(TAG, "Activity hooks not registered: " + failure.getClass().getName());
         }
+        // The "Hidden countries" picker's country list (unused while that list is not patched in).
+        CountryFilter.init(application);
     }
 
     @Override

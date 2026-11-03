@@ -352,6 +352,12 @@ object Constants {
     // prompt (shown 21-40 days after install). A second run with the 7 other patches and WITHOUT
     // Enable FotMob+ (the free-user path of Disable ads) also passed: no crash and no MobileAds or
     // ads_mobile_sdk exception on the tour, the odds row and banner gone, GMA lines 426 -> 0.
+    // 2026-11-03: "Hide countries" (opt-in, Patch settings list fotmob.hidden_countries) on
+    // 240.17974.20261023. Anchors are model/converter names R8 keeps: LiveMatchesAndLeagueRank.<init>
+    // (match lists), LeagueConverter.convert (Leagues tab + onboarding) and the Suggestion
+    // constructors (search); CountryFilter reads model fields by name (checked at patch time).
+    // Smoke test, CLI without -f (all 14 FotMob patches) and jadx of every hook pass; NOT
+    // runtime-tested yet.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",

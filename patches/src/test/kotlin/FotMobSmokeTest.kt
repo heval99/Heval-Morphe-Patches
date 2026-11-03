@@ -5,6 +5,9 @@ import app.template.patches.fotmob.misc.font.USE_SYSTEM_FONT
 import app.template.patches.fotmob.misc.promotions.DISABLE_PLUS_PROMO_POPUP
 import app.template.patches.fotmob.misc.rating.DISABLE_RATING_PROMPTS
 import app.template.patches.fotmob.misc.refresh.SLOWER_LIVE_REFRESH
+import app.template.patches.fotmob.countries.COUNTRY_FILTER
+import app.template.patches.fotmob.countries.HIDDEN_COUNTRIES
+import app.template.patches.fotmob.countries.SUGGESTION_FILTERS
 import app.template.patches.shared.hevalcontrols.HEVAL_SETTINGS_CLASS
 import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -104,6 +107,7 @@ class FotMobSmokeTest {
                 "Disable ads", "Disable telemetry", "Enable FotMob+", "GmsCore support", "Spoof signature",
                 "Hide betting content", "Disable rating prompts", "Disable FotMob+ promo popup",
                 "Use system font", "Patch settings", "Turn off animations", "Faster animations", "Slower live refresh",
+                "Hide countries",
             ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -197,6 +201,7 @@ class FotMobSmokeTest {
         assertSystemFontStyles()
         assertAnimationSpeed(classes)
         assertSlowerLiveRefresh(classes)
+        assertHideCountries(classes)
         assertHevalControls(classes)
     }
 
@@ -312,6 +317,57 @@ class FotMobSmokeTest {
         )
     }
 
+    // Hide countries: each data path goes through CountryFilter right before it is stored or
+    // returned (invoke-static/range on the value register, move-result-object into the same one).
+    private fun assertFilteredAt(insns: List<Instruction>, index: Int, register: Int, helper: String, label: String, cast: String? = null) {
+        val tail = if (cast != null) 3 else 2
+        val call = insns[index - tail]
+        val ref = call.methodRef()
+        assertTrue(
+            call.opcode == Opcode.INVOKE_STATIC_RANGE && ref?.definingClass == COUNTRY_FILTER && ref.name == helper &&
+                (call as RegisterRangeInstruction).startRegister == register && call.registerCount == 1,
+            "$label: not filtered by CountryFilter.$helper (v$register); got ${call.opcode} $ref"
+        )
+        val move = insns[index - tail + 1]
+        assertTrue(move.opcode == Opcode.MOVE_RESULT_OBJECT && (move as OneRegisterInstruction).registerA == register, "$label: no move-result-object v$register")
+        if (cast != null) assertEquals(cast, insns[index - 1].typeRef(), "$label: check-cast")
+    }
+
+    private fun assertHideCountries(classes: List<ClassDef>) {
+        val byType = classes.associateBy { it.type }
+
+        val holder = byType.getValue("Lcom/fotmob/models/LiveMatchesAndLeagueRank;")
+            .method("<init>", listOf("Lcom/fotmob/models/LiveMatches;", "Ljava/util/List;")).instructions()
+        val store = holder.indexOfFirst { it.opcode == Opcode.IPUT_OBJECT && it.fieldRef()?.type == "Lcom/fotmob/models/LiveMatches;" }
+        assertFilteredAt(holder, store, (holder[store] as TwoRegisterInstruction).registerA, "filterLiveMatches",
+            "LiveMatchesAndLeagueRank.<init>", "Lcom/fotmob/models/LiveMatches;")
+
+        val convert = byType.getValue("Lcom/fotmob/network/converters/LeagueConverter;")
+            .method("convert", listOf("Lokhttp3/ResponseBody;")).instructions()
+        val returns = convert.indices.filter { convert[it].opcode == Opcode.RETURN_OBJECT }
+        assertTrue(returns.isNotEmpty(), "LeagueConverter.convert has no return-object")
+        returns.forEach { assertFilteredAt(convert, it, (convert[it] as OneRegisterInstruction).registerA, "filterLeagues", "LeagueConverter.convert") }
+
+        val suggestion = byType.getValue("Lcom/fotmob/models/search/Suggestion;")
+        val seen = mutableSetOf<String>()
+        suggestion.methods.filter { it.name == "<init>" && it.implementation != null }.forEach { ctor ->
+            val insns = ctor.instructions()
+            insns.indices.filter { insns[it].opcode == Opcode.IPUT_OBJECT }.forEach { index ->
+                val field = insns[index].fieldRef()!!
+                val helper = SUGGESTION_FILTERS[field.name] ?: return@forEach
+                seen += field.name
+                assertFilteredAt(insns, index, (insns[index] as TwoRegisterInstruction).registerA, helper,
+                    "Suggestion.<init>${ctor.parameterTypes} ${field.name}")
+            }
+        }
+        assertEquals(SUGGESTION_FILTERS.keys, seen, "Suggestion fields stored by a constructor")
+
+        // The picker seeds come from ActivityHooks.register (FotMobApp.onCreate).
+        val register = byType.getValue(ACTIVITY_HOOKS).method("register", listOf("Landroid/app/Application;")).instructions()
+        assertTrue(register.any { it.methodRef()?.let { r -> r.definingClass == COUNTRY_FILTER && r.name == "init" } == true },
+            "ActivityHooks.register does not call CountryFilter.init")
+    }
+
     // Slower live refresh: in the match page ticker (found like the fingerprint), the const/16 15
     // limit goes through the feature's value helper (30 while on) right before the if-lt.
     private fun assertSlowerLiveRefresh(classes: List<ClassDef>) {
@@ -339,7 +395,8 @@ class FotMobSmokeTest {
     private fun assertHevalControls(classes: List<ClassDef>) {
         val byType = classes.associateBy { it.type }
         for (type in listOf(HEVAL_SETTINGS_CLASS, "${HEVAL_EXTENSION}Registry;", "${HEVAL_EXTENSION}InitProvider;",
-            "${HEVAL_EXTENSION}ui/HevalControlsActivity;", FOTMOB_CONTROLS_ENTRY, ACTIVITY_HOOKS, ANIMATION_SPEED, SYSTEM_FONT_EXTENSION)) {
+            "${HEVAL_EXTENSION}ui/HevalControlsActivity;", FOTMOB_CONTROLS_ENTRY, ACTIVITY_HOOKS, ANIMATION_SPEED, SYSTEM_FONT_EXTENSION,
+            COUNTRY_FILTER, "Lapp/template/extension/fotmob/CountryData;", "Lapp/template/extension/fotmob/CountrySeeds;")) {
             assertTrue(type in byType, "$type is not in the patched dex")
         }
         val entryStrings = byType.getValue(FOTMOB_CONTROLS_ENTRY).methods.flatMap { m -> m.instructions().mapNotNull { it.stringOrNull() } }
@@ -352,7 +409,7 @@ class FotMobSmokeTest {
         val wanted = HevalRegistryCodec.encode(
             listOf(
                 HIDE_BETTING_CONTENT, DISABLE_RATING_PROMPTS, DISABLE_PLUS_PROMO_POPUP, USE_SYSTEM_FONT,
-                DISABLE_ANIMATIONS, FASTER_ANIMATIONS, SLOWER_LIVE_REFRESH,
+                DISABLE_ANIMATIONS, FASTER_ANIMATIONS, SLOWER_LIVE_REFRESH, HIDDEN_COUNTRIES,
             ),
         ).split('\n')
         assertTrue(
