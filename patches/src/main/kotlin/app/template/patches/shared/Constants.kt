@@ -251,10 +251,10 @@ object Constants {
             //   - New Slower widget refresh (opt-in switch, off): the static (Context)V holding
             //     "enqueueUniquePeriodic_widget_periodic_refresh" and const-class
             //     WidgetPeriodicRefreshWorker (kv9.U here) passes its 1800000 interval through
-            //     widgetRefreshInterval before the iput-wide (1 h while on; flex stays 30 min).
+            //     widgetRefreshInterval before the iput-wide (1 h while on; the 5 min flex stays).
             //   FingerprintProbe: ReleaseAppOnCreate, InAppMessagingDataCollection and
             //   WidgetPeriodicRefresh OK-unique. Smoke test and CLI without -f (all 17 patches) pass,
-            //   and every changed site was checked in the patched APK. Not run on the emulator.
+            //   and every changed site was checked in the patched APK. 2026-11-03 emulator: cold start OK, the Speed & battery switches are listed, Turn off animations on + restart runs without a crash; cold-start medians after speed-profile were the same as stock.
             AppTarget(
                 version = "26.10.19",
                 versionCode = 261019002
@@ -363,8 +363,10 @@ object Constants {
     // 240.17974.20261023. Anchors are model/converter names R8 keeps: LiveMatchesAndLeagueRank.<init>
     // (match lists), LeagueConverter.convert (Leagues tab + onboarding) and the Suggestion
     // constructors (search); CountryFilter reads model fields by name (checked at patch time).
-    // Smoke test, CLI without -f (all 14 FotMob patches) and jadx of every hook pass; NOT
-    // runtime-tested yet.
+    // Smoke test, CLI without -f (all 14 FotMob patches) and jadx of every hook pass. Emulator
+    // 2026-11-03: the picker lists about 219 countries; with England hidden it is gone from the
+    // Leagues tab and search after a restart and back after Clear all (the day's match list had no
+    // English matches, so match lists were not observed).
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",
@@ -403,7 +405,7 @@ object Constants {
             // with the AOSP font overlay (Source Sans) showing the device font on the match list.
             // Not verified: a real Pixel (Google Sans Text), other screens, OEM font changers.
             // 2026-11-03 (owner-approved speed work + Patch settings), on 240.17974.20261023,
-            // verified by FotMobSmokeTest (CLI/decompile/runtime status: see that day's report):
+            // verified by FotMobSmokeTest and a CLI run without -f; 2026-11-03 emulator: the Patch settings row sits after Support and lists every switch, Turn off animations on runs without a crash (setDurationScale not blocked). The patched dex no longer matches Play's baseline profile (after a speed-profile compile the odex is 1.2 MB vs 26 MB stock), but cold-start medians showed no measurable difference:
             // - "Patch settings" (host, default on): a row after Support on SettingsActivity
             //   (manifest activity, name kept): onCreate calls HevalControlsEntry.addRow(this) right
             //   after setContentView, and the row inflates the stock settings_line_left_icon layout.
@@ -615,7 +617,7 @@ object Constants {
         // the two update readers are x41/y41.onCreate): Scores365SmokeTest passes and a CLI run
         // without -f with all five enabled applied them; the gates, readers, EntitlementState and Splash hook
         // decompile as patched. Rule 12 (aapt2, with GmsCore support): no value changes, only the
-        // same three case-twin id pairs come back as id_0x... names. Not runtime-tested.
+        // same three case-twin id pairs come back as id_0x... names. 2026-11-03 emulator: two patched cold starts, no crash.
         targets = listOf(
             AppTarget(version = "15.0.0", versionCode = 1500)
         )
@@ -1136,7 +1138,7 @@ object Constants {
             // Disable ads applies unchanged: every GMA hook, both ad component parsers and both
             // Flutter bridge handlers still match. OneFootballSmokeTest passes; CLI (no -f)
             // Applied and the changed methods decompile as intended. 15.147.0 dropped (latest
-            // verified version only). Not run on the emulator.
+            // verified version only). 2026-11-03 emulator: stock and patched both hit a splash ANR under emulator load (not the patch); no crash.
             AppTarget(version = "15.148.0", versionCode = 1045029590)
         )
     )
@@ -1232,6 +1234,7 @@ object Constants {
         signatures = setOf("6bd7d17bd3553400ef40222f4a7cd4cee0c0b276e97e3ce831baa7f1d0b71b4b"), // CN=JetAudio Team, O=JetAppFactory
         // 2026-11-03: updated to 13.2.0 (versionCode 261370, Play build via gplaydl, same
         // signer), Enable Pro applies unchanged; smoke + CLI without -f.
+        // 2026-11-03 emulator: two patched cold starts reach the main screen, no crash.
         targets = listOf(AppTarget(version = "13.2.0", versionCode = 261370))
     )
 
@@ -1454,6 +1457,7 @@ object Constants {
         // found), so this update is bytecode-verified only.
         // 2026-11-03: updated to 11.6.1 (versionCode 315, Play arm64 build via gplaydl, same Play
         // signer), both patches apply unchanged; smoke + CLI without -f.
+        // 2026-11-03 emulator: patched cold starts reach MainActivity (stock stops at the PairIP licence screen), no crash.
         targets = listOf(AppTarget(version = "11.6.1", versionCode = 315))
     )
 
@@ -2643,6 +2647,7 @@ object Constants {
         // 2026-11-03: updated to "2026/10/22" (versionCode 100, Play arm64 build via gplaydl, same
         // Play signer; the developer now uses the release date as versionName), both patches apply
         // unchanged; smoke + CLI without -f.
+        // 2026-11-03 emulator: patched cold starts reach MainActivity (stock stops at the PairIP licence screen), no crash.
         targets = listOf(AppTarget(version = "2026/10/22", versionCode = 100))
     )
 
@@ -3146,7 +3151,7 @@ object Constants {
     // workers' doWork returning Result.success(), the Singular sender returning Unit, the
     // Crashlytics enable method's return-void, the analytics read forced to Boolean.TRUE and the
     // (Z,Z,Z) constructor starting with const/4 p1/p2 = 1; resources.arsc and AndroidManifest.xml
-    // stay byte-identical. Not run on the emulator.
+    // stay byte-identical. 2026-11-03 emulator: cold starts OK, settings no longer say "Free version", the Pro screen says "Thank you for your support."
     val COMPATIBILITY_NIAGARA = Compatibility(
         name = "Niagara Launcher",
         packageName = "bitpit.launcher",
@@ -3601,6 +3606,7 @@ object Constants {
     // 2026-11-03: updated to 159.0 (Play arm64 build via gplaydl, versionCode 2016191887; x86_64
     // 2016191886 read from Mozilla's archive x86_64 build, same signer; Mozilla's archive arm64
     // build is 2016191882), all 6 patches apply unchanged; smoke + CLI without -f.
+    // 2026-11-03 emulator: stock and patched cold starts OK, no crash.
     val COMPATIBILITY_FIREFOX = Compatibility(
         name = "Firefox",
         packageName = "org.mozilla.firefox",
@@ -3694,6 +3700,7 @@ object Constants {
         signatures = setOf("9e808bcb0eed0fb8620403fbf174186a5fe3a7ade002d547a79ce3beea7e36bc"),
         // 2026-11-03: updated to 3.9.6 build 30537 (versionCode 30533 -> 30537, Play arm64 build
         // via gplaydl, same Play signer), both patches apply unchanged; smoke + CLI without -f.
+        // 2026-11-03 emulator: patched cold starts reach MainActivity (stock stops at the PairIP licence screen), no crash.
         targets = listOf(AppTarget(version = "3.9.6", versionCode = 30537))
     )
 
@@ -3816,6 +3823,7 @@ object Constants {
         signatures = setOf("42947b25f3b0a5fc1b3905ba33f7e61cfc4b1fab9be3cc2173edf4103f2231cd"),
         // 2026-11-03: updated to 1.0.95 (versionCode 95, Play build via gplaydl, same Play signer),
         // both patches apply unchanged; smoke + CLI without -f.
+        // 2026-11-03 emulator: patched cold starts reach MainActivity (stock stops at the PairIP licence screen), no crash.
         targets = listOf(AppTarget(version = "1.0.95", versionCode = 95))
     )
 
@@ -4076,7 +4084,7 @@ object Constants {
     //   - Spoof signature: the Play certificate is injected for every getPackageInfo call, so the
     //     Places SDK and Firebase send the original X-Android-Cert. The Google Maps tiles are
     //     authorised inside Google Play services, not in the app dex, so the re-signed map stays
-    //     blank ("Authorization failure", emulator 2026-11-03); place search works.
+    //     blank ("Authorization failure", emulator 2026-11-03); place search works. Emulator 2026-11-03 (stock vs patched): the PairIP licence screen is gone, no premium locks, no crash; with GmsCore support the map renders through MicroG RE.
     //   - GmsCore support (added 2026-11-03, opt-in, pulls in Spoof signature): the shared builder
     //     with the MicroG RE check at the start of SplashActivity.onCreate (the manifest
     //     MAIN/LAUNCHER class). The Maps module then loads from MicroG RE, which draws its own map

@@ -1840,7 +1840,11 @@ class TruecallerSmokeTest {
                 call.call()?.returnType == stateType && call.arguments() == listOf(first) &&
                 insns[1].opcode == Opcode.MOVE_RESULT_OBJECT && (insns[1] as OneRegisterInstruction).registerA == first
             ) { "$label does not pass its state through a ($stateType)$stateType helper first; got ${call.opcode} ${call.call()}" }
-            val h = helperOf(call, label).instructions()
+            val bannerHelper = helperOf(call, label)
+            check(AccessFlags.PUBLIC.isSet(bannerHelper.accessFlags) || call.call()?.definingClass == cls.type) {
+                "$label: the banner helper is not public, so the call from ${cls.type} fails with IllegalAccessError"
+            }
+            val h = bannerHelper.instructions()
             check(h[0].opcode == Opcode.INSTANCE_OF && ((h[0] as ReferenceInstruction).reference as TypeReference).type == enabledClass.type &&
                 h.any { it.opcode == Opcode.IGET && it.field()?.name == titleRes.name && it.field()?.definingClass == enabledClass.type }
             ) { "$label: the banner helper does not read titleRes of an Enabled state" }

@@ -282,7 +282,9 @@ private fun BytecodePatchContext.addStaticHelper(
     if (mutable.methods.any { it.name == name }) throw PatchException("${classDef.type} already has $name")
     val helper = ImmutableMethod(
         classDef.type, name, parameters.map { ImmutableMethodParameter(it, null, null) }, returnType,
-        AccessFlags.PRIVATE.value or AccessFlags.STATIC.value or AccessFlags.SYNTHETIC.value,
+        // Public: the banner helper lives on the Enabled state class but is called from the
+        // renderers in other classes, and ART rejects a private callee across classes.
+        AccessFlags.PUBLIC.value or AccessFlags.STATIC.value or AccessFlags.SYNTHETIC.value,
         null, null, MutableMethodImplementation(registers),
     ).toMutable()
     helper.addInstructionsWithLabelsChecked(0, smali)
