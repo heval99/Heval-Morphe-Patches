@@ -41,7 +41,12 @@ object Constants {
     // methods NetworkCoroutineAPI.sportLiveEvents / getIndexedEventsPage (their case's return), the
     // country list <clinit> (Country constructor calls, read at patch time for the picker seeds) and
     // ReleaseApp.onCreate; all OK-unique in FingerprintProbe. Smoke test, CLI without -f (all 18
-    // Sofascore patches) and a disassembly of every hook pass; NOT runtime-tested yet.
+    // Sofascore patches) and a disassembly of every hook pass. Emulator
+    // 2026-11-03: the picker lists ~241 entries (England, Scotland, Wales, NI separate, plus regions);
+    // with England hidden it is gone from the Today feed, Leagues and competition search after a
+    // restart, back after Clear all; hiding World works. Team/player search results carry no
+    // category there, so teams now fall back to Team.getCountry() (added after that run). The Live
+    // tab had no English matches live, so it was not observed.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",

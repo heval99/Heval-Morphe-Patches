@@ -207,14 +207,30 @@ public final class CountryFilter {
                 return eventCategory(entity);
             case "uniqueTournament":
             case "uniqueStage":
-            case "team":
                 return call(entity, "getCategory");
+            case "team":
+                return teamCountry(entity);
             case "player": {
                 Object team = call(entity, "getTeam");
-                return team == null ? null : call(team, "getCategory");
+                return team == null ? null : teamCountry(team);
             }
             default:
                 return null;
+        }
+    }
+
+    /**
+     * A team's category, or its country when search results carry no category (seen on the
+     * emulator 2026-11-03: Arsenal stayed in search with England hidden). Country has the same
+     * getAlpha2/getSlug/getName getters, so key() and the picker treat it like a category.
+     */
+    private static Object teamCountry(Object team) throws Exception {
+        Object category = call(team, "getCategory");
+        if (category != null && key(category) != null) return category;
+        try {
+            return call(team, "getCountry");
+        } catch (NoSuchMethodException missing) {
+            return category;
         }
     }
 

@@ -44,7 +44,8 @@ internal val REFLECTED_METHODS = mapOf(
     "${MODEL}Tournament;" to listOf("getCategory"),
     "${MODEL}UniqueTournament;" to listOf("getCategory"),
     "${MODEL}UniqueStage;" to listOf("getCategory"),
-    "${MODEL}Team;" to listOf("getCategory"),
+    "${MODEL}Team;" to listOf("getCategory", "getCountry"),
+    "${MODEL}Country;" to listOf("getAlpha2", "getSlug", "getName"),
     "${MODEL}Player;" to listOf("getTeam"),
     EVENT_LIST_RESPONSE to listOf("getEvents"),
 )
