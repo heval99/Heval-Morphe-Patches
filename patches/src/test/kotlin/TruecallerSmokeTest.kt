@@ -1184,8 +1184,8 @@ class TruecallerSmokeTest {
     // Swap call answer and decline buttons, resources. The stock layouts are untouched: decline right
     // before answer in one LinearLayout, the small row with marginEnd 16dp on both and the big row with
     // marginStart 8dp on answer only. Their <name>_heval_swapped copies have answer first, and the
-    // margins stay with the slot, so answer takes the first slot's margins. The copies of the
-    // including layouts include the swapped copies.
+    // margins stay with the slot, so answer takes the first slot's margins. The big copy's button
+    // row is shorter (issue #116). The copies of the including layouts include the swapped copies.
     private fun assertSwappedNotificationLayouts() {
         fun Element.margins(): Map<String, Float> =
             (0 until attributes.length).map { attributes.item(it) }
@@ -1223,6 +1223,29 @@ class TruecallerSmokeTest {
                 check(b.previousElement() === a && b.parentNode === a.parentNode) { "$file.xml: $first is not right before $second in the same parent" }
                 check(a.margins() == margins[0]) { "$file.xml: $first margins ${a.margins()}, expected ${margins[0]}" }
                 check(b.margins() == margins[1]) { "$file.xml: $second margins ${b.margins()}, expected ${margins[1]}" }
+
+                // Issue #116: the big copy's button row fits the Android 12+ height cap (8dp gap
+                // above, 40dp buttons, 8dp below); the stock big layout keeps 16dp above, no
+                // margin below and the 44dp dimen. The collapsed layout's 44dp icon buttons are
+                // the same in both.
+                val row = a.parentNode as Element
+                val buttons = (0 until row.childNodes.length).mapNotNull { row.childNodes.item(it) as? Element }
+                val heights = buttons.map { it.getAttribute("android:layout_height") }
+                val rowMargins = row.margins()
+                val swapped = file.endsWith("_heval_swapped")
+                if (name == "notification_call_incoming_big") {
+                    check(buttons.size == 3) { "$file.xml: ${buttons.size} views in the button row, expected 3" }
+                    val (expectedHeights, expectedRow) = if (swapped) {
+                        "40.0dp" to mapOf("android:layout_marginTop" to 8f, "android:layout_marginBottom" to 8f)
+                    } else {
+                        "@dimen/notification_call_button_big_height" to mapOf("android:layout_marginTop" to 16f)
+                    }
+                    check(heights.all { it == expectedHeights }) { "$file.xml: button heights $heights, expected $expectedHeights" }
+                    check(rowMargins == expectedRow) { "$file.xml: button row margins $rowMargins, expected $expectedRow" }
+                } else {
+                    check(heights.all { it == "@dimen/notification_call_button_size" }) { "$file.xml: button heights $heights" }
+                    check(rowMargins.isEmpty()) { "$file.xml: button row margins $rowMargins, expected none" }
+                }
             }
         }
         val includes = mapOf(

@@ -42,7 +42,8 @@ internal const val SWAPPED_LAYOUT_SUFFIX = "_heval_swapped"
 // rest only include them: the Android 12 expanded layout includes the collapsed row, and the six
 // layouts the notification class inflates (dark / default theme of the collapsed, expanded and
 // Android 12 expanded layout) include one of those three.
-internal val NOTIFICATION_BUTTON_LAYOUTS = listOf("notification_call_incoming", "notification_call_incoming_big")
+private const val NOTIFICATION_BIG_LAYOUT = "notification_call_incoming_big"
+internal val NOTIFICATION_BUTTON_LAYOUTS = listOf("notification_call_incoming", NOTIFICATION_BIG_LAYOUT)
 private const val NOTIFICATION_ROW_LAYOUT = "notification_call_incoming_big_new"
 internal val NOTIFICATION_INFLATED_LAYOUTS = listOf(
     "notification_call_incoming_dark", "notification_call_incoming_default",
@@ -72,7 +73,8 @@ private fun layoutPath(name: String) = "res/layout/$name.xml"
 // stock layouts untouched, so the notification is stock while the feature is off. In the copies of
 // the two button layouts the answer button moves in front of the decline button. Each keeps its id
 // (the PendingIntents are bound by id), text, icon and colour; the margins stay with the slot, so the
-// spacing is unchanged. The copies of the other layouts include the swapped copies instead of the
+// spacing between them is unchanged; the big copy's button row is made shorter so it fits the
+// Android 12+ height cap. The copies of the other layouts include the swapped copies instead of the
 // stock ones. The patcher gives the new files resource ids when it encodes the resources, so the
 // bytecode part finds them by name at runtime.
 private val swapCallNotificationButtonsResourcePatch = resourcePatch(
@@ -112,6 +114,33 @@ private val swapCallNotificationButtonsResourcePatch = resourcePatch(
                 answerMargins.forEach(decline::setAttribute)
                 declineMargins.forEach(answer::setAttribute)
                 decline.parentNode.insertBefore(answer, decline)
+
+                // The text buttons of the big layout were made for Android 11 and older, where
+                // the call style notification is not used. Android 12+ decorates a custom view and
+                // caps its height (heads-up: 136dp with 20dp above and below the content, so 96dp
+                // of content). The big layout needs about 95dp at the default font size (two text
+                // lines, 16dp gap, 44dp buttons), so the bottom of the buttons and their rounded
+                // corners were cut off (issue #116). In the copy the gap above the buttons is 8dp,
+                // the buttons are 40dp and the row gets 8dp below it, about 91dp: a cap eats the
+                // empty space first. The collapsed layout's 44dp icon buttons fit its 48dp.
+                if (name == NOTIFICATION_BIG_LAYOUT) {
+                    val row = answer.parentNode as? Element
+                    if (row?.tagName != "LinearLayout" || row.getAttribute("android:orientation") != "horizontal") {
+                        throw PatchException("$path: the buttons are not in a horizontal LinearLayout")
+                    }
+                    row.setAttribute("android:layout_marginTop", "8.0dp")
+                    row.setAttribute("android:layout_marginBottom", "8.0dp")
+                    var child = row.firstChild
+                    while (child != null) {
+                        if (child is Element) {
+                            if (!child.hasAttribute("android:layout_height")) {
+                                throw PatchException("$path: ${child.getAttribute("android:id")} has no layout_height")
+                            }
+                            child.setAttribute("android:layout_height", "40.0dp")
+                        }
+                        child = child.nextSibling
+                    }
+                }
             }
         }
 
