@@ -14,6 +14,9 @@ import app.template.patches.sofascore.misc.promo.PROMO_SECTION_FEATURES
 import app.template.patches.sofascore.misc.animations.ANIMATION_FEATURES
 import app.template.patches.sofascore.misc.widget.SLOWER_WIDGET_REFRESH
 import app.template.patches.sofascore.controls.SOFASCORE_ANIMATION_SPEED
+import app.template.patches.sofascore.countries.COUNTRY_FILTER
+import app.template.patches.sofascore.countries.HIDDEN_COUNTRIES
+import app.template.patches.sofascore.countries.NETWORK_COROUTINE_API
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -78,6 +81,7 @@ private val SOFASCORE_PATCHES = setOf(
     "Patch settings",
     "Hide AI insights",
     "Hide betting content",
+    "Hide countries",
     "Hide match tabs",
     "Hide promo pop-ups",
     "Hide promo sections",
@@ -115,7 +119,8 @@ private val HEVAL_FEATURES: List<HevalFeature> = listOf(HIDE_AI_INSIGHTS) +
     PROMO_POPUP_FEATURES.map { it.second } +
     PROMO_SECTION_FEATURES.map { it.second } +
     ANIMATION_FEATURES +
-    SLOWER_WIDGET_REFRESH
+    SLOWER_WIDGET_REFRESH +
+    HIDDEN_COUNTRIES
 
 class SofascoreSmokeTest {
 
@@ -731,8 +736,80 @@ class SofascoreSmokeTest {
         // Start-up work, animation speed and widget refresh (2026-11-03).
         assertStartupAndSpeed(classes, byType, diagnostics)
 
+        // Hide countries (2026-11-03): getter filters, request lambda filters and picker seeds.
+        assertHideCountries(classes, byType, diagnostics)
+
         // Heval Controls: extension, registry, manifest components and the Settings row.
         assertHevalControls(byType)
+    }
+
+    private fun assertHideCountries(classes: List<ClassDef>, byType: Map<String, ClassDef>, diagnostics: String) {
+        fun require(type: String): ClassDef = byType[type] ?: error("$type not found in emitted dexes\n$diagnostics")
+        val filter = require(COUNTRY_FILTER)
+        check(HIDDEN_COUNTRIES.id == "sofascore.hidden_countries") { "the Hidden countries list id changed" }
+
+        // Seeds: CountryFilter.seeds() returns the app's country list ("code TAB name" lines).
+        val seeds = filter.methods.single { it.name == "seeds" }.instructions()
+        check(seeds.getOrNull(0)?.opcode == Opcode.CONST_STRING_JUMBO && seeds.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT) {
+            "CountryFilter.seeds() was not rewritten; got ${seeds.take(2).map { it.opcode }}"
+        }
+        val lines = ((seeds[0] as ReferenceInstruction).reference as StringReference).string.split('\n')
+        check(lines.size >= 200 && lines.all { it.count { c -> c == '\t' } == 1 } &&
+            listOf("AF\tAfghanistan", "EN\tEngland", "SX\tScotland", "WA\tWales", "NX\tNorthern Ireland", "XK\tKosovo").all { it in lines }
+        ) { "CountryFilter.seeds() has ${lines.size} lines: ${lines.take(5)}" }
+
+        // ReleaseApp.onCreate registers them: every return-void is preceded by CountryFilter.init().
+        val onCreate = require(RELEASE_APP).methods.single { it.name == "onCreate" && it.returnType == "V" && it.parameterTypes.isEmpty() }
+        val onCreateInsns = onCreate.instructions()
+        val returns = onCreateInsns.indices.filter { onCreateInsns[it].opcode == Opcode.RETURN_VOID }
+        check(returns.isNotEmpty() && returns.all { i ->
+            onCreateInsns.getOrNull(i - 1)?.call()?.let { it.definingClass == COUNTRY_FILTER && it.name == "init" } == true
+        }) { "ReleaseApp.onCreate does not call CountryFilter.init() before every return-void" }
+        check(onCreateInsns.count { it.call()?.definingClass == COUNTRY_FILTER } == returns.size) { "CountryFilter.init() called off a return" }
+
+        // Getters: iget-object vX; vX = CountryFilter.<helper>(vX); return-object vX.
+        for ((type, getter, helper) in listOf(
+            Triple("Lcom/sofascore/model/newNetwork/SportCategoriesResponse;", "getCategories", "filterCategories"),
+            Triple("Lcom/sofascore/model/newNetwork/CategoriesForDateResponse;", "getCategories", "filterCategoryWrappers"),
+            Triple("Lcom/sofascore/model/network/response/SearchResponse;", "getResults", "filterSearchResults"),
+        )) {
+            val insns = require(type).methods.single { it.name == getter && it.parameterTypes.isEmpty() }.instructions()
+            val register = (insns[0] as OneRegisterInstruction).registerA
+            check(insns.size == 4 && insns[0].opcode == Opcode.IGET_OBJECT &&
+                insns[1].opcode == Opcode.INVOKE_STATIC_RANGE && insns[1].call()?.definingClass == COUNTRY_FILTER &&
+                insns[1].call()?.name == helper && (insns[1] as RegisterRangeInstruction).startRegister == register &&
+                (insns[1] as RegisterRangeInstruction).registerCount == 1 &&
+                insns[2].opcode == Opcode.MOVE_RESULT_OBJECT && (insns[2] as OneRegisterInstruction).registerA == register &&
+                insns[3].opcode == Opcode.RETURN_OBJECT && (insns[3] as OneRegisterInstruction).registerA == register
+            ) { "$type.$getter is not filtered through $helper: ${insns.map { it.opcode }}" }
+        }
+
+        // Live tab and chronological view: in the lambda calling the request, the request's result
+        // register goes through filterEventList right before its return, and every branch that
+        // returned it now jumps to the filter.
+        for (api in listOf("sportLiveEvents", "getIndexedEventsPage")) {
+            val callers = classes.flatMap { it.methods }.filter { m ->
+                m.instructions().any { it.call()?.let { c -> c.definingClass == NETWORK_COROUTINE_API && c.name == api } == true }
+            }
+            check(callers.size == 1) { "expected one caller of $api, found ${callers.map { it.definingClass }}" }
+            val insns = callers.single().instructions()
+            val call = insns.indexOfFirst { it.call()?.name == api }
+            val result = (insns[call + 1] as OneRegisterInstruction).registerA
+            val hook = (call + 2 until insns.size).first {
+                insns[it].opcode == Opcode.RETURN_OBJECT || insns[it].call()?.definingClass == COUNTRY_FILTER
+            }
+            check(insns[hook].opcode == Opcode.INVOKE_STATIC_RANGE && insns[hook].call()?.name == "filterEventList" &&
+                (insns[hook] as RegisterRangeInstruction).startRegister == result &&
+                insns[hook + 1].opcode == Opcode.MOVE_RESULT_OBJECT && (insns[hook + 1] as OneRegisterInstruction).registerA == result &&
+                insns[hook + 2].opcode == Opcode.RETURN_OBJECT && (insns[hook + 2] as OneRegisterInstruction).registerA == result
+            ) { "$api's result is not passed through filterEventList before its return" }
+            val targets = insns.indices.filter { i ->
+                insns[i] is OffsetInstruction &&
+                    insns[i].opcode !in setOf(Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH, Opcode.FILL_ARRAY_DATA)
+            }.map { insns.branchTarget(it) }
+            check(hook in targets && (hook + 2) !in targets) { "$api: a branch skips filterEventList" }
+            check(insns.count { it.call()?.name == "filterEventList" } == 1) { "$api's lambda calls filterEventList more than once" }
+        }
     }
 
     /** `sget-object Boolean.FALSE` into some register, then `return-object` of that register. */

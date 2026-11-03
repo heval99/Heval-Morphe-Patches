@@ -330,6 +330,19 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.animations_off` | Animation speed | off | yes | `AnimationSpeed.init` first in ReleaseApp.onCreate, every app call to `Settings.Global.getFloat` (`AnimationSpeed.getFloat`) |
 | `sofascore.animations_fast` | Animation speed | off | yes | the same sites |
 | `sofascore.slower_widget_refresh` | Slower widget refresh | off | yes | widget refresh interval (`widgetRefreshInterval`) |
+| `sofascore.hidden_countries` (list) | Hide countries | off | yes | SportCategoriesResponse.getCategories (`filterCategories`), CategoriesForDateResponse.getCategories (`filterCategoryWrappers`), SearchResponse.getResults (`filterSearchResults`), the sportLiveEvents and getIndexedEventsPage request returns (`filterEventList`), seeds by `CountryFilter.init` at the end of ReleaseApp.onCreate |
+
+Hidden countries (2026-11-03) keys are the categories' `alpha2` codes (Sofascore's own, e.g. EN
+England, SX Scotland, WA Wales, NX Northern Ireland, XK Kosovo); categories without one (World,
+Europe, International, tennis tours) are `slug:<slug>`. The picker is seeded with the app's own
+country list (234 entries in 26.10.19, read from its `<clinit>` at patch time into
+`CountryFilter.seeds()`), and every category the filters see is reported with its name, also while
+nothing is picked. Filtered: the leagues list (never emptied), the date feed's country rows,
+search (events, competitions, teams, players; managers, referees, venues, sports and stages stay),
+the Live tab and the chronological view (a new EventListResponse). Not filtered: the live counts map
+(`LiveCategoriesResponse`, category id -> count, no country), pinned leagues fetched by their own
+tournament requests, team/player/tournament pages, the widget and notifications. Favourites are not
+exempt: a hidden country wins.
 
 A hidden sport never empties the sport list: if every sport is hidden, the filter returns the full
 list, and a hidden home sport falls back to the first visible one.

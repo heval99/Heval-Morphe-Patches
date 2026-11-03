@@ -19,6 +19,7 @@ internal object SofascoreControlsCategory {
     const val POPUPS = "Pop-ups & promotions"
     const val MATCH_PAGE = "Match page"
     const val SPORTS = "Sports"
+    const val LEAGUES = "Leagues"
     const val BETTING = "Betting"
     const val PROMO_SECTIONS = "Promo sections"
     const val PERFORMANCE = "Speed & battery"
