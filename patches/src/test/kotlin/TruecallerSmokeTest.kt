@@ -121,6 +121,29 @@ private val HEVAL_FEATURES = listOf(
     Triple("Swap call answer and decline buttons", SWAP_CALL_BUTTONS, "Call screen" to false),
 )
 
+// "Hide profile menu items" (#120): five switches in one patch, all off by default, no restart.
+private const val PROFILE_MENU_PATCH = "Hide profile menu items"
+private const val HIDE_PROFILE_PREMIUM_BANNER = "truecaller.hide_profile_premium_banner"
+private const val PROFILE_MENU_ITEM = "Lcom/truecaller/usershome/presentaion/ui/components/menuitems/MenuItem;"
+
+/** Feature id, MenuItem constant and row title of each profile menu row switch. */
+private val PROFILE_MENU_ROWS = listOf(
+    Triple("truecaller.hide_profile_watch", "ANDROID_WATCH", "Android watch"),
+    Triple("truecaller.hide_profile_invite", "INVITE_FRIENDS", "Invite friends"),
+    Triple("truecaller.hide_profile_connect", "CONNECT_WITH_US", "Connect with us"),
+    Triple("truecaller.hide_profile_help", "HELP", "Help"),
+)
+
+/** The registry records of the profile menu switches. */
+private val PROFILE_MENU_FEATURES = listOf(
+    HevalFeature(
+        HIDE_PROFILE_PREMIUM_BANNER, "Hide Premium banner", "Hides the Premium banner at the top of the profile menu.",
+        "Profile menu", default = false,
+    ),
+) + PROFILE_MENU_ROWS.map { (id, _, title) ->
+    HevalFeature(id, "Hide $title", "Hides $title in the profile menu.", "Profile menu", default = false)
+}
+
 class TruecallerSmokeTest {
 
     @TempDir
@@ -242,13 +265,13 @@ class TruecallerSmokeTest {
             check(strings.none { "Heval Controls" in it }) { "$type still shows \"Heval Controls\"" }
         }
 
-        // 2. The registry lists exactly the twenty features, with each patch's Manager name and
-        // description, default on. They are written in registration (patch execution) order, so the
-        // records are compared as a set.
+        // 2. The registry lists exactly the twenty converted features, with each patch's Manager name
+        // and description, default on, plus the five profile menu switches (default off). They are
+        // written in registration (patch execution) order, so the records are compared as a set.
         val expected = HEVAL_FEATURES.map { (name, id, rest) ->
             val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
             HevalFeature(id, name, patch.description!!, rest.first, default = true, restartRequired = rest.second)
-        }
+        } + PROFILE_MENU_FEATURES
         val registry = byType.getValue("${HEVAL_EXTENSION}Registry;").methods.single { it.name == "encoded" }.instructions()
         check(registry.getOrNull(0)?.opcode == Opcode.CONST_STRING_JUMBO && registry.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT) {
             "Registry.encoded() was not rewritten"
@@ -339,6 +362,7 @@ class TruecallerSmokeTest {
                 "Hide important senders",
                 "Swap call answer and decline buttons",
                 "Disable call button haptics",
+                PROFILE_MENU_PATCH,
                 "GmsCore support",
                 "Spoof signature",
                 "Patch settings",
@@ -367,6 +391,7 @@ class TruecallerSmokeTest {
         assertHideListItems(classes)
         assertSwapCallButtons(classes, byType)
         assertDisableCallButtonHaptics(classes, byType)
+        assertHideProfileMenuItems(classes, byType, allPatches)
         // onGetCredential tests isAvailableOnDevice(int) in this build, so the routing applies.
         assertGmsCoreSupport(classes, workDir, PKG, TRUECALLER_INIT, SIGNATURE_SHA1, expectCredentialRouting = true)
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
@@ -1172,7 +1197,7 @@ class TruecallerSmokeTest {
             val layoutRegister = (code[index] as FiveRegisterInstruction).registerE
             val call = code[index - 2]
             check(code[index - 3].opcode == Opcode.CONST && (code[index - 3] as OneRegisterInstruction).registerA == layoutRegister &&
-                call.opcode == Opcode.INVOKE_STATIC_RANGE && call.call()?.name == "layout" && call.call()?.params() == listOf("I") &&
+                call.opcode == Opcode.INVOKE_STATIC_RANGE && call.call()?.name == "layout" && call.call()?.parameterTypes?.map(CharSequence::toString) == listOf("I") &&
                 (call as RegisterRangeInstruction).startRegister == layoutRegister && call.registerCount == 1 &&
                 code[index - 1].opcode == Opcode.MOVE_RESULT && (code[index - 1] as OneRegisterInstruction).registerA == layoutRegister
             ) { "${c.type}.<init>@$index does not pass its layout constant through SwapCallButtons.layout" }
@@ -1689,6 +1714,149 @@ class TruecallerSmokeTest {
                 check(insns[result].opcode == Opcode.MOVE_RESULT && insns[result - 1].call()?.let {
                     it.definingClass == "Ljava/util/List;" && it.name == "size"
                 } == true) { "$label: the guard does not compare a List.size() result" }
+            }
+        }
+    }
+
+    private fun assertHideProfileMenuItems(classes: List<ClassDef>, byType: Map<String, ClassDef>, allPatches: Set<Patch<*>>) {
+        val patch = allPatches.single { p -> p.name == PROFILE_MENU_PATCH && p.compatibility.orEmpty().any { it.packageName == PKG } }
+        check(!patch.default) { "$PROFILE_MENU_PATCH is selected by default" }
+        fun isEnabledCall(insn: Instruction?, register: Int) = insn?.call()?.let {
+            it.definingClass == HEVAL_SETTINGS_CLASS && it.name == "isEnabled"
+        } == true && insn.arguments() == listOf(register)
+        fun helperOf(insn: Instruction, label: String): Method {
+            val ref = insn.call() ?: error("$label: no helper call")
+            val helper = (byType[ref.definingClass] ?: error("${ref.definingClass} not found")).method(ref.name, ref.parameterTypes.map(CharSequence::toString))
+            check(AccessFlags.STATIC.isSet(helper.accessFlags)) { "$label: ${ref.definingClass}.${ref.name} is not static" }
+            return helper
+        }
+        fun stateClass(prefix: String): Pair<ClassDef, Method> = classes.singleMethod("$prefix toString") { _, m ->
+            m.name == "toString" && m.parameterTypes.isEmpty() && m.strings().any { it.startsWith(prefix) }
+        }
+        fun stateField(cls: ClassDef, toString: Method, label: String, type: String): FieldReference =
+            toStringFields(toString, cls.type) { byType[it] }.filter { (name, field) -> name == label && field.type == type }
+                .map { it.second }.distinctBy { it.name }.singleOrNull() ?: error("${cls.type}.toString does not print one $label")
+        fun FieldReference.storedBy(insn: Instruction) = insn.field()?.let { it.definingClass == definingClass && it.name == name } == true
+
+        // 1. Rows: each MenuItemUiState constructor passes (item, isVisible) through a static
+        // (MenuItem, Z)Z helper right before it stores isVisible. The helper keeps a hidden row
+        // hidden, and for each of the four rows compares the item with its MenuItem constant, loads
+        // that row's feature id and asks isEnabled: true gives false (row dropped), else isVisible.
+        val (rowClass, rowToString) = stateClass("MenuItemUiState(item=")
+        val item = stateField(rowClass, rowToString, "item", PROFILE_MENU_ITEM)
+        val visible = stateField(rowClass, rowToString, "isVisible", "Z")
+        var rowStores = 0
+        for (constructor in rowClass.methods.filter { it.name == "<init>" && it.implementation != null }) {
+            val label = "${rowClass.type}.<init>(${constructor.params().joinToString()})"
+            val insns = constructor.instructions()
+            val itemStore = insns.singleOrNull { it.opcode == Opcode.IPUT_OBJECT && item.storedBy(it) } ?: continue
+            val itemRegister = (itemStore as TwoRegisterInstruction).registerA
+            for (index in insns.indices.filter { insns[it].opcode == Opcode.IPUT_BOOLEAN && visible.storedBy(insns[it]) }) {
+                val value = (insns[index] as TwoRegisterInstruction).registerA
+                val call = insns[index - 2]
+                check(call.opcode == Opcode.INVOKE_STATIC && call.call()?.parameterTypes?.map(CharSequence::toString) == listOf(PROFILE_MENU_ITEM, "Z") &&
+                    call.call()?.returnType == "Z" && call.arguments() == listOf(itemRegister, value) &&
+                    insns[index - 1].opcode == Opcode.MOVE_RESULT && (insns[index - 1] as OneRegisterInstruction).registerA == value
+                ) { "$label does not pass (item, ${visible.name}) through a (MenuItem, Z)Z helper; got ${call.opcode} ${call.call()}" }
+                val helper = helperOf(call, label)
+                val h = helper.instructions()
+                val p0 = helper.implementation!!.registerCount - 2
+                check(h.first().opcode == Opcode.IF_EQZ && (h.first() as OneRegisterInstruction).registerA == p0 + 1) {
+                    "$label: the row helper does not keep hidden rows hidden first"
+                }
+                for ((id, constant, _) in PROFILE_MENU_ROWS) {
+                    val load = h.indexOfFirst { it.opcode == Opcode.SGET_OBJECT && it.field()?.definingClass == PROFILE_MENU_ITEM && it.field()?.name == constant }
+                    check(load >= 0 && h[load + 1].opcode == Opcode.IF_NE && (h[load + 1] as TwoRegisterInstruction).registerA == p0 &&
+                        h[load + 2].stringOrNull() == id
+                    ) { "$label: the row helper does not map MenuItem.$constant to $id" }
+                }
+                val ask = h.indexOfFirst { it.call()?.name == "isEnabled" }
+                check(isEnabledCall(h.getOrNull(ask), 0) && h[ask + 2].opcode == Opcode.IF_EQZ &&
+                    h[ask + 3].opcode == Opcode.CONST_4 && (h[ask + 3] as NarrowLiteralInstruction).narrowLiteral == 0 &&
+                    h[ask + 4].opcode == Opcode.RETURN && h.last().opcode == Opcode.RETURN && (h.last() as OneRegisterInstruction).registerA == p0 + 1
+                ) { "$label: the row helper does not answer false for a switched-on row and isVisible otherwise" }
+                rowStores++
+            }
+        }
+        check(rowStores > 0) { "${rowClass.type} has no constructor storing ${visible.name} through the row helper" }
+
+        // 2. Groups: each MenuItemsViewState constructor passes groups through a static (List)List
+        // helper that returns groups unchanged unless one of the four row switches is on, and then
+        // drops the empty groups (List.isEmpty).
+        val (groupsClass, groupsToString) = stateClass("MenuItemsViewState(groups=")
+        val groups = stateField(groupsClass, groupsToString, "groups", "Ljava/util/List;")
+        var groupStores = 0
+        for (constructor in groupsClass.methods.filter { it.name == "<init>" && it.implementation != null }) {
+            val label = "${groupsClass.type}.<init>(${constructor.params().joinToString()})"
+            val insns = constructor.instructions()
+            for (index in insns.indices.filter { insns[it].opcode == Opcode.IPUT_OBJECT && groups.storedBy(insns[it]) }) {
+                val value = (insns[index] as TwoRegisterInstruction).registerA
+                val call = insns[index - 2]
+                check(call.opcode == Opcode.INVOKE_STATIC_RANGE && call.call()?.parameterTypes?.map(CharSequence::toString) == listOf("Ljava/util/List;") &&
+                    call.call()?.returnType == "Ljava/util/List;" && call.arguments() == listOf(value) &&
+                    insns[index - 1].opcode == Opcode.MOVE_RESULT_OBJECT && (insns[index - 1] as OneRegisterInstruction).registerA == value
+                ) { "$label does not pass ${groups.name} through a (List)List helper; got ${call.opcode} ${call.call()}" }
+                val h = helperOf(call, label).instructions()
+                PROFILE_MENU_ROWS.forEachIndexed { row, (id, _, _) ->
+                    check(h[row * 4].stringOrNull() == id && isEnabledCall(h[row * 4 + 1], 0) && h[row * 4 + 3].opcode == Opcode.IF_NEZ) {
+                        "$label: the groups helper does not check $id at ${row * 4}"
+                    }
+                }
+                check(h[PROFILE_MENU_ROWS.size * 4].opcode == Opcode.RETURN_OBJECT &&
+                    h.any { it.call()?.let { c -> c.definingClass == "Ljava/util/List;" && c.name == "isEmpty" } == true }
+                ) { "$label: the groups helper does not return groups unchanged with every switch off, or never drops empty groups" }
+                groupStores++
+            }
+        }
+        check(groupStores > 0) { "${groupsClass.type} has no constructor storing ${groups.name} through the groups helper" }
+
+        // 3. Premium banner: every static renderer of the optional row states (first parameter the
+        // interface of the "Enabled(iconRes=" state, tests instance-of Enabled) starts by passing that
+        // parameter through a static helper, which returns the Disabled object for an Enabled state
+        // whose titleRes is one of the two banner titles while the banner switch is on.
+        val (enabledClass, enabledToString) = classes.singleMethod("Enabled(iconRes= toString") { _, m ->
+            m.name == "toString" && m.parameterTypes.isEmpty() && "Enabled(iconRes=" in m.strings() && ", titleRes=" in m.strings()
+        }
+        val titleRes = stateField(enabledClass, enabledToString, "titleRes", "I")
+        val stateType = enabledClass.interfaces.single()
+        val publicXml = workDir.walkTopDown().firstOrNull { it.name == "public.xml" && it.parentFile.name == "values" }
+            ?: error("no decoded res/values/public.xml under $workDir")
+        val publics = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(publicXml).documentElement
+            .getElementsByTagName("public").let { list -> (0 until list.length).map { list.item(it) as Element } }
+        val titleIds = listOf("usershome_premium_section_premium_member", "usershome_premium_section_upgrade_to_premium").map { name ->
+            publics.single { it.getAttribute("type") == "string" && it.getAttribute("name") == name }.getAttribute("id").removePrefix("0x").toLong(16).toInt()
+        }
+        val renderers = classes.methodsWhere { _, m ->
+            AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && m.params().firstOrNull() == stateType &&
+                m.instructions().any { it.opcode == Opcode.INSTANCE_OF && ((it as ReferenceInstruction).reference as TypeReference).type == enabledClass.type }
+        }.filter { (cls, _) -> !cls.type.startsWith("Lapp/template/") }
+        check(renderers.isNotEmpty()) { "no static renderer takes a $stateType and tests for ${enabledClass.type}" }
+        for ((cls, renderer) in renderers) {
+            val label = "${cls.type}.${renderer.name}(${renderer.params().joinToString()})"
+            val insns = renderer.instructions()
+            val first = renderer.implementation!!.registerCount - renderer.params().sumOf { if (it == "J" || it == "D") 2 else 1 }
+            val call = insns[0]
+            check(call.opcode == Opcode.INVOKE_STATIC_RANGE && call.call()?.parameterTypes?.map(CharSequence::toString) == listOf(stateType) &&
+                call.call()?.returnType == stateType && call.arguments() == listOf(first) &&
+                insns[1].opcode == Opcode.MOVE_RESULT_OBJECT && (insns[1] as OneRegisterInstruction).registerA == first
+            ) { "$label does not pass its state through a ($stateType)$stateType helper first; got ${call.opcode} ${call.call()}" }
+            val h = helperOf(call, label).instructions()
+            check(h[0].opcode == Opcode.INSTANCE_OF && ((h[0] as ReferenceInstruction).reference as TypeReference).type == enabledClass.type &&
+                h.any { it.opcode == Opcode.IGET && it.field()?.name == titleRes.name && it.field()?.definingClass == enabledClass.type }
+            ) { "$label: the banner helper does not read titleRes of an Enabled state" }
+            val literals = h.filter { it.opcode == Opcode.CONST }.map { (it as NarrowLiteralInstruction).narrowLiteral }
+            check(literals == titleIds) { "$label: the banner helper compares titleRes with $literals, expected $titleIds" }
+            val ask = h.indexOfFirst { it.call()?.name == "isEnabled" }
+            check(h[ask - 1].stringOrNull() == HIDE_PROFILE_PREMIUM_BANNER && isEnabledCall(h[ask], 0)) {
+                "$label: the banner helper does not ask $HIDE_PROFILE_PREMIUM_BANNER"
+            }
+            val disabled = h[ask + 3].field()
+            check(h[ask + 2].opcode == Opcode.IF_EQZ && h[ask + 3].opcode == Opcode.SGET_OBJECT && disabled != null &&
+                disabled.type == disabled.definingClass && byType[disabled.type]?.interfaces?.contains(stateType) == true &&
+                h[ask + 4].opcode == Opcode.RETURN_OBJECT && h.last().opcode == Opcode.RETURN_OBJECT
+            ) { "$label: the banner helper does not return the Disabled object while the switch is on" }
+            check(byType.getValue(disabled.type).methods.single { it.name == "toString" }.strings() == listOf("Disabled")) {
+                "$label: ${disabled.type} is not the Disabled state"
             }
         }
     }
