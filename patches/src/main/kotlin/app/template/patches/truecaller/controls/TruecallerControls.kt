@@ -20,6 +20,7 @@ internal object TruecallerControlsCategory {
     const val CALL_LOG = "Call log & search"
     const val CONTACTS = "Contacts & business"
     const val CALL_SCREEN = "Call screen"
+    const val PROFILE_MENU = "Profile menu"
 }
 
 /**

@@ -2366,6 +2366,21 @@ object Constants {
     //   (stock 16dp), it gets marginBottom 8dp (stock none) and its three buttons are 40dp high
     //   (stock @dimen/notification_call_button_big_height, 44dp, a dimen left untouched): ~91dp.
     //   The stock layouts and the collapsed copy (44dp icon buttons, within its 48dp) are unchanged.
+    // 2026-11-03 (#120, 26.42.5; TruecallerSmokeTest + CLI without -f + apkanalyzer smali, NOT run
+    //   on a device: the profile menu needs a registered account): "Hide profile menu items"
+    //   (opt-in) registers five Patch settings switches, all off by default, in "Profile menu". The
+    //   menu (UsersHomeActivity) keeps only MenuItemUiState rows with isVisible; each of its
+    //   constructors (toString "MenuItemUiState(item=", zrr) passes (item, isVisible) through
+    //   zrr.morpheProfileRowVisible, which answers false for the kept MenuItem constants
+    //   ANDROID_WATCH / INVITE_FRIENDS / CONNECT_WITH_US / HELP while their switch is on.
+    //   MenuItemsViewState ("MenuItemsViewState(groups=", esr) drops empty groups through
+    //   esr.morpheDropEmptyProfileGroups while any row switch is on, so no section divider is left.
+    //   The Premium banner is the "Enabled(iconRes=" row state (fmj) titled
+    //   usershome_premium_section_premium_member / _upgrade_to_premium (ids via resourceId; a
+    //   builder of fmj with each id must exist): every static renderer whose first parameter is the
+    //   row state interface (gmj) and that tests for fmj (svy.f) starts with
+    //   fmj.morpheHidePremiumBanner, which returns the "Disabled" object (emj) instead. The Settings
+    //   Wear OS row stays with "Hide Wear OS settings"; the featurePromptWearApp toggle is untouched.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",

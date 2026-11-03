@@ -19,7 +19,8 @@ the old patch name reset to the default (on).
 Status (2026-11-03): Truecaller 26.42.5 ships it. Its "Patch settings" patch (default on) adds a
 "Patch settings" row below Help on the main Settings screen, and 20 converted Truecaller patches
 are runtime switches (`truecaller/controls/TruecallerControls.kt` and the patches that use
-`truecallerControls.featurePatch`; list in [Truecaller features](#truecaller-features)). Sofascore
+`truecallerControls.featurePatch`), plus five profile menu switches from "Hide profile menu items"
+(list in [Truecaller features](#truecaller-features)). Sofascore
 26.10.19 ships it too: a "Patch settings" row after Preferences on its Settings screen, with
 switches for sports, match tabs, pop-ups, promo sections, animation speed, widget refresh and
 three converted patches
@@ -274,8 +275,9 @@ The usual rules still apply (AGENTS.md):
 
 ## Truecaller features
 
-Truecaller 26.42.5 (2026-11-03). Every switch defaults on; its Manager patch keeps its name,
-description and default. A shipped id is never renamed.
+Truecaller 26.42.5 (2026-11-03). Every converted switch defaults on; its Manager patch keeps its
+name, description and default. The profile menu switches (marked "off") start off. A shipped id is
+never renamed.
 
 | Feature id | Patch | Restart | Gated sites |
 |---|---|---|---|
@@ -299,6 +301,19 @@ description and default. A shipped id is never renamed.
 | `truecaller.hide_important_senders` | Hide important senders | no | LazyColumn item skip |
 | `truecaller.disable_call_button_haptics` | Disable call button haptics | no | haptic dispatch skips, drag progress (value helper) |
 | `truecaller.swap_call_buttons` | Swap call answer and decline buttons | no | offsets and call style check (value helpers), notification layouts |
+| `truecaller.hide_profile_premium_banner` | Hide profile menu items (off) | no | row state renderers (Enabled -> Disabled helper) |
+| `truecaller.hide_profile_watch` | Hide profile menu items (off) | no | MenuItemUiState isVisible store (row helper), empty-group drop |
+| `truecaller.hide_profile_invite` | Hide profile menu items (off) | no | MenuItemUiState isVisible store (row helper), empty-group drop |
+| `truecaller.hide_profile_connect` | Hide profile menu items (off) | no | MenuItemUiState isVisible store (row helper), empty-group drop |
+| `truecaller.hide_profile_help` | Hide profile menu items (off) | no | MenuItemUiState isVisible store (row helper), empty-group drop |
+
+The five profile menu switches (#120) come from one opt-in patch, "Hide profile menu items", and
+start off, so the menu (the screen the profile picture opens) is stock until the user hides a row.
+The menu builds its rows each time it opens, so a change shows the next time it opens. Each row
+switch makes the row's MenuItemUiState invisible, which the menu already filters out; while any of
+them is on, a section left without rows is dropped so no divider is left behind. The Premium banner
+switch makes the banner's row state (titled "Premium member" or "Upgrade to Premium") the Disabled
+state, which draws nothing. The Settings screen's Wear OS row is still "Hide Wear OS settings".
 
 Hide call log filters is marked restart because its row is a composable: an open call log screen
 keeps the row it composed until the screen composes it again. Swap call answer and decline buttons
