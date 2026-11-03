@@ -2275,6 +2275,14 @@ object Constants {
     //   features applied), apkanalyzer smali of every site above, aapt2 resource table (9 new
     //   layouts, stock ids unchanged) and xmltree (stock layouts decline-first, copies answer-first,
     //   copy includes point at the copies). Not run on a device (no emulator in this pass).
+    // 2026-11-03 (#116 follow-up, 26.42.5; TruecallerSmokeTest + CLI without -f + aapt2 xmltree,
+    //   NOT run on a device): with Swap call answer and decline buttons on, the Android 12+ heads-up
+    //   clipped the bottom of Truecaller's text buttons (the system caps a decorated custom view at
+    //   136dp, 96dp of content; notification_call_incoming_big needs ~95dp). In the
+    //   notification_call_incoming_big_heval_swapped copy only, the button row's marginTop is 8dp
+    //   (stock 16dp), it gets marginBottom 8dp (stock none) and its three buttons are 40dp high
+    //   (stock @dimen/notification_call_button_big_height, 44dp, a dimen left untouched): ~91dp.
+    //   The stock layouts and the collapsed copy (44dp icon buttons, within its 48dp) are unchanged.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
