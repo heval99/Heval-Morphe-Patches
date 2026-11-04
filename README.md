@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.2.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.2.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**244** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-04
+> **[v2.2.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.2.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**244** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-04
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 

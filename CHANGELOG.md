@@ -1,3 +1,88 @@
+## 2.2.0 (2026-11-04)
+
+### 🆕 New apps
+- **GPS Map Camera Editor** `1.0.31` - Disable ads, Disable license check, Enable Premium, GmsCore support, Spoof signature
+
+### 📱 Brave Browser `1.98.63`
+- New: DNS filter
+
+### 📱 Firefox `159.0`
+- New: DNS filter
+
+### 📱 Firefox Focus `159.0.1`
+- New: DNS filter
+- Fixed: Publish the add-on menu bridge safely across threads
+
+### 📱 FotMob `241.18134.20261030`
+- New: Faster animations, Hide competitions, Hide countries, Patch settings, Slower live refresh, Turn off animations
+- Fixed: Use the device font in Use system font
+- Fixed: Resolve the device font once and record the font hooks
+- New: Add Patch settings, animation and refresh switches, and lighter startup
+- Fixed: Mark bundled leagues loaded only after parsing
+
+### 📱 Sofascore `26.10.26`
+- New: Animation speed, Hide AI insights, Hide competitions, Hide countries, Hide match tabs, Hide promo pop-ups, Hide promo sections, Hide sports, Patch settings, Slower widget refresh
+- New: Add Heval Controls with sport, match tab and promo switches
+- New: Add animation and widget refresh switches, and lighter startup
+- Fixed: Hide teams and players of hidden countries in search
+- Fixed: Hide players of hidden countries and keep country names in the picker
+
+### 📱 Tasker `6.7.8`
+- New: GmsCore support
+- New: Add GmsCore support for Google sign-in
+
+### 📱 Truecaller `26.43.5`
+- New: Hide profile menu items, Patch settings
+- New: Swap the buttons in the incoming call notification too
+- New: Add Heval Controls
+- Fixed: Keep Heval Controls patches on Root Mount installs
+- New: Add tab, call log and call screen switches to Heval Controls
+- Fixed: Stop the swapped call notification cutting off its buttons
+- New: Add Hide profile menu items ([#120](https://github.com/heval99/Heval-Morphe-Patches/issues/120))
+- Fixed: Make the profile Premium banner helper callable from its renderers
+
+### ⬆️ Updated apps
+| App | From | To |
+|---|---|---|
+| 365Scores | `14.9.8` | `15.0.0` |
+| BeSoccer | `6.7.0` | `6.7.1` |
+| Brave Browser | `1.98.62` | `1.98.63` |
+| Duplila | `5.3` | `5.4` |
+| Firefox | `158.0.2` | `159.0` |
+| Firefox Focus | `158.0.2` | `159.0.1` |
+| Flashscore | `26.10.2` | `26.11.4` |
+| FotMob | `240.17974.20261023` | `241.18134.20261030` |
+| Futbin | `27.08` | `27.10` |
+| jetAudio | `13.1.2` | `13.2.0` |
+| Librera | `9.4.20` | `10.0.22` |
+| LuckyClick | `4.8` | `2026/10/22` |
+| mail.com | `9.19.0` | `9.20.2` |
+| MyFitnessPal | `26.43.0` | `26.44.0` |
+| Niagara Launcher | `1.16.33` | `1.16.35` |
+| OneFootball | `15.147.0` | `15.148.0` |
+| RareCam | `1.0.92` | `1.0.95` |
+| Shazam | `16.65.0-261022` | `16.66.0-261029` |
+| SmartWOD Timer | `1.46.9` | `1.47.1` |
+| Sofascore | `26.10.19` | `26.10.26` |
+| Tasker | `6.6.20` | `6.7.8` |
+| The Guardian | `6.239.23439` | `6.241.23504` |
+| Truecaller | `26.42.5` | `26.43.5` |
+| TV Smarters Player Expert | `11.4.0` | `11.6.1` |
+| WeMuslim | `3.5.4` | `3.5.5` |
+| Yahoo Sports | `12.26.1` | `12.27.0` |
+
+### 🗑️ Removed apps
+- LibrePods
+
+### 🔧 Other
+- New: Rename Heval Controls to Patch settings
+- New: Add list pickers to Patch settings
+- New: Show country flags in the Hidden countries pickers
+- New: Load real flag images in the country pickers
+- New: Add DNS filter for Brave, Firefox and Firefox Focus ([#121](https://github.com/heval99/Heval-Morphe-Patches/issues/121))
+
+**Download:** [patches-2.2.0.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.2.0/patches-2.2.0.mpp)
+
 ## 2.2.0-dev.5 (2026-11-04)
 
 ### 📱 Firefox Focus `159.0.1`
