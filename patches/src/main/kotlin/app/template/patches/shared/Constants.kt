@@ -522,7 +522,9 @@ object Constants {
         // 2026-10-28: updated to 26.43.0 (versionCode 51626, arm64-v8a). Both patches apply
         // unchanged: smoke test green, CLI without -f applied both, and the patched Datadog start
         // decision decompiles to Skip(FLAG_DISABLED).
-        targets = listOf(AppTarget(version = "26.43.0", versionCode = 51626))
+        // 2026-11-04: updated to 26.44.0 (versionCode 51651; Play arm64 split bundle merged, same
+        // signer). Both patches apply unchanged: smoke test green and CLI without -f applied both.
+        targets = listOf(AppTarget(version = "26.44.0", versionCode = 51651))
     )
 
     // Verified 2026-09-18 against club.boxbox.android 5.4.9 (versionCode 251, the current
@@ -954,13 +956,20 @@ object Constants {
     // isGooglePlayServicesAvailable, location, Home/Matter, Maps, Dynamite, FCM and the c2dm
     // manifest entries are untouched. Smoke test (bytecode + manifest) and a CLI run without -f;
     // 2026-11-03 emulator (patched build of the release batch, stock control): Google Drive backup sign-in showed MicroG RE's account picker and signed in.
+    // 2026-11-04: updated to version 6.7.8 (versionCode 5454; APKMirror universal APK, arm64-v8a +
+    // armeabi-v7a, same CN=Lee Wilmot signer; paid, so not on the spare Play account). The startup
+    // result helper now takes (result, Context, boolean) instead of (result, boolean, Context), so
+    // LicenseResultFingerprint accepts either order; the other anchors are unchanged (R8 renames
+    // only: rf.w$a -> nt.x$a, rf.a0 -> nt.b0). TaskerSmokeTest passes, including every login-only
+    // GmsCore assertion (the four sign-in actions routed, location/Home/telemetry/credentials
+    // clients, FCM, Dynamite and the c2dm manifest entries untouched). Emulator not re-run.
     val COMPATIBILITY_TASKER = Compatibility(
         name = "Tasker",
         packageName = "net.dinglisch.android.taskerm",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x4CAF50,
         signatures = setOf("973fe25b9be28fb7436d49582b04277767c852539be31783d134a55621b6636d"), // CN=Lee Wilmot
-        targets = listOf(AppTarget(version = "6.6.20", versionCode = 5445))
+        targets = listOf(AppTarget(version = "6.7.8", versionCode = 5454))
     )
 
     // Verified 2026-09-17 against org.kman.AquaMail 2.7.0 (versionCode 200700061) from
@@ -1349,13 +1358,16 @@ object Constants {
     // Club Import screens add no ad paths. 27.06 dropped (latest verified version only).
     // Smoke-tested and CLI decompile-checked on 27.08 (every hook, nothing dropped). Not runtime-
     // tested, same as 27.06: on the emulator the app doesn't get past its first screen.
+    // 2026-11-04: updated to version 27.10 (versionCode 7010; Play base APK with all four ABIs,
+    // signer O=FUTBIN 1cf7ff75...e904). Disable ads applies unchanged (owner: keep the current
+    // patches); FutbinSmokeTest green and CLI without -f applied it.
     val COMPATIBILITY_FUTBIN = Compatibility(
         name = "Futbin",
         packageName = "com.futbin",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x26A69A,
         signatures = setOf("1cf7ff75f2e364c2e671321af98f86d35979fe8f3575da508b90d530df75e904"), // CN=Dirk Duncan, O=FUTBIN
-        targets = listOf(AppTarget(version = "27.08", versionCode = 7008))
+        targets = listOf(AppTarget(version = "27.10", versionCode = 7010))
     )
 
     // Verified 2026-09-27 against com.pocketcolorwheel.PCW 3.26 (versionCode 57,
@@ -1708,8 +1720,10 @@ object Constants {
             // unchanged). The real matcher resolves all 11 Shazam fingerprints uniquely (4 R8
             // renames only) and ShazamSmokeTest passes; 16.63.0 dropped (latest verified only).
             // 2026-10-28: updated to 16.65.0-261022 (versionCode 1606500, arm64-v8a, same signer).
-        // All four patches apply unchanged: smoke test green and CLI without -f applied them.
-        AppTarget(version = "16.65.0-261022", versionCode = 1606500),
+            // 2026-11-04: updated to 16.66.0-261029 (versionCode 1606600; Play arm64 split bundle
+            // merged, same signer). All four patches apply unchanged: smoke test green and CLI
+            // without -f applied them.
+            AppTarget(version = "16.66.0-261029", versionCode = 1606600),
         )
     )
 
@@ -2850,13 +2864,20 @@ object Constants {
     // renders with all navigation, the Quran opens, there are no AndroidRuntime or libc fatal
     // errors, and the ad and telemetry SDKs log no activity. The Yami mini-program (the path whose
     // RSA key is deliberately empty) was not exercised; it fails closed.
+    // 2026-11-04: updated to version 3.5.5 (versionCode 151; Play arm64 split bundle merged, same
+    // signer). Every patch applies unchanged: WeMuslimSmokeTest green and CLI without -f applied
+    // them. AthanEncryption is called from 16 methods, as in 3.5.4, and only through getters
+    // with a dumped value (the patch fails on any other), and k29/k30 still equal the Firebase
+    // project_id/google_api_key resources. The other
+    // dumped values could not be re-checked statically (libagora-ey.so stores them obfuscated),
+    // so this bump still needs a runtime check.
     val COMPATIBILITY_WEMUSLIM = Compatibility(
         name = "WeMuslim",
         packageName = "com.fyxtech.muslim",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00A63B,
         signatures = setOf("5d8c442d9373ce3ce62410957a6ae3ab3a559097ff1e83f59888cf78fcdbee0c"), // CN=athan, O=yalla
-        targets = listOf(AppTarget(version = "3.5.4", versionCode = 149))
+        targets = listOf(AppTarget(version = "3.5.5", versionCode = 151))
     )
 
     // Added 2026-10-14 from the Reddit request queue: ads only. Pro and paywalled content are
@@ -3419,13 +3440,16 @@ object Constants {
     // IapUpsellingFeature toggle with the per-account suspend check
     // UpsellFeatureImpl.isIapUpsellEnabled(Account, Continuation), so the test's "left untouched"
     // check now looks at that method; it passes on patcher 2.0.0.
+    // 2026-11-04: updated to version 9.20.2 (versionCode 405218; Play arm64 split bundle merged,
+    // same signer). All four patches apply unchanged: MailcomSmokeTest green and CLI without -f
+    // applied them.
     val COMPATIBILITY_MAILCOM = Compatibility(
         name = "mail.com",
         packageName = "com.mail.mobile.android.mail",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x283167, // The adaptive icon's navy background.
         signatures = setOf("07ada0886afd11865d631373b2078ee6d15d8c4769f622b890bcbef778ccdfbe"), // CN=Raimund Rix, O=1&1 Mail & Media GmbH
-        targets = listOf(AppTarget(version = "9.19.0", versionCode = 405215))
+        targets = listOf(AppTarget(version = "9.20.2", versionCode = 405218))
     )
 
     // Updated 2026-10-23 to com.eurosport 8.34.1 (versionCode 113929; replaces 8.33.0 /

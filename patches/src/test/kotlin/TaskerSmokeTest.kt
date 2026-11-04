@@ -45,7 +45,7 @@ class TaskerSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "6.6.20",
+            version = "6.7.8",
             patchNames = setOf("Enable Full Version", "GmsCore support"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -94,11 +94,12 @@ class TaskerSmokeTest {
         }
         assertForcedBoolean(facade, expected = true, label = "${facade.definingClass}.${facade.name}(Context)")
 
-        // 4. Startup check result helper: reads LicenseStatus.Retry and Licensed.
+        // 4. Startup check result helper: reads LicenseStatus.Retry and Licensed. The boolean and
+        // Context follow the result holder in either order (6.7.8 swapped them).
         val result = manager.methods.single { method ->
             method.hasFlags(AccessFlags.PRIVATE, AccessFlags.STATIC, AccessFlags.FINAL) &&
                 method.returnType == "Z" && method.params().size == 3 &&
-                method.params().drop(1) == listOf("Z", CONTEXT) &&
+                method.params().drop(1).toSet() == setOf("Z", CONTEXT) &&
                 method.instructions().any {
                     val ref = (it as? ReferenceInstruction)?.reference as? FieldReference
                     ref?.definingClass == LICENSE_STATUS && ref.name == "Retry"
