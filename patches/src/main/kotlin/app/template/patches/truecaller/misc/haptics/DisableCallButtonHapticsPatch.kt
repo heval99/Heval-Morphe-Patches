@@ -220,7 +220,8 @@ private fun MutableMethod.hapticDispatch(instructions: List<BuilderInstruction>,
 /**
  * The switch case of the R8-merged lambda that the incoming call screen [composable] passes as the
  * function reference named [handler]: the lambda's invoke method and the instruction range of the
- * case, from its switch target to its first return or throw.
+ * case, from its switch target to its first return or throw. A case R8 outlined into a private
+ * method of the lambda gives that method and its range up to its first return or throw instead.
  */
 private fun BytecodePatchContext.swipeHandlerCase(
     composable: MutableMethod,
@@ -271,10 +272,34 @@ private fun BytecodePatchContext.swipeHandlerCase(
     val payload = (body[switch] as BuilderOffsetInstruction).target.location.instruction as? BuilderSwitchPayload
         ?: throw PatchException("${invoke.label()}: the case switch has no payload")
     val start = payload.switchElements.firstOrNull { it.key == case }?.target?.location?.index ?: (switch + 1)
-    val end = (start until body.size).firstOrNull { index ->
-        body[index].opcode.let { it == Opcode.RETURN_OBJECT || it == Opcode.RETURN_VOID || it == Opcode.THROW }
-    } ?: throw PatchException("${invoke.label()}: case $case never returns")
-    return invoke to (start..end)
+    val end = body.firstReturnFrom(start) ?: throw PatchException("${invoke.label()}: case $case never returns")
+
+    // R8 may outline a case into a private method of the lambda (26.43.5: the
+    // onDraggingProgressChanged case is only invoke-direct {this, arg}, b(Object)Object;
+    // move-result-object; return-object). Follow that delegate, so the case body is its body.
+    val delegate = body[start].takeIf { end == start + 2 }?.let { call ->
+        val target = (call as? ReferenceInstruction)?.reference as? MethodReference
+        val result = body[start + 1] as? OneRegisterInstruction
+        val returned = body[end] as? OneRegisterInstruction
+        target.takeIf {
+            (call.opcode == Opcode.INVOKE_DIRECT || call.opcode == Opcode.INVOKE_DIRECT_RANGE) &&
+                target?.definingClass == lambda.type && target.name != "<init>" &&
+                body[start + 1].opcode == Opcode.MOVE_RESULT_OBJECT && body[end].opcode == Opcode.RETURN_OBJECT &&
+                result?.registerA == returned?.registerA
+        }
+    } ?: return invoke to (start..end)
+    val outlined = lambda.methods.singleOrNull { method ->
+        method.name == delegate.name && method.returnType == delegate.returnType &&
+            method.parameterTypes.map(CharSequence::toString) == delegate.parameterTypes.map(CharSequence::toString) &&
+            method.implementation != null
+    } ?: throw PatchException("${invoke.label()}: case $case delegates to $delegate, which ${lambda.type} does not implement")
+    val outlinedEnd = outlined.instructions.toList().firstReturnFrom(0)
+        ?: throw PatchException("${outlined.label()}: the outlined case $case never returns")
+    return outlined to (0..outlinedEnd)
+}
+
+private fun List<Instruction>.firstReturnFrom(start: Int): Int? = (start until size).firstOrNull { index ->
+    this[index].opcode.let { it == Opcode.RETURN_OBJECT || it == Opcode.RETURN_VOID || it == Opcode.THROW }
 }
 
 private fun Instruction.argumentRegisters(): List<Int>? = when (this) {

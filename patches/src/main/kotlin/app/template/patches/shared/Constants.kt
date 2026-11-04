@@ -2470,13 +2470,34 @@ object Constants {
     //   row state interface (gmj) and that tests for fmj (svy.f) starts with
     //   fmj.morpheHidePremiumBanner, which returns the "Disabled" object (emj) instead. The Settings
     //   Wear OS row stays with "Hide Wear OS settings"; the featurePromptWearApp toggle is untouched.
+    // 2026-11-04: updated to version 26.43.5 (versionCode 2643005; APKMirror arm64-v8a +
+    //   armeabi-v7a bundle merged with APKEditor, same CN=truecaller cert 7712b5f2...13ae). Two
+    //   patches needed a fix, the rest apply unchanged:
+    //   - Disable call button haptics: R8 outlined the onDraggingProgressChanged case of the merged
+    //     function reference lambda (pc6) into a private b(Object)Object, so the case is now only
+    //     invoke-direct {this, arg}, b; move-result-object; return-object. The case lookup follows
+    //     such a delegate to a method of the lambda itself and searches its body for the 0.1f
+    //     compare (anchors unchanged: the kept handler name, the function reference constructor
+    //     shape and the 0.1f float compare).
+    //   - Hide business media: BusinessDetailsModel (a57) gained a trailing contactId (Long), so the
+    //     constructor is matched by its six leading parameters (exactly one must match); brandMedia
+    //     is still p6.
+    //   Verified: TruecallerSmokeTest and HevalControlsTest (18) pass; the CLI without -f applies
+    //   all 30 Truecaller patches; apkanalyzer shows pc6.b's progress going through
+    //   morpheCallButtonDragProgress(F)F before cmpg-float, a57.<init> starting with
+    //   morpheBrandMedia(p6), the same overrides (26 gated) in all three resolvers (nso.a, s8k.a,
+    //   zuq.a), CategoriesFragment.onViewCreated calling HevalControlsEntry, 6 SwapCallButtons.layout
+    //   calls in bwd.<init>, and the profile menu helpers on jxr / oxr / opj (called from o6z.f).
+    //   Rule 12: all 307,364 string values are identical to stock; the only table changes are the
+    //   same 36 case-collision renames as before and the 9 _heval_swapped layouts. Not run on a
+    //   device (owner tests on the phone after the pre-release).
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0087FF,
         signatures = setOf("7712b5f255f2c85b8b164519116ac4381bb9a3582dcdd2b73ac06ee7464913ae"), // CN=truecaller
-        targets = listOf(AppTarget(version = "26.42.5", versionCode = 2642005))
+        targets = listOf(AppTarget(version = "26.43.5", versionCode = 2643005))
     )
 
     // Verified 2026-10-13 against com.hevy 3.1.16 (versionCode 3325935, XAPK base + arm64 + en +
@@ -3232,13 +3253,21 @@ object Constants {
     // Crashlytics enable method's return-void, the analytics read forced to Boolean.TRUE and the
     // (Z,Z,Z) constructor starting with const/4 p1/p2 = 1; resources.arsc and AndroidManifest.xml
     // stay byte-identical. 2026-11-03 emulator: cold starts OK, settings no longer say "Free version", the Pro screen says "Thank you for your support."
+    // 2026-11-04: updated to version 1.16.35 (versionCode 1641; APKPure universal APK with all four
+    // ABIs, since Google Play still served 1.16.34 to our account; same CN=Peter Huber cert
+    // ccb91800...98ed). Both patches apply unchanged: NiagaraSmokeTest passes, the CLI (no -f)
+    // applies Disable telemetry + Enable Premium, apkanalyzer shows the six workers' doWork
+    // returning Result.success(), the Singular sender returning Unit, the Crashlytics enable
+    // method's return-void, the analytics read forced to Boolean.TRUE and the account state's
+    // (Z,Z,Z) constructor (now b/U1OKOurdkv) starting with const/4 p1/p2 = 1; resources.arsc and
+    // AndroidManifest.xml stay byte-identical. Not run on a device yet.
     val COMPATIBILITY_NIAGARA = Compatibility(
         name = "Niagara Launcher",
         packageName = "bitpit.launcher",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x03004C, // The adaptive icon's background colour (ic_launcher_background).
         signatures = setOf("ccb918002c40334b416899258de4f730a36c5d38821b3cb6fcb8c15a4b8198ed"), // CN=Peter Huber
-        targets = listOf(AppTarget(version = "1.16.34", versionCode = 1640))
+        targets = listOf(AppTarget(version = "1.16.35", versionCode = 1641))
     )
 
     // Verified 2026-10-15 against mark.via.gp 7.3.3 (versionCode 20260823, single universal

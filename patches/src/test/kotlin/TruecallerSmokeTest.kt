@@ -334,7 +334,7 @@ class TruecallerSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.42.5",
+            version = "26.43.5",
             patchNames = setOf(
                 "Enable Premium",
                 "Disable ads",
@@ -1374,8 +1374,19 @@ class TruecallerSmokeTest {
         val payload = body[addresses.indexOf(addresses[switch] + (body[switch] as OffsetInstruction).codeOffset)] as SwitchPayload
         val start = payload.switchElements.firstOrNull { it.key == case }
             ?.let { addresses.indexOf(addresses[switch] + it.offset) } ?: (switch + 1)
-        val end = (start until body.size).first { body[it].opcode in setOf(Opcode.RETURN_OBJECT, Opcode.RETURN_VOID, Opcode.THROW) }
-        return Triple("${lambda.type}.invoke case $case ($handler)", invoke, start..end)
+        val returns = setOf(Opcode.RETURN_OBJECT, Opcode.RETURN_VOID, Opcode.THROW)
+        val end = (start until body.size).first { body[it].opcode in returns }
+        // A case R8 outlined into a private method of the lambda (26.43.5: onDraggingProgressChanged
+        // is invoke-direct {this, arg}, b(Object)Object; move-result-object; return-object), as the
+        // patch follows it.
+        val delegate = body[start].call()?.takeIf {
+            end == start + 2 && it.definingClass == lambda.type && it.name != "<init>" &&
+                body[start].opcode in setOf(Opcode.INVOKE_DIRECT, Opcode.INVOKE_DIRECT_RANGE) &&
+                body[start + 1].opcode == Opcode.MOVE_RESULT_OBJECT && body[end].opcode == Opcode.RETURN_OBJECT
+        } ?: return Triple("${lambda.type}.invoke case $case ($handler)", invoke, start..end)
+        val outlined = lambda.methods.single { it.name == delegate.name && it.params() == delegate.params() && it.returnType == delegate.returnType }
+        val outlinedBody = outlined.instructions()
+        return Triple("${lambda.type}.${outlined.name} (outlined case $case, $handler)", outlined, 0..outlinedBody.indexOfFirst { it.opcode in returns })
     }
 
     private fun assertDisableCallButtonHaptics(classes: List<ClassDef>, byType: Map<String, ClassDef>) {
@@ -1565,12 +1576,13 @@ class TruecallerSmokeTest {
             m.name == "toString" && m.strings().any { it.startsWith("BusinessDetailsModel(description=") } &&
                 ", brandMedia=" in m.strings()
         }
-        val constructor = modelClass.method(
-            "<init>",
-            listOf("Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", CONTACT_TYPE, "Ljava/lang/String;", "Ljava/util/ArrayList;"),
-        )
+        // The six fields lead the parameter list (26.43.5 appended a contactId Long).
+        val leading = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", CONTACT_TYPE, "Ljava/lang/String;", "Ljava/util/ArrayList;")
+        val constructor = modelClass.methods.single { it.name == "<init>" && it.implementation != null && it.params().take(6) == leading }
         val label = "${modelClass.type}.<init>"
-        val p6 = constructor.implementation!!.registerCount - 1 // this + 6 single-register parameters, p6 last
+        // p0 = v(registers - ins); this + the six object parameters before brandMedia make it p6.
+        val ins = 1 + constructor.params().sumOf { if (it == "J" || it == "D") 2L else 1L }.toInt()
+        val p6 = constructor.implementation!!.registerCount - ins + 6
         val insns = constructor.instructions()
         val call = insns.getOrNull(0)
         check(call?.opcode == Opcode.INVOKE_STATIC_RANGE && call.call()?.definingClass == modelClass.type &&

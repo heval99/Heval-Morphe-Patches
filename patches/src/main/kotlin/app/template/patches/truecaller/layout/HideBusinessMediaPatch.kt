@@ -34,14 +34,18 @@ val hideBusinessMediaPatch = truecallerControls.featurePatch(
     default = false,
 ) {
     // Validate both hook sites before the first edit.
+    // The six fields are the constructor's leading parameters; 26.43.5 appended a contactId (Long),
+    // so later parameters are allowed. brandMedia stays p6.
     val modelClass = BusinessDetailsModelToStringFingerprint.classDef
-    val constructor = modelClass.methods.firstOrNull { method ->
+    val constructors = modelClass.methods.filter { method ->
         method.name == "<init>" && method.implementation != null &&
-            method.parameterTypes.map(CharSequence::toString) == listOf(
+            method.parameterTypes.map(CharSequence::toString).take(6) == listOf(
                 "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", CONTACT_TYPE,
                 "Ljava/lang/String;", ARRAY_LIST,
             )
-    } ?: throw PatchException("${modelClass.type} has no (String, String, String, ContactType, String, ArrayList) constructor")
+    }
+    val constructor = constructors.singleOrNull()
+        ?: throw PatchException("${modelClass.type} has ${constructors.size} (String, String, String, ContactType, String, ArrayList, ...) constructors, expected one")
     if (modelClass.methods.any { it.name == BRAND_MEDIA_HELPER }) throw PatchException("${modelClass.type} already has $BRAND_MEDIA_HELPER")
     val screen = BusinessDetailsScreenFingerprint.method
     if (screen.parameterTypes[1].toString() != modelClass.type) {
