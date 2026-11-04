@@ -129,9 +129,10 @@ final class CountryData {
         if (loaded || context == null) return;
         synchronized (CountryData.class) {
             if (loaded) return;
-            loaded = true;
             loadBundled(context);
             loadSaved(context);
+            // Only after parsing: the unlocked fast path above must never see half-filled maps.
+            loaded = true;
         }
     }
 
