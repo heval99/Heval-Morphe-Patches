@@ -2869,8 +2869,9 @@ object Constants {
     // them. AthanEncryption is called from 16 methods, as in 3.5.4, and only through getters
     // with a dumped value (the patch fails on any other), and k29/k30 still equal the Firebase
     // project_id/google_api_key resources. The other
-    // dumped values could not be re-checked statically (libagora-ey.so stores them obfuscated),
-    // so this bump still needs a runtime check.
+    // dumped values are stored obfuscated in libagora-ey.so, but that library is byte-identical in
+    // 3.5.4 and 3.5.5 (arm64 SHA-256 0c51b2c3...a089, both Play builds), so the dumped values still
+    // hold. Not run on the emulator.
     val COMPATIBILITY_WEMUSLIM = Compatibility(
         name = "WeMuslim",
         packageName = "com.fyxtech.muslim",

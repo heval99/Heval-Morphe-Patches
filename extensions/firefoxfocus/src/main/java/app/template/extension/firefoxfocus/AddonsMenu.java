@@ -46,7 +46,7 @@ import kotlin.jvm.functions.Function0;
  *
  * <p>Focus and Android Components classes are reached by reflection: R8 narrows their
  * constructors per release, so the StandardMenuItem constructor is filled by parameter type. Any
- * mismatch leaves the menu as Focus built it and is logged once.
+ * mismatch leaves the menu as Focus built it and is logged (a failed Api lookup only once).
  */
 final class AddonsMenu {
     private static final String GROUP_ID = "morphe_addons";
@@ -56,7 +56,7 @@ final class AddonsMenu {
     private static final String MANAGER_TITLE = "Extensions";
     private static final int ICON_DP = 24;
 
-    private static Api api;
+    private static volatile Api api;
     private static boolean apiFailed;
 
     // Add-on icons from GeckoView, by add-on id. Loaded once per id; a menu built before an icon
