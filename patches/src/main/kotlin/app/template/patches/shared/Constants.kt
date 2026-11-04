@@ -2998,13 +2998,27 @@ object Constants {
     // 11 methods plus the manifest change, no string values changed (rule 12). The resource
     // rebuild renames 4 case-colliding id names (appBar/appbar, checkBox/checkbox) to id_0x...;
     // no code looks them up by name. Emulator not re-run for this bump.
+    // 2026-11-04: updated to version 6.241.23504 (versionCode 23504; Play download via gplaydl,
+    // base + arm64 config splits merged, same signer 4965429e...). Since 6.240 R8 renames most of
+    // the GMA SDK (LoadAdError is lt7, AdListener tc, onAdFailedToLoad tc.b, BaseAdView.loadAd b),
+    // so the old prologue failed on "Could not find class LoadAdError". The app's ad funnel is
+    // unchanged: the single load method (hl0.f(jd, AdManagerAdView), same three strings) still
+    // makes the app's only Amazon APS request (DTBAdRequest) and the only GMA load; its callers are
+    // AdvertCardView, the interstitial page and the article MPU runnable. Disable ads step 1 now
+    // reads the error type, its 5-arg constructor, getAdListener and the listener's failure method
+    // from the method's own "No consent given for google ads" block and builds the same prologue
+    // from them; every AdListener subclass ignores the error code. ShouldLoadAds (h8c.a) is
+    // unchanged. FingerprintProbe: all ten guardian fingerprints OK-unique. GuardianSmokeTest
+    // passes (it reads the types the same way); CLI (no -f) applies all 3 patches; apkanalyzer
+    // shows the prologue (getAdListener on p2, new lt7(3, "Ads disabled", ...), tc.b, return-void)
+    // and h8c.a returning false. Emulator not run.
     val COMPATIBILITY_GUARDIAN = Compatibility(
         name = "The Guardian",
         packageName = "com.guardian",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x052962, // Guardian navy.
         signatures = setOf("4965429ead99251c84c2d557d4e6f36c7bc3b35c1ea18e1996bcca13e55a9e7d"), // CN=Android, O=Guardian News and Media
-        targets = listOf(AppTarget(version = "6.239.23439", versionCode = 23439))
+        targets = listOf(AppTarget(version = "6.241.23504", versionCode = 23504))
     )
 
     // Updated 2026-10-23 to com.yahoo.mobile.client.android.sportacular 12.26.1 (versionCode
