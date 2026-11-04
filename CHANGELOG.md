@@ -1,3 +1,29 @@
+## 2.2.0-dev.5 (2026-11-04)
+
+### 📱 Firefox Focus `159.0.1`
+- Fixed: Publish the add-on menu bridge safely across threads
+
+### ⬆️ Updated apps
+| App | From | To |
+|---|---|---|
+| Duplila | `5.3` | `5.4` |
+| Firefox Focus | `158.0.2` | `159.0.1` |
+| Flashscore | `26.10.2` | `26.11.4` |
+| FotMob | `240.17974.20261023` | `241.18134.20261030` |
+| Futbin | `27.08` | `27.10` |
+| Librera | `9.4.20` | `10.0.22` |
+| mail.com | `9.19.0` | `9.20.2` |
+| MyFitnessPal | `26.43.0` | `26.44.0` |
+| Niagara Launcher | `1.16.34` | `1.16.35` |
+| Shazam | `16.65.0-261022` | `16.66.0-261029` |
+| Sofascore | `26.10.19` | `26.10.26` |
+| Tasker | `6.6.20` | `6.7.8` |
+| The Guardian | `6.239.23439` | `6.241.23504` |
+| Truecaller | `26.42.5` | `26.43.5` |
+| WeMuslim | `3.5.4` | `3.5.5` |
+
+**Download:** [patches-2.2.0-dev.5.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.2.0-dev.5/patches-2.2.0-dev.5.mpp)
+
 ## 2.2.0-dev.4 (2026-11-04)
 
 ### 📱 Brave Browser `1.98.63`
