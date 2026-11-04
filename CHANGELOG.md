@@ -1,3 +1,28 @@
+## 2.2.0-dev.4 (2026-11-04)
+
+### 📱 Brave Browser `1.98.63`
+- New: DNS filter
+
+### 📱 Firefox `159.0`
+- New: DNS filter
+
+### 📱 Firefox Focus `158.0.2`
+- New: DNS filter
+
+### 📱 FotMob `240.17974.20261023`
+- New: Hide competitions
+- Fixed: Mark bundled leagues loaded only after parsing
+
+### 📱 Sofascore `26.10.19`
+- New: Hide competitions
+
+### 🔧 Other
+- New: Show country flags in the Hidden countries pickers
+- New: Load real flag images in the country pickers
+- New: Add DNS filter for Brave, Firefox and Firefox Focus ([#121](https://github.com/heval99/Heval-Morphe-Patches/issues/121))
+
+**Download:** [patches-2.2.0-dev.4.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.2.0-dev.4/patches-2.2.0-dev.4.mpp)
+
 ## 2.2.0-dev.3 (2026-11-03)
 
 ### 🆕 New apps

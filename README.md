@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.2.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.2.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**239** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-03
+> **[v2.2.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.2.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**244** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-04
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -61,13 +61,13 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/com.eurosport.png" width="20" height="20" alt=""> | **Eurosport** | 🚫 🛡️ 🧩 3 | `8.34.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.eurosport) |
 | <img src="assets/icons/eu.livesport.FlashScore_com.png" width="20" height="20" alt=""> | **Flashscore** | 🚫 🛡️ 🔕 🧩 6 | `26.10.2` | APKS | [Play](https://play.google.com/store/apps/details?id=eu.livesport.FlashScore_com) |
 | <img src="assets/icons/se.footballaddicts.livescore.png" width="20" height="20" alt=""> | **Forza Football** | 🚫 🛡️ 💎 🧩 5 | `6.15.10` | APKM | [Play](https://play.google.com/store/apps/details?id=se.footballaddicts.livescore) |
-| <img src="assets/icons/com.mobilefootie.wc2010.png" width="20" height="20" alt=""> | **FotMob** | 🚫 🛡️ 💎 🔕 🧩 14 | `240.17974.20261023` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mobilefootie.wc2010) |
+| <img src="assets/icons/com.mobilefootie.wc2010.png" width="20" height="20" alt=""> | **FotMob** | 🚫 🛡️ 💎 🔕 🧩 15 | `240.17974.20261023` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mobilefootie.wc2010) |
 | <img src="assets/icons/com.futbin.png" width="20" height="20" alt=""> | **Futbin** | 🚫 1 | `27.08` | APK | [Play](https://play.google.com/store/apps/details?id=com.futbin) |
 | <img src="assets/icons/lequipe.fr.png" width="20" height="20" alt=""> | **L'Équipe** | 🚫 🧪 1 | `10.70.0` | APKM | [Play](https://play.google.com/store/apps/details?id=lequipe.fr) |
 | <img src="assets/icons/com.livescore.png" width="20" height="20" alt=""> | **Livescore** | 🚫 1 | `10.4` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
 | <img src="assets/icons/one.cricket.app.png" width="20" height="20" alt=""> | **OneCricket** | 🚫 1 | `26.10.01` | APKM | [Play](https://play.google.com/store/apps/details?id=one.cricket.app) |
 | <img src="assets/icons/de.motain.iliga.png" width="20" height="20" alt=""> | **OneFootball** | 🚫 1 | `15.148.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
-| <img src="assets/icons/com.sofascore.results.png" width="20" height="20" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 18 | `26.10.19` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
+| <img src="assets/icons/com.sofascore.results.png" width="20" height="20" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 19 | `26.10.19` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
 | <img src="assets/icons/de.transfermarkt.v2.png" width="20" height="20" alt=""> | **Transfermarkt** | 🚫 🛡️ 2 | `4.3.3` | APKM | [Play](https://play.google.com/store/apps/details?id=de.transfermarkt.v2) |
 | <img src="assets/icons/com.yahoo.mobile.client.android.sportacular.png" width="20" height="20" alt=""> | **Yahoo Sports** | 🚫 🧩 2 | `12.27.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.sportacular) |
 
@@ -161,9 +161,9 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
-| <img src="assets/icons/com.brave.browser.png" width="20" height="20" alt=""> | **Brave Browser** | 🚫 🛡️ 💎 🔕 🧪 4 | `1.98.63` | APKM | [Play](https://play.google.com/store/apps/details?id=com.brave.browser) |
-| <img src="assets/icons/org.mozilla.firefox.png" width="20" height="20" alt=""> | **Firefox** | 🛡️ 🔕 🧩 6 | `159.0` | APK | [Play](https://play.google.com/store/apps/details?id=org.mozilla.firefox) |
-| <img src="assets/icons/org.mozilla.focus.png" width="20" height="20" alt=""> | **Firefox Focus** | 🛡️ 🔕 🧩 5 | `158.0.2` | APKM | [Play](https://play.google.com/store/apps/details?id=org.mozilla.focus) |
+| <img src="assets/icons/com.brave.browser.png" width="20" height="20" alt=""> | **Brave Browser** | 🚫 🛡️ 💎 🔕 🧩 🧪 5 | `1.98.63` | APKM | [Play](https://play.google.com/store/apps/details?id=com.brave.browser) |
+| <img src="assets/icons/org.mozilla.firefox.png" width="20" height="20" alt=""> | **Firefox** | 🛡️ 🔕 🧩 7 | `159.0` | APK | [Play](https://play.google.com/store/apps/details?id=org.mozilla.firefox) |
+| <img src="assets/icons/org.mozilla.focus.png" width="20" height="20" alt=""> | **Firefox Focus** | 🛡️ 🔕 🧩 6 | `158.0.2` | APKM | [Play](https://play.google.com/store/apps/details?id=org.mozilla.focus) |
 | <img src="assets/icons/mark.via.gp.png" width="20" height="20" alt=""> | **Via** | 🛡️ 1 | `7.3.3` | APK | [Play](https://play.google.com/store/apps/details?id=mark.via.gp) |
 
 #### 🏠 Launchers <sub>6 apps</sub>
@@ -340,7 +340,7 @@ Verified on: `6.15.10`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.mobilefootie.wc2010.png" width="16" height="16" alt=""> <b>FotMob</b> &nbsp;·&nbsp; 14 patches &nbsp;·&nbsp; <code>com.mobilefootie.wc2010</code></summary>
+<summary><img src="assets/icons/com.mobilefootie.wc2010.png" width="16" height="16" alt=""> <b>FotMob</b> &nbsp;·&nbsp; 15 patches &nbsp;·&nbsp; <code>com.mobilefootie.wc2010</code></summary>
 
 Verified on: `240.17974.20261023`
 
@@ -354,6 +354,7 @@ Verified on: `240.17974.20261023`
 | 🧩 **Faster animations** | Plays animations at twice the speed. | ➖ |
 | 🧩 **GmsCore support** | Makes Google sign-in and Google services work. Requires MicroG RE. Sign in with the Sign in with Google button. | ➖ |
 | 🧩 **Hide betting content** | Hides odds and betting content. | ➖ |
+| 🧩 **Hide competitions** | Hides the competitions you pick in Patch settings from match lists, leagues and search. | ➖ |
 | 🧩 **Hide countries** | Hides the countries you pick in Patch settings from match lists, leagues and search. | ➖ |
 | 🧩 **Patch settings** | Adds a screen to turn supported features on or off. | ✅ |
 | 🧩 **Slower live refresh** | Refreshes an open live match every 30 seconds instead of every 15. | ➖ |
@@ -413,7 +414,7 @@ Verified on: `15.148.0`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.sofascore.results.png" width="16" height="16" alt=""> <b>Sofascore</b> &nbsp;·&nbsp; 18 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
+<summary><img src="assets/icons/com.sofascore.results.png" width="16" height="16" alt=""> <b>Sofascore</b> &nbsp;·&nbsp; 19 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
 
 Verified on: `26.10.19`
 
@@ -429,6 +430,7 @@ Verified on: `26.10.19`
 | 🧩 **GmsCore support** | Makes Google sign-in and Google services work. Requires MicroG RE. | ➖ |
 | 🧩 **Hide AI insights** | Hides AI insights on match pages. | ➖ |
 | 🧩 **Hide betting content** | Hides odds and betting content. | ➖ |
+| 🧩 **Hide competitions** | Hides the competitions you pick in Patch settings from match lists, leagues and search. | ➖ |
 | 🧩 **Hide countries** | Hides the countries you pick in Patch settings from match lists, leagues and search. | ➖ |
 | 🧩 **Hide match tabs** | Adds switches to hide match page tabs. | ➖ |
 | 🧩 **Hide promo pop-ups** | Stops promotional pop-ups. | ✅ |
@@ -1006,25 +1008,27 @@ Verified on: `9.22.8`
 #### 🌐 Browsers
 
 <details>
-<summary><img src="assets/icons/com.brave.browser.png" width="16" height="16" alt=""> <b>Brave Browser</b> &nbsp;·&nbsp; 4 patches &nbsp;·&nbsp; <code>com.brave.browser</code></summary>
+<summary><img src="assets/icons/com.brave.browser.png" width="16" height="16" alt=""> <b>Brave Browser</b> &nbsp;·&nbsp; 5 patches &nbsp;·&nbsp; <code>com.brave.browser</code></summary>
 
 Verified on: `1.98.63`
 
 | Patch | What it does | Default |
 |---|---|:-:|
 | 💎 **Brave Origin** | Unlocks Brave Origin. | ✅ |
+| 🧩 **DNS filter** | Forces a family-safe DNS filter and locks the browser's Secure DNS setting. | ➖ |
 | 🚫 **Disable ads** 🧪 | Hides sponsored new tab images and the Brave Rewards ads popup. | ➖ |
 | 🛡️ **Disable telemetry** 🧪 | Disables usage analytics and crash reports. | ➖ |
 | 🔕 **Hide promotional prompts** 🧪 | Hides the recurring default browser, rating and promo prompts. | ➖ |
 
 </details>
 <details>
-<summary><img src="assets/icons/org.mozilla.firefox.png" width="16" height="16" alt=""> <b>Firefox</b> &nbsp;·&nbsp; 6 patches &nbsp;·&nbsp; <code>org.mozilla.firefox</code></summary>
+<summary><img src="assets/icons/org.mozilla.firefox.png" width="16" height="16" alt=""> <b>Firefox</b> &nbsp;·&nbsp; 7 patches &nbsp;·&nbsp; <code>org.mozilla.firefox</code></summary>
 
 Verified on: `159.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
+| 🧩 **DNS filter** | Forces a family-safe DNS filter and locks the browser's Secure DNS setting. | ➖ |
 | 🛡️ **Disable telemetry** | Disables telemetry and crash report uploads. | ✅ |
 | 🧩 **Enable about:config** | Enables about:config. | ✅ |
 | 🔕 **Hide promotional prompts** | Hides default browser, rating and promo prompts. | ✅ |
@@ -1034,13 +1038,14 @@ Verified on: `159.0`
 
 </details>
 <details>
-<summary><img src="assets/icons/org.mozilla.focus.png" width="16" height="16" alt=""> <b>Firefox Focus</b> &nbsp;·&nbsp; 5 patches &nbsp;·&nbsp; <code>org.mozilla.focus</code></summary>
+<summary><img src="assets/icons/org.mozilla.focus.png" width="16" height="16" alt=""> <b>Firefox Focus</b> &nbsp;·&nbsp; 6 patches &nbsp;·&nbsp; <code>org.mozilla.focus</code></summary>
 
 Verified on: `158.0.2`
 
 | Patch | What it does | Default |
 |---|---|:-:|
 | 🧩 **Add-on support** | Adds an Extensions menu to install and manage uBlock Origin, Violentmonkey, Tampermonkey and Dark Reader, and shows their popups. Add-ons run in private mode, like every Focus tab; their data survives Erase. Installed add-ons are checked for updates from addons.mozilla.org at most once a day. | ✅ |
+| 🧩 **DNS filter** | Forces a family-safe DNS filter and locks the browser's Secure DNS setting. | ➖ |
 | 🔕 **Disable rating prompts** | Disables the rating prompt. | ✅ |
 | 🛡️ **Disable telemetry** | Disables the usage ping and experiments. | ✅ |
 | 🧩 **Enable about:config** | Enables about:config. | ✅ |
