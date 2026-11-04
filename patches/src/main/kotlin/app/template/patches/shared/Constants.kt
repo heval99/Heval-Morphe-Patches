@@ -1139,6 +1139,20 @@ object Constants {
     // EventListActivity.onResume, and the InAppStrip model moved to
     // flashplatform/repository/inappStrip/models); both have a tested re-anchor, but the app is
     // held until Disable ads gets a new app-layer anchor (lead: the ADS_ENABLED remote-config key).
+    // 2026-11-04: target moved to 26.11.4 (versionCode 525, Play arm64 split merge, same signer
+    // 2c8830db...). FlashscoreSmokeTest applies all six patches. Disable ads now works at the
+    // app layer: the remote-config value class (ctor "USER_PREFS_CONFIG_KEY-") answers the key
+    // enum constants ADS_ENABLED and ADS_AMAZON_ENABLED with false (a second helper chained with
+    // Hide betting content's, shared code in flashscore/shared/RemoteConfigOverrides.kt);
+    // ADS_ENABLED gates AdvertZone, the zone-id resolver, the embedded list/news ad components and
+    // the screens' ad states. AdvertZone still collapses itself ("Unsupported ad provider: "), the
+    // interstitial manager (ctor prefs "ads_interstitial_display_date"/"_count") gets an empty ad
+    // unit id from its only ()String getter (its load entry returns on an empty id), and the VMAP
+    // response is still nulled. The SDK-name hooks were dropped (no MobileAds/preloader/load
+    // classes are left); the SDK may still initialise, but nothing requests an ad. Block
+    // marketing popups re-anchored: EventListActivity.onResume (holds "btnGoUrl") nulls the
+    // dialog model read back from the "dialogSupport" helper right before its null check, and the
+    // InAppStrip parser matches the model by simple name. Runtime not tested yet.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",
@@ -1149,7 +1163,7 @@ object Constants {
         appIconColor = 0x1E88E5,
         signatures = setOf("2c8830db33069e1beb410e5f37ea0949b4c5852fde108c6e3895738e07226550"), // CN=Pavel Cvetler, O=LiveSport s.r.o.
         targets = listOf(
-            AppTarget(version = "26.10.2", versionCode = 520, description = FLASHSCORE_SOURCE_NOTE),
+            AppTarget(version = "26.11.4", versionCode = 525, description = FLASHSCORE_SOURCE_NOTE),
         )
     )
 
