@@ -35,7 +35,8 @@ internal val REFLECTED_FIELDS = mapOf(
     "Lcom/fotmob/models/LeagueMatches;" to listOf("league", "Matches", "sortPriority"),
     "Lcom/fotmob/models/League;" to listOf("CountryCode", "Id", "ParentId", "CountryName", "Name", "isSuggested"),
     "Lcom/fotmob/models/Match;" to listOf("HomeTeam", "AwayTeam"),
-    "Lcom/fotmob/models/Team;" to listOf("ID"),
+    // 241 made Team a Kotlin class: the field is "id" (still serialized as "ID").
+    "Lcom/fotmob/models/Team;" to listOf("id"),
     "Lcom/fotmob/models/search/LeagueSuggestions;" to listOf("leagues"),
     "Lcom/fotmob/models/search/TeamSuggestions;" to listOf("teams"),
     "Lcom/fotmob/models/search/MatchSuggestions;" to listOf("matches"),

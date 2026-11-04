@@ -156,7 +156,7 @@ public final class CountryFilter {
     }
 
     private static int teamId(Object team) throws Exception {
-        return team == null ? 0 : field(TEAM, "ID").getInt(team);
+        return team == null ? 0 : field(TEAM, "id").getInt(team);
     }
 
     // ---------------------------------------------------------------------------------------

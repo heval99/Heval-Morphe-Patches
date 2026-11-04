@@ -104,7 +104,7 @@ class FotMobSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "240.17974.20261023",
+            version = "241.18134.20261030",
             patchNames = setOf(
                 "Disable ads", "Disable telemetry", "Enable FotMob+", "GmsCore support", "Spoof signature",
                 "Hide betting content", "Disable rating prompts", "Disable FotMob+ promo popup",
@@ -282,7 +282,7 @@ class FotMobSmokeTest {
     }
 
     // Turn off animations / Faster animations: every Settings.Global.getFloat(ContentResolver,
-    // String, float) of the app (11 methods in 240) calls AnimationSpeed.getFloat with the same
+    // String, float) of the app (11 methods in 240 and 241) calls AnimationSpeed.getFloat with the same
     // arguments; the extension keeps the direct framework call (its call-through).
     private fun assertAnimationSpeed(classes: List<ClassDef>) {
         fun MethodReference.isGetFloat(owner: String) = definingClass == owner && name == "getFloat" && returnType == "F" &&

@@ -458,9 +458,15 @@ object Constants {
             //   initialised, so click.fotmob.com OneLink deep links no longer resolve in the app;
             //   the firebase.test.lab check is untouched) and returns TRUE from
             //   EmojiCompatInitializer.create (EmojiCompat stays unconfigured).
+            // 2026-11-04: 241.18134.20261030 (versionCode 18134, Play arm64 via gplaydl, same
+            // CN=Christer Nordvik cert) replaces 240.17974.20261023. Every fingerprint still
+            // matches; one change: Team became a Kotlin class, so the field Hide countries /
+            // Hide competitions read by reflection is now "id" (still serialized as "ID", so the
+            // favourites files are unchanged). Verified: FotMobSmokeTest (all 15 patches) and a CLI
+            // run without -f with a decompile of the hook sites. Not run on the emulator.
             AppTarget(
-                version = "240.17974.20261023",
-                versionCode = 17974
+                version = "241.18134.20261030",
+                versionCode = 18134
             )
         )
     )
