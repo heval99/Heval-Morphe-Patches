@@ -154,15 +154,20 @@ val hideSportsPatch = bytecodePatch(
 
         // 3. The selected sport query. R8 loads its SQL once at the top of the shared lambda, so its
         //    sites are the prepare calls (same method as step 1) taking that register; the first
-        //    return-object after each returns the name (or null).
+        //    return-object after each returns the name (or null). Since 26.10.26 the other queries
+        //    of the lambda reuse that register, each loading its own SQL right before its prepare
+        //    call, so a call whose register was just loaded with a const-string is not a site.
         val selectedSites = methodsHolding(SELECTED_SPORT_QUERY).map { method ->
             val loads = method.stringIndices(SELECTED_SPORT_QUERY)
             val load = loads.singleOrNull()
                 ?: throw PatchException("\"$SELECTED_SPORT_QUERY\" is loaded ${loads.size} times in ${method.definingClass}")
             val sqlRegister = (method.getInstruction(load) as OneRegisterInstruction).registerA
-            val returns = (load until method.instructions.size).filter { i ->
+            val returns = (load + 1 until method.instructions.size).filter { i ->
                 val call = method.getInstruction(i)
-                call is FiveRegisterInstruction && call.registerCount == 2 && call.registerD == sqlRegister &&
+                val before = method.getInstruction(i - 1)
+                val reloaded = (before.opcode == Opcode.CONST_STRING || before.opcode == Opcode.CONST_STRING_JUMBO) &&
+                    (before as OneRegisterInstruction).registerA == sqlRegister
+                !reloaded && call is FiveRegisterInstruction && call.registerCount == 2 && call.registerD == sqlRegister &&
                     ((call as ReferenceInstruction).reference as? MethodReference)?.let {
                         it.name == prepare.name && it.definingClass == prepare.definingClass
                     } == true

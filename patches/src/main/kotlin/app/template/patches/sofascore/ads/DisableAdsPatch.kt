@@ -78,6 +78,13 @@ val disableAdsPatch = bytecodePatch(
         // ad-free flags above and by PREF_AD_ADAPTER_INITIALISED, which stays false without init,
         // so no extra GMA load hooks are needed.
         AdSdkStartupFingerprint.method.apply {
+            // The consent method sits in ReleaseApp (26.10.19) or, since 26.10.26, in its
+            // R8-renamed abstract superclass; anything outside that chain is a wrong match.
+            val appClasses = generateSequence(RELEASE_APP_CLASS) { classDefByOrNull(it)?.superclass }
+                .takeWhile { it != "Landroid/app/Application;" }.toSet()
+            if (definingClass !in appClasses) {
+                throw PatchException("Disable ads: consent method $definingClass->$name is not in ReleaseApp's hierarchy")
+            }
             val starts = implementation!!.instructions.withIndex().filter { (_, insn) ->
                 val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
                 insn.opcode == Opcode.INVOKE_VIRTUAL &&

@@ -347,7 +347,7 @@ class SofascoreSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.10.19",
+            version = "26.10.26",
             patchNames = SOFASCORE_PATCHES,
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -549,8 +549,10 @@ class SofascoreSmokeTest {
         ) { ref, _ -> ref.definingClass == USER_ACCOUNT && ref.name == "getHasServerAds" }
 
         // Disable ads: ReleaseApp's consent method (no-arg void holding the consent-type strings)
-        // no longer starts the ad SDK start-up thread, and keeps its Firebase consent code.
-        val consentMethod = require(RELEASE_APP).methods.filter { m ->
+        // no longer starts the ad SDK start-up thread, and keeps its Firebase consent code. Since
+        // 26.10.26 it is declared by ReleaseApp's R8-renamed superclass, so search the whole chain.
+        val appChain = generateSequence(RELEASE_APP) { byType[it]?.superclass }.mapNotNull { byType[it] }.toList()
+        val consentMethod = appChain.flatMap { it.methods }.filter { m ->
             m.returnType == "V" && m.parameterTypes.isEmpty() &&
                 m.strings().containsAll(listOf("ad_personalization", "analytics_storage"))
         }.singleOrNull() ?: error("no single ReleaseApp consent method\n$diagnostics")

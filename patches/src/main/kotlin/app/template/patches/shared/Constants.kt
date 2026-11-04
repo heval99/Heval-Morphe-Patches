@@ -272,9 +272,26 @@ object Constants {
             //   FingerprintProbe: ReleaseAppOnCreate, InAppMessagingDataCollection and
             //   WidgetPeriodicRefresh OK-unique. Smoke test and CLI without -f (all 17 patches) pass,
             //   and every changed site was checked in the patched APK. 2026-11-03 emulator: cold start OK, the Speed & battery switches are listed, Turn off animations on + restart runs without a crash; cold-start medians after speed-profile were the same as stock.
+            // 2026-11-04: updated to 26.10.26 (versionCode 261026004, Play arm64 via gplaydl, signer
+            // unchanged ecd3a2c9...f841). R8 split ReleaseApp: it now extends an obfuscated abstract
+            // base (ds0 here) that holds the old onCreate body and the consent method. Two fixes:
+            //   - Disable ads: AdSdkStartupFingerprint drops the ReleaseApp defining class and adds a
+            //     Thread.start() call filter (the shared R8 runnable's run()V holds the same consent
+            //     strings but starts no thread); the patch fails unless the match is declared by
+            //     ReleaseApp or one of its superclasses. ReleaseApp.onCreate (Animation speed, Hide
+            //     countries) is still the override that calls super, so those hooks are unchanged.
+            //   - Hide sports: the shared Room lambda now reuses the selected-sport SQL register for
+            //     the other queries, each loading its own SQL right before its prepare call, so those
+            //     prepare calls are no longer counted as selected-sport sites.
+            //   New in this build: an "Aurion" ad network (com.aurion11.sirius, Remote Config
+            //   "aurion_ads_enabled") as an extra unit of the interstitial/rewarded placements. Its
+            //   network choice sits behind the same placement config; that it is gated by the ad-free
+            //   flags was not traced.
+            //   FingerprintProbe: every fingerprint OK-unique except the documented optional
+            //   TennisPromoSheet.
             AppTarget(
-                version = "26.10.19",
-                versionCode = 261019002
+                version = "26.10.26",
+                versionCode = 261026004
             )
         )
     )
