@@ -3601,13 +3601,24 @@ object Constants {
     // their user values on every start, so with Enable about:config a network.trr.* edit lasts
     // until the next restart. Strict means nothing resolves while the resolver is unreachable.
     // FirefoxFocusSmokeTest (default and fallback options) passes on 158.0.2; not runtime-tested.
+    // 2026-11-04: updated to version 159.0.1 (versionCode 403061757, Play arm64 via gplaydl, same
+    // Mozilla signer). 159 replaced the browser menu with Android Components' Compose menu, so
+    // WebExtensionBrowserMenuBuilder (Add-on support step 3 up to 158) is gone. Add-on support now
+    // hooks BrowserMenu.menuGroupsFor(BrowserState, Drawable) at its return-object: addMenuItems
+    // adds a row before the "settings" row with each enabled add-on's browser action (title,
+    // GeckoView icon, the selected tab's override) and "Extensions" (the manager). Taps are Focus
+    // MenuItemTapped events with a ToolbarMenu$FocusMenuItem proxy; MenuMiddleware.invoke (only the
+    // erased (Object, Object, Object) bridge is left, matched by name + arity) passes the action to
+    // onMenuAction first, Focus dismisses the menu and the extension runs the entry. The Compose
+    // menu classes are reached by reflection (R8 narrows StandardMenuItem's constructor per release).
+    // The other patches apply unchanged. Both FirefoxFocus smoke tests pass; not runtime-tested.
     val COMPATIBILITY_FIREFOX_FOCUS = Compatibility(
         name = "Firefox Focus",
         packageName = "org.mozilla.focus",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x7542E5, // The icon's purple.
         signatures = setOf("6203a473be36d64ee37f87fa500edbc79eab930610ab9b9fa4ca7d5c1f1b4ffc"), // CN=Release Engineering, O=Mozilla Corporation
-        targets = listOf(AppTarget(version = "158.0.2", versionCode = 402940253))
+        targets = listOf(AppTarget(version = "159.0.1", versionCode = 403061757))
     )
 
     // Written 2026-10-18 against org.mozilla.firefox 158.0 (versionCode 2016189054 for x86_64 and

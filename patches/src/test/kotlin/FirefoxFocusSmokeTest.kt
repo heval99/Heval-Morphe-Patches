@@ -80,7 +80,7 @@ class FirefoxFocusSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "158.0.2",
+            version = "159.0.1",
             patchNames = setOf("Enable about:config", "Disable telemetry", "Disable rating prompts", "Hide promotional prompts", DNS_FILTER),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -200,6 +200,6 @@ class FirefoxFocusSmokeTest {
         // DNS filter: GeckoView is pinned to the default resolver in TRR-only mode (3), and with
         // the other options to the chosen resolver in TRR-first mode (2).
         assertGeckoViewDnsForced(classes, DEFAULT_DOH_URL, trrMode = 3)
-        assertGeckoViewDnsForced(applyDnsFilterFallback(apk, workDir, PKG, "158.0.2"), OTHER_DOH_URL, trrMode = 2)
+        assertGeckoViewDnsForced(applyDnsFilterFallback(apk, workDir, PKG, "159.0.1"), OTHER_DOH_URL, trrMode = 2)
     }
 }
