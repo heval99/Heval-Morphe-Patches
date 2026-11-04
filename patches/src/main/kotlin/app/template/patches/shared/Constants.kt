@@ -1424,13 +1424,22 @@ object Constants {
     // AppsConfig.isShowAdsInApp(Context) (MobileAds init, interstitial/banner/reward checks) and
     // ADS.isRewardActivated() (the interstitial, banner and reward show paths). The Pro build is a
     // separate paid listing, so this patch is ads-only.
+    // 2026-11-04: updated to version 10.0.22 (versionCode 7536; Play download via gplaydl, a single
+    // arm64 APK, same CN=Ivan Ivanenko signer). 10.0 is R8-obfuscated (AppsConfig/ADS renamed and
+    // merged, the GMA public API renamed, the banner path gone), so the gates are found by their
+    // log lines: isShowAdsInApp is the (Context)Z logging "no-ads old device..." before its Pro app
+    // package check "com.foobnix.pro.pdf.reader" (it gates MobileAds init in LibreraApp.onCreate and every rewarded
+    // and interstitial load in AdsFragmentActivity.onResume), and every ()Z logging
+    // "isRewardActivated" is forced true (ADS's own, now static, plus the copy R8 inlined into
+    // AdsFragmentActivity). LibreraSmokeTest asserts both; CLI without -f applies it. Not
+    // runtime-tested.
     val COMPATIBILITY_LIBRERA = Compatibility(
         name = "Librera",
         packageName = "com.foobnix.pdf.reader",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1E88E5,
         signatures = setOf("cdf4e1c31c41a55ed72896bf443ce56d50fb34bb933e3189b3ddc2609c90d8f9"), // CN=Ivan Ivanenko
-        targets = listOf(AppTarget(version = "9.4.20", versionCode = 7175))
+        targets = listOf(AppTarget(version = "10.0.22", versionCode = 7536))
     )
 
     // Verified 2026-10-10 against com.alarmclock.xtreme.free 26.06.0 (versionCode 70004221) from
@@ -2667,13 +2676,23 @@ object Constants {
     // Disable license check is a pre-rule licence bypass the owner kept (2026-10-19).
     // 2026-10-25: updated to version 5.3 (versionCode 70; APKPure XAPK merged, same signer);
     // DuplilaSmokeTest passes on patcher 2.0.0; anchors unchanged.
+    // 2026-11-04: updated to version 5.4 (versionCode 71; Play arm64 split bundle via gplaydl,
+    // merged, same Play signing key). 5.4 R8-renames the GMA and UMP libraries (no
+    // com.google.android.ump classes, AdView/BaseAdView/AdRequest are g7.*, MobileAds keeps only a
+    // private setPlugin and MobileAds.initialize is inlined into the banner's LaunchedEffect), so
+    // Disable ads now anchors on app code and GMA's own strings: the consent flow is MainActivity's
+    // (Z)V reading its getConsentInformation() getter, the banner composable is the static
+    // (Modifier, Z, Composer, I, I)V holding "Cannot show ads", and BaseAdView.loadAd is the
+    // BaseAdView method creating the runnable tagged "BaseAdView.loadAd". The MobileAds statics step
+    // was dropped (nothing left to neuter). Enable Premium and Disable license check are unchanged.
+    // DuplilaSmokeTest asserts every hook; CLI without -f applies all three. NOT runtime-tested.
     val COMPATIBILITY_DUPLILA = Compatibility(
         name = "Duplila",
         packageName = "com.duplila.screenshare",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x009FE3,
         signatures = setOf("45469bfeef3d01413dbffc3530ebe6849bb08312317774f9fbc4f2d999a29294"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "5.3", versionCode = 70))
+        targets = listOf(AppTarget(version = "5.4", versionCode = 71))
     )
 
     // Added 2026-10-14 from the Reddit request queue ("the ads are really long and unskippable").
