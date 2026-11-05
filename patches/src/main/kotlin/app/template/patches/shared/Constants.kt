@@ -2514,6 +2514,18 @@ object Constants {
     //   Rule 12: all 307,364 string values are identical to stock; the only table changes are the
     //   same 36 case-collision renames as before and the 9 _heval_swapped layouts. Not run on a
     //   device (owner tests on the phone after the pre-release).
+    // 2026-11-05 (#126): "Hide poor network warning" (opt-in Patch settings switch
+    //   truecaller.hide_poor_network_warning). The call-UI tooltip mapper's SIGNAL branch (the only
+    //   method that passes CallUITooltipViewModel$Type.SIGNAL to a tooltip constructor, 26.43.5
+    //   Lwb9->invokeSuspend) now returns the same no-tooltip object it already returns for another
+    //   state (Ljb9.a) while the switch is on; the call is untouched. The state class is
+    //   R8-renamed, so the patch anchors on Type.SIGNAL and the constructor shape. Smoke test + CLI
+    //   without -f + apkanalyzer verified; no runtime call is possible on the emulator.
+    // 2026-11-05 (#125): "Turn off Ad Campaign Analytics" (opt-in). Privacy Center's
+    //   biz_privacy_vc_events preference is read with a true fallback in three places (the settings
+    //   row state, the verified-campaign clickstream gate and the carousel clickstream gate); the
+    //   patch passes false as the fallback of each read, so the toggle starts off and stays
+    //   user-changeable (the putBoolean writer is untouched). Smoke test verified.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
