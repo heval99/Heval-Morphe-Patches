@@ -3757,6 +3757,12 @@ object Constants {
     // onMenuAction first, Focus dismisses the menu and the extension runs the entry. The Compose
     // menu classes are reached by reflection (R8 narrows StandardMenuItem's constructor per release).
     // The other patches apply unchanged. Both FirefoxFocus smoke tests pass; not runtime-tested.
+    // 2026-11-05 (#130): "Move address bar to the bottom" (resource patch). fragment_browser.xml
+    // pins the BrowserToolbar (id browserToolbar) in a CoordinatorLayout with
+    // android:layout_gravity=top; the patch sets that attribute to bottom. Verified:
+    // FirefoxFocusSmokeTest asserts the attribute in the decoded layout, the CLI without -f applies
+    // it (aapt2 shows 0x50), and the emulator shows the bar above the navigation bar on a loaded
+    // page. Height, elevation, id and behaviour are untouched.
     val COMPATIBILITY_FIREFOX_FOCUS = Compatibility(
         name = "Firefox Focus",
         packageName = "org.mozilla.focus",

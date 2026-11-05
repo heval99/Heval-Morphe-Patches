@@ -14,7 +14,9 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.w3c.dom.Element
 import java.io.File
+import javax.xml.parsers.DocumentBuilderFactory
 
 private const val PKG = "org.mozilla.focus"
 private const val GECKO_RUNTIME = "Lorg/mozilla/geckoview/GeckoRuntime;"
@@ -81,7 +83,10 @@ class FirefoxFocusSmokeTest {
             workDir = workDir,
             pkg = PKG,
             version = "159.0.1",
-            patchNames = setOf("Enable about:config", "Disable telemetry", "Disable rating prompts", "Hide promotional prompts", DNS_FILTER),
+            patchNames = setOf(
+                "Enable about:config", "Disable telemetry", "Disable rating prompts", "Hide promotional prompts",
+                "Move address bar to the bottom", DNS_FILTER,
+            ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
         val byType = classes.associateBy { it.type }
@@ -201,5 +206,20 @@ class FirefoxFocusSmokeTest {
         // the other options to the chosen resolver in TRR-first mode (2).
         assertGeckoViewDnsForced(classes, DEFAULT_DOH_URL, trrMode = 3)
         assertGeckoViewDnsForced(applyDnsFilterFallback(apk, workDir, PKG, "159.0.1"), OTHER_DOH_URL, trrMode = 2)
+
+        // Move address bar to the bottom: the browser toolbar's gravity is bottom in the decoded
+        // layout.
+        val browserLayout = workDir.walkTopDown()
+            .singleOrNull { it.name == "fragment_browser.xml" && it.parentFile.name == "layout" }
+            ?: error("fragment_browser.xml was not decoded under $workDir")
+        val browserDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+            .parse(browserLayout).documentElement
+        val toolbars = browserDoc.getElementsByTagName("mozilla.components.browser.toolbar.BrowserToolbar")
+            .let { list -> (0 until list.length).map { list.item(it) as Element } }
+        assertEquals(1, toolbars.size, "BrowserToolbar elements in fragment_browser.xml")
+        assertEquals(
+            "bottom", toolbars.single().getAttribute("android:layout_gravity"),
+            "the browser toolbar is not pinned to the bottom",
+        )
     }
 }
