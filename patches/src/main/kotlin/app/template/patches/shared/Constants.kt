@@ -4094,6 +4094,35 @@ object Constants {
         targets = listOf(AppTarget(version = "6.15.10", versionCode = 731))
     )
 
+    // Verified 2026-11-05 against kgs.com.addmusictovideos 9.5 (versionCode 121; Google Play arm64
+    // splits via gplaydl, merged with APKEditor; app label Add Music; signer CN=Android, OU=Android,
+    // O=Google Inc., the Play app-signing key, cert SHA-256 f84527d6...f3cd). Native Kotlin app,
+    // 249k methods over 5 dex, no PairIP or packer. Ads use the next-gen Google Ads SDK
+    // (com.google.android.libraries.ads.mobile.sdk, R8-repackaged as ads_mobile_sdk.*), 156 refs;
+    // Play Billing 376, Qonversion 3534, Firebase 31.
+    // Premium: Qonversion entitlement "premium", synced by an R8-renamed manager into the
+    // "premium_access" SharedPreferences flag "is_premium" and a StateFlow; the app seeds the flow
+    // from the cached flag at startup and then re-checks Qonversion. Enable Premium returns true
+    // from the manager's static ()Z getter, forces the mapper's Boolean.valueOf input true and
+    // seeds the startup cache read true. A re-signed stock build starts (no app-level signature
+    // check; the Lucky Patcher crash is not reproduced by re-signing alone).
+    // Verified 2026-11-05: AddMusicSmokeTest passes; the CLI (no -f) applies Enable Premium;
+    // apkanalyzer shows the getter returning const/4 v0,1, the mapper's const/4 v0,1 before
+    // Boolean.valueOf and the startup seed const/4 v2,1 after getBoolean("is_premium"). Emulator:
+    // re-signed stock opens the paywall (kgs.billings.PurchaseActivity) after onboarding; the
+    // patched build (same test key and data) goes straight to the main screen with the "PRO"
+    // badge. The interstitial helpers (p5.m.b, p5.n.b) return before loading when W3.c.d() answers
+    // true, so premium also suppresses those ads; the remaining native units are next-gen GMA and
+    // are not patched separately.
+    val COMPATIBILITY_ADDMUSIC = Compatibility(
+        name = "Add Music",
+        packageName = "kgs.com.addmusictovideos",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE94122, // The adaptive icon's background colour (ic_launcher_background).
+        signatures = setOf("f84527d66a38d0b79dc2a329d9d351bd28fae6efb58d5862a28d08f5c973f3cd"), // CN=Android, O=Google Inc. (Play app-signing key)
+        targets = listOf(AppTarget(version = "9.5", versionCode = 121))
+    )
+
     // Verified 2026-11-05 against com.soosu.notialarm 1.3.29 (versionCode 350103236; Google Play
     // arm64 splits via gplaydl, merged with APKEditor; app label NotiAlarm; signer CN=soosu,
     // OU=soosu studio, O=soosu studio, cert SHA-256 5848c223...2df3). Native Kotlin app (no
