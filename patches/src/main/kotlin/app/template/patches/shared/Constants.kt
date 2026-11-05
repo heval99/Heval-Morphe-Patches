@@ -3308,6 +3308,15 @@ object Constants {
     // method's return-void, the analytics read forced to Boolean.TRUE and the account state's
     // (Z,Z,Z) constructor (now b/U1OKOurdkv) starting with const/4 p1/p2 = 1; resources.arsc and
     // AndroidManifest.xml stay byte-identical. Not run on a device yet.
+    // 2026-11-05 (issue #123): added "Fix home screen numbers tile" (1.16.35 manager
+    // b/SW2hvp9pUKPwwbUGc7p, builder qy3WTYmS4Jdr8PX6cXmVN, handler
+    // ebDxmR22bhI68maS9WEy4N9l(Tip)Z). The Channels diagnostic tip's message is a fingerprint of
+    // the channel widgets' concatenated hashCode() integers and was shown as a tile of giant
+    // numbers; the handler now answers false. The patch finds the manager, builder and handler by
+    // shape (no obfuscated names). NiagaraSmokeTest asserts the handler returns false and that the
+    // stock handler was const-true. Emulator (fresh 1.16.35, patched build): cold start OK and the
+    // normal onboarding tips still show; the diagnostic tile did not appear on a fresh install (it
+    // needs the user's state/remote config), so its disappearance was not observed at runtime.
     val COMPATIBILITY_NIAGARA = Compatibility(
         name = "Niagara Launcher",
         packageName = "bitpit.launcher",
