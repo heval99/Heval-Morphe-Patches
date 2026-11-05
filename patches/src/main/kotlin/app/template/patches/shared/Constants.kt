@@ -4094,6 +4094,38 @@ object Constants {
         targets = listOf(AppTarget(version = "6.15.10", versionCode = 731))
     )
 
+    // Verified 2026-11-05 against com.soosu.notialarm 1.3.29 (versionCode 350103236; Google Play
+    // arm64 splits via gplaydl, merged with APKEditor; app label NotiAlarm; signer CN=soosu,
+    // OU=soosu studio, O=soosu studio, cert SHA-256 5848c223...2df3). Native Kotlin app (no
+    // Flutter/RN), 247k methods over 5 dex. Ads are a large mediation stack (GMA 2927 hits, Meta
+    // 1115, AppLovin/MAX 20, Unity/IronSource/Vungle/Pangle/InMobi 24921); Play Billing 628,
+    // Firebase, Play Integrity.
+    // PairIP is the license-check wrapper only: the manifest Application is
+    // com.pairip.application.Application, which calls LicenseClient.checkLicense(Context) from
+    // attachBaseContext (and LicenseContentProvider, which is registered, calls it too), but there
+    // is no libpairipcore.so and no VMRunner/SignatureCheck. Re-signed builds fail the check, get
+    // LicenseActivity and exit, so Disable license check returns from checkLicense.
+    // Premium is local: AppPreference.isPremiumUser() reads the "is_premium_user" boolean from the
+    // "app_preference" SharedPreferences file, and every premium gate calls it (the BillingClient
+    // wrapper d10 seeds its cached premium state from it, the billing UI state k10 starts from it,
+    // MainActivity and DetailActivity check it). Enable Premium returns true from that getter; the
+    // Play Billing client, the product premium_upgrade_2026 and setPremiumUser stay intact.
+    // Verified 2026-11-05: NotialarmSmokeTest passes; the CLI (no -f) applies both patches;
+    // apkanalyzer shows checkLicense's return-void first and isPremiumUser starting with
+    // const/4 v0, 0x1; return v0. Emulator (x86_64, same test key): re-signed stock fails
+    // LicenseClient ("Licensing service could not process request") and stays on
+    // SplashScreenActivity; a license-only build starts and Settings shows "Premium Upgrade" plus
+    // an ad banner; the full patched build reaches MainActivity, Settings shows "Premium User" and
+    // the banner is gone.
+    val COMPATIBILITY_NOTIALARM = Compatibility(
+        name = "NotiAlarm",
+        packageName = "com.soosu.notialarm",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xFAF5FF, // The adaptive icon's background colour (ic_launcher_background).
+        signatures = setOf("5848c2237e07f41aa409ca5ff5076f5a46cc74170330aa5b34d51c720ac62df3"), // CN=soosu, OU=soosu studio, O=soosu studio
+        targets = listOf(AppTarget(version = "1.3.29", versionCode = 350103236))
+    )
+
     // Verified 2026-10-28 against com.fenchtose.reflog 1.3.3 (versionCode 1331, APKPure single
     // APK, all four ABIs; signer CN=Jay Rambhia, cert SHA-256 5ab41983...6727, the developer's own
     // key). The package is still named reflog but the app label is Taskito (it was Reflog).
