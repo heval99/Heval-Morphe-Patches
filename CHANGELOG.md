@@ -1,3 +1,27 @@
+## 2.3.0-dev.1 (2026-11-06)
+
+### 🆕 New apps
+- **Add Music** `9.5` - Enable Premium
+- **NotiAlarm** `1.3.29` - Disable license check, Enable Premium
+
+### 📱 Firefox Focus `159.0.1`
+- New: Move address bar to the bottom
+
+### 📱 Flashscore `26.11.4`
+- New: Animation speed, Block marketing notifications, Force edge-to-edge, Patch settings, Spoof signature, Use system font, Use system font (styles)
+
+### 📱 FotMob `241.18134.20261030`
+- New: Show FotMob+ logo
+
+### 📱 Niagara Launcher `1.16.35`
+- New: Fix home screen numbers tile
+
+### 📱 Truecaller `26.43.5`
+- New: Hide poor network warning, Privacy defaults, Turn off Ad Campaign Analytics
+- New: Add poor network and ad campaign analytics controls
+
+**Download:** [patches-2.3.0-dev.1.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.3.0-dev.1/patches-2.3.0-dev.1.mpp)
+
 ## 2.2.0 (2026-11-04)
 
 ### 🆕 New apps
