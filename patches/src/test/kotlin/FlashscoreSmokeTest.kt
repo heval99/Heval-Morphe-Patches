@@ -57,6 +57,7 @@ private val FLASHSCORE_PATCHES = setOf(
     "Patch settings",
     "Animation speed",
     "Force edge-to-edge",
+    "Block marketing notifications",
 )
 
 // SHA-1 of the original signing certificate (CN=Pavel Cvetler, O=LiveSport s.r.o.).
@@ -935,6 +936,29 @@ class FlashscoreSmokeTest {
             }
         }
         assertTrue(edgeSites > 0, "no navigation-bar colour write was patched")
+
+        // Block marketing notifications: HandlerInfo.process starts with the Heval gate that
+        // returns at once while the switch is on; the stock body stays after the gate's label.
+        val handlerInfo = classes.singleOrNull { it.type == "Leu/livesport/notification/handler/HandlerInfo;" }
+            ?: error("HandlerInfo not found")
+        val process = handlerInfo.method("process", listOf("Landroid/content/Context;", "Llth;"))
+        val processInsns = process.instructions()
+        assertTrue(
+            processInsns[0].opcode == Opcode.CONST_STRING &&
+                ((processInsns[0] as? ReferenceInstruction)?.reference as? StringReference)?.string ==
+                "flashscore.block_marketing_notifications",
+            "HandlerInfo.process does not start with the marketing gate",
+        )
+        assertTrue(
+            processInsns.any { insn ->
+                val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
+                ref?.definingClass == "Lapp/template/extension/hevalcontrols/HevalSettings;" && ref.name == "isEnabled"
+            },
+            "HandlerInfo.process has no HevalSettings.isEnabled call",
+        )
+        assertTrue(processInsns.any { it.opcode == Opcode.RETURN_VOID }, "HandlerInfo.process lost its stock body")
     }
 }
+
+
 

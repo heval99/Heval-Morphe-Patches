@@ -2574,6 +2574,12 @@ object Constants {
     // stored choice still wins. The two "profiles privately" toggles have no local preference key
     // and are not covered. Smoke test asserts a gate on every read of the five keys; CLI without -f
     // applied the patch and apkanalyzer shows the gate in dh.b.
+    // 2026-11-06: "Block marketing notifications" (opt-in). Push types are dispatched by string:
+    // FS_NEWS, EVENT_CHANGE, OPEN_RACE_STAGE, NEWS_ARTICLE, USER_DATA_SYNC and INFO; INFO is the
+    // generic promotional push (URL + big picture). HandlerInfo.process is the only place that
+    // posts it, so the switch gates it to return-void. Smoke test asserts the gate and the stock
+    // body; CLI without -f applied it and apkanalyzer shows the gate. (The earlier "harness cannot
+    // see this class" note was a stale bundle: a rebuilt bundle passes.)
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
@@ -4424,5 +4430,6 @@ object Constants {
         targets = listOf(AppTarget(version = "1.0.31", versionCode = 89))
     )
 }
+
 
 
