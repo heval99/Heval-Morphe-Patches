@@ -1172,6 +1172,19 @@ object Constants {
     // render the system font with the text re-flowing at the wider metrics and no truncation. The
     // re-encoded table leaves every existing string value byte-identical (only sans-serif-black is
     // added to the pool).
+    // 2026-11-06: "Spoof signature" (the Play certificate, SHA-1 fd9fbf3b...bc1, from the v3
+    // signing block of the base split) so Firebase Installations/FCM keep accepting the re-signed
+    // build. "Patch settings": the shared Heval Controls host with a "Patch settings" row in the
+    // app's Settings screen (an include of the stock arrow_row layout inserted before the version
+    // label by a layout patch, because R8 renames ConstraintLayout.LayoutParams in this app, so the
+    // row cannot be added with ConstraintLayout params at runtime). "Animation speed": two opt-in
+    // features (turn off / twice as fast); the app has no Settings.Global.getFloat reads, so the
+    // hook redirects the single ValueAnimator.getDurationScale read (Compose's motion scale) and
+    // AnimationSpeed.init (from App.onCreate, after super) scales ValueAnimator and drops the
+    // activity transitions when animations are off. Verified: FlashscoreSmokeTest (entry call after
+    // setContentView, layout include and re-constraint, getDurationScale redirect, registry ids),
+    // CLI without -f, and the emulator: the row opens the screen, it lists both features, toggling
+    // one shows the restart banner and the app restarts with the switch on and no crash.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",

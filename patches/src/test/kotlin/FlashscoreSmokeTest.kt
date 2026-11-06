@@ -53,7 +53,13 @@ private val FLASHSCORE_PATCHES = setOf(
     "Hide betting content",
     "Use system font",
     "Use system font (styles)",
+    "Spoof signature",
+    "Patch settings",
+    "Animation speed",
 )
+
+// SHA-1 of the original signing certificate (CN=Pavel Cvetler, O=LiveSport s.r.o.).
+private const val SIGNATURE_SHA1 = "fd9fbf3b2dac2390355b54c50a1b716076d79bc1"
 
 // Hide betting content: the remote-config keys and the value the helper must answer with.
 private val BETTING_KEYS = mapOf(
@@ -831,5 +837,98 @@ class FlashscoreSmokeTest {
             }
             .map { it.nodeValue }
         assertTrue(layoutFonts.none { it.startsWith("@font/") }, "layouts still name a custom font: $layoutFonts")
+
+        // Spoof signature: the extension returns Flashscore's package and original certificate,
+        // and every PackageManager.getPackageInfo(String, ...) call is routed through it.
+        assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
+
+        // Patch settings: the Settings screen calls the row entry right after setContentView.
+        val settings = classes.singleOrNull { it.type == "Leu/livesport/LiveSport_cz/view/settings/SettingsActivity;" }
+            ?: error("SettingsActivity not found")
+        val onCreate = settings.method("onCreate", listOf("Landroid/os/Bundle;"))
+        val entryCall = onCreate.instructions().withIndex().singleOrNull { (_, insn) ->
+            val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
+            ref?.definingClass == "Lapp/template/extension/flashscore/HevalControlsEntry;" && ref.name == "addRow"
+        } ?: error("SettingsActivity.onCreate does not call HevalControlsEntry.addRow")
+        val setContentView = onCreate.instructions().withIndex().singleOrNull { (_, insn) ->
+            (insn as? ReferenceInstruction)?.reference.let { (it as? MethodReference)?.name == "setContentView" }
+        } ?: error("SettingsActivity.onCreate has no setContentView")
+        assertTrue(
+            entryCall.index == setContentView.index + 1,
+            "addRow is at ${entryCall.index}, not directly after setContentView at ${setContentView.index}",
+        )
+
+        // Patch settings row: the layout patch includes arrow_row before the version label and
+        // re-constrains the label below it.
+        val settingsLayout = workDir.walkTopDown()
+            .singleOrNull { it.name == "activity_settings.xml" && it.parentFile.name == "layout" }
+            ?: error("activity_settings.xml was not decoded under $workDir")
+        val layoutDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(settingsLayout)
+        val layoutElements = layoutDoc.getElementsByTagName("*").let { nodes ->
+            (0 until nodes.length).mapNotNull { nodes.item(it) as? Element }
+        }
+        val hevalRow = layoutElements.singleOrNull {
+            it.getAttribute("android:id") == "@+id/heval_controls_row" ||
+                it.getAttributeNS("http://schemas.android.com/apk/res/android", "id") == "@+id/heval_controls_row"
+        } ?: error("activity_settings.xml has no heval_controls_row")
+        assertEquals("include", hevalRow.tagName, "the Patch settings row is not an include")
+        assertEquals("@layout/arrow_row", hevalRow.getAttribute("layout"), "the row does not reuse arrow_row")
+        val versionRow = layoutElements.singleOrNull {
+            it.getAttribute("android:id") in setOf("@id/versionLabel", "@+id/versionLabel") ||
+                it.getAttributeNS("http://schemas.android.com/apk/res/android", "id") in
+                setOf("@id/versionLabel", "@+id/versionLabel")
+        } ?: error("activity_settings.xml has no versionLabel")
+        val labelTop = versionRow.attributes.let { attributes ->
+            (0 until attributes.length).map { attributes.item(it) }
+                .singleOrNull { it.localName == "layout_constraintTop_toBottomOf" }?.nodeValue
+        }
+        assertEquals("@+id/heval_controls_row", labelTop, "versionLabel is not re-constrained below the new row")
+
+        // Animation speed: App.onCreate initialises the hooks right after super.onCreate, the
+        // Compose duration-scale read goes through the extension, and both features are in the
+        // Patch settings registry.
+        val app = classes.singleOrNull { it.type == "Leu/livesport/LiveSport_cz/App;" } ?: error("App class not found")
+        val appOnCreate = app.method("onCreate", emptyList())
+        val appInsns = appOnCreate.instructions()
+        val superIndex = appInsns.indexOfFirst {
+            (it.opcode == Opcode.INVOKE_SUPER || it.opcode == Opcode.INVOKE_SUPER_RANGE) &&
+                ((it as? ReferenceInstruction)?.reference as? MethodReference)?.name == "onCreate"
+        }
+        val initCall = appInsns.indexOfFirst {
+            val ref = (it as? ReferenceInstruction)?.reference as? MethodReference
+            ref?.definingClass == "Lapp/template/extension/flashscore/AnimationSpeed;" && ref.name == "init"
+        }
+        assertEquals(superIndex + 1, initCall, "AnimationSpeed.init is not directly after super.onCreate")
+
+        fun Instruction.callsAnimationScale() = (this as? ReferenceInstruction)?.reference.let { reference ->
+            val ref = reference as? MethodReference
+            ref?.definingClass == "Lapp/template/extension/flashscore/AnimationSpeed;" && ref.name == "durationScale"
+        }
+        fun Instruction.readsValueAnimatorScale() = (this as? ReferenceInstruction)?.reference.let { reference ->
+            val ref = reference as? MethodReference
+            ref?.definingClass == "Landroid/animation/ValueAnimator;" && ref.name == "getDurationScale"
+        }
+        val scaleCalls = classes.filterNot { it.type.startsWith("Lapp/template/extension/") }
+            .flatMap { it.methods }.filter { it.implementation != null }
+            .flatMap { it.instructions() }
+            .count { it.callsAnimationScale() }
+        val directReads = classes.filterNot { it.type.startsWith("Lapp/template/extension/") }
+            .flatMap { it.methods }.filter { it.implementation != null }
+            .flatMap { it.instructions() }
+            .count { it.readsValueAnimatorScale() }
+        assertTrue(scaleCalls > 0, "no duration-scale read goes through AnimationSpeed")
+        assertEquals(0, directReads, "a ValueAnimator.getDurationScale read is left outside the extension")
+
+        val registry = classes.singleOrNull { it.type == "Lapp/template/extension/hevalcontrols/Registry;" }
+            ?: error("Registry class not merged")
+        val encoded = registry.method("encoded", emptyList()).instructions()
+            .mapNotNull { insn ->
+                ((insn as? ReferenceInstruction)?.reference as? StringReference)?.string
+            }
+            .singleOrNull { it.startsWith("hevalcontrols-registry:") }
+            ?: error("Registry.encoded() was not rewritten")
+        for (id in listOf("flashscore.animations_off", "flashscore.animations_fast")) {
+            assertTrue(id in encoded, "Patch settings registry has no $id")
+        }
     }
 }
