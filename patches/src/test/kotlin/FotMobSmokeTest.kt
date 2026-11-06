@@ -109,7 +109,7 @@ class FotMobSmokeTest {
                 "Disable ads", "Disable telemetry", "Enable FotMob+", "GmsCore support", "Spoof signature",
                 "Hide betting content", "Disable rating prompts", "Disable FotMob+ promo popup",
                 "Use system font", "Patch settings", "Turn off animations", "Faster animations", "Slower live refresh",
-                "Hide countries", "Hide competitions",
+                "Hide countries", "Hide competitions", "Show FotMob+ logo",
             ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -205,6 +205,48 @@ class FotMobSmokeTest {
         assertSlowerLiveRefresh(classes)
         assertHideCountries(classes)
         assertHevalControls(classes)
+
+        // Show FotMob+ logo: the toolbar refresher's shouldUseFotMobPlusLogo read is replaced
+        // with const/4 1, so it always picks the Plus wordmark.
+        val logoOwner = classes.firstOrNull { cls -> cls.fields.any { it.name == "shouldUseFotMobPlusLogo" } }
+            ?: error("shouldUseFotMobPlusLogo field not found")
+        fun Method.readsPlusLogo() = instructions().any {
+            it.opcode == Opcode.IGET_BOOLEAN && it.fieldRef()?.name == "shouldUseFotMobPlusLogo"
+        }
+        fun Method.writesPlusLogo() = instructions().any {
+            it.opcode == Opcode.IPUT_BOOLEAN && it.fieldRef()?.name == "shouldUseFotMobPlusLogo"
+        }
+        val stockReader = stock.first { it.type == logoOwner.type }
+            .methods.single { it.returnType == "V" && it.parameterTypes.isEmpty() && it.readsPlusLogo() && !it.writesPlusLogo() }
+        val readIndex = stockReader.instructions().indexOfFirst {
+            it.opcode == Opcode.IGET_BOOLEAN && it.fieldRef()?.name == "shouldUseFotMobPlusLogo"
+        }
+        val patchedReader = logoOwner.methods.single {
+            it.returnType == stockReader.returnType &&
+                it.parameterTypes.map(CharSequence::toString) == stockReader.parameterTypes.map(CharSequence::toString) &&
+                it.name == stockReader.name
+        }
+        val forced = patchedReader.instructions()[readIndex]
+        assertTrue(
+            forced is NarrowLiteralInstruction && forced.opcode == Opcode.CONST_4 && forced.narrowLiteral == 1,
+            "${logoOwner.type}->${patchedReader.name}: the FotMob+ logo read is not forced true; got ${forced.opcode}",
+        )
+
+        // The home toolbar observer's normal-logo branch is skipped: the if-eqz before the Plus
+        // drawable const is now a nop.
+        fun Instruction.literal(): Long? = (this as? NarrowLiteralInstruction)?.narrowLiteral?.toLong()
+        fun Method.setsToolbarLogo() = instructions().any {
+            val ref = (it as? ReferenceInstruction)?.reference as? MethodReference
+            ref?.definingClass == "Landroidx/appcompat/widget/Toolbar;" && ref.name == "setLogo"
+        }
+        val hook = classes.flatMap { it.methods }.filter { it.implementation != null }.singleOrNull { method ->
+            method.setsToolbarLogo() &&
+                method.instructions().any { it.literal() == 0x7f0802c5L } &&
+                method.instructions().any { it.literal() == 0x7f0802c2L }
+        } ?: error("toolbar logo observer not found")
+        val hookInsns = hook.instructions()
+        val plus = hookInsns.indexOfFirst { it.literal() == 0x7f0802c5L }
+        assertEquals(Opcode.NOP, hookInsns[plus - 1].opcode, "${hook.definingClass}->${hook.name}: normal-logo branch")
     }
 
     private fun Instruction.stringOrNull(): String? = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string

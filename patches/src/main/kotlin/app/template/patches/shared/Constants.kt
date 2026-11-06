@@ -1,4 +1,4 @@
-package app.template.patches.shared
+﻿package app.template.patches.shared
 
 import app.morphe.patcher.patch.ApkFileType
 import app.morphe.patcher.patch.AppTarget
@@ -52,7 +52,7 @@ object Constants {
     // restores them. The Live
     // tab had no English matches live, so it was not observed.
     // 2026-11-03: "Hide competitions" (opt-in, Patch settings list sofascore.hidden_competitions,
-    // keys = UniqueTournament ids, labels "category · name") on 26.10.19. The hook sites of both
+    // keys = UniqueTournament ids, labels "category Â· name") on 26.10.19. The hook sites of both
     // list patches moved into one unnamed patch (sofascoreListFiltersPatch); new anchors there: the
     // kept getter UniqueTournamentGroupResponse.getUniqueTournaments (a country's competitions in
     // Leagues) and the request lambda calling NetworkCoroutineAPI.categoryScheduledEvents (an
@@ -402,13 +402,20 @@ object Constants {
     // Leagues tab and search after a restart and back after Clear all (the day's match list had no
     // English matches, so match lists were not observed).
     // 2026-11-03: "Hide competitions" (opt-in, Patch settings list fotmob.hidden_competitions,
-    // keys = league ids, a stage keyed by its ParentId; labels "country · name"; picker logo
+    // keys = league ids, a stage keyed by its ParentId; labels "country Â· name"; picker logo
     // images.fotmob.com/image_resources/logo/leaguelogo/{id}.png) on 240.17974.20261023. No new
     // anchors: the three Hide countries hook sites moved into one unnamed patch
     // (fotMobListFiltersPatch) that both list patches depend on, and each feature patch only rewrites
     // its patched()Z flag (CountryFilter / CompetitionFilter) to true. Seeds: the app's bundled
     // res/raw/available_leagues (388 leagues). Smoke test (both list patches, one filter call per
     // site) and CLI without -f (all 15 FotMob patches) pass. Not run on the emulator yet.
+    // 2026-11-05 (#129): "Show FotMob+ logo" (default on). The home toolbar swaps between
+    // ic_fotmob_logo_app_bar and ic_fotmob_plus_logo_app_bar from a Boolean flow: the toolbar
+    // refresher reads the readable shouldUseFotMobPlusLogo field (found by shape, the observer that
+    // writes it is left alone) and a second observer sets Toolbar.setLogo from the Boolean ternary.
+    // The patch replaces the field read with const/4 1 and nops the normal-logo branch. Verified:
+    // FotMobSmokeTest, CLI without -f, apkanalyzer (const/4 p0,1 and nop) and the emulator showing
+    // "FOTMOB+" in the home header. The wordmark drawables themselves are untouched.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",
@@ -769,8 +776,8 @@ object Constants {
             // Bravearm64Universal.apk): all patches apply unchanged; BraveSmokeTest passes.
             // Rule 12 (2026-10-19 audit): the Brave Origin resource patch (XML defaults) re-encodes
             // the resource table, which strips the literal surrounding quotes of the Arabic
-            // (values-ar) 0_resource_name_obfuscated value "%1$s" و"%2$s" (it comes back as
-            // %1$s" و"%2$s). Cosmetic: a quote mark in one Arabic string.
+            // (values-ar) 0_resource_name_obfuscated value "%1$s" Ùˆ"%2$s" (it comes back as
+            // %1$s" Ùˆ"%2$s). Cosmetic: a quote mark in one Arabic string.
             // 2026-10-19: older targets 1.95.104, 1.96.61 dropped (latest version only, owner);
             // BraveSmokeTest runs against 1.97.56. No versionCode: Brave's arm64 and x86_64
             // builds of one version carry different versionCodes.
@@ -862,7 +869,7 @@ object Constants {
     // (arm64-v8a + armeabi-v7a, Android 6.0+ / minSdk 23). App code is NOT obfuscated:
     // 3,589 readable classes under notes.easy.android.mynotes.
     //
-    // Entitlement is entirely local — there is no license server. Everything routes through
+    // Entitlement is entirely local â€” there is no license server. Everything routes through
     // three public static booleans on notes.easy.android.mynotes.App:
     //   isVip()Z       38 call sites - master gate for premium assets (fonts, backgrounds,
     //                  stickers, drawing tools). Per-asset flags such as DrawPatternRes.isVip()
@@ -880,7 +887,7 @@ object Constants {
     // Important: billing/BillingManager runs queryPurchaseState() on startup and its
     // callbacks (BillingManager$5/$7/$8) write those prefs back from whatever Play reports,
     // so a non-payer gets them reset to false. That is why we patch the *consumers*
-    // (App.isVip/isAdFree) rather than the writers — forced return values ignore the reset.
+    // (App.isVip/isAdFree) rather than the writers â€” forced return values ignore the reset.
     //
     // SKUs: BILLING_MONTH / BILLING_YEAR / BILLING_LIFETIME / BILLING_MONTH_TO_YEAR /
     // BILLING_UP_TO_LIFETIME (analytics suffixes "1m", "1y", "lifetime").
@@ -1153,6 +1160,38 @@ object Constants {
     // marketing popups re-anchored: EventListActivity.onResume (holds "btnGoUrl") nulls the
     // dialog model read back from the "dialogSupport" helper right before its null check, and the
     // InAppStrip parser matches the model by simple name. Runtime not tested yet.
+    // 2026-11-05 (#128): "Use system font" (opt-in, two layers). The Compose typography holder
+    // (four static FontListFontFamily fields for livesport, livesport_bold, livesport_extrabold and
+    // flashscore_numbers_regular) is located by shape, and every read of those fields is replaced
+    // with Compose's FontFamily.Default (found through its "FontFamily.Default" toString literal).
+    // The companion resource patch "Use system font (styles)" maps the 32 @font/ references in
+    // res/values/styles.xml to sans-serif / sans-serif-medium / sans-serif-black by weight.
+    // Styles only: decoding the three layouts that also set a font inline would reset the layout
+    // tree the Patch settings row patch edits. Verified: FlashscoreSmokeTest (bytecode reads and
+    // the decoded styles), CLI without -f (aapt2 shows 0x010103ac="sans-serif" and no @font/
+    // left in styles) and the emulator, where the league list and the match screen render the
+    // system font with the text re-flowing at the wider metrics and no truncation. The re-encoded
+    // table leaves every existing string value byte-identical (only sans-serif-black is added to
+    // the pool).
+    // 2026-11-06: "Spoof signature" (the Play certificate, SHA-1 fd9fbf3b...bc1, from the v3
+    // signing block of the base split) so Firebase Installations/FCM keep accepting the re-signed
+    // build. "Patch settings": the shared Heval Controls host with a "Patch settings" row in the
+    // app's Settings screen (an include of the stock arrow_row layout inserted before the version
+    // label by a layout patch, because R8 renames ConstraintLayout.LayoutParams in this app, so the
+    // row cannot be added with ConstraintLayout params at runtime). "Animation speed": two opt-in
+    // features (turn off / twice as fast); the app has no Settings.Global.getFloat reads, so the
+    // hook redirects the single ValueAnimator.getDurationScale read (Compose's motion scale) and
+    // AnimationSpeed.init (from App.onCreate, after super) scales ValueAnimator and drops the
+    // activity transitions when animations are off. Verified: FlashscoreSmokeTest (entry call after
+    // setContentView, layout include and re-constraint, getDurationScale redirect, registry ids),
+    // CLI without -f, and the emulator: the row opens the screen, it lists both features, toggling
+    // one shows the restart banner and the app restarts with the switch on and no crash.
+    // "Force edge-to-edge" (opt-in) forces the navigation-bar colour argument at every site that
+    // sets both system bar colours (the three Material edge-to-edge helpers) to transparent, so the
+    // gesture pill shares the content background; the status bar and the icon appearance are left
+    // alone. Verified by FlashscoreSmokeTest (every setNavigationBarColor call is preceded by a zero
+    // constant in its colour register) and by the CLI; the emulator check of the visual result is
+    // still pending.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",
@@ -2304,7 +2343,7 @@ object Constants {
     //   static morpheCallLogSubtitle(entry, label) on the mapper's class replaces the label: for
     //   phonebookId 0, not blocked, non-blank name and number, the number (PhoneNumberUtils
     //   formatNumber with the upper-cased countryCode when it is two letters, else E.164), after
-    //   " · " when there is a text label (the (String) label class whose superclass is the
+    //   " Â· " when there is a text label (the (String) label class whose superclass is the
     //   subtitle type and whose toString prints "Text(text="). Owner decision: resource labels
     //   (recording, video, WhatsApp, screening, voicemail) stay as they are, without the number.
     //   An Exception in the helper keeps the stock label. Only the revamped call log uses this
@@ -2514,6 +2553,33 @@ object Constants {
     //   Rule 12: all 307,364 string values are identical to stock; the only table changes are the
     //   same 36 case-collision renames as before and the 9 _heval_swapped layouts. Not run on a
     //   device (owner tests on the phone after the pre-release).
+    // 2026-11-05 (#126): "Hide poor network warning" (opt-in Patch settings switch
+    //   truecaller.hide_poor_network_warning). The call-UI tooltip mapper's SIGNAL branch (the only
+    //   method that passes CallUITooltipViewModel$Type.SIGNAL to a tooltip constructor, 26.43.5
+    //   Lwb9->invokeSuspend) now returns the same no-tooltip object it already returns for another
+    //   state (Ljb9.a) while the switch is on; the call is untouched. The state class is
+    //   R8-renamed, so the patch anchors on Type.SIGNAL and the constructor shape. Smoke test + CLI
+    //   without -f + apkanalyzer verified; no runtime call is possible on the emulator.
+    // 2026-11-05 (#125): "Turn off Ad Campaign Analytics" (opt-in). Privacy Center's
+    //   biz_privacy_vc_events preference is read with a true fallback in three places (the settings
+    //   row state, the verified-campaign clickstream gate and the carousel clickstream gate); the
+    //   patch passes false as the fallback of each read, so the toggle starts off and stays
+    //   user-changeable (the putBoolean writer is untouched). Smoke test verified.
+    // 2026-11-06 (#125 follow-up, "Privacy tab"): "Privacy defaults" adds five switches under a new
+    // Privacy category that force the privacy-preserving fallback of the Privacy Center toggles:
+    // availability_disabled -> true, showProfileViewNotifications / fraudMessageLoggingOptIn /
+    // supernovaOptIn / verifiedBusinessCallLogsOptIn -> false. Each switch gates every boolean read
+    // of its key (the generic getBoolean(settings, key, fallback) helper and plain
+    // SharedPreferences.getBoolean(String, boolean); the putBoolean writers are untouched), so a
+    // stored choice still wins. The two "profiles privately" toggles have no local preference key
+    // and are not covered. Smoke test asserts a gate on every read of the five keys; CLI without -f
+    // applied the patch and apkanalyzer shows the gate in dh.b.
+    // 2026-11-06: "Block marketing notifications" (opt-in). Push types are dispatched by string:
+    // FS_NEWS, EVENT_CHANGE, OPEN_RACE_STAGE, NEWS_ARTICLE, USER_DATA_SYNC and INFO; INFO is the
+    // generic promotional push (URL + big picture). HandlerInfo.process is the only place that
+    // posts it, so the switch gates it to return-void. Smoke test asserts the gate and the stock
+    // body; CLI without -f applied it and apkanalyzer shows the gate. (The earlier "harness cannot
+    // see this class" note was a stale bundle: a rebuilt bundle passes.)
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
@@ -3308,6 +3374,15 @@ object Constants {
     // method's return-void, the analytics read forced to Boolean.TRUE and the account state's
     // (Z,Z,Z) constructor (now b/U1OKOurdkv) starting with const/4 p1/p2 = 1; resources.arsc and
     // AndroidManifest.xml stay byte-identical. Not run on a device yet.
+    // 2026-11-05 (issue #123): added "Fix home screen numbers tile" (1.16.35 manager
+    // b/SW2hvp9pUKPwwbUGc7p, builder qy3WTYmS4Jdr8PX6cXmVN, handler
+    // ebDxmR22bhI68maS9WEy4N9l(Tip)Z). The Channels diagnostic tip's message is a fingerprint of
+    // the channel widgets' concatenated hashCode() integers and was shown as a tile of giant
+    // numbers; the handler now answers false. The patch finds the manager, builder and handler by
+    // shape (no obfuscated names). NiagaraSmokeTest asserts the handler returns false and that the
+    // stock handler was const-true. Emulator (fresh 1.16.35, patched build): cold start OK and the
+    // normal onboarding tips still show; the diagnostic tile did not appear on a fresh install (it
+    // needs the user's state/remote config), so its disappearance was not observed at runtime.
     val COMPATIBILITY_NIAGARA = Compatibility(
         name = "Niagara Launcher",
         packageName = "bitpit.launcher",
@@ -3614,7 +3689,7 @@ object Constants {
     // and Prebid / Amazon bid into the Ad Manager request, so they are covered. The ad listeners
     // get no callback, so a slot that reserves space before loading may stay blank.
     // Known limitations: Taboola Classic widgets (sponsored content, TBLClassicUnit) are not
-    // covered, nor are ads inside L'Équipe's web/PWA pages. The paywall (Piano/Purchasely) is
+    // covered, nor are ads inside L'Ã‰quipe's web/PWA pages. The paywall (Piano/Purchasely) is
     // server-side and untouched. LequipeSmokeTest asserts every hook.
     // Decompile-checked 2026-10-17 (CLI, no -f): the 9 GMA classes above change, every load and
     // MobileAds static void starts with return-void, putPublisherFirstPartyIdEnabled returns 0,
@@ -3630,7 +3705,7 @@ object Constants {
     // 25 GMA methods change) pass; not run on the emulator (an armeabi-v7a APK doesn't install on
     // it). Still experimental (arm64 device check pending).
     val COMPATIBILITY_LEQUIPE = Compatibility(
-        name = "L'Équipe",
+        name = "L'Ã‰quipe",
         packageName = "lequipe.fr",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0A1E32,
@@ -3651,7 +3726,7 @@ object Constants {
     //   - Disable ads: the admob-plus webview-ad lambda that calls MobileAds.registerWebView and logs
     //     "Integrated the WebView API for Ads in " returns at once; rule 9: every MobileAds static
     //     void returns at once (initialize and registerWebView mandatory; the web app never calls
-    //     admob-plus start, and AdMob.execute is not touched); ad hosts (Ströer SDG, Yieldlove,
+    //     admob-plus start, and AdMob.execute is not touched); ad hosts (StrÃ¶er SDG, Yieldlove,
     //     Adscale, DoubleClick/GPT/AdSense, Outbrain, oddsserve) are blocked. A raw-resource step
     //     (no resource table re-encode, rule 12) hides <app-adtags>/<app-odd-banner> with a style
     //     before index.html's </head>, makes the main.<hash>.js AdtagService refreshAds /
@@ -3736,6 +3811,12 @@ object Constants {
     // onMenuAction first, Focus dismisses the menu and the extension runs the entry. The Compose
     // menu classes are reached by reflection (R8 narrows StandardMenuItem's constructor per release).
     // The other patches apply unchanged. Both FirefoxFocus smoke tests pass; not runtime-tested.
+    // 2026-11-05 (#130): "Move address bar to the bottom" (resource patch). fragment_browser.xml
+    // pins the BrowserToolbar (id browserToolbar) in a CoordinatorLayout with
+    // android:layout_gravity=top; the patch sets that attribute to bottom. Verified:
+    // FirefoxFocusSmokeTest asserts the attribute in the decoded layout, the CLI without -f applies
+    // it (aapt2 shows 0x50), and the emulator shows the bar above the navigation bar on a loaded
+    // page. Height, elevation, id and behaviour are untouched.
     val COMPATIBILITY_FIREFOX_FOCUS = Compatibility(
         name = "Firefox Focus",
         packageName = "org.mozilla.focus",
@@ -3962,7 +4043,7 @@ object Constants {
     )
 
     // Verified 2026-10-27 against ie.rte.news 10.0.2 (versionCode 440, APKPure XAPK merged with
-    // APKEditor, armeabi-v7a only; signer CN=Karina Carroll, OU=RTÉ Publishing, O=RTÉ, cert SHA-256
+    // APKEditor, armeabi-v7a only; signer CN=Karina Carroll, OU=RTÃ‰ Publishing, O=RTÃ‰, cert SHA-256
     // fe9b87e6...2117). Compose/Kotlin app, app modules R8-renamed, no PairIP and no billing. The ad
     // is an app widget, not an SDK slot: the article renderer builds an RteAdContainer (advertising
     // info + AdView), calls AdView.loadAd(request), and a Compose block draws the "ADVERTISEMENT"
@@ -3978,7 +4059,7 @@ object Constants {
     // article with no heading and no placeholder, and no crash. That stripped copy is a test vehicle
     // only - the shipped APK keeps its libs.
     val COMPATIBILITY_RTENEWS = Compatibility(
-        name = "RTÉ News",
+        name = "RTÃ‰ News",
         packageName = "ie.rte.news",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0B6E69,
@@ -4073,6 +4154,67 @@ object Constants {
         targets = listOf(AppTarget(version = "6.15.10", versionCode = 731))
     )
 
+    // Verified 2026-11-05 against kgs.com.addmusictovideos 9.5 (versionCode 121; Google Play arm64
+    // splits via gplaydl, merged with APKEditor; app label Add Music; signer CN=Android, OU=Android,
+    // O=Google Inc., the Play app-signing key, cert SHA-256 f84527d6...f3cd). Native Kotlin app,
+    // 249k methods over 5 dex, no PairIP or packer. Ads use the next-gen Google Ads SDK
+    // (com.google.android.libraries.ads.mobile.sdk, R8-repackaged as ads_mobile_sdk.*), 156 refs;
+    // Play Billing 376, Qonversion 3534, Firebase 31.
+    // Premium: Qonversion entitlement "premium", synced by an R8-renamed manager into the
+    // "premium_access" SharedPreferences flag "is_premium" and a StateFlow; the app seeds the flow
+    // from the cached flag at startup and then re-checks Qonversion. Enable Premium returns true
+    // from the manager's static ()Z getter, forces the mapper's Boolean.valueOf input true and
+    // seeds the startup cache read true. A re-signed stock build starts (no app-level signature
+    // check; the Lucky Patcher crash is not reproduced by re-signing alone).
+    // Verified 2026-11-05: AddMusicSmokeTest passes; the CLI (no -f) applies Enable Premium;
+    // apkanalyzer shows the getter returning const/4 v0,1, the mapper's const/4 v0,1 before
+    // Boolean.valueOf and the startup seed const/4 v2,1 after getBoolean("is_premium"). Emulator:
+    // re-signed stock opens the paywall (kgs.billings.PurchaseActivity) after onboarding; the
+    // patched build (same test key and data) goes straight to the main screen with the "PRO"
+    // badge. The interstitial helpers (p5.m.b, p5.n.b) return before loading when W3.c.d() answers
+    // true, so premium also suppresses those ads; the remaining native units are next-gen GMA and
+    // are not patched separately.
+    val COMPATIBILITY_ADDMUSIC = Compatibility(
+        name = "Add Music",
+        packageName = "kgs.com.addmusictovideos",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE94122, // The adaptive icon's background colour (ic_launcher_background).
+        signatures = setOf("f84527d66a38d0b79dc2a329d9d351bd28fae6efb58d5862a28d08f5c973f3cd"), // CN=Android, O=Google Inc. (Play app-signing key)
+        targets = listOf(AppTarget(version = "9.5", versionCode = 121))
+    )
+
+    // Verified 2026-11-05 against com.soosu.notialarm 1.3.29 (versionCode 350103236; Google Play
+    // arm64 splits via gplaydl, merged with APKEditor; app label NotiAlarm; signer CN=soosu,
+    // OU=soosu studio, O=soosu studio, cert SHA-256 5848c223...2df3). Native Kotlin app (no
+    // Flutter/RN), 247k methods over 5 dex. Ads are a large mediation stack (GMA 2927 hits, Meta
+    // 1115, AppLovin/MAX 20, Unity/IronSource/Vungle/Pangle/InMobi 24921); Play Billing 628,
+    // Firebase, Play Integrity.
+    // PairIP is the license-check wrapper only: the manifest Application is
+    // com.pairip.application.Application, which calls LicenseClient.checkLicense(Context) from
+    // attachBaseContext (and LicenseContentProvider, which is registered, calls it too), but there
+    // is no libpairipcore.so and no VMRunner/SignatureCheck. Re-signed builds fail the check, get
+    // LicenseActivity and exit, so Disable license check returns from checkLicense.
+    // Premium is local: AppPreference.isPremiumUser() reads the "is_premium_user" boolean from the
+    // "app_preference" SharedPreferences file, and every premium gate calls it (the BillingClient
+    // wrapper d10 seeds its cached premium state from it, the billing UI state k10 starts from it,
+    // MainActivity and DetailActivity check it). Enable Premium returns true from that getter; the
+    // Play Billing client, the product premium_upgrade_2026 and setPremiumUser stay intact.
+    // Verified 2026-11-05: NotialarmSmokeTest passes; the CLI (no -f) applies both patches;
+    // apkanalyzer shows checkLicense's return-void first and isPremiumUser starting with
+    // const/4 v0, 0x1; return v0. Emulator (x86_64, same test key): re-signed stock fails
+    // LicenseClient ("Licensing service could not process request") and stays on
+    // SplashScreenActivity; a license-only build starts and Settings shows "Premium Upgrade" plus
+    // an ad banner; the full patched build reaches MainActivity, Settings shows "Premium User" and
+    // the banner is gone.
+    val COMPATIBILITY_NOTIALARM = Compatibility(
+        name = "NotiAlarm",
+        packageName = "com.soosu.notialarm",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xFAF5FF, // The adaptive icon's background colour (ic_launcher_background).
+        signatures = setOf("5848c2237e07f41aa409ca5ff5076f5a46cc74170330aa5b34d51c720ac62df3"), // CN=soosu, OU=soosu studio, O=soosu studio
+        targets = listOf(AppTarget(version = "1.3.29", versionCode = 350103236))
+    )
+
     // Verified 2026-10-28 against com.fenchtose.reflog 1.3.3 (versionCode 1331, APKPure single
     // APK, all four ABIs; signer CN=Jay Rambhia, cert SHA-256 5ab41983...6727, the developer's own
     // key). The package is still named reflog but the app label is Taskito (it was Reflog).
@@ -4142,7 +4284,7 @@ object Constants {
     )
 
     // Verified 2026-10-29 against dk.dr.webplayer 4.39.0 (versionCode 439000, APKMirror bundle
-    // merged with APKEditor, no native libs; signer CN=DR TV, O=DR TV, L=København, C=DK, cert
+    // merged with APKEditor, no native libs; signer CN=DR TV, O=DR TV, L=KÃ¸benhavn, C=DK, cert
     // SHA-256 0f5de4c3...3743, same as APKPure). The app is the Massive Axis SDK
     // (axis.android.sdk.*) and R8 keeps its class and member names, as it keeps the Firebase,
     // Segment and NPAW ones, so kept names are used as anchors here, each paired with a string or
@@ -4288,3 +4430,6 @@ object Constants {
         targets = listOf(AppTarget(version = "1.0.31", versionCode = 89))
     )
 }
+
+
+

@@ -1,8 +1,9 @@
-import app.morphe.patcher.patch.Patch
+﻿import app.morphe.patcher.patch.Patch
 import app.template.patches.shared.hevalcontrols.HEVAL_SETTINGS_CLASS
 import app.template.patches.shared.hevalcontrols.HevalFeature
 import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
 import app.template.patches.truecaller.controls.TRUECALLER_CONTROLS_ENTRY
+import app.template.patches.truecaller.misc.privacy.PRIVACY_FEATURES
 import app.template.patches.truecaller.layout.BRAND_MEDIA_HELPER
 import app.template.patches.truecaller.layout.CALL_LOG_NUMBER_SEPARATOR
 import app.template.patches.truecaller.layout.CALL_LOG_SUBTITLE_HELPER
@@ -94,6 +95,7 @@ private const val HIDE_CALL_LOG_FILTERS = "truecaller.hide_call_log_filters"
 private const val HIDE_FREQUENT_CONTACTS = "truecaller.hide_frequent_contacts"
 private const val HIDE_IMPORTANT_SENDERS = "truecaller.hide_important_senders"
 private const val DISABLE_CALL_HAPTICS = "truecaller.disable_call_button_haptics"
+private const val HIDE_POOR_NETWORK_WARNING = "truecaller.hide_poor_network_warning"
 private const val SWAP_CALL_BUTTONS = "truecaller.swap_call_buttons"
 private const val SWAP_CALL_LAYOUTS = "Lapp/template/extension/truecaller/SwapCallButtons;"
 
@@ -119,6 +121,12 @@ private val HEVAL_FEATURES = listOf(
     Triple("Hide important senders", HIDE_IMPORTANT_SENDERS, "Contacts & business" to false),
     Triple("Disable call button haptics", DISABLE_CALL_HAPTICS, "Call screen" to false),
     Triple("Swap call answer and decline buttons", SWAP_CALL_BUTTONS, "Call screen" to false),
+)
+
+// Controls added after the conversion pass: they are off in the app until the user turns them on,
+// so both the patch and the registry record default to false.
+private val OPT_IN_FEATURES = listOf(
+    Triple("Hide poor network warning", HIDE_POOR_NETWORK_WARNING, "Call screen"),
 )
 
 // "Hide profile menu items" (#120): five switches in one patch, all off by default, no restart.
@@ -266,12 +274,16 @@ class TruecallerSmokeTest {
         }
 
         // 2. The registry lists exactly the twenty converted features, with each patch's Manager name
-        // and description, default on, plus the five profile menu switches (default off). They are
-        // written in registration (patch execution) order, so the records are compared as a set.
+        // and description, default on, the opt-in controls (default off) and the five profile menu
+        // switches (default off). They are written in registration (patch execution) order, so the
+        // records are compared as a set.
         val expected = HEVAL_FEATURES.map { (name, id, rest) ->
             val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
             HevalFeature(id, name, patch.description!!, rest.first, default = true, restartRequired = rest.second)
-        } + PROFILE_MENU_FEATURES
+        } + OPT_IN_FEATURES.map { (name, id, category) ->
+            val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
+            HevalFeature(id, name, patch.description!!, category, default = false)
+        } + PROFILE_MENU_FEATURES + PRIVACY_FEATURES
         val registry = byType.getValue("${HEVAL_EXTENSION}Registry;").methods.single { it.name == "encoded" }.instructions()
         check(registry.getOrNull(0)?.opcode == Opcode.CONST_STRING_JUMBO && registry.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT) {
             "Registry.encoded() was not rewritten"
@@ -339,6 +351,8 @@ class TruecallerSmokeTest {
                 "Enable Premium",
                 "Disable ads",
                 "Disable telemetry",
+                "Turn off Ad Campaign Analytics",
+                "Privacy defaults",
                 "Disable update prompts",
                 "Hide Assistant tab",
                 "Hide Scam feed",
@@ -362,6 +376,7 @@ class TruecallerSmokeTest {
                 "Hide important senders",
                 "Swap call answer and decline buttons",
                 "Disable call button haptics",
+                "Hide poor network warning",
                 PROFILE_MENU_PATCH,
                 "GmsCore support",
                 "Spoof signature",
@@ -375,6 +390,8 @@ class TruecallerSmokeTest {
         assertEnablePremium(classes, byType)
         assertDisableAds(classes, byType)
         assertDisableTelemetry(classes, byType)
+        assertTurnOffAdCampaignAnalytics(classes)
+        assertPrivacyDefaults(classes)
         assertDisableUpdatePrompts(classes)
         assertFeatureToggles(classes)
         assertHiddenTabs(classes)
@@ -391,6 +408,7 @@ class TruecallerSmokeTest {
         assertHideListItems(classes)
         assertSwapCallButtons(classes, byType)
         assertDisableCallButtonHaptics(classes, byType)
+        assertHidePoorNetworkWarning(classes, apk)
         assertHideProfileMenuItems(classes, byType, allPatches)
         // onGetCredential tests isAvailableOnDevice(int) in this build, so the routing applies.
         assertGmsCoreSupport(classes, workDir, PKG, TRUECALLER_INIT, SIGNATURE_SHA1, expectCredentialRouting = true)
@@ -719,6 +737,104 @@ class TruecallerSmokeTest {
         check(Regex("""android:name="firebase_crashlytics_collection_enabled"\s+android:value="true"""").containsMatchIn(manifest) &&
             "firebase_analytics_collection_deactivated" !in manifest && "firebase_sessions_enabled" !in manifest
         ) { "Disable telemetry changed the Firebase manifest meta-data" }
+    }
+
+    private fun assertTurnOffAdCampaignAnalytics(classes: List<ClassDef>) {
+        val key = "biz_privacy_vc_events"
+        fun Instruction.getBoolean() = call()?.takeIf {
+            (opcode == Opcode.INVOKE_STATIC || opcode == Opcode.INVOKE_STATIC_RANGE) &&
+                it.returnType == "Z" &&
+                it.parameterTypes.map(CharSequence::toString).let { p ->
+                    p.size == 3 && p[0].startsWith("L") && p[0] != "Ljava/lang/String;" &&
+                        p[1] == "Ljava/lang/String;" && p[2] == "Z"
+                }
+        }
+        fun keyRegister(method: Method): Int? {
+            val insns = method.instructions()
+            return insns.getOrNull(insns.indexOfFirst { it.stringOrNull() == key })?.let { (it as OneRegisterInstruction).registerA }
+        }
+        fun Instruction.readsKey(register: Int) = getBoolean() != null && when (this) {
+            is FiveRegisterInstruction -> registerCount == 3 && registerD == register
+            is RegisterRangeInstruction -> registerCount == 3 && startRegister + 1 == register
+            else -> false
+        }
+
+        val readers = classes.flatMap { it.methods }.filter { method ->
+            val register = keyRegister(method) ?: return@filter false
+            method.instructions().any { it.readsKey(register) }
+        }
+        check(readers.size == 3) {
+            "Ad Campaign Analytics readers: ${readers.map { "${it.definingClass}->${it.name}" }}"
+        }
+        for (reader in readers) {
+            val label = "${reader.definingClass}->${reader.name}"
+            val insns = reader.instructions()
+            val keyReg = keyRegister(reader)!!
+            val call = insns.indexOfFirst { it.readsKey(keyReg) }
+            val register = when (val invoke = insns[call]) {
+                is FiveRegisterInstruction -> invoke.registerE
+                is RegisterRangeInstruction -> invoke.startRegister + 2
+                else -> error("$label: getBoolean is not a register invoke (${invoke.opcode})")
+            }
+            val fallback = insns[call - 1]
+            check(fallback is NarrowLiteralInstruction && fallback.opcode == Opcode.CONST_4 &&
+                (fallback as OneRegisterInstruction).registerA == register && fallback.narrowLiteral == 0
+            ) {
+                "$label: the getBoolean fallback is not const/4 v$register, 0x0; " +
+                    "got ${fallback.opcode} ${(fallback as? NarrowLiteralInstruction)?.narrowLiteral}"
+            }
+        }
+    }
+
+    /** Privacy defaults: every getBoolean read of a key carries its Heval gate. */
+    private fun assertPrivacyDefaults(classes: List<ClassDef>) {
+        val features = mapOf(
+            "availability_disabled" to "truecaller.privacy_availability",
+            "showProfileViewNotifications" to "truecaller.privacy_profile_views",
+            "fraudMessageLoggingOptIn" to "truecaller.privacy_fraud_messages",
+            "supernovaOptIn" to "truecaller.privacy_social_graph",
+            "verifiedBusinessCallLogsOptIn" to "truecaller.privacy_business_call_logs",
+        )
+        fun Instruction.getBoolean() = call()?.takeIf { ref ->
+            ref.returnType == "Z" && ref.parameterTypes.map(CharSequence::toString).let { p ->
+                if (ref.definingClass == "Landroid/content/SharedPreferences;") {
+                    (opcode == Opcode.INVOKE_INTERFACE || opcode == Opcode.INVOKE_INTERFACE_RANGE ||
+                        opcode == Opcode.INVOKE_VIRTUAL || opcode == Opcode.INVOKE_VIRTUAL_RANGE) &&
+                        p.size == 2 && p[0] == "Ljava/lang/String;" && p[1] == "Z"
+                } else {
+                    (opcode == Opcode.INVOKE_STATIC || opcode == Opcode.INVOKE_STATIC_RANGE) &&
+                        p.size == 3 && p[0].startsWith("L") && p[0] != "Ljava/lang/String;" &&
+                        p[1] == "Ljava/lang/String;" && p[2] == "Z"
+                }
+            }
+        }
+        for ((key, feature) in features) {
+            val readers = classes.flatMap { it.methods }.filter { method ->
+                val insns = method.instructions()
+                val keyIndex = insns.indexOfFirst { it.stringOrNull() == key }
+                if (keyIndex < 0) return@filter false
+                val register = (insns[keyIndex] as OneRegisterInstruction).registerA
+                insns.any { insn ->
+                    insn.getBoolean() != null && when (insn) {
+                        is FiveRegisterInstruction -> insn.registerCount == 3 && insn.registerD == register
+                        is RegisterRangeInstruction -> insn.registerCount == 3 && insn.startRegister + 1 == register
+                        else -> false
+                    }
+                }
+            }
+            check(readers.isNotEmpty()) { "no getBoolean reader of $key" }
+            for (reader in readers) {
+                val label = "${reader.definingClass}->${reader.name}"
+                val insns = reader.instructions()
+                val gate = insns.any { it.stringOrNull() == feature }
+                val enabled = insns.any { insn ->
+                    insn.call()?.let {
+                        it.definingClass == "Lapp/template/extension/hevalcontrols/HevalSettings;" && it.name == "isEnabled"
+                    } == true
+                }
+                check(gate && enabled) { "$label: $key has no Heval gate for $feature" }
+            }
+        }
     }
 
     /**
@@ -1457,6 +1573,66 @@ class TruecallerSmokeTest {
         }
     }
 
+    private fun assertHidePoorNetworkWarning(classes: List<ClassDef>, apk: File) {
+        val tooltipType = "Lcom/truecaller/callui/presentation/ui/components/tooltip/CallUITooltipViewModel\$Type;"
+        val signal = "$tooltipType->SIGNAL:$tooltipType"
+        fun Instruction.tooltipField() = field()?.let { "${it.definingClass}->${it.name}:${it.type}" }
+        fun Instruction.signalConstructor() = (this as? ReferenceInstruction)?.reference as? MethodReference
+
+        // Stock: the single method that passes Type.SIGNAL to a tooltip constructor, and the
+        // no-tooltip constant it returns for another state (a static field of its own type, read
+        // and returned right away).
+        val stockReaders = patchedApkClasses(apk).flatMap { it.methods }.filter { method ->
+            method.instructions().indices.any { index ->
+                val insns = method.instructions()
+                insns[index].tooltipField() == signal &&
+                    insns.getOrNull(index + 1)?.signalConstructor()
+                        ?.let { it.name == "<init>" && it.parameterTypes.lastOrNull()?.toString() == tooltipType } == true
+            }
+        }
+        check(stockReaders.size == 1) {
+            "stock Type.SIGNAL readers: ${stockReaders.map { "${it.definingClass}->${it.name}" }}"
+        }
+        val stock = stockReaders.single()
+        val stockInsns = stock.instructions()
+        val noneFields = stockInsns.indices.mapNotNull { index ->
+            val read = stockInsns[index]
+            if (read.opcode != Opcode.SGET_OBJECT) return@mapNotNull null
+            val field = read.field() ?: return@mapNotNull null
+            if (field.type != field.definingClass || field.type == "Ljava/lang/Object;") return@mapNotNull null
+            val ret = stockInsns.getOrNull(index + 1) ?: return@mapNotNull null
+            if (ret.opcode != Opcode.RETURN_OBJECT) return@mapNotNull null
+            if ((read as OneRegisterInstruction).registerA != (ret as OneRegisterInstruction).registerA) return@mapNotNull null
+            "${field.definingClass}->${field.name}:${field.type}"
+        }.distinct()
+        check(noneFields.size == 1) { "stock no-tooltip constants in ${stock.definingClass}->${stock.name}: $noneFields" }
+        val none = noneFields.single()
+
+        // Patched: the gate sits before the SIGNAL tooltip's constructor and answers with the same
+        // no-tooltip constant while the feature is on.
+        val patched = classes.single { it.type == stock.definingClass }.methods.single {
+            it.name == stock.name &&
+                it.parameterTypes.map(CharSequence::toString) == stock.parameterTypes.map(CharSequence::toString)
+        }
+        val insns = patched.instructions()
+        val signalIndex = insns.indexOfFirst { it.tooltipField() == signal }
+        check(signalIndex > 0) { "${stock.definingClass}->${stock.name} no longer reads Type.SIGNAL" }
+        val newInstance = signalIndex - 1
+        check(insns[newInstance].opcode == Opcode.NEW_INSTANCE) {
+            "the instruction before Type.SIGNAL is ${insns[newInstance].opcode}, not the tooltip constructor"
+        }
+        val at = newInstance - 6
+        val target = assertGate(patched, HIDE_POOR_NETWORK_WARNING, "poor network tooltip", at = at)
+        check(target == newInstance) { "the poor network gate falls through to $target, not the stock constructor at $newInstance" }
+        check(insns[at + 4].opcode == Opcode.SGET_OBJECT && insns[at + 4].tooltipField() == none) {
+            "the poor network gate does not read the stock no-tooltip constant $none; " +
+                "got ${insns[at + 4].opcode} ${insns[at + 4].tooltipField()}"
+        }
+        check(insns[at + 5].opcode == Opcode.RETURN_OBJECT) {
+            "the poor network gate does not return the no-tooltip constant; got ${insns[at + 5].opcode}"
+        }
+    }
+
     private fun assertClassicCallLogSwipe(classes: List<ClassDef>, byType: Map<String, ClassDef>) {
         // "featureCallLogRevamp" is checked in assertToggleOverrides. The classic lists' RecyclerView
         // setup reads "featureFavouriteContacts" and, with it on, skipped the swipe helper; the
@@ -1992,7 +2168,7 @@ class TruecallerSmokeTest {
         check(textClass.superclass == labelType && textClass.methods.any { m -> m.name == "toString" && m.strings().any { it.startsWith("Text(text=") } }) {
             "$textType is not the text subtitle label (superclass ${textClass.superclass})"
         }
-        // The number is formatted for the row's country and joined after " · ".
+        // The number is formatted for the row's country and joined after " Â· ".
         check(insns.any { it.reads(countryCode, Opcode.IGET_OBJECT) }) { "$label does not read ${countryCode.name}" }
         check(insns.any { it.call()?.let { c -> c.definingClass == "Landroid/telephony/PhoneNumberUtils;" && c.name == "formatNumber" } == true }) {
             "$label does not call PhoneNumberUtils.formatNumber"
@@ -2114,3 +2290,7 @@ class TruecallerSmokeTest {
         }
     }
 }
+
+
+
+

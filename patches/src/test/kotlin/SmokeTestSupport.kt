@@ -1,4 +1,4 @@
-import app.morphe.patcher.Patcher
+﻿import app.morphe.patcher.Patcher
 import app.morphe.patcher.PatcherConfig
 import app.morphe.patcher.apk.ApkUtils.applyTo
 import app.morphe.patcher.patch.Patch
@@ -405,3 +405,4 @@ fun assertOptionIconsWired(byType: Map<String, ClassDef>, init: Method, provider
             "ListPicker does not hand the image URL to OptionImageLoader.bind")
     }
 }
+
