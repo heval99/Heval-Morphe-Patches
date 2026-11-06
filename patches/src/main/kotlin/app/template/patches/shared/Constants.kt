@@ -289,6 +289,27 @@ object Constants {
             //   flags was not traced.
             //   FingerprintProbe: every fingerprint OK-unique except the documented optional
             //   TennisPromoSheet.
+            // 2026-11-06, same build, three new patches:
+            //   - Disable update prompts: the in-app update helper (o7o here, built with
+            //     (ComponentActivity, I)) returns at once from its Play Core check
+            //     ((Context, launcher)V calling Task.addOnSuccessListener) and its flow
+            //     ((AppUpdateInfo, launcher)V calling PendingIntent.getIntentSender). The check's
+            //     listener forces an immediate update when Remote Config "force_update_to_version"
+            //     is above the build (16172 on the server on 2026-11-06) or the update is 60+ days
+            //     old; MainActivity.onStart resumes through the same flow method.
+            //   - Hide match chat (Heval Controls): the Chat button is the ExtendedFloatingActionButton
+            //     with id floating_action_button in four layouts. The helper that shows it (static
+            //     (EFAB, Function0)V with "PREF_CHAT_SHOW_ANIMATED_CHAT_ICON") and the button's (I)V
+            //     motion method ask SofascoreControls.hideChatButton first; the extension keeps the
+            //     chat button GONE with a pre-draw guard (three pages also set its visibility).
+            //   - Hide main tabs (Heval Controls): the tab list builder (static ArrayList(Context,
+            //     String) reading "should_show_world_cup", over the tab enum naming MATCHES ..
+            //     FANTASY) passes its result through SofascoreControls.filterMainTabs. A hidden tab's
+            //     deep link finds no page (MainActivity's select-tab lookup gets -1 and does nothing).
+            //   Not added (server values read on the emulator 2026-11-06): forcing hidden features
+            //   on (team calendar, new box score, basketball rating, sort by final score, enhanced
+            //   images are already true on the server) and "chat_translate_showDialog" (it gates the
+            //   chat translation feature itself, not a pop-up).
             AppTarget(
                 version = "26.10.26",
                 versionCode = 261026004
