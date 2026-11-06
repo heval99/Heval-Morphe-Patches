@@ -16,6 +16,7 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
@@ -50,6 +51,8 @@ private val FLASHSCORE_PATCHES = setOf(
     "Disable telemetry",
     "Disable update prompts",
     "Hide betting content",
+    "Use system font",
+    "Use system font (styles)",
 )
 
 // Hide betting content: the remote-config keys and the value the helper must answer with.
@@ -756,5 +759,77 @@ class FlashscoreSmokeTest {
                 )
             }
         }
+
+        // Use system font: every read of Flashscore's four font families now points at Compose's
+        // FontFamily.Default, so the whole UI renders with the device font.
+        fun Method.isDefaultToString() = name == "toString" && parameterTypes.isEmpty() &&
+            returnType == "Ljava/lang/String;" &&
+            instructions().let { insns ->
+                insns.size == 2 && insns[0].opcode == Opcode.CONST_STRING &&
+                    ((insns[0] as? ReferenceInstruction)?.reference as? StringReference)?.string ==
+                    "FontFamily.Default" && insns[1].opcode == Opcode.RETURN_OBJECT
+            }
+        val defaultFamily = classes.singleOrNull { cls -> cls.methods.any { it.isDefaultToString() } }
+            ?: error("FontFamily.Default class not found")
+        val fontFamily = classes.singleOrNull { cls ->
+            cls.fields.count { it.type == defaultFamily.type && AccessFlags.STATIC.isSet(it.accessFlags) } == 1
+        } ?: error("FontFamily class not found")
+        val defaultField = fontFamily.fields.single {
+            it.type == defaultFamily.type && AccessFlags.STATIC.isSet(it.accessFlags)
+        }
+        val holder = classes.singleOrNull { cls ->
+            val statics = cls.fields.filter { AccessFlags.STATIC.isSet(it.accessFlags) }
+            statics.size == 4 && statics.map { it.type }.distinct().size == 1 &&
+                classes.singleOrNull { it.type == statics.first().type }?.superclass == fontFamily.type
+        } ?: error("Flashscore font family holder not found")
+        val oldFields = holder.fields.filter { AccessFlags.STATIC.isSet(it.accessFlags) }.map { it.name }.toSet()
+        fun Instruction.fieldRefName(): String? =
+            ((this as? ReferenceInstruction)?.reference as? FieldReference)?.name
+        fun Instruction.definingType(): String? =
+            ((this as? ReferenceInstruction)?.reference as? FieldReference)?.definingClass
+        val familyReads = classes.flatMap { it.methods }
+            .filter { it.implementation != null }
+            .flatMap { it.instructions() }
+            .filter {
+                it.opcode == Opcode.SGET_OBJECT && it.definingType() == holder.type && it.fieldRefName() in oldFields
+            }
+        assertTrue(familyReads.isEmpty(), "${holder.type}: ${familyReads.size} reads still use the custom families")
+        val defaultReads = classes.flatMap { it.methods }
+            .filter { it.implementation != null }
+            .flatMap { it.instructions() }
+            .count {
+                it.opcode == Opcode.SGET_OBJECT && it.definingType() == fontFamily.type &&
+                    it.fieldRefName() == defaultField.name
+            }
+        assertTrue(defaultReads > 0, "no read of ${fontFamily.type}->${defaultField.name} after the patch")
+
+        // Use system font (styles): the decoded text appearances and layouts no longer name the
+        // custom families, and the weight mapping uses the system families.
+        val styles = workDir.walkTopDown()
+            .singleOrNull { it.name == "styles.xml" && it.parentFile.name == "values" }
+            ?: error("res/values/styles.xml was not decoded under $workDir")
+        val stylesDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(styles)
+        val fontItems = stylesDoc.getElementsByTagName("item").let { items ->
+            (0 until items.length).map { items.item(it) as Element }
+        }.filter { it.getAttribute("name") in setOf("android:fontFamily", "fontFamily") }
+        assertTrue(fontItems.isNotEmpty(), "styles.xml has no fontFamily items")
+        val customLeft = fontItems.filter { it.textContent.trim().startsWith("@font/") }
+        assertTrue(customLeft.isEmpty(), "${customLeft.size} text appearances still name a custom font")
+        assertTrue(
+            fontItems.map { it.textContent.trim() }.any { it.startsWith("sans-serif") },
+            "styles.xml fontFamily items are not system families: ${fontItems.map { it.textContent.trim() }.distinct()}",
+        )
+        val layoutFonts = workDir.walkTopDown()
+            .filter { it.parentFile?.name == "layout" && it.extension == "xml" }
+            .flatMap { file ->
+                val nodes = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
+                    .getElementsByTagName("*")
+                (0 until nodes.length).mapNotNull { nodes.item(it) as? Element }.flatMap { element ->
+                    val attributes = element.attributes
+                    (0 until attributes.length).map { attributes.item(it) }.filter { it.nodeName.endsWith("fontFamily") }
+                }
+            }
+            .map { it.nodeValue }
+        assertTrue(layoutFonts.none { it.startsWith("@font/") }, "layouts still name a custom font: $layoutFonts")
     }
 }

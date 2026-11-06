@@ -1160,6 +1160,18 @@ object Constants {
     // marketing popups re-anchored: EventListActivity.onResume (holds "btnGoUrl") nulls the
     // dialog model read back from the "dialogSupport" helper right before its null check, and the
     // InAppStrip parser matches the model by simple name. Runtime not tested yet.
+    // 2026-11-05 (#128): "Use system font" (opt-in, two layers). The Compose typography holder
+    // (four static FontListFontFamily fields for livesport, livesport_bold, livesport_extrabold and
+    // flashscore_numbers_regular) is located by shape, and every read of those fields is replaced
+    // with Compose's FontFamily.Default (found through its "FontFamily.Default" toString literal).
+    // The companion resource patch "Use system font (styles)" maps the 32 @font/ references in
+    // res/values/styles.xml and the three layouts that set fontFamily inline to sans-serif /
+    // sans-serif-medium / sans-serif-black by weight. Verified: FlashscoreSmokeTest (bytecode reads
+    // and the decoded styles/layouts), CLI without -f (aapt2 shows 0x010103ac="sans-serif" and no
+    // @font/ reference left in styles), and the emulator, where the league list and the match screen
+    // render the system font with the text re-flowing at the wider metrics and no truncation. The
+    // re-encoded table leaves every existing string value byte-identical (only sans-serif-black is
+    // added to the pool).
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",
