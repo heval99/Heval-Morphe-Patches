@@ -409,6 +409,13 @@ object Constants {
     // its patched()Z flag (CountryFilter / CompetitionFilter) to true. Seeds: the app's bundled
     // res/raw/available_leagues (388 leagues). Smoke test (both list patches, one filter call per
     // site) and CLI without -f (all 15 FotMob patches) pass. Not run on the emulator yet.
+    // 2026-11-05 (#129): "Show FotMob+ logo" (default on). The home toolbar swaps between
+    // ic_fotmob_logo_app_bar and ic_fotmob_plus_logo_app_bar from a Boolean flow: the toolbar
+    // refresher reads the readable shouldUseFotMobPlusLogo field (found by shape, the observer that
+    // writes it is left alone) and a second observer sets Toolbar.setLogo from the Boolean ternary.
+    // The patch replaces the field read with const/4 1 and nops the normal-logo branch. Verified:
+    // FotMobSmokeTest, CLI without -f, apkanalyzer (const/4 p0,1 and nop) and the emulator showing
+    // "FOTMOB+" in the home header. The wordmark drawables themselves are untouched.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",
