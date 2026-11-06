@@ -1,4 +1,4 @@
-package app.template.patches.flashscore.controls
+﻿package app.template.patches.flashscore.controls
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.resourcePatch
@@ -27,7 +27,9 @@ val flashscoreControlsRowPatch = resourcePatch(
 ) {
     compatibleWith(COMPATIBILITY_FLASHSCORE)
 
-    execute {
+    // Runs after every patch's decode: an earlier edit is reset when a later resource patch
+    // decodes the resource tree again.
+    finalize {
         decode(SETTINGS_LAYOUT)
         document(SETTINGS_LAYOUT).use { doc ->
             val elements = doc.getElementsByTagName("*")
@@ -66,3 +68,4 @@ val flashscoreControlsRowPatch = resourcePatch(
         }
     }
 }
+

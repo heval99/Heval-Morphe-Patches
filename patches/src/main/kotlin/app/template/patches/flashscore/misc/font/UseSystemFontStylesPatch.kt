@@ -1,4 +1,4 @@
-package app.template.patches.flashscore.misc.font
+﻿package app.template.patches.flashscore.misc.font
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.resourcePatch
@@ -26,8 +26,10 @@ val useSystemFontStylesPatch = resourcePatch(
     compatibleWith(COMPATIBILITY_FLASHSCORE)
 
     execute {
-        val layoutPaths = decode("res/layout/*.xml")
-            .filter { path -> get(path).readText().contains("@font/") }
+        // Styles only. Decoding res/layout here would reset the layout tree the "Patch settings"
+        // row patch edits (the patcher re-reads the requested layout entries, activity_settings
+        // included), so the three layouts that also set fontFamily inline are left to that patch's
+        // pass instead of being rewritten here.
         decode(STYLES)
         var replaced = 0
 
@@ -45,27 +47,8 @@ val useSystemFontStylesPatch = resourcePatch(
             }
         }
 
-        // android:fontFamily="@font/..." on the few TextViews that set it inline.
-        for (path in layoutPaths) {
-            document(path).use { doc ->
-                val elements = doc.getElementsByTagName("*")
-                for (index in 0 until elements.length) {
-                    val element = elements.item(index) as? Element ?: continue
-                    val attributes = element.attributes
-                    for (attribute in 0 until attributes.length) {
-                        val node = attributes.item(attribute)
-                        if (!node.nodeName.endsWith("fontFamily")) continue
-                        val value = node.nodeValue.orEmpty()
-                        if (!value.startsWith("@font/")) continue
-                        element.setAttribute(node.nodeName, systemFamily(value))
-                        replaced++
-                    }
-                }
-            }
-        }
-
         if (replaced == 0) {
-            throw PatchException("$STYLES and res/layout: no @font/ reference was rewritten")
+            throw PatchException("$STYLES: no @font/ reference was rewritten")
         }
     }
 }
@@ -79,3 +62,4 @@ private fun systemFamily(resource: String): String {
         else -> "sans-serif"
     }
 }
+

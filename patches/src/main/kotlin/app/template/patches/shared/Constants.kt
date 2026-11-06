@@ -1,4 +1,4 @@
-package app.template.patches.shared
+﻿package app.template.patches.shared
 
 import app.morphe.patcher.patch.ApkFileType
 import app.morphe.patcher.patch.AppTarget
@@ -52,7 +52,7 @@ object Constants {
     // restores them. The Live
     // tab had no English matches live, so it was not observed.
     // 2026-11-03: "Hide competitions" (opt-in, Patch settings list sofascore.hidden_competitions,
-    // keys = UniqueTournament ids, labels "category · name") on 26.10.19. The hook sites of both
+    // keys = UniqueTournament ids, labels "category Â· name") on 26.10.19. The hook sites of both
     // list patches moved into one unnamed patch (sofascoreListFiltersPatch); new anchors there: the
     // kept getter UniqueTournamentGroupResponse.getUniqueTournaments (a country's competitions in
     // Leagues) and the request lambda calling NetworkCoroutineAPI.categoryScheduledEvents (an
@@ -402,7 +402,7 @@ object Constants {
     // Leagues tab and search after a restart and back after Clear all (the day's match list had no
     // English matches, so match lists were not observed).
     // 2026-11-03: "Hide competitions" (opt-in, Patch settings list fotmob.hidden_competitions,
-    // keys = league ids, a stage keyed by its ParentId; labels "country · name"; picker logo
+    // keys = league ids, a stage keyed by its ParentId; labels "country Â· name"; picker logo
     // images.fotmob.com/image_resources/logo/leaguelogo/{id}.png) on 240.17974.20261023. No new
     // anchors: the three Hide countries hook sites moved into one unnamed patch
     // (fotMobListFiltersPatch) that both list patches depend on, and each feature patch only rewrites
@@ -776,8 +776,8 @@ object Constants {
             // Bravearm64Universal.apk): all patches apply unchanged; BraveSmokeTest passes.
             // Rule 12 (2026-10-19 audit): the Brave Origin resource patch (XML defaults) re-encodes
             // the resource table, which strips the literal surrounding quotes of the Arabic
-            // (values-ar) 0_resource_name_obfuscated value "%1$s" و"%2$s" (it comes back as
-            // %1$s" و"%2$s). Cosmetic: a quote mark in one Arabic string.
+            // (values-ar) 0_resource_name_obfuscated value "%1$s" Ùˆ"%2$s" (it comes back as
+            // %1$s" Ùˆ"%2$s). Cosmetic: a quote mark in one Arabic string.
             // 2026-10-19: older targets 1.95.104, 1.96.61 dropped (latest version only, owner);
             // BraveSmokeTest runs against 1.97.56. No versionCode: Brave's arm64 and x86_64
             // builds of one version carry different versionCodes.
@@ -869,7 +869,7 @@ object Constants {
     // (arm64-v8a + armeabi-v7a, Android 6.0+ / minSdk 23). App code is NOT obfuscated:
     // 3,589 readable classes under notes.easy.android.mynotes.
     //
-    // Entitlement is entirely local — there is no license server. Everything routes through
+    // Entitlement is entirely local â€” there is no license server. Everything routes through
     // three public static booleans on notes.easy.android.mynotes.App:
     //   isVip()Z       38 call sites - master gate for premium assets (fonts, backgrounds,
     //                  stickers, drawing tools). Per-asset flags such as DrawPatternRes.isVip()
@@ -887,7 +887,7 @@ object Constants {
     // Important: billing/BillingManager runs queryPurchaseState() on startup and its
     // callbacks (BillingManager$5/$7/$8) write those prefs back from whatever Play reports,
     // so a non-payer gets them reset to false. That is why we patch the *consumers*
-    // (App.isVip/isAdFree) rather than the writers — forced return values ignore the reset.
+    // (App.isVip/isAdFree) rather than the writers â€” forced return values ignore the reset.
     //
     // SKUs: BILLING_MONTH / BILLING_YEAR / BILLING_LIFETIME / BILLING_MONTH_TO_YEAR /
     // BILLING_UP_TO_LIFETIME (analytics suffixes "1m", "1y", "lifetime").
@@ -1165,13 +1165,14 @@ object Constants {
     // flashscore_numbers_regular) is located by shape, and every read of those fields is replaced
     // with Compose's FontFamily.Default (found through its "FontFamily.Default" toString literal).
     // The companion resource patch "Use system font (styles)" maps the 32 @font/ references in
-    // res/values/styles.xml and the three layouts that set fontFamily inline to sans-serif /
-    // sans-serif-medium / sans-serif-black by weight. Verified: FlashscoreSmokeTest (bytecode reads
-    // and the decoded styles/layouts), CLI without -f (aapt2 shows 0x010103ac="sans-serif" and no
-    // @font/ reference left in styles), and the emulator, where the league list and the match screen
-    // render the system font with the text re-flowing at the wider metrics and no truncation. The
-    // re-encoded table leaves every existing string value byte-identical (only sans-serif-black is
-    // added to the pool).
+    // res/values/styles.xml to sans-serif / sans-serif-medium / sans-serif-black by weight.
+    // Styles only: decoding the three layouts that also set a font inline would reset the layout
+    // tree the Patch settings row patch edits. Verified: FlashscoreSmokeTest (bytecode reads and
+    // the decoded styles), CLI without -f (aapt2 shows 0x010103ac="sans-serif" and no @font/
+    // left in styles) and the emulator, where the league list and the match screen render the
+    // system font with the text re-flowing at the wider metrics and no truncation. The re-encoded
+    // table leaves every existing string value byte-identical (only sans-serif-black is added to
+    // the pool).
     // 2026-11-06: "Spoof signature" (the Play certificate, SHA-1 fd9fbf3b...bc1, from the v3
     // signing block of the base split) so Firebase Installations/FCM keep accepting the re-signed
     // build. "Patch settings": the shared Heval Controls host with a "Patch settings" row in the
@@ -1185,6 +1186,12 @@ object Constants {
     // setContentView, layout include and re-constraint, getDurationScale redirect, registry ids),
     // CLI without -f, and the emulator: the row opens the screen, it lists both features, toggling
     // one shows the restart banner and the app restarts with the switch on and no crash.
+    // "Force edge-to-edge" (opt-in) forces the navigation-bar colour argument at every site that
+    // sets both system bar colours (the three Material edge-to-edge helpers) to transparent, so the
+    // gesture pill shares the content background; the status bar and the icon appearance are left
+    // alone. Verified by FlashscoreSmokeTest (every setNavigationBarColor call is preceded by a zero
+    // constant in its colour register) and by the CLI; the emulator check of the visual result is
+    // still pending.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",
@@ -2336,7 +2343,7 @@ object Constants {
     //   static morpheCallLogSubtitle(entry, label) on the mapper's class replaces the label: for
     //   phonebookId 0, not blocked, non-blank name and number, the number (PhoneNumberUtils
     //   formatNumber with the upper-cased countryCode when it is two letters, else E.164), after
-    //   " · " when there is a text label (the (String) label class whose superclass is the
+    //   " Â· " when there is a text label (the (String) label class whose superclass is the
     //   subtitle type and whose toString prints "Text(text="). Owner decision: resource labels
     //   (recording, video, WhatsApp, screening, voicemail) stay as they are, without the number.
     //   An Exception in the helper keeps the stock label. Only the revamped call log uses this
@@ -3667,7 +3674,7 @@ object Constants {
     // and Prebid / Amazon bid into the Ad Manager request, so they are covered. The ad listeners
     // get no callback, so a slot that reserves space before loading may stay blank.
     // Known limitations: Taboola Classic widgets (sponsored content, TBLClassicUnit) are not
-    // covered, nor are ads inside L'Équipe's web/PWA pages. The paywall (Piano/Purchasely) is
+    // covered, nor are ads inside L'Ã‰quipe's web/PWA pages. The paywall (Piano/Purchasely) is
     // server-side and untouched. LequipeSmokeTest asserts every hook.
     // Decompile-checked 2026-10-17 (CLI, no -f): the 9 GMA classes above change, every load and
     // MobileAds static void starts with return-void, putPublisherFirstPartyIdEnabled returns 0,
@@ -3683,7 +3690,7 @@ object Constants {
     // 25 GMA methods change) pass; not run on the emulator (an armeabi-v7a APK doesn't install on
     // it). Still experimental (arm64 device check pending).
     val COMPATIBILITY_LEQUIPE = Compatibility(
-        name = "L'Équipe",
+        name = "L'Ã‰quipe",
         packageName = "lequipe.fr",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0A1E32,
@@ -3704,7 +3711,7 @@ object Constants {
     //   - Disable ads: the admob-plus webview-ad lambda that calls MobileAds.registerWebView and logs
     //     "Integrated the WebView API for Ads in " returns at once; rule 9: every MobileAds static
     //     void returns at once (initialize and registerWebView mandatory; the web app never calls
-    //     admob-plus start, and AdMob.execute is not touched); ad hosts (Ströer SDG, Yieldlove,
+    //     admob-plus start, and AdMob.execute is not touched); ad hosts (StrÃ¶er SDG, Yieldlove,
     //     Adscale, DoubleClick/GPT/AdSense, Outbrain, oddsserve) are blocked. A raw-resource step
     //     (no resource table re-encode, rule 12) hides <app-adtags>/<app-odd-banner> with a style
     //     before index.html's </head>, makes the main.<hash>.js AdtagService refreshAds /
@@ -4021,7 +4028,7 @@ object Constants {
     )
 
     // Verified 2026-10-27 against ie.rte.news 10.0.2 (versionCode 440, APKPure XAPK merged with
-    // APKEditor, armeabi-v7a only; signer CN=Karina Carroll, OU=RTÉ Publishing, O=RTÉ, cert SHA-256
+    // APKEditor, armeabi-v7a only; signer CN=Karina Carroll, OU=RTÃ‰ Publishing, O=RTÃ‰, cert SHA-256
     // fe9b87e6...2117). Compose/Kotlin app, app modules R8-renamed, no PairIP and no billing. The ad
     // is an app widget, not an SDK slot: the article renderer builds an RteAdContainer (advertising
     // info + AdView), calls AdView.loadAd(request), and a Compose block draws the "ADVERTISEMENT"
@@ -4037,7 +4044,7 @@ object Constants {
     // article with no heading and no placeholder, and no crash. That stripped copy is a test vehicle
     // only - the shipped APK keeps its libs.
     val COMPATIBILITY_RTENEWS = Compatibility(
-        name = "RTÉ News",
+        name = "RTÃ‰ News",
         packageName = "ie.rte.news",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0B6E69,
@@ -4262,7 +4269,7 @@ object Constants {
     )
 
     // Verified 2026-10-29 against dk.dr.webplayer 4.39.0 (versionCode 439000, APKMirror bundle
-    // merged with APKEditor, no native libs; signer CN=DR TV, O=DR TV, L=København, C=DK, cert
+    // merged with APKEditor, no native libs; signer CN=DR TV, O=DR TV, L=KÃ¸benhavn, C=DK, cert
     // SHA-256 0f5de4c3...3743, same as APKPure). The app is the Massive Axis SDK
     // (axis.android.sdk.*) and R8 keeps its class and member names, as it keeps the Firebase,
     // Segment and NPAW ones, so kept names are used as anchors here, each paired with a string or
@@ -4408,3 +4415,4 @@ object Constants {
         targets = listOf(AppTarget(version = "1.0.31", versionCode = 89))
     )
 }
+
