@@ -2565,6 +2565,15 @@ object Constants {
     //   row state, the verified-campaign clickstream gate and the carousel clickstream gate); the
     //   patch passes false as the fallback of each read, so the toggle starts off and stays
     //   user-changeable (the putBoolean writer is untouched). Smoke test verified.
+    // 2026-11-06 (#125 follow-up, "Privacy tab"): "Privacy defaults" adds five switches under a new
+    // Privacy category that force the privacy-preserving fallback of the Privacy Center toggles:
+    // availability_disabled -> true, showProfileViewNotifications / fraudMessageLoggingOptIn /
+    // supernovaOptIn / verifiedBusinessCallLogsOptIn -> false. Each switch gates every boolean read
+    // of its key (the generic getBoolean(settings, key, fallback) helper and plain
+    // SharedPreferences.getBoolean(String, boolean); the putBoolean writers are untouched), so a
+    // stored choice still wins. The two "profiles privately" toggles have no local preference key
+    // and are not covered. Smoke test asserts a gate on every read of the five keys; CLI without -f
+    // applied the patch and apkanalyzer shows the gate in dh.b.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
@@ -4415,4 +4424,5 @@ object Constants {
         targets = listOf(AppTarget(version = "1.0.31", versionCode = 89))
     )
 }
+
 

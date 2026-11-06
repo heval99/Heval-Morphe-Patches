@@ -1,8 +1,9 @@
-import app.morphe.patcher.patch.Patch
+﻿import app.morphe.patcher.patch.Patch
 import app.template.patches.shared.hevalcontrols.HEVAL_SETTINGS_CLASS
 import app.template.patches.shared.hevalcontrols.HevalFeature
 import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
 import app.template.patches.truecaller.controls.TRUECALLER_CONTROLS_ENTRY
+import app.template.patches.truecaller.misc.privacy.PRIVACY_FEATURES
 import app.template.patches.truecaller.layout.BRAND_MEDIA_HELPER
 import app.template.patches.truecaller.layout.CALL_LOG_NUMBER_SEPARATOR
 import app.template.patches.truecaller.layout.CALL_LOG_SUBTITLE_HELPER
@@ -282,7 +283,7 @@ class TruecallerSmokeTest {
         } + OPT_IN_FEATURES.map { (name, id, category) ->
             val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
             HevalFeature(id, name, patch.description!!, category, default = false)
-        } + PROFILE_MENU_FEATURES
+        } + PROFILE_MENU_FEATURES + PRIVACY_FEATURES
         val registry = byType.getValue("${HEVAL_EXTENSION}Registry;").methods.single { it.name == "encoded" }.instructions()
         check(registry.getOrNull(0)?.opcode == Opcode.CONST_STRING_JUMBO && registry.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT) {
             "Registry.encoded() was not rewritten"
@@ -351,6 +352,7 @@ class TruecallerSmokeTest {
                 "Disable ads",
                 "Disable telemetry",
                 "Turn off Ad Campaign Analytics",
+                "Privacy defaults",
                 "Disable update prompts",
                 "Hide Assistant tab",
                 "Hide Scam feed",
@@ -389,6 +391,7 @@ class TruecallerSmokeTest {
         assertDisableAds(classes, byType)
         assertDisableTelemetry(classes, byType)
         assertTurnOffAdCampaignAnalytics(classes)
+        assertPrivacyDefaults(classes)
         assertDisableUpdatePrompts(classes)
         assertFeatureToggles(classes)
         assertHiddenTabs(classes)
@@ -779,6 +782,57 @@ class TruecallerSmokeTest {
             ) {
                 "$label: the getBoolean fallback is not const/4 v$register, 0x0; " +
                     "got ${fallback.opcode} ${(fallback as? NarrowLiteralInstruction)?.narrowLiteral}"
+            }
+        }
+    }
+
+    /** Privacy defaults: every getBoolean read of a key carries its Heval gate. */
+    private fun assertPrivacyDefaults(classes: List<ClassDef>) {
+        val features = mapOf(
+            "availability_disabled" to "truecaller.privacy_availability",
+            "showProfileViewNotifications" to "truecaller.privacy_profile_views",
+            "fraudMessageLoggingOptIn" to "truecaller.privacy_fraud_messages",
+            "supernovaOptIn" to "truecaller.privacy_social_graph",
+            "verifiedBusinessCallLogsOptIn" to "truecaller.privacy_business_call_logs",
+        )
+        fun Instruction.getBoolean() = call()?.takeIf { ref ->
+            ref.returnType == "Z" && ref.parameterTypes.map(CharSequence::toString).let { p ->
+                if (ref.definingClass == "Landroid/content/SharedPreferences;") {
+                    (opcode == Opcode.INVOKE_INTERFACE || opcode == Opcode.INVOKE_INTERFACE_RANGE ||
+                        opcode == Opcode.INVOKE_VIRTUAL || opcode == Opcode.INVOKE_VIRTUAL_RANGE) &&
+                        p.size == 2 && p[0] == "Ljava/lang/String;" && p[1] == "Z"
+                } else {
+                    (opcode == Opcode.INVOKE_STATIC || opcode == Opcode.INVOKE_STATIC_RANGE) &&
+                        p.size == 3 && p[0].startsWith("L") && p[0] != "Ljava/lang/String;" &&
+                        p[1] == "Ljava/lang/String;" && p[2] == "Z"
+                }
+            }
+        }
+        for ((key, feature) in features) {
+            val readers = classes.flatMap { it.methods }.filter { method ->
+                val insns = method.instructions()
+                val keyIndex = insns.indexOfFirst { it.stringOrNull() == key }
+                if (keyIndex < 0) return@filter false
+                val register = (insns[keyIndex] as OneRegisterInstruction).registerA
+                insns.any { insn ->
+                    insn.getBoolean() != null && when (insn) {
+                        is FiveRegisterInstruction -> insn.registerCount == 3 && insn.registerD == register
+                        is RegisterRangeInstruction -> insn.registerCount == 3 && insn.startRegister + 1 == register
+                        else -> false
+                    }
+                }
+            }
+            check(readers.isNotEmpty()) { "no getBoolean reader of $key" }
+            for (reader in readers) {
+                val label = "${reader.definingClass}->${reader.name}"
+                val insns = reader.instructions()
+                val gate = insns.any { it.stringOrNull() == feature }
+                val enabled = insns.any { insn ->
+                    insn.call()?.let {
+                        it.definingClass == "Lapp/template/extension/hevalcontrols/HevalSettings;" && it.name == "isEnabled"
+                    } == true
+                }
+                check(gate && enabled) { "$label: $key has no Heval gate for $feature" }
             }
         }
     }
@@ -2114,7 +2168,7 @@ class TruecallerSmokeTest {
         check(textClass.superclass == labelType && textClass.methods.any { m -> m.name == "toString" && m.strings().any { it.startsWith("Text(text=") } }) {
             "$textType is not the text subtitle label (superclass ${textClass.superclass})"
         }
-        // The number is formatted for the row's country and joined after " · ".
+        // The number is formatted for the row's country and joined after " Â· ".
         check(insns.any { it.reads(countryCode, Opcode.IGET_OBJECT) }) { "$label does not read ${countryCode.name}" }
         check(insns.any { it.call()?.let { c -> c.definingClass == "Landroid/telephony/PhoneNumberUtils;" && c.name == "formatNumber" } == true }) {
             "$label does not call PhoneNumberUtils.formatNumber"
@@ -2236,3 +2290,7 @@ class TruecallerSmokeTest {
         }
     }
 }
+
+
+
+
