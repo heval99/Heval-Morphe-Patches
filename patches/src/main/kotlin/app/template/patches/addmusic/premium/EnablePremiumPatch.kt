@@ -73,6 +73,8 @@ val enablePremiumPatch = bytecodePatch(
         val bool = setterInsns[valueOf] as? FiveRegisterInstruction
             ?: throw PatchException("${manager.type}->${mutableSetter.name}: Boolean.valueOf is not a register invoke")
         val boolRegister = bool.registerC
+        // A jump straight to Boolean.valueOf would skip the forced value (in 9.5 it is not a target).
+        mutableSetter.requireNoBranchTargetAt(valueOf, "${manager.type}->${mutableSetter.name} entitlement result")
         mutableSetter.addInstructionsChecked(valueOf, "${const(boolRegister)} v$boolRegister, 0x1")
 
         // 3. Seed the startup cache read true: getBoolean("is_premium", ...) -> move-result -> 1.
@@ -113,7 +115,7 @@ private fun Method.isPremiumGetter(): Boolean {
     if (!AccessFlags.STATIC.isSet(accessFlags) || returnType != "Z" || parameterTypes.isNotEmpty()) return false
     if (implementation == null) return false
     val insns = instructions.toList()
-    return insns.any { it.calls("Ljb/h0;", "getValue") || it.callName() == "getValue" } &&
+    return insns.any { it.callName() == "getValue" } &&
         insns.any { it.callName() == "booleanValue" }
 }
 
