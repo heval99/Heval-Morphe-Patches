@@ -1,4 +1,4 @@
-﻿package app.template.patches.taskito.premium
+package app.template.patches.taskito.premium
 
 import app.morphe.patcher.Fingerprint
 
