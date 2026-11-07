@@ -3087,13 +3087,15 @@ object Constants {
     // and a reboot. No crashes.
     // 2026-10-25: updated to version 2.2.13 (versionCode 20213; APKPure XAPK merged, same signer);
     // HyperionSmokeTest passes on patcher 2.0.0; anchors unchanged.
+    // 2026-11-07: updated to 2.2.16 (Play arm64 build via gplaydl, versionCode 20216, same signer), all patches apply unchanged; smoke + CLI without -f.
+    // Runtime not run yet; smoke test and CLI run only.
     val COMPATIBILITY_HYPERION = Compatibility(
         name = "Hyperion Launcher",
         packageName = "projekt.launcher",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3C59AD, // Mid-point of the icon's blue-to-indigo background gradient.
         signatures = setOf("b83ad17c73dc062be4dc188f2b91e7f7632f69f85f962616e6866effe43bf603"), // O=projekt
-        targets = listOf(AppTarget(version = "2.2.14", versionCode = 20214))
+        targets = listOf(AppTarget(version = "2.2.16", versionCode = 20216))
     )
 
     // Written 2026-10-15/16 against com.guardian 6.238.23405 (versionCode 23405), the STABLE
