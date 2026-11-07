@@ -3877,6 +3877,10 @@ object Constants {
     // lasts until the next restart. Strict means nothing resolves while the resolver is
     // unreachable. FirefoxSmokeTest (default and fallback options) passes on 159.0; not
     // runtime-tested.
+    // 2026-11-07: updated to 159.0.1 (Play arm64 build via gplaydl, versionCode 2016193999; x86_64
+    // 2016193998 read from Mozilla's archive x86_64 build, same Mozilla signer), all patches apply unchanged; smoke + CLI without -f.
+    // Real-device check (Android 15, arm64), patched build: cold start to the welcome screen, no
+    // crash log.
     val COMPATIBILITY_FIREFOX = Compatibility(
         name = "Firefox",
         packageName = "org.mozilla.firefox",
@@ -3885,8 +3889,8 @@ object Constants {
         signatures = setOf("a78b62a5165b4494b2fead9e76a280d22d937fee6251aece599446b2ea319b04"), // O=Mozilla Corporation
         targets = listOf(
             AppTarget(
-                version = "159.0",
-                versionCodes = mapOf(SupportedAbi.X86_64 to 2016191886, SupportedAbi.ARM64_V8A to 2016191887),
+                version = "159.0.1",
+                versionCodes = mapOf(SupportedAbi.X86_64 to 2016193998, SupportedAbi.ARM64_V8A to 2016193999),
             )
         )
     )
