@@ -81,7 +81,7 @@ class TaskitoSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "1.3.3",
+            version = "1.3.4",
             patchNames = setOf("Enable Premium", "Hide Premium tab"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )

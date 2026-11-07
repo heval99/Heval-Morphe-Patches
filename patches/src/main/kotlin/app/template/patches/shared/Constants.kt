@@ -4269,13 +4269,16 @@ object Constants {
     // if-eqz that skips the tab is forced to 0. Smoke test, CLI without -f and decompile checked;
     // emulator: with "premium_tab":"1" put in the cached Remote Config, stock shows Timeline/Board/
     // Unplanned/More/Premium and the patched build (same data) the first four, all tabs open.
+    // 2026-11-07: updated to 1.3.4 (Play build via gplaydl, versionCode 1340, same CN=Jay Rambhia
+    // signer), all patches apply unchanged; smoke + CLI without -f.
+    // Runtime not run yet; smoke test and CLI run only.
     val COMPATIBILITY_TASKITO = Compatibility(
         name = "Taskito",
         packageName = "com.fenchtose.reflog",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x2E7D32, // The green of the icon's background.
         signatures = setOf("5ab419834c1f5279b1ccaf262d75a6db2c2dcd9e8c1dab9bead92a640cf26727"), // CN=Jay Rambhia
-        targets = listOf(AppTarget(version = "1.3.3", versionCode = 1331))
+        targets = listOf(AppTarget(version = "1.3.4", versionCode = 1340))
     )
 
     // Verified 2026-10-28 against com.gmail.jmartindev.timetune 5.6.3 (versionCode 584, APKPure
