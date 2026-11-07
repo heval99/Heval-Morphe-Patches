@@ -2603,6 +2603,11 @@ object Constants {
     // already falls back to false. Turn off Ad Campaign Analytics uses the same restore (its zero
     // reached mfi.c's move/from16 v16, v8). Smoke test + CLI without -f; the patched m53.d/ay5.c/mfi.c
     // were disassembled: only the privacy reads carry a helper.
+    // 2026-11-07 (#134): "Show caller number in call log" has a second switch, "Also for contacts"
+    // (truecaller.show_caller_number_contacts, off by default): the subtitle helper skips its
+    // phonebookId == 0 test while it is on, so saved contacts get the number after the label too.
+    // A separate row for the number is not done (the row is one subtitle line). Smoke test only; the
+    // revamped call log needs a registered account, so it was not seen on the emulator.
     // 2026-11-06: "Block marketing notifications" (opt-in). Push types are dispatched by string:
     // FS_NEWS, EVENT_CHANGE, OPEN_RACE_STAGE, NEWS_ARTICLE, USER_DATA_SYNC and INFO; INFO is the
     // generic promotional push (URL + big picture). HandlerInfo.process is the only place that

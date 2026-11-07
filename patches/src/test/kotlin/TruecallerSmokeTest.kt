@@ -7,6 +7,7 @@ import app.template.patches.truecaller.misc.privacy.PRIVACY_FEATURES
 import app.template.patches.truecaller.layout.BRAND_MEDIA_HELPER
 import app.template.patches.truecaller.layout.CALL_LOG_NUMBER_SEPARATOR
 import app.template.patches.truecaller.layout.CALL_LOG_SUBTITLE_HELPER
+import app.template.patches.truecaller.layout.SHOW_CALLER_NUMBER_CONTACTS
 import app.template.patches.truecaller.shared.toStringFields
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Format
@@ -283,7 +284,7 @@ class TruecallerSmokeTest {
         } + OPT_IN_FEATURES.map { (name, id, category) ->
             val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
             HevalFeature(id, name, patch.description!!, category, default = false)
-        } + PROFILE_MENU_FEATURES + PRIVACY_FEATURES
+        } + PROFILE_MENU_FEATURES + PRIVACY_FEATURES + SHOW_CALLER_NUMBER_CONTACTS
         val registry = byType.getValue("${HEVAL_EXTENSION}Registry;").methods.single { it.name == "encoded" }.instructions()
         check(registry.getOrNull(0)?.opcode == Opcode.CONST_STRING_JUMBO && registry.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT) {
             "Registry.encoded() was not rewritten"
@@ -2192,6 +2193,13 @@ class TruecallerSmokeTest {
         check(insns[phonebookRead + 2].opcode == Opcode.CMP_LONG && insns[firstBranchAfter(phonebookRead)].opcode == Opcode.IF_NEZ) {
             "$label does not keep the label for phonebookId != 0"
         }
+        // "Also for contacts": while it is on, the helper skips the phonebook test (#134).
+        val contactsGate = insns.indexOfFirst { it.stringOrNull() == SHOW_CALLER_NUMBER_CONTACTS.id }
+        val blockedRead = insns.indexOfFirst { it.reads(isBlocked, Opcode.IGET_BOOLEAN) }
+        check(contactsGate in 0 until phonebookRead &&
+            insns[contactsGate + 1].call()?.let { it.definingClass == HEVAL_SETTINGS_CLASS && it.name == "isEnabled" } == true &&
+            insns[contactsGate + 3].opcode == Opcode.IF_NEZ && insns.branchTarget(contactsGate + 3) == blockedRead
+        ) { "$label does not skip the phonebook test while ${SHOW_CALLER_NUMBER_CONTACTS.id} is on" }
         // A blank name or number (TextUtils.getTrimmedLength == 0) keeps the label.
         val trimmed = insns.indices.filter {
             insns[it].call()?.let { c -> c.definingClass == "Landroid/text/TextUtils;" && c.name == "getTrimmedLength" } == true
