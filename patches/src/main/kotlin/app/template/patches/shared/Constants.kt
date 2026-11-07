@@ -4263,6 +4263,35 @@ object Constants {
         targets = listOf(AppTarget(version = "1.3.29", versionCode = 350103236))
     )
 
+    // 2026-11-07 (#133): EX File Manager 1.6.2 (versionCode 51), Play arm64 via gplaydl. The Play
+    // download is signed with a Google-generated app signing key (CN=Android, O=Google Inc.,
+    // SHA-256 bb9b5045...10ef); it came straight from Play, so that is the release signer.
+    //   - Enable Premium: the app-wide premium check (gx7.e here, 17 callers: the splash ad, the
+    //     subscription dialog, encryption, SFTP/WebDAV, gallery, video streams, cleaner cards) is a
+    //     static ()Z wrapper around the premium store's cached flag (a37.i, the only method reading
+    //     "key_p_entitlement_active_v2"); it now answers true. Purchases are verified by the
+    //     developer's server (premium_server_verify), which only writes that cache; the store and
+    //     the billing / verification code stay stock.
+    //   - Disable ads: the app loads AppLovin MAX and, for app-open and interstitial ads, Pangle
+    //     directly; every MAX load/show and every Pangle loadAd returns at once and MaxAdView stays
+    //     GONE. GMA here is only the Pangle mediation adapter and the next-gen stub (no load classes).
+    //   - Disable telemetry: Firebase Analytics deactivated (shared read), measurement logEvent,
+    //     Crashlytics collection off (its settings holder, the only class with the collection key),
+    //     every static void of AppMetrica (activate, activateReporter, reportEvent, ...).
+    //   Verified: smoke test, CLI without -f, emulator (API 35) with a stock control signed by the
+    //   same key: both start (the signature reads do not block a re-signed build); stock shows ads on
+    //   Cloud Drive / FTP / LAN / View on PC (a GMA test ad, a Temu native via Liftoff), patched
+    //   shows none, and Firebase logs "App measurement deactivated via the manifest". Premium-only
+    //   features were not opened one by one.
+    val COMPATIBILITY_EXFILEMANAGER = Compatibility(
+        name = "EX File Manager",
+        packageName = "com.ace.ex.file.manager",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x1F6AFF, // The app's brand blue (its result pages use #1F6AFF).
+        signatures = setOf("bb9b5045146677bd3bad51046d95b0deea69befcd29012bb5ef515f034a510ef"), // CN=Android, O=Google Inc. (Play app signing)
+        targets = listOf(AppTarget(version = "1.6.2", versionCode = 51))
+    )
+
     // Verified 2026-10-28 against com.fenchtose.reflog 1.3.3 (versionCode 1331, APKPure single
     // APK, all four ABIs; signer CN=Jay Rambhia, cert SHA-256 5ab41983...6727, the developer's own
     // key). The package is still named reflog but the app label is Taskito (it was Reflog).
