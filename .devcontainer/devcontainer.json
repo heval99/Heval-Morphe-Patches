@@ -1,0 +1,35 @@
+{
+  // Remote build box for the patch bundle: Gradle builds, smoke tests, Morphe CLI runs and
+  // jadx/apktool checks. No emulator or adb here; runtime checks stay on the morphe-test AVD.
+  // See .devcontainer/README.md.
+  "name": "Heval Morphe Patches",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "jdkDistro": "tem",
+      "installGradle": false
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  // The smoke tests fork a 4 GB JVM per test class next to the Gradle daemon.
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  },
+  "containerEnv": {
+    "ANDROID_HOME": "/opt/android-sdk",
+    "ANDROID_SDK_ROOT": "/opt/android-sdk",
+    "HEVAL_TOOLS": "/opt/heval-tools"
+  },
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/opt/heval-tools/bin:/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/build-tools/36.0.0"
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "customizations": {
+    "codespaces": {
+      "openFiles": [".devcontainer/README.md"]
+    }
+  }
+}
