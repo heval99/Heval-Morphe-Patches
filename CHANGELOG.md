@@ -1,3 +1,47 @@
+## 2.3.0-dev.2 (2026-11-07)
+
+### 🆕 New apps
+- **EX File Manager** `1.6.2` - Disable ads, Disable telemetry, Enable Premium
+
+### 📱 Add Music `9.5`
+- Fixed: Guard the premium result override
+
+### 📱 Firefox Focus `159.0.1`
+- Fixed: Keep the page clear of the bottom address bar
+
+### 📱 Flashscore `26.11.4`
+- Fixed: Finish Use system font and tidy the new patches
+- Fixed: Keep bold text bold and blend the navigation bar area
+- Removed: Use system font (styles)
+
+### 📱 Sofascore `26.10.26`
+- New: Disable update prompts, Hide main tabs, Hide match chat
+
+### 📱 Truecaller `26.43.5`
+- Fixed: Keep Privacy defaults to its own settings
+- Fixed: Turn Hide poor network warning on once selected
+- New: Show the caller number for contacts too
+
+### 📱 WeMuslim `3.5.5`
+- New: Hide activity banners
+
+### ⬆️ Updated apps
+| App | From | To |
+|---|---|---|
+| 433 | `2.3.585` | `2.3.608` |
+| BlueMail | `2.2.418` | `2.2.424` |
+| Brave Browser | `1.98.63` | `1.99.55` |
+| CREX | `26.10.09` | `26.11.01` |
+| Easy Homescreen | `1.10.29` | `1.10.31` |
+| Firefox | `159.0` | `159.0.1` |
+| Futbin | `27.10` | `27.11` |
+| Hevy | `3.2.4` | `3.2.5` |
+| Hyperion Launcher | `2.2.14` | `2.2.16` |
+| Livescore | `10.4` | `10.4.1` |
+| Taskito | `1.3.3` | `1.3.4` |
+
+**Download:** [patches-2.3.0-dev.2.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.3.0-dev.2/patches-2.3.0-dev.2.mpp)
+
 ## 2.3.0-dev.1 (2026-11-06)
 
 ### 🆕 New apps
