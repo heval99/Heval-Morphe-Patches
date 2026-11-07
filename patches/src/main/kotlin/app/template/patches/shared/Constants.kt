@@ -1,4 +1,4 @@
-﻿package app.template.patches.shared
+package app.template.patches.shared
 
 import app.morphe.patcher.patch.ApkFileType
 import app.morphe.patcher.patch.AppTarget
@@ -2574,6 +2574,16 @@ object Constants {
     // stored choice still wins. The two "profiles privately" toggles have no local preference key
     // and are not covered. Smoke test asserts a gate on every read of the five keys; CLI without -f
     // applied the patch and apkanalyzer shows the gate in dh.b.
+    // 2026-11-07 (audit fix): Privacy defaults matched every boolean read whose key register had the
+    // same number, so unrelated reads were gated (m53.d backup_enabled / blockCallNotification,
+    // ay5.c and fhj.b featureAvailability), and it used the shared fallback register as its gate
+    // scratch, changing later reads and Privacy Center state (mfi.c u4y.y/F, i5y) even with the switch
+    // off. Now each key gates only the first read after its load, the fallback goes through a
+    // per-switch (Z)Z helper and the register is restored after the read (overrideFallback: the
+    // literal again, or a saved free local). "Don't share fraud messages" was dropped: every read
+    // already falls back to false. Turn off Ad Campaign Analytics uses the same restore (its zero
+    // reached mfi.c's move/from16 v16, v8). Smoke test + CLI without -f; the patched m53.d/ay5.c/mfi.c
+    // were disassembled: only the privacy reads carry a helper.
     // 2026-11-06: "Block marketing notifications" (opt-in). Push types are dispatched by string:
     // FS_NEWS, EVENT_CHANGE, OPEN_RACE_STAGE, NEWS_ARTICLE, USER_DATA_SYNC and INFO; INFO is the
     // generic promotional push (URL + big picture). HandlerInfo.process is the only place that

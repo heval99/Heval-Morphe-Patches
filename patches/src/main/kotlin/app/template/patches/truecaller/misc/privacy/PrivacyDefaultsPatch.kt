@@ -3,14 +3,15 @@
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.template.patches.shared.Constants.COMPATIBILITY_TRUECALLER
 import app.template.patches.shared.hevalcontrols.HevalFeature
-import app.template.patches.shared.hevalcontrols.addHevalGate
+import app.template.patches.shared.hevalcontrols.addHevalValueHelper
 import app.template.patches.truecaller.controls.TruecallerControlsCategory
 import app.template.patches.truecaller.controls.truecallerControls
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -31,6 +32,8 @@ private class PrivacyDefault(
     val privateValue: Boolean,
 )
 
+// 2026-11-07: "Don't share fraud messages" (fraudMessageLoggingOptIn) was dropped. Every read of
+// that key in 26.43.5 already falls back to false, so the switch changed nothing.
 private val PRIVACY_DEFAULTS = listOf(
     PrivacyDefault(
         HevalFeature(
@@ -50,16 +53,6 @@ private val PRIVACY_DEFAULTS = listOf(
             category = TruecallerControlsCategory.PRIVACY,
         ),
         key = "showProfileViewNotifications",
-        privateValue = false,
-    ),
-    PrivacyDefault(
-        HevalFeature(
-            id = "truecaller.privacy_fraud_messages",
-            name = "Don't share fraud messages",
-            description = "Stops Truecaller uploading messages it flags as fraud.",
-            category = TruecallerControlsCategory.PRIVACY,
-        ),
-        key = "fraudMessageLoggingOptIn",
         privateValue = false,
     ),
     PrivacyDefault(
@@ -84,21 +77,32 @@ private val PRIVACY_DEFAULTS = listOf(
     ),
 )
 
-/** The five Privacy Center switches, in registry order. */
+/** The Privacy Center switches, in registry order. */
 internal val PRIVACY_FEATURES = PRIVACY_DEFAULTS.map { it.feature }
+
+/** The Privacy defaults helper name for [feature] (one static (Z)Z helper per class and switch). */
+internal fun privacyHelperName(feature: HevalFeature) = "heval_" + feature.id.replace('.', '_')
+
+/** A boolean read of one privacy key: the call's index and the register of its fallback argument. */
+private class Site(val default: PrivacyDefault, val call: Int, val fallback: Int)
 
 /**
  * Privacy Center defaults (#125 follow-up). Every toggle in Truecaller's Privacy Center is a boolean
- * preference read through the same generic `getBoolean(settings, key, fallback)` helper the Ad
- * Campaign Analytics patch uses; the Privacy Center screen, the workers and the feature gates all go
- * through it, while the toggle writer uses `putBoolean` and is left alone.
+ * preference read through the generic `getBoolean(settings, key, fallback)` helper or plain
+ * `SharedPreferences.getBoolean(key, fallback)`; the Privacy Center screen, the workers and the
+ * feature gates all go through them, while the toggle writer uses `putBoolean` and is left alone.
  *
- * The patch gives each switch a runtime gate in front of every `getBoolean` read of its key: while
- * the switch is on, the fallback passed to the read is the private value, so a preference the user
- * never touched reads as private; a choice the user has made is still stored and still wins.
+ * While a switch is on, the fallback passed to each read of its key is the private value, so a
+ * preference the user never touched reads as private; a stored choice still wins. The switches are
+ * on by default (they are the privacy-preserving state); turned off, every read is stock.
  *
- * The switches are on by default (they are the privacy-preserving state), and each can be turned
- * off in Patch settings > Privacy to get the stock default back.
+ * Fixed 2026-11-07 (audit of v2.3.0-dev.1). The first version gated every boolean read in the
+ * method whose key register had the same number, so reads of unrelated keys (backup_enabled,
+ * featureAvailability, ...) were changed too, and it wrote the gate into the fallback register
+ * itself, which R8 shares between reads: other reads and state fields in the same method changed
+ * even with the switch off. Now only the first read after the key is loaded is matched (the key
+ * register must still hold the key), and the fallback is copied aside, passed through a per-switch
+ * `(Z)Z` helper and restored right after the call, so nothing else in the method sees a change.
  */
 @Suppress("unused")
 val privacyDefaultsPatch = bytecodePatch(
@@ -110,80 +114,99 @@ val privacyDefaultsPatch = bytecodePatch(
     dependsOn(truecallerControls.patch)
 
     execute {
-        // One pass, collecting the readers of every key. Mutating happens afterwards.
-        val sites = PRIVACY_DEFAULTS.associateWith { mutableListOf<Pair<ClassDef, Method>>() }
+        // One pass, collecting the reads of every key. Mutating happens afterwards.
+        val found = mutableMapOf<Pair<String, MethodKey>, MutableList<Site>>()
         classDefForEach { classDef ->
             classDef.methods.forEach { method ->
                 val insns = method.implementation?.instructions?.toList() ?: return@forEach
-                for (default in PRIVACY_DEFAULTS) {
-                    if (insns.readsKey(default.key)) sites.getValue(default) += classDef to method
-                }
+                val sites = PRIVACY_DEFAULTS.flatMap { insns.readsOf(it) }
+                if (sites.isNotEmpty()) found[classDef.type to MethodKey.of(method)] = sites.toMutableList()
+            }
+        }
+        for (default in PRIVACY_DEFAULTS) {
+            if (found.values.none { sites -> sites.any { it.default === default } }) {
+                throw PatchException("Privacy defaults: no getBoolean read of \"${default.key}\" found")
             }
         }
 
-        for (default in PRIVACY_DEFAULTS) {
-            val found = sites.getValue(default)
-            if (found.isEmpty()) {
-                throw PatchException("Privacy defaults: no getBoolean reader of \"${default.key}\" found")
+        for ((owner, sites) in found) {
+            val (type, key) = owner
+            val mutableClass = mutableClassDefBy(type)
+            if (AccessFlags.INTERFACE.isSet(mutableClass.accessFlags)) {
+                throw PatchException("Privacy defaults: $type is an interface")
             }
-            for ((classDef, method) in found) {
-                val mutable = mutableClassDefBy(classDef).methods.single {
-                    it.name == method.name && it.returnType == method.returnType &&
-                        it.parameterTypes.map(CharSequence::toString) == method.parameterTypes.map(CharSequence::toString)
-                }
+            val method = mutableClass.methods.single { key.matches(it) }
+            // Back to front, so the earlier indices stay valid.
+            for (site in sites.distinctBy { it.call }.sortedByDescending { it.call }) {
                 try {
-                    mutable.gateDefault(default)
+                    method.passThroughHelper(mutableClass, site)
                 } catch (e: PatchException) {
-                    throw PatchException("${classDef.type}->${method.name} (${default.key}): ${e.message}", e)
+                    throw PatchException("$type->${method.name} (${site.default.key}): ${e.message}", e)
                 }
             }
-            truecallerControls.register(default.feature)
         }
+        PRIVACY_DEFAULTS.forEach { truecallerControls.register(it.feature) }
     }
 }
 
-/** True when [instructions] read [key] through either boolean getter shape. */
-private fun List<Instruction>.readsKey(key: String): Boolean {
-    val keyIndex = indexOfFirst { it.stringOrNull() == key }
-    if (keyIndex < 0) return false
-    val keyRegister = (this[keyIndex] as OneRegisterInstruction).registerA
-    return indices.any { index -> this[index].isBooleanGet() && this[index].keyArgument() == keyRegister }
+/** A method's name and signature, to find it again in the mutable class. */
+private data class MethodKey(val name: String, val returnType: String, val parameters: List<String>) {
+    fun matches(method: Method) = method.name == name && method.returnType == returnType &&
+        method.parameterTypes.map(CharSequence::toString) == parameters
+
+    companion object {
+        fun of(method: Method) = MethodKey(method.name, method.returnType, method.parameterTypes.map(CharSequence::toString))
+    }
 }
 
 /**
- * Gates every read of the key in this method (coroutine state machines hold one per branch). The
- * gate writes the private value into the fallback register and falls into the stock call, so the
- * stored choice is still read and still wins.
+ * The reads of [default]'s key in these instructions: for each load of the key string, the first
+ * boolean read after it whose key argument is that register, as long as nothing reassigned the
+ * register in between and no return, throw or goto came first.
  */
-private fun MutableMethod.gateDefault(default: PrivacyDefault) {
-    val insns = instructions.toList()
-    val literal = if (default.privateValue) 1 else 0
-    var gated = 0
-    for (keyIndex in insns.indices.filter { insns[it].stringOrNull() == default.key }) {
-        val keyRegister = (insns[keyIndex] as OneRegisterInstruction).registerA
-        val calls = insns.indices.filter { index ->
-            insns[index].isBooleanGet() && insns[index].keyArgument() == keyRegister
-        }.reversed()
-        for (call in calls) {
-            val fallback = when (val invoke = insns[call]) {
-                is FiveRegisterInstruction -> invoke.registerE
-                is RegisterRangeInstruction -> invoke.startRegister + 2
-                else -> throw PatchException("getBoolean is not an invoke with registers (${insns[call].opcode})")
-            }
-            val op = if (fallback < 16) "const/4" else "const/16"
-            addHevalGate(default.feature.id, index = call, register = fallback) { _ ->
-                "$op v$fallback, 0x$literal"
-            }
-            gated++
+private fun List<Instruction>.readsOf(default: PrivacyDefault): List<Site> = indices.mapNotNull { keyIndex ->
+    if (this[keyIndex].stringOrNull() != default.key) return@mapNotNull null
+    val keyRegister = (this[keyIndex] as OneRegisterInstruction).registerA
+    for (index in keyIndex + 1 until size) {
+        val insn = this[index]
+        if (insn.isBooleanGet() && insn.keyArgument() == keyRegister) {
+            return@mapNotNull Site(default, index, insn.fallbackArgument())
         }
+        if (insn.opcode.setsRegister() && (insn as? OneRegisterInstruction)?.registerA == keyRegister) break
+        if (insn.opcode in STOPS) break
     }
-    if (gated == 0) throw PatchException("no boolean read of \"${default.key}\" was gated")
+    null
+}
+
+private val STOPS = setOf(
+    Opcode.RETURN, Opcode.RETURN_OBJECT, Opcode.RETURN_VOID, Opcode.RETURN_WIDE, Opcode.THROW,
+    Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32,
+)
+
+/** While the switch is on, the read at [Site.call] gets the private value as its fallback. */
+private fun MutableMethod.passThroughHelper(owner: MutableClass, site: Site) {
+    val literal = if (site.default.privateValue) 1 else 0
+    val helper = owner.addHevalValueHelper(site.default.feature.id, privacyHelperName(site.default.feature), "Z") { v ->
+        "const/4 $v, 0x$literal\nreturn $v"
+    }
+    overrideFallback(site.call, "privacy default read") { v ->
+        """
+            invoke-static/range { $v .. $v }, $helper
+            move-result $v
+        """
+    }
 }
 
 private fun Instruction.keyArgument(): Int = when (this) {
     is FiveRegisterInstruction -> if (registerCount == 3) registerD else -1
     is RegisterRangeInstruction -> if (registerCount == 3) startRegister + 1 else -1
     else -> -1
+}
+
+private fun Instruction.fallbackArgument(): Int = when (this) {
+    is FiveRegisterInstruction -> registerE
+    is RegisterRangeInstruction -> startRegister + 2
+    else -> throw PatchException("getBoolean is not an invoke with registers ($opcode)")
 }
 
 /**
@@ -211,6 +234,3 @@ private fun Instruction.isBooleanGet(): Boolean {
 
 private fun Instruction.stringOrNull(): String? =
     ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
-
-
-

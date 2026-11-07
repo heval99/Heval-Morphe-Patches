@@ -1,19 +1,15 @@
 package app.template.patches.truecaller.misc.privacy
 
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.template.patches.shared.Constants.COMPATIBILITY_TRUECALLER
-import app.template.patches.shared.addInstructionsChecked
-import app.template.patches.shared.requireNoBranchTargetAt
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
-import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
@@ -32,11 +28,12 @@ private const val VC_EVENTS_KEY = "biz_privacy_vc_events"
  * means the three getBoolean reads above must pass `false` as their fallback; the toggle stays
  * usable, so the user can still opt in (and putBoolean keeps storing the choice).
  *
- * The reads do not share one shape: two pass a dedicated `const/4 vX, 0x1` right before the call,
- * while the settings-state mapper reuses one `const/4 v8, 0x1` for several unrelated preference
- * defaults. The patch therefore changes the register that holds the boolean argument of each
- * getBoolean call: it rewrites that register's own `const` when it sits right before the call,
- * otherwise it inserts `const/4 vX, 0x0` at the call (v8 in 26.43.5, not read again afterwards).
+ * Each read is the first static getBoolean after the key is loaded (the key register unchanged in
+ * between). R8 shares the fallback constant between reads (the settings-state mapper keeps one
+ * `const/4 v8, 0x1` for several preferences and reads it again afterwards), so the patch does not
+ * rewrite that register for good: it passes `false` for this read and restores the register right
+ * after the call (see overrideFallback). Fixed 2026-11-07: the first version wrote 0 into the shared
+ * register, which also changed a later state value in mfi.c (`move/from16 v16, v8`).
  */
 @Suppress("unused")
 val turnOffAdCampaignAnalyticsPatch = bytecodePatch(
@@ -80,7 +77,7 @@ private fun Method.readsVcEventsDefault(): Boolean {
     val keyIndex = insns.indexOfFirst { it.stringOrNull() == VC_EVENTS_KEY }
     if (keyIndex < 0) return false
     val keyRegister = (insns[keyIndex] as OneRegisterInstruction).registerA
-    return insns.any { it.getBooleanCall() != null && it.keyArgument() == keyRegister }
+    return insns.vcEventsRead(keyIndex, keyRegister) != null
 }
 
 /** Passes `false` as the getBoolean fallback of the VC-events read in this method. */
@@ -90,30 +87,25 @@ private fun MutableMethod.defaultVcEventsToOff(label: String) {
     if (keyIndex < 0) throw PatchException("$label: the \"$VC_EVENTS_KEY\" string is gone")
     val keyRegister = (insns[keyIndex] as OneRegisterInstruction).registerA
 
-    // The read whose second register (settings, key, boolean) is that key string.
-    val call = insns.indexOfFirst { insn ->
-        insn.getBooleanCall() != null && insn.keyArgument() == keyRegister
+    // The read after the key load whose second register (settings, key, boolean) still holds it.
+    val call = insns.vcEventsRead(keyIndex, keyRegister)
+        ?: throw PatchException("$label: no getBoolean call reads v$keyRegister as its key after the load")
+    overrideFallback(call, "$label VC-events default") { v ->
+        val register = v.removePrefix("v").toInt()
+        "${if (register < 16) "const/4" else "const/16"} $v, 0x0"
     }
-    if (call < 0) throw PatchException("$label: no getBoolean call reads v$keyRegister as its key")
+}
 
-    // The boolean argument is the third register.
-    val register = when (val invoke = insns[call]) {
-        is FiveRegisterInstruction -> invoke.registerE
-        is RegisterRangeInstruction -> invoke.startRegister + 2
-        else -> throw PatchException("$label: getBoolean is not an invoke with registers (${insns[call].opcode})")
+/** The first static getBoolean after [keyIndex] reading [keyRegister] as its key, if the register still holds it. */
+private fun List<Instruction>.vcEventsRead(keyIndex: Int, keyRegister: Int): Int? {
+    for (index in keyIndex + 1 until size) {
+        val insn = this[index]
+        if (insn.getBooleanCall() != null && insn.keyArgument() == keyRegister) return index
+        if (insn.opcode.setsRegister() && (insn as? OneRegisterInstruction)?.registerA == keyRegister) return null
+        if (insn.opcode in setOf(Opcode.RETURN, Opcode.RETURN_OBJECT, Opcode.RETURN_VOID, Opcode.THROW,
+                Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)) return null
     }
-
-    val constOp = if (register < 16) "const/4" else "const/16"
-    val previous = insns.getOrNull(call - 1)
-    val previousIsFallback = previous is NarrowLiteralInstruction &&
-        previous.opcode in setOf(Opcode.CONST_4, Opcode.CONST_16) &&
-        (previous as OneRegisterInstruction).registerA == register && previous.narrowLiteral == 1
-    if (previousIsFallback) {
-        replaceInstruction(call - 1, "$constOp v$register, 0x0")
-    } else {
-        requireNoBranchTargetAt(call, "$label VC-events default")
-        addInstructionsChecked(call, "$constOp v$register, 0x0")
-    }
+    return null
 }
 
 private fun Instruction.keyArgument(): Int = when (this) {
