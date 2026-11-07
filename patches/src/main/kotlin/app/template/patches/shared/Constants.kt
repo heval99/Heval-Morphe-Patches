@@ -1423,13 +1423,16 @@ object Constants {
     // 2026-11-04: updated to version 27.10 (versionCode 7010; Play base APK with all four ABIs,
     // signer O=FUTBIN 1cf7ff75...e904). Disable ads applies unchanged (owner: keep the current
     // patches); FutbinSmokeTest green and CLI without -f applied it.
+    // 2026-11-07: updated to 27.11 (Play build via gplaydl, versionCode 7011, same O=FUTBIN signer), all patches apply unchanged; smoke + CLI without -f.
+    // Real-device check (Android 15, arm64), patched build: cold start to the comment-rules
+    // agreement, no crash log; the main screen (where the FUTBIN signer check sits) was not reached.
     val COMPATIBILITY_FUTBIN = Compatibility(
         name = "Futbin",
         packageName = "com.futbin",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x26A69A,
         signatures = setOf("1cf7ff75f2e364c2e671321af98f86d35979fe8f3575da508b90d530df75e904"), // CN=Dirk Duncan, O=FUTBIN
-        targets = listOf(AppTarget(version = "27.10", versionCode = 7010))
+        targets = listOf(AppTarget(version = "27.11", versionCode = 7011))
     )
 
     // Verified 2026-09-27 against com.pocketcolorwheel.PCW 3.26 (versionCode 57,
