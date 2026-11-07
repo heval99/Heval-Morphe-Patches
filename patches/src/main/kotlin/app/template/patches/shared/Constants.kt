@@ -1200,6 +1200,17 @@ object Constants {
     // ignores setNavigationBarColor for such apps (description says so; not checked on a device).
     // "Block marketing notifications" finds HandlerInfo.process by shape (its payload type is
     // R8-renamed) and, like the other switches, is on once the patch is selected.
+    // 2026-11-07 (#128 feedback): "Use system font" no longer swaps the four Compose families for
+    // FontFamily.Default (Flashscore's text styles carry no weight, so all Compose text went regular
+    // and looked thinner than the XML views). It now hooks ResourcesCompat.getFont(int, Context)
+    // (t5l.b, the only static (I, Context)Typeface, starts with Context.isRestricted) to return the
+    // system font at the resource's weight (SystemFonts: extrabold 900, bold/medium 500, else 400),
+    // matching the XML half. "Force edge-to-edge" also covers Android 15+: EventListActivity's inset
+    // listener pads android.R.id.content by the navigation bar and leaves the page colour there
+    // (#010a0f under a #00141e tab bar); NavigationBarStrip paints that padding in the tab bar's
+    // colour, read from the rendered bar on each layout. Emulator (API 35, gesture nav): strip and
+    // tab bar both #00141e, bold text still bold; while the loading overlay dims the screen the strip
+    // stays undimmed.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",

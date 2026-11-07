@@ -767,48 +767,26 @@ class FlashscoreSmokeTest {
             }
         }
 
-        // Use system font: every read of Flashscore's four font families now points at Compose's
-        // FontFamily.Default, so the whole UI renders with the device font.
-        fun Method.isDefaultToString() = name == "toString" && parameterTypes.isEmpty() &&
-            returnType == "Ljava/lang/String;" &&
-            instructions().let { insns ->
-                insns.size == 2 && insns[0].opcode == Opcode.CONST_STRING &&
-                    ((insns[0] as? ReferenceInstruction)?.reference as? StringReference)?.string ==
-                    "FontFamily.Default" && insns[1].opcode == Opcode.RETURN_OBJECT
-            }
-        val defaultFamily = classes.singleOrNull { cls -> cls.methods.any { it.isDefaultToString() } }
-            ?: error("FontFamily.Default class not found")
-        val fontFamily = classes.singleOrNull { cls ->
-            cls.fields.count { it.type == defaultFamily.type && AccessFlags.STATIC.isSet(it.accessFlags) } == 1
-        } ?: error("FontFamily class not found")
-        val defaultField = fontFamily.fields.single {
-            it.type == defaultFamily.type && AccessFlags.STATIC.isSet(it.accessFlags)
+        // Use system font: ResourcesCompat.getFont(int, Context) asks SystemFonts first and returns its
+        // typeface when it has one; the app's own font families (and their weights) are untouched.
+        val getFonts = classes.flatMap { it.methods }.filter { m ->
+            AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "Landroid/graphics/Typeface;" &&
+                m.parameterTypes.map(CharSequence::toString) == listOf("I", "Landroid/content/Context;") &&
+                m.implementation?.instructions?.any {
+                    ((it as? ReferenceInstruction)?.reference as? MethodReference)?.name == "isRestricted"
+                } == true
         }
-        val holder = classes.singleOrNull { cls ->
-            val statics = cls.fields.filter { AccessFlags.STATIC.isSet(it.accessFlags) }
-            statics.size == 4 && statics.map { it.type }.distinct().size == 1 &&
-                classes.singleOrNull { it.type == statics.first().type }?.superclass == fontFamily.type
-        } ?: error("Flashscore font family holder not found")
-        val oldFields = holder.fields.filter { AccessFlags.STATIC.isSet(it.accessFlags) }.map { it.name }.toSet()
-        fun Instruction.fieldRefName(): String? =
-            ((this as? ReferenceInstruction)?.reference as? FieldReference)?.name
-        fun Instruction.definingType(): String? =
-            ((this as? ReferenceInstruction)?.reference as? FieldReference)?.definingClass
-        val familyReads = classes.flatMap { it.methods }
-            .filter { it.implementation != null }
-            .flatMap { it.instructions() }
-            .filter {
-                it.opcode == Opcode.SGET_OBJECT && it.definingType() == holder.type && it.fieldRefName() in oldFields
-            }
-        assertTrue(familyReads.isEmpty(), "${holder.type}: ${familyReads.size} reads still use the custom families")
-        val defaultReads = classes.flatMap { it.methods }
-            .filter { it.implementation != null }
-            .flatMap { it.instructions() }
-            .count {
-                it.opcode == Opcode.SGET_OBJECT && it.definingType() == fontFamily.type &&
-                    it.fieldRefName() == defaultField.name
-            }
-        assertTrue(defaultReads > 0, "no read of ${fontFamily.type}->${defaultField.name} after the patch")
+        assertTrue(getFonts.size == 1, "ResourcesCompat.getFont candidates: ${getFonts.map { "${it.definingClass}->${it.name}" }}")
+        val fontInsns = getFonts.single().instructions()
+        val lookup = (fontInsns[0] as? ReferenceInstruction)?.reference as? MethodReference
+        assertTrue(
+            fontInsns[0].opcode == Opcode.INVOKE_STATIC &&
+                lookup?.definingClass == "Lapp/template/extension/flashscore/SystemFonts;" && lookup.name == "typeface" &&
+                fontInsns[1].opcode == Opcode.MOVE_RESULT_OBJECT && fontInsns[2].opcode == Opcode.IF_EQZ &&
+                fontInsns[3].opcode == Opcode.RETURN_OBJECT,
+            "ResourcesCompat.getFont does not ask SystemFonts first: ${fontInsns.take(4).map { it.opcode }}",
+        )
+        assertTrue(classes.any { it.type == "Lapp/template/extension/flashscore/SystemFonts;" }, "SystemFonts is not merged")
 
         // Use system font (styles): the decoded text appearances and layouts no longer name the
         // custom families, and the weight mapping uses the system families.
@@ -943,6 +921,19 @@ class FlashscoreSmokeTest {
             }
         }
         assertTrue(edgeSites > 0, "no navigation-bar colour write was patched")
+        // Android 15+: the content view gets the navigation-bar strip right after its lookup.
+        val eventList = classes.single { it.type == "Leu/livesport/LiveSport_cz/EventListActivity;" }
+            .methods.single { it.name == "onCreate" && it.parameterTypes.size == 1 }.instructions()
+        val contentAt = eventList.indexOfFirst { (it as? NarrowLiteralInstruction)?.narrowLiteral == 0x01020002 }
+        val strip = eventList.getOrNull(contentAt + 3)
+        assertTrue(
+            strip?.opcode == Opcode.INVOKE_STATIC_RANGE &&
+                ((strip as ReferenceInstruction).reference as MethodReference).let {
+                    it.definingClass == "Lapp/template/extension/flashscore/NavigationBarStrip;" && it.name == "install"
+                } &&
+                (strip as RegisterRangeInstruction).startRegister == (eventList[contentAt + 2] as OneRegisterInstruction).registerA,
+            "EventListActivity.onCreate does not install the navigation-bar strip on the content view",
+        )
 
         // Block marketing notifications: HandlerInfo.process starts with the Heval gate that
         // returns at once while the switch is on; the stock body stays after the gate's label.
