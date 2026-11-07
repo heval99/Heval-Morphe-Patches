@@ -65,6 +65,10 @@ jar_tool bundletool "$DL/bundletool-1.18.3.jar"
 jar_tool apkeditor "$DL/APKEditor-1.4.9.jar"
 jar_tool morphe-cli "$DL/morphe-cli-1.19.0.jar"
 
+# remoteEnv's PATH only reaches the editor's terminals, not `gh codespace ssh` sessions, so link
+# every command into /usr/local/bin as well.
+sudo ln -sf "$TOOLS/bin/"* "$SDK/cmdline-tools/latest/bin/apkanalyzer"   "$SDK/build-tools/36.0.0/apksigner" "$SDK/build-tools/36.0.0/zipalign"   "$SDK/build-tools/36.0.0/aapt2" /usr/local/bin/
+
 # Morphe registry credentials. The app.morphe.patches plugin needs a user and a token: the
 # gpr.user / gpr.key Gradle properties, else GITHUB_ACTOR / GITHUB_TOKEN. A codespace sets
 # GITHUB_TOKEN but not GITHUB_ACTOR, so gpr.user is always written (GitHub Packages accepts any

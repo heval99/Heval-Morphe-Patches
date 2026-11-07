@@ -17,10 +17,17 @@ APKEditor 1.4.9 and Morphe CLI 1.19.0, all checked against SHA-256. Commands: `j
 
 ## Morphe registry access
 
-Gradle reads the Morphe plugin and patcher from the MorpheApp GitHub Packages registry. By
-default the codespace's own `GITHUB_TOKEN` is used (`setup.sh` writes `gpr.user` to
-`~/.gradle/gradle.properties`, because a codespace has no `GITHUB_ACTOR`). If the first build
-fails with 401/403, that token can't read the registry:
+Gradle reads the Morphe plugin and patcher from the MorpheApp GitHub Packages registry with the
+codespace's own `GITHUB_TOKEN` (verified 2026-11-07: the first build resolved and built the bundle).
+`setup.sh` writes `gpr.user` to `~/.gradle/gradle.properties`, because a codespace has no
+`GITHUB_ACTOR`. Editor terminals have `GITHUB_TOKEN`; `gh codespace ssh` sessions don't, so load it
+there first:
+
+```
+export GITHUB_TOKEN="$(sed -n 's/^GITHUB_TOKEN=//p' /workspaces/.codespaces/shared/.env)"
+```
+
+Should a build ever fail with 401/403 (the codespace token lost registry access):
 
 1. Create a classic token with only the `read:packages` scope.
 2. Add it at <https://github.com/settings/codespaces> as a secret named `MORPHE_PACKAGES_TOKEN`,
@@ -29,10 +36,11 @@ fails with 401/403, that token can't read the registry:
 
 ## Test fixtures
 
-`apks/` is gitignored, so upload the fixtures you need from your PC (only `base.apk` per app):
+`apks/` is gitignored, so upload the fixtures from your PC (only `base.apk` per app; the full set
+is ~5.5 GB). Streaming a tar over ssh copies only those files:
 
 ```
-gh codespace cp -e -r -c <codespace-name> apks remote:/workspaces/Heval-Morphe-Patches/
+tar -cf - apks/*/base.apk | gh codespace ssh -c <codespace-name> -- tar -xf - -C /workspaces/Heval-Morphe-Patches
 ```
 
 (`gh codespace list` shows the name.) They stay until the codespace is deleted.
