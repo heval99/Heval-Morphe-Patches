@@ -10,7 +10,9 @@
       "jdkDistro": "tem",
       "installGradle": false
     },
-    "ghcr.io/devcontainers/features/github-cli:1": {}
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    // gh codespace ssh / gh codespace cp (uploading apks/) need an SSH server in the container.
+    "ghcr.io/devcontainers/features/sshd:1": {}
   },
   // The smoke tests fork a 4 GB JVM per test class next to the Gradle daemon.
   "hostRequirements": {
