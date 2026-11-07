@@ -746,6 +746,11 @@ object Constants {
     // pref writer from (Profile, String) to (String, Profile), which broke the fingerprint
     // pinning v1.93.136; the patch matches the new order and is bytecode-verified in
     // BraveSmokeTest.
+    // 2026-11-07: updated to 1.99.55 (versionCode 429905504, GitHub "Latest" release
+    // Bravearm64Universal.apk, same signer), all patches apply unchanged; smoke + CLI without -f.
+    // Real-device check (Android 15, arm64), patched build: cold start, new tab page,
+    // Settings and its search (Brave Origin listed), no crash log - the first run of the real arm64
+    // build (the emulator only runs the x86_64 one).
     val COMPATIBILITY_BRAVE = Compatibility(
         name = "Brave Browser",
         packageName = "com.brave.browser",
@@ -816,7 +821,7 @@ object Constants {
             // restriction getters are untouched (no managed first run). Strict means nothing
             // resolves while the resolver is unreachable. Verified on 1.98.63 by BraveSmokeTest
             // (default and fallback options); not runtime-tested.
-            AppTarget(version = "1.98.63"),
+            AppTarget(version = "1.99.55"),
         )
     )
 
@@ -827,6 +832,7 @@ object Constants {
     // (no crashes; P3A/usage ping off, crash consent false, no promoCode, normal NTP). Anchors
     // are unobfuscated (JNI/manifest-kept) class names, pref keys and method shape. Not yet
     // field-tested by users.
+    // 2026-11-07: updated to 1.99.55 together with the stable entry; all patches apply unchanged; smoke + CLI without -f.
     val COMPATIBILITY_BRAVE_EXPERIMENTAL = Compatibility(
         name = "Brave Browser",
         packageName = "com.brave.browser",
@@ -862,7 +868,7 @@ object Constants {
             // Bravearm64Universal.apk), all three experimental patches apply unchanged; smoke +
             // CLI without -f.
             AppTarget(
-                version = "1.98.63",
+                version = "1.99.55",
                 isExperimental = true,
             ),
         )
