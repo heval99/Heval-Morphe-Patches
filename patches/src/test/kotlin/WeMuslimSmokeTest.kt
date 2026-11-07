@@ -68,6 +68,7 @@ class WeMuslimSmokeTest {
                 "Disable telemetry",
                 "Hide premium banners",
                 "Hide feed clutter",
+                "Hide activity banners",
             ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -265,6 +266,16 @@ class WeMuslimSmokeTest {
             label = "InfoStreamUnit.hasMembershipInfo()",
         )
 
+        // Step 0: the membership discount pop-up list is always empty.
+        val popupInfos = cls("Lcom/fyxtech/muslim/protobuf/LocationResourceProto\$GetMembershipDiscountPopupRes;")
+            .method("getInfosList", listOf()).instructions()
+        val emptyList = (popupInfos[0] as? ReferenceInstruction)?.reference as? MethodReference
+        assertTrue(
+            emptyList?.definingClass == "Ljava/util/Collections;" && emptyList.name == "emptyList" &&
+                popupInfos[1].opcode == Opcode.MOVE_RESULT_OBJECT && popupInfos[2].opcode == Opcode.RETURN_OBJECT,
+            "GetMembershipDiscountPopupRes.getInfosList() does not return an empty list",
+        )
+
         // Step 2: VipCardView forces GONE in setVisibility and hides itself in every constructor.
         val vipCard = cls(VIP_CARD_VIEW)
         val setVisibility = vipCard.method("setVisibility", listOf("I"))
@@ -295,6 +306,8 @@ class WeMuslimSmokeTest {
             "hasStore",
             "hasFirstRecharge",
             "hasWatchAdWinRewards",
+            "hasAdTower",
+            "hasActivityBanner",
         )) {
             val accessor = unit.methods.singleOrNull {
                 it.name == name && it.returnType == "Z" && it.params().isEmpty()

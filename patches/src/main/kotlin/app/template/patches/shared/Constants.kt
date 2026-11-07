@@ -3021,6 +3021,14 @@ object Constants {
     // dumped values are stored obfuscated in libagora-ey.so, but that library is byte-identical in
     // 3.5.4 and 3.5.5 (arm64 SHA-256 0c51b2c3...a089, both Play builds), so the dumped values still
     // hold. Not run on the emulator.
+    // 2026-11-07 (#135, same 3.5.5 build, still the Play latest): Hide feed clutter also drops the
+    // AdTower unit (WatchAdTowerRewardsViewHolder, the second "Claim Rewards by Watching Ads" card
+    // that kept showing); new opt-in "Hide activity banners" drops ActivityBanner units (event and
+    // promo banners such as "Lucky Egg Smash"); Hide premium banners also empties
+    // GetMembershipDiscountPopupRes.getInfosList() (the membership discount / free-trial pop-up).
+    // The Egg and Rebates shortcut icons are not done: the grid is server-configured and the
+    // entries' identifiers are unknown. Smoke test only; the units are server-driven and may be
+    // region-gated, so they were not seen on the emulator.
     val COMPATIBILITY_WEMUSLIM = Compatibility(
         name = "WeMuslim",
         packageName = "com.fyxtech.muslim",
