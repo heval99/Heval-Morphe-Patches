@@ -46,7 +46,6 @@ val hidePoorNetworkWarningPatch = truecallerControls.featurePatch(
         name = "Hide poor network warning",
         description = "Hides the \"Your network is poor\" tooltip on the in-call screen.",
         category = TruecallerControlsCategory.CALL_SCREEN,
-        default = false,
     ),
     default = false,
 ) {

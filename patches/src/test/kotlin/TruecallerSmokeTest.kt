@@ -121,13 +121,13 @@ private val HEVAL_FEATURES = listOf(
     Triple("Hide important senders", HIDE_IMPORTANT_SENDERS, "Contacts & business" to false),
     Triple("Disable call button haptics", DISABLE_CALL_HAPTICS, "Call screen" to false),
     Triple("Swap call answer and decline buttons", SWAP_CALL_BUTTONS, "Call screen" to false),
+    // On once the patch is selected, like the others (2026-11-07; it was off in Patch settings too).
+    Triple("Hide poor network warning", HIDE_POOR_NETWORK_WARNING, "Call screen" to false),
 )
 
-// Controls added after the conversion pass: they are off in the app until the user turns them on,
-// so both the patch and the registry record default to false.
-private val OPT_IN_FEATURES = listOf(
-    Triple("Hide poor network warning", HIDE_POOR_NETWORK_WARNING, "Call screen"),
-)
+// Controls that stay off in the app until the user turns them on (patch and registry default to
+// false). None at the moment.
+private val OPT_IN_FEATURES = emptyList<Triple<String, String, String>>()
 
 // "Hide profile menu items" (#120): five switches in one patch, all off by default, no restart.
 private const val PROFILE_MENU_PATCH = "Hide profile menu items"

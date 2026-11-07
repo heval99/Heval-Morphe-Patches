@@ -1,4 +1,4 @@
-﻿package app.template.patches.truecaller.misc.privacy
+package app.template.patches.truecaller.misc.privacy
 
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.PatchException
