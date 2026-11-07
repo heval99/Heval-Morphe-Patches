@@ -1192,6 +1192,14 @@ object Constants {
     // alone. Verified by FlashscoreSmokeTest (every setNavigationBarColor call is preceded by a zero
     // constant in its colour register) and by the CLI; the emulator check of the visual result is
     // still pending.
+    // 2026-11-07 (audit fixes): "Use system font" also rewrites the three layouts that set a custom
+    // family inline (duel_detail_header_with_tabs = the match page header, the squad row and the
+    // tooltip), in finalize and one file at a time so the Patch settings row edit survives; its XML
+    // half is now an unnamed dependency instead of the listed "Use system font (styles)". "Force
+    // edge-to-edge" only matters on Android 14 and older: 26.11.4 targets API 36, and Android 15+
+    // ignores setNavigationBarColor for such apps (description says so; not checked on a device).
+    // "Block marketing notifications" finds HandlerInfo.process by shape (its payload type is
+    // R8-renamed) and, like the other switches, is on once the patch is selected.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",

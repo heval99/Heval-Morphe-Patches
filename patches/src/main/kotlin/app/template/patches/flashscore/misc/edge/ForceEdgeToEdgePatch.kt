@@ -1,4 +1,4 @@
-﻿package app.template.patches.flashscore.misc.edge
+package app.template.patches.flashscore.misc.edge
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
@@ -28,13 +28,15 @@ private fun ReferenceInstruction.isSetNavigationBarColor(): Boolean {
  *
  * The patch finds every method that sets both bar colours (the three helpers) and forces the
  * navigation bar colour argument to transparent, leaving the status bar and the icon appearance
- * untouched. The app already lays out edge-to-edge (targetSdk 35), so the content and the pill then
- * share one background.
+ * untouched. The app already lays out edge-to-edge, so the content and the pill then share one
+ * background. Only Android 14 and older honour the colour: 26.11.4 targets API 36, and on Android 15+
+ * the system keeps the navigation bar of such apps transparent and ignores setNavigationBarColor, so
+ * the patch changes nothing there (noted 2026-11-07, not checked on a device).
  */
 @Suppress("unused")
 val forceEdgeToEdgePatch = bytecodePatch(
     name = "Force edge-to-edge",
-    description = "Makes the navigation bar transparent so the content blends into it.",
+    description = "Makes the navigation bar transparent on Android 14 and older.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_FLASHSCORE)

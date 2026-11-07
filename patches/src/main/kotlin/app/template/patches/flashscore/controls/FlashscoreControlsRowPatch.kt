@@ -1,4 +1,4 @@
-﻿package app.template.patches.flashscore.controls
+package app.template.patches.flashscore.controls
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.resourcePatch

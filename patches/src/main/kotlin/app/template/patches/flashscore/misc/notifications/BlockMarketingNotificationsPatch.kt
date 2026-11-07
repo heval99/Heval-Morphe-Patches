@@ -15,7 +15,6 @@ internal val BLOCK_MARKETING_NOTIFICATIONS = HevalFeature(
     name = "Block marketing notifications",
     description = "Drops promotional \"INFO\" pushes. Match, news and race alerts are kept.",
     category = FlashscoreControlsCategory.NOTIFICATIONS,
-    default = false,
     restartRequired = false,
 )
 
@@ -42,10 +41,12 @@ val blockMarketingNotificationsPatch = bytecodePatch(
     execute {
         val handler = mutableClassDefBy(HANDLER_INFO)
         val process = handler.methods.singleOrNull {
-            it.name == "process" && it.returnType == "V" &&
-                it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;", "Llth;")
+            // The second parameter is the R8-renamed notification payload, so only its shape is checked.
+            it.name == "process" && it.returnType == "V" && it.implementation != null &&
+                it.parameterTypes.size == 2 && it.parameterTypes[0].toString() == "Landroid/content/Context;" &&
+                it.parameterTypes[1].toString().startsWith("L")
         } ?: throw PatchException(
-            "$HANDLER_INFO.process(Context, lth) not found: " +
+            "$HANDLER_INFO.process(Context, payload) not found: " +
                 handler.methods.filter { it.name == "process" }.joinToString { it.parameterTypes.joinToString() },
         )
 

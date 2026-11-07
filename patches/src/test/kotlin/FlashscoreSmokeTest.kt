@@ -1,4 +1,4 @@
-﻿import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
@@ -52,7 +52,6 @@ private val FLASHSCORE_PATCHES = setOf(
     "Disable update prompts",
     "Hide betting content",
     "Use system font",
-    "Use system font (styles)",
     "Spoof signature",
     "Patch settings",
     "Animation speed",
@@ -839,6 +838,14 @@ class FlashscoreSmokeTest {
             }
             .map { it.nodeValue }
         assertTrue(layoutFonts.none { it.startsWith("@font/") }, "layouts still name a custom font: $layoutFonts")
+        // The three layouts that set a custom family inline were decoded and now use system families
+        // (the v2.3.0-dev.1 check passed vacuously because no layout was decoded).
+        for (name in listOf("duel_detail_header_with_tabs.xml", "fragment_event_participant_page_squad_row.xml", "tooltip_with_tip.xml")) {
+            val file = workDir.walkTopDown().singleOrNull { it.name == name && it.parentFile?.name == "layout" }
+                ?: error("$name was not decoded under $workDir")
+            val fonts = Regex("""fontFamily="([^"]+)"""").findAll(file.readText()).map { it.groupValues[1] }.toList()
+            assertTrue(fonts.isNotEmpty() && fonts.all { it.startsWith("sans-serif") }, "$name font families: $fonts")
+        }
 
         // Spoof signature: the extension returns Flashscore's package and original certificate,
         // and every PackageManager.getPackageInfo(String, ...) call is routed through it.
@@ -941,7 +948,9 @@ class FlashscoreSmokeTest {
         // returns at once while the switch is on; the stock body stays after the gate's label.
         val handlerInfo = classes.singleOrNull { it.type == "Leu/livesport/notification/handler/HandlerInfo;" }
             ?: error("HandlerInfo not found")
-        val process = handlerInfo.method("process", listOf("Landroid/content/Context;", "Llth;"))
+        val process = handlerInfo.methods.single {
+            it.name == "process" && it.parameterTypes.size == 2 && it.parameterTypes[0].toString() == "Landroid/content/Context;"
+        }
         val processInsns = process.instructions()
         assertTrue(
             processInsns[0].opcode == Opcode.CONST_STRING &&
