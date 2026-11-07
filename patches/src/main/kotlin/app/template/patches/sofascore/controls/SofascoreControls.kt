@@ -18,6 +18,7 @@ internal const val SOFASCORE_ANIMATION_SPEED = "Lapp/template/extension/sofascor
 internal object SofascoreControlsCategory {
     const val POPUPS = "Pop-ups & promotions"
     const val MATCH_PAGE = "Match page"
+    const val MAIN_TABS = "Bottom bar"
     const val SPORTS = "Sports"
     const val LEAGUES = "Leagues"
     const val BETTING = "Betting"

@@ -4,6 +4,8 @@ import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
 import app.template.patches.sofascore.controls.SOFASCORE_CONTROLS
 import app.template.patches.sofascore.controls.SOFASCORE_CONTROLS_ENTRY
 import app.template.patches.sofascore.layout.HIDE_AI_INSIGHTS
+import app.template.patches.sofascore.layout.HIDE_MATCH_CHAT
+import app.template.patches.sofascore.layout.MAIN_TAB_FEATURES
 import app.template.patches.sofascore.layout.MATCH_TAB_FEATURES
 import app.template.patches.sofascore.sports.SPORT_FEATURES
 import app.template.patches.sofascore.misc.popups.PROMO_POPUP_FEATURES
@@ -79,6 +81,7 @@ private val SOFASCORE_PATCHES = setOf(
     "Disable ads",
     "Disable rating prompts",
     "Disable telemetry",
+    "Disable update prompts",
     "Enable Premium",
     "GmsCore support",
     "Patch settings",
@@ -86,6 +89,8 @@ private val SOFASCORE_PATCHES = setOf(
     "Hide betting content",
     "Hide competitions",
     "Hide countries",
+    "Hide main tabs",
+    "Hide match chat",
     "Hide match tabs",
     "Hide promo pop-ups",
     "Hide promo sections",
@@ -125,7 +130,9 @@ private val HEVAL_FEATURES: List<HevalFeature> = listOf(HIDE_AI_INSIGHTS) +
     ANIMATION_FEATURES +
     SLOWER_WIDGET_REFRESH +
     HIDDEN_COUNTRIES +
-    HIDDEN_COMPETITIONS
+    HIDDEN_COMPETITIONS +
+    HIDE_MATCH_CHAT +
+    MAIN_TAB_FEATURES
 
 class SofascoreSmokeTest {
 
@@ -746,8 +753,75 @@ class SofascoreSmokeTest {
         // Hide countries (2026-11-03): getter filters, request lambda filters and picker seeds.
         assertHideCountries(classes, byType, diagnostics)
 
+        // Update prompts, match chat and main tabs (2026-11-06).
+        assertUpdateChatAndTabs(classes, byType)
+
         // Heval Controls: extension, registry, manifest components and the Settings row.
         assertHevalControls(byType)
+    }
+
+    private fun assertUpdateChatAndTabs(classes: List<ClassDef>, byType: Map<String, ClassDef>) {
+        fun Method.calls(owner: String, name: String) = instructions().any { it.call()?.let { c -> c.definingClass == owner && c.name == name } == true }
+
+        // Disable update prompts: the in-app update helper's check and flow return at once.
+        val helpers = classes.filter { c ->
+            c.methods.any { it.name == "<init>" && it.params() == listOf("Landroidx/activity/ComponentActivity;", "I") } &&
+                c.methods.any { it.returnType == "V" && it.params().size == 2 && it.calls("Landroid/app/PendingIntent;", "getIntentSender") }
+        }
+        check(helpers.size == 1) { "expected one in-app update helper, found ${helpers.map { it.type }}" }
+        val helper = helpers.single()
+        val check = helper.methods.single { it.returnType == "V" && it.params().size == 2 && it.params()[0] == CONTEXT && it.calls("Lcom/google/android/gms/tasks/Task;", "addOnSuccessListener") }
+        val flow = helper.methods.single { it.returnType == "V" && it.params().size == 2 && it.calls("Landroid/app/PendingIntent;", "getIntentSender") }
+        for ((label, method) in listOf("update check" to check, "update flow" to flow)) {
+            check(method.instructions().first().opcode == Opcode.RETURN_VOID) { "$label ${helper.type}->${method.name} does not return at once" }
+        }
+
+        // Hide match chat: the chat button helper and the button's motion method ask
+        // hideChatButton(p0) first and return when it answers true.
+        val fab = "Lcom/google/android/material/floatingactionbutton/ExtendedFloatingActionButton;"
+        val chatHelpers = classes.flatMap { c ->
+            c.methods.filter { it.isStatic() && it.returnType == "V" && it.params() == listOf(fab, "Lkotlin/jvm/functions/Function0;") &&
+                "PREF_CHAT_SHOW_ANIMATED_CHAT_ICON" in it.strings() }
+        }
+        check(chatHelpers.size == 1) { "expected one chat button helper, found ${chatHelpers.size}" }
+        val chatHelper = chatHelpers.single()
+        val motionName = chatHelper.instructions().mapNotNull { it.call() }
+            .single { it.definingClass == fab && it.returnType == "V" && it.parameterTypes.map(CharSequence::toString) == listOf("I") }.name
+        val motion = byType.getValue(fab).methods.single { it.name == motionName && it.params() == listOf("I") }
+        for ((label, method) in listOf("chat button helper" to chatHelper, "chat button motion" to motion)) {
+            val insns = method.instructions()
+            val p0 = method.implementation!!.registerCount - method.params().size - (if (method.isStatic()) 0 else 1)
+            val call = insns[0]
+            check(call.opcode == Opcode.INVOKE_STATIC_RANGE && call.call()?.definingClass == SOFASCORE_CONTROLS &&
+                call.call()?.name == "hideChatButton" && (call as RegisterRangeInstruction).startRegister == p0 && call.registerCount == 1
+            ) { "$label does not start with hideChatButton(p0); got ${call.opcode} ${call.call()}" }
+            val result = (insns[1] as? OneRegisterInstruction)?.registerA
+            check(insns[1].opcode == Opcode.MOVE_RESULT && insns[2].opcode == Opcode.IF_EQZ &&
+                (insns[2] as OneRegisterInstruction).registerA == result && insns[3].opcode == Opcode.RETURN_VOID
+            ) { "$label: the hideChatButton gate is malformed: ${insns.take(4).map { it.opcode }}" }
+            check(insns.branchTarget(2) == 4) { "$label: the gate does not fall through to the stock code" }
+        }
+
+        // Hide main tabs: every return of the tab list builder passes the list through filterMainTabs.
+        val builders = classes.flatMap { c ->
+            c.methods.filter { it.isStatic() && it.returnType == "Ljava/util/ArrayList;" && it.params() == listOf(CONTEXT, "Ljava/lang/String;") &&
+                "should_show_world_cup" in it.strings() && "DEV_MODE_SHOW_WORLD_CUP" in it.strings() }
+        }
+        check(builders.size == 1) { "expected one main tab list builder, found ${builders.size}" }
+        val insns = builders.single().instructions()
+        val returns = insns.indices.filter { insns[it].opcode == Opcode.RETURN_OBJECT }
+        check(returns.isNotEmpty()) { "the main tab list builder has no return-object" }
+        for (ret in returns) {
+            val register = (insns[ret] as OneRegisterInstruction).registerA
+            val call = insns[ret - 2]
+            check(call.opcode == Opcode.INVOKE_STATIC_RANGE && call.call()?.definingClass == SOFASCORE_CONTROLS &&
+                call.call()?.name == "filterMainTabs" && (call as RegisterRangeInstruction).startRegister == register &&
+                insns[ret - 1].opcode == Opcode.MOVE_RESULT_OBJECT && (insns[ret - 1] as OneRegisterInstruction).registerA == register
+            ) { "main tab list return at $ret is not filtered; got ${call.opcode} ${call.call()} ${insns[ret - 1].opcode}" }
+        }
+        // No jump may skip the filter: nothing branches straight to a return.
+        val targets = insns.indices.filter { insns[it] is OffsetInstruction }.map { insns.branchTarget(it) }.toSet()
+        check(returns.none { it in targets }) { "a branch skips the main tab filter" }
     }
 
     private fun assertHideCountries(classes: List<ClassDef>, byType: Map<String, ClassDef>, diagnostics: String) {
