@@ -2703,6 +2703,14 @@ object Constants {
     // are gone, the feed still shows articles with "Hide sponsored content" on, and the app-open
     // path still opens its destination. Known limit: the Braze SDK still initialises and registers
     // for push through another path; its event logging is blocked by the AnalyticsService no-ops.
+    // 2026-11-07: updated to 1.10.31 (Play arm64 build via gplaydl, versionCode 11031, same signer).
+    // R8 now renames the Kotlin runtime too (Continuation is Leasy/launcher/xo2;, kotlin.Unit is renamed), so
+    // the HomeRoleReminderWorker.doWork, SponsoredLinkSuggestionProvider.getSuggestions and
+    // BrazePushService.initialize fingerprints pin only the Continuation slot's kind ("L"), and Braze's
+    // Unit is found by its "kotlin.Unit" toString (as in Niagara). SportsPass merged its banner, icon,
+    // tile and new folder configs into SportsPassRemoteConfig.SportsPassEntryConfig, which Disable
+    // promotions now forces off. FingerprintProbe: all 20 fingerprints unique; smoke + CLI without -f.
+    // Runtime not run yet; smoke test and CLI run only.
     val COMPATIBILITY_EASYLAUNCHER = Compatibility(
         name = "Easy Homescreen",
         packageName = "easy.launcher",
@@ -2713,7 +2721,7 @@ object Constants {
         // was removed from the app (no com.amplitude classes, no AmplitudeAnalyticsService), so the
         // telemetry patch no longer hooks it; the other five patches apply unchanged. Smoke test
         // green and CLI without -f applied all six.
-        targets = listOf(AppTarget(version = "1.10.29", versionCode = 11029))
+        targets = listOf(AppTarget(version = "1.10.31", versionCode = 11031))
     )
 
     // Verified 2026-10-13 against in.cricketexchange.app.cricketexchange 26.10.06 (versionCode
