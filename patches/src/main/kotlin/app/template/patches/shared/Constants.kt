@@ -700,13 +700,16 @@ object Constants {
     // (CLI, no -f: only areAdsDisabled changes, to return true). Emulator 2026-10-17 (stock control):
     // stock shows a Disney+ test banner, a bet365 test banner and an interstitial; patched shows
     // none and no gap; the bet365 "Match odds" widget stays; no crash in 2 cold starts.
+    // 2026-11-07: updated to 10.4.1 (Play build via gplaydl, versionCode 2260, same signer), all patches apply unchanged; smoke + CLI without -f.
+    // Real-device check (Android 15, arm64), patched build: cold start, onboarding and the
+    // favourites screen respond, no crash log.
     val COMPATIBILITY_LIVESCORE = Compatibility(
         name = "Livescore",
         packageName = "com.livescore",
         apkFileType = ApkFileType.APK,
         appIconColor = 0xC8102E,
         signatures = setOf("82bf3a1c6498d93a22c4fe6ab8f272d5a8495093a8e04a66b0b1c92cdcd12ebb"), // CN=Sebastian, O=Cloeme
-        targets = listOf(AppTarget(version = "10.4", versionCode = 2250))
+        targets = listOf(AppTarget(version = "10.4.1", versionCode = 2260))
     )
 
     // Verified 2026-08-20 against FishBuddy v11.0.84 (universal, Android 7.0+).
