@@ -3827,6 +3827,12 @@ object Constants {
     // FirefoxFocusSmokeTest asserts the attribute in the decoded layout, the CLI without -f applies
     // it (aapt2 shows 0x50), and the emulator shows the bar above the navigation bar on a loaded
     // page. Height, elevation, id and behaviour are untouched.
+    // 2026-11-07 (audit fix): Focus lays the page out for a top toolbar in code, so the bar slid up
+    // over the page while scrolling (EngineViewScrollingGesturesBehavior with DependencyGravity.Top;
+    // R8 kept no Bottom variant) and the fixed mode left a gap at the top (showAsFixed sets the
+    // engine view's topMargin). A code half now makes enableDynamicBehavior call showAsFixed, and
+    // showAsFixed and the fullscreen handler (FullScreenIntegration$feature$2) write bottomMargin
+    // instead. Hide on scroll is off while the bar is at the bottom.
     val COMPATIBILITY_FIREFOX_FOCUS = Compatibility(
         name = "Firefox Focus",
         packageName = "org.mozilla.focus",

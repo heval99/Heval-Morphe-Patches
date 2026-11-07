@@ -221,5 +221,27 @@ class FirefoxFocusSmokeTest {
             "bottom", toolbars.single().getAttribute("android:layout_gravity"),
             "the browser toolbar is not pinned to the bottom",
         )
+
+        // The code half: the page is laid out for a bottom bar. enableDynamicBehavior shows the bar
+        // fixed, showAsFixed and the fullscreen handler use bottomMargin instead of topMargin.
+        val byTypeLayout = classes.associateBy { it.type }
+        val toolbarKt = byTypeLayout.getValue("Lorg/mozilla/focus/ext/BrowserToolbarKt;")
+        fun margins(method: com.android.tools.smali.dexlib2.iface.Method) = method.implementation!!.instructions
+            .filter { it.opcode == Opcode.IPUT }
+            .mapNotNull { ((it as ReferenceInstruction).reference as? com.android.tools.smali.dexlib2.iface.reference.FieldReference)?.name }
+            .filter { it == "topMargin" || it == "bottomMargin" }
+        val enable = toolbarKt.methods.single { it.name == "enableDynamicBehavior" && it.parameterTypes.size == 3 }
+        val enableInsns = enable.implementation!!.instructions.toList()
+        assertTrue(
+            enableInsns[0].opcode == Opcode.INVOKE_STATIC &&
+                ((enableInsns[0] as ReferenceInstruction).reference as MethodReference).name == "showAsFixed" &&
+                enableInsns[1].opcode == Opcode.RETURN_VOID,
+            "enableDynamicBehavior does not show the bar fixed",
+        )
+        val fixed = toolbarKt.methods.single { it.name == "showAsFixed" }
+        assertEquals(listOf("bottomMargin"), margins(fixed), "showAsFixed margin writes")
+        val fullscreen = byTypeLayout.getValue("Lorg/mozilla/focus/browser/integration/FullScreenIntegration\$feature\$2;")
+            .methods.single { it.name == "invoke" }
+        assertEquals(listOf("bottomMargin"), margins(fullscreen), "fullscreen margin writes")
     }
 }
