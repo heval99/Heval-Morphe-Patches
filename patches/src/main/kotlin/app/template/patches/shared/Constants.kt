@@ -2738,6 +2738,10 @@ object Constants {
     // PubMatic ad in the Live list; patched shows none with no gaps, and ad network events drop from
     // 277 to 3; no crash. A plain re-signed build gets no Firebase 403, so no notification fix is
     // needed (no FCM token line was seen either way).
+    // 2026-11-07: updated to 26.11.01 (Play arm64 build via gplaydl, versionCode 674, same signer
+    // CN=Purushotam Rawat), all patches apply unchanged; smoke + CLI without -f.
+    // Real-device check (Android 15, arm64), patched build: cold start, onboarding skipped, home
+    // with live scores and no ad slots, no crash log.
     val COMPATIBILITY_CREX = Compatibility(
         name = "CREX",
         packageName = "in.cricketexchange.app.cricketexchange",
@@ -2746,7 +2750,7 @@ object Constants {
         signatures = setOf("b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"), // CN=Purushotam Rawat
         // 2026-10-28: updated to 26.10.09 (versionCode 673, arm64-v8a, same signer). Enable Premium
         // and Disable ads apply unchanged: smoke test green and CLI without -f applied both.
-        targets = listOf(AppTarget(version = "26.10.09", versionCode = 673))
+        targets = listOf(AppTarget(version = "26.11.01", versionCode = 674))
     )
 
     // Added 2026-10-14 from the Reddit request queue ("the ads mess with the UI"). Verified
