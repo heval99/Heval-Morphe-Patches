@@ -2645,13 +2645,16 @@ object Constants {
     // are disabled; no string value changed (rule 12). flushAndWait is broader than the old flush
     // hook (the timer and event-count flushes reach it too). Not runtime-tested: libreactnative.so
     // still doesn't load on the x86_64 emulator.
+    // 2026-11-07: updated to 3.2.5 (Play arm64 build via gplaydl, versionCode 3431793, same signer), all patches apply unchanged; smoke + CLI without -f.
+    // Real-device check (Android 15, arm64), patched build: cold start to sign-up (no account),
+    // no crash log.
     val COMPATIBILITY_HEVY = Compatibility(
         name = "Hevy",
         packageName = "com.hevy",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x101012,
         signatures = setOf("add9aa0d804a1a14a04119d44fa7cb4cc229c86322991eda526f5455d11580ef"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "3.2.4", versionCode = 3403347))
+        targets = listOf(AppTarget(version = "3.2.5", versionCode = 3431793))
     )
 
     // Verified 2026-10-13 against easy.launcher 1.10.28 (versionCode 11028, the owner's APKMirror
