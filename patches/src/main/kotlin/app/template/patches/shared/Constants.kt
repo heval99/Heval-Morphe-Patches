@@ -3549,13 +3549,16 @@ object Constants {
     // string and shape anchor is still unique and the smoke test passes unchanged. CLI decompile
     // (no -f): 28 hooked methods change plus the added NO_FILL helper, resources byte-identical.
     // Not run on the emulator (armeabi-v7a only, which the emulator cannot install).
+    // 2026-11-07: updated to 2.3.608 (Play arm64 build via gplaydl, versionCode 928, same signer;
+    // the fixture is now arm64 instead of the old armeabi-v7a APKPure XAPK), all patches apply unchanged; smoke + CLI without -f.
+    // Runtime not run yet; smoke test and CLI run only.
     val COMPATIBILITY_FOOTBALL433 = Compatibility(
         name = "433",
         packageName = "com.football433",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF1FF00, // The adaptive icon's neon yellow background.
         signatures = setOf("87a49808a3bbed73e6af698a594f2ef984d35a36bda298eb400a5b2ed29fb2d0"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "2.3.585", versionCode = 905))
+        targets = listOf(AppTarget(version = "2.3.608", versionCode = 928))
     )
 
     // Same app, used only by "Disable telemetry", so Morphe Manager flags it as experimental
@@ -3578,13 +3581,14 @@ object Constants {
     // neither stock nor patched logged Sentry, UXCam or Branch lines, so the effect can't be told
     // apart there; Airship push work still runs, as intended. Stays experimental.
     // 2026-10-23: moved to 2.3.585 with the main entry (telemetry anchors unchanged apart from R8 renames).
+    // 2026-11-07: updated to 2.3.608 together with the main entry; all patches apply unchanged; smoke + CLI without -f.
     val COMPATIBILITY_FOOTBALL433_EXPERIMENTAL = Compatibility(
         name = "433",
         packageName = "com.football433",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF1FF00,
         signatures = setOf("87a49808a3bbed73e6af698a594f2ef984d35a36bda298eb400a5b2ed29fb2d0"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "2.3.585", versionCode = 905, isExperimental = true))
+        targets = listOf(AppTarget(version = "2.3.608", versionCode = 928, isExperimental = true))
     )
 
     // Written 2026-10-17 against com.mail.mobile.android.mail 9.18.3 (versionCode
