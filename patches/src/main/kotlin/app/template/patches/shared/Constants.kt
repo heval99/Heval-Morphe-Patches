@@ -1,4 +1,4 @@
-﻿package app.template.patches.shared
+package app.template.patches.shared
 
 import app.morphe.patcher.patch.ApkFileType
 import app.morphe.patcher.patch.AppTarget
@@ -1201,6 +1201,25 @@ object Constants {
     // alone. Verified by FlashscoreSmokeTest (every setNavigationBarColor call is preceded by a zero
     // constant in its colour register) and by the CLI; the emulator check of the visual result is
     // still pending.
+    // 2026-11-07 (audit fixes): "Use system font" also rewrites the three layouts that set a custom
+    // family inline (duel_detail_header_with_tabs = the match page header, the squad row and the
+    // tooltip), in finalize and one file at a time so the Patch settings row edit survives; its XML
+    // half is now an unnamed dependency instead of the listed "Use system font (styles)". "Force
+    // edge-to-edge" only matters on Android 14 and older: 26.11.4 targets API 36, and Android 15+
+    // ignores setNavigationBarColor for such apps (description says so; not checked on a device).
+    // "Block marketing notifications" finds HandlerInfo.process by shape (its payload type is
+    // R8-renamed) and, like the other switches, is on once the patch is selected.
+    // 2026-11-07 (#128 feedback): "Use system font" no longer swaps the four Compose families for
+    // FontFamily.Default (Flashscore's text styles carry no weight, so all Compose text went regular
+    // and looked thinner than the XML views). It now hooks ResourcesCompat.getFont(int, Context)
+    // (t5l.b, the only static (I, Context)Typeface, starts with Context.isRestricted) to return the
+    // system font at the resource's weight (SystemFonts: extrabold 900, bold/medium 500, else 400),
+    // matching the XML half. "Force edge-to-edge" also covers Android 15+: EventListActivity's inset
+    // listener pads android.R.id.content by the navigation bar and leaves the page colour there
+    // (#010a0f under a #00141e tab bar); NavigationBarStrip paints that padding in the tab bar's
+    // colour, read from the rendered bar on each layout. Emulator (API 35, gesture nav): strip and
+    // tab bar both #00141e, bold text still bold; while the loading overlay dims the screen the strip
+    // stays undimmed.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",
@@ -2589,6 +2608,21 @@ object Constants {
     // stored choice still wins. The two "profiles privately" toggles have no local preference key
     // and are not covered. Smoke test asserts a gate on every read of the five keys; CLI without -f
     // applied the patch and apkanalyzer shows the gate in dh.b.
+    // 2026-11-07 (audit fix): Privacy defaults matched every boolean read whose key register had the
+    // same number, so unrelated reads were gated (m53.d backup_enabled / blockCallNotification,
+    // ay5.c and fhj.b featureAvailability), and it used the shared fallback register as its gate
+    // scratch, changing later reads and Privacy Center state (mfi.c u4y.y/F, i5y) even with the switch
+    // off. Now each key gates only the first read after its load, the fallback goes through a
+    // per-switch (Z)Z helper and the register is restored after the read (overrideFallback: the
+    // literal again, or a saved free local). "Don't share fraud messages" was dropped: every read
+    // already falls back to false. Turn off Ad Campaign Analytics uses the same restore (its zero
+    // reached mfi.c's move/from16 v16, v8). Smoke test + CLI without -f; the patched m53.d/ay5.c/mfi.c
+    // were disassembled: only the privacy reads carry a helper.
+    // 2026-11-07 (#134): "Show caller number in call log" has a second switch, "Also for contacts"
+    // (truecaller.show_caller_number_contacts, off by default): the subtitle helper skips its
+    // phonebookId == 0 test while it is on, so saved contacts get the number after the label too.
+    // A separate row for the number is not done (the row is one subtitle line). Smoke test only; the
+    // revamped call log needs a registered account, so it was not seen on the emulator.
     // 2026-11-06: "Block marketing notifications" (opt-in). Push types are dispatched by string:
     // FS_NEWS, EVENT_CHANGE, OPEN_RACE_STAGE, NEWS_ARTICLE, USER_DATA_SYNC and INFO; INFO is the
     // generic promotional push (URL + big picture). HandlerInfo.process is the only place that
@@ -3022,6 +3056,14 @@ object Constants {
     // dumped values are stored obfuscated in libagora-ey.so, but that library is byte-identical in
     // 3.5.4 and 3.5.5 (arm64 SHA-256 0c51b2c3...a089, both Play builds), so the dumped values still
     // hold. Not run on the emulator.
+    // 2026-11-07 (#135, same 3.5.5 build, still the Play latest): Hide feed clutter also drops the
+    // AdTower unit (WatchAdTowerRewardsViewHolder, the second "Claim Rewards by Watching Ads" card
+    // that kept showing); new opt-in "Hide activity banners" drops ActivityBanner units (event and
+    // promo banners such as "Lucky Egg Smash"); Hide premium banners also empties
+    // GetMembershipDiscountPopupRes.getInfosList() (the membership discount / free-trial pop-up).
+    // The Egg and Rebates shortcut icons are not done: the grid is server-configured and the
+    // entries' identifiers are unknown. Smoke test only; the units are server-driven and may be
+    // region-gated, so they were not seen on the emulator.
     val COMPATIBILITY_WEMUSLIM = Compatibility(
         name = "WeMuslim",
         packageName = "com.fyxtech.muslim",
@@ -3853,6 +3895,12 @@ object Constants {
     // FirefoxFocusSmokeTest asserts the attribute in the decoded layout, the CLI without -f applies
     // it (aapt2 shows 0x50), and the emulator shows the bar above the navigation bar on a loaded
     // page. Height, elevation, id and behaviour are untouched.
+    // 2026-11-07 (audit fix): Focus lays the page out for a top toolbar in code, so the bar slid up
+    // over the page while scrolling (EngineViewScrollingGesturesBehavior with DependencyGravity.Top;
+    // R8 kept no Bottom variant) and the fixed mode left a gap at the top (showAsFixed sets the
+    // engine view's topMargin). A code half now makes enableDynamicBehavior call showAsFixed, and
+    // showAsFixed and the fullscreen handler (FullScreenIntegration$feature$2) write bottomMargin
+    // instead. Hide on scroll is off while the bar is at the bottom.
     val COMPATIBILITY_FIREFOX_FOCUS = Compatibility(
         name = "Firefox Focus",
         packageName = "org.mozilla.focus",
@@ -4253,6 +4301,35 @@ object Constants {
         appIconColor = 0xFAF5FF, // The adaptive icon's background colour (ic_launcher_background).
         signatures = setOf("5848c2237e07f41aa409ca5ff5076f5a46cc74170330aa5b34d51c720ac62df3"), // CN=soosu, OU=soosu studio, O=soosu studio
         targets = listOf(AppTarget(version = "1.3.29", versionCode = 350103236))
+    )
+
+    // 2026-11-07 (#133): EX File Manager 1.6.2 (versionCode 51), Play arm64 via gplaydl. The Play
+    // download is signed with a Google-generated app signing key (CN=Android, O=Google Inc.,
+    // SHA-256 bb9b5045...10ef); it came straight from Play, so that is the release signer.
+    //   - Enable Premium: the app-wide premium check (gx7.e here, 17 callers: the splash ad, the
+    //     subscription dialog, encryption, SFTP/WebDAV, gallery, video streams, cleaner cards) is a
+    //     static ()Z wrapper around the premium store's cached flag (a37.i, the only method reading
+    //     "key_p_entitlement_active_v2"); it now answers true. Purchases are verified by the
+    //     developer's server (premium_server_verify), which only writes that cache; the store and
+    //     the billing / verification code stay stock.
+    //   - Disable ads: the app loads AppLovin MAX and, for app-open and interstitial ads, Pangle
+    //     directly; every MAX load/show and every Pangle loadAd returns at once and MaxAdView stays
+    //     GONE. GMA here is only the Pangle mediation adapter and the next-gen stub (no load classes).
+    //   - Disable telemetry: Firebase Analytics deactivated (shared read), measurement logEvent,
+    //     Crashlytics collection off (its settings holder, the only class with the collection key),
+    //     every static void of AppMetrica (activate, activateReporter, reportEvent, ...).
+    //   Verified: smoke test, CLI without -f, emulator (API 35) with a stock control signed by the
+    //   same key: both start (the signature reads do not block a re-signed build); stock shows ads on
+    //   Cloud Drive / FTP / LAN / View on PC (a GMA test ad, a Temu native via Liftoff), patched
+    //   shows none, and Firebase logs "App measurement deactivated via the manifest". Premium-only
+    //   features were not opened one by one.
+    val COMPATIBILITY_EXFILEMANAGER = Compatibility(
+        name = "EX File Manager",
+        packageName = "com.ace.ex.file.manager",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x1F6AFF, // The app's brand blue (its result pages use #1F6AFF).
+        signatures = setOf("bb9b5045146677bd3bad51046d95b0deea69befcd29012bb5ef515f034a510ef"), // CN=Android, O=Google Inc. (Play app signing)
+        targets = listOf(AppTarget(version = "1.6.2", versionCode = 51))
     )
 
     // Verified 2026-10-28 against com.fenchtose.reflog 1.3.3 (versionCode 1331, APKPure single

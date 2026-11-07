@@ -16,6 +16,8 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 
 private const val INFO_STREAM_UNIT = "Lcom/fyxtech/muslim/protobuf/InfoStreamProto\$InfoStreamUnit;"
 private const val VIP_CARD_VIEW = "Lcom/fyxtech/muslim/about/module/main/VipCardView;"
+private const val DISCOUNT_POPUP_RES =
+    "Lcom/fyxtech/muslim/protobuf/LocationResourceProto\$GetMembershipDiscountPopupRes;"
 
 // The two membership upsells outside ad slots. The "Join Membership to remove ads" placeholders,
 // the "remove ads" chips and the ignore-ad dialog live inside the ad views (libads layouts), so
@@ -25,13 +27,32 @@ private const val VIP_CARD_VIEW = "Lcom/fyxtech/muslim/about/module/main/VipCard
 @Suppress("unused")
 val hidePremiumBannersPatch = bytecodePatch(
     name = "Hide premium banners",
-    description = "Hides the membership banners.",
+    description = "Hides the membership banners and pop-ups.",
 ) {
     compatibleWith(COMPATIBILITY_WEMUSLIM)
 
     dependsOn(bypassNativeEncryptionPatch)
 
     execute {
+        // 0. The membership discount pop-up (#135, the "Wemu Premium member" free-trial offer): the
+        // server's GetMembershipDiscountPopupRes (also carried in the app-startup event) lists the
+        // pop-ups to show, and both readers take getInfosList(). An empty list means no pop-up.
+        val popupRes = mutableClassDefByOrNull(DISCOUNT_POPUP_RES)
+            ?: throw PatchException("Hide premium banners: $DISCOUNT_POPUP_RES not found")
+        val infos = popupRes.methods.singleOrNull {
+            it.name == "getInfosList" && it.parameterTypes.isEmpty() && it.returnType == "Ljava/util/List;" &&
+                it.implementation != null
+        } ?: throw PatchException("Hide premium banners: no $DISCOUNT_POPUP_RES->getInfosList()")
+        // The getter is `iget-object p0, p0, ...; return-object p0`: p0 is free to carry the list.
+        infos.addInstructions(
+            0,
+            """
+                invoke-static {}, Ljava/util/Collections;->emptyList()Ljava/util/List;
+                move-result-object p0
+                return-object p0
+            """.trimIndent(),
+        )
+
         // 1. Home feed: the server sends the membership offer card ("Join Membership", "Enjoy an
         // ad-free experience", discount price and countdown; MembershipGuideSubViewHolder) as an
         // InfoStreamUnit with its membership_info field set. The stream builder checks the

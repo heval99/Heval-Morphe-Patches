@@ -1,4 +1,4 @@
-﻿package app.template.patches.truecaller.controls
+package app.template.patches.truecaller.controls
 
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.PatchException
