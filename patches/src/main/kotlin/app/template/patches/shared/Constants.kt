@@ -2091,13 +2091,16 @@ object Constants {
     // Not runtime-tested: the APK ships only ARM libs with extractNativeLibs=false, so even the
     // stock app dies at startup on the x86_64 emulator (libreactnative.so not found). Bytecode
     // verified only; the same GMA/RN design was runtime-checked on SmartWOD.
+    // 2026-11-07: updated to 2.2.424 (Play arm64 build via gplaydl, versionCode 48313, same signer), all patches apply unchanged; smoke + CLI without -f.
+    // Real-device check (Android 15, arm64), patched build: cold start to the welcome screen
+    // (no account), no crash log.
     val COMPATIBILITY_BLUEMAIL = Compatibility(
         name = "BlueMail",
         packageName = "me.bluemail.mail",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x006CEF,
         signatures = setOf("46cc9dad502c7581cb5fa56c1e7ea092db8f31948f4a6af2388fcf9391c41af6"), // O=BlueMail
-        targets = listOf(AppTarget(version = "2.2.418", versionCode = 48013))
+        targets = listOf(AppTarget(version = "2.2.424", versionCode = 48313))
     )
 
     // Verified 2026-10-12 against com.truecaller 26.39.6 (versionCode 2639006, APKMirror bundle
