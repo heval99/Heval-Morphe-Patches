@@ -4585,6 +4585,28 @@ object Constants {
         targets = listOf(AppTarget(version = "2026.09.20", versionCode = 90318107))
     )
 
+    // Verified 2026-11-08 against dk.nordjyske.reader 8.0.17 (versionCode 2012312510, Google Play
+    // arm64-v8a split set merged with APKEditor; launcher label "Nordjyske"; signer
+    // O=NORDJYSKE Medier A/S, cert SHA-256 485110a9...da31). PugPig Bolt reader app, 260k methods.
+    // Ads are served by PugPig's GoogleMobileAds module (Google Ad Manager): adViewForId builds and
+    // loads an AdManagerAdView, presentInterstitialAdViewForId loads AdManagerInterstitialAd and
+    // registerWebAdView wires the WebView bridge. "Disable ads" returns null from adViewForId (the
+    // module's own pre-sdkReady path) and returns early from the other two plus destroyAdView, which
+    // would otherwise cast the null view. The SDK stays initialised; nothing calls a load.
+    // "Disable telemetry" sets the Firebase/ad-ID manifest switches and makes PugPig's
+    // AnalyticsDispatcher sendEvent/setScreen/setUserInfo return at once, which drops Firebase,
+    // Mixpanel, Facebook and the publisher's endpoint at one choke point; OneSignal push is
+    // untouched. The article paywall is server-side (Poool), see the blocklist. Smoke test and CLI
+    // without -f pass; not run on a device.
+    val COMPATIBILITY_NORDJYSKE = Compatibility(
+        name = "Nordjyske",
+        packageName = "dk.nordjyske.reader",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE20110, // The launcher foreground's red.
+        signatures = setOf("485110a9940f451d9e5e03f82f471e79dbfcfcb0d0bf71e8ddbb31d6a8daea31"), // O=NORDJYSKE Medier A/S
+        targets = listOf(AppTarget(version = "8.0.17", versionCode = 2012312510))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
