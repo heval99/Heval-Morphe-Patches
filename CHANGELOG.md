@@ -1,3 +1,37 @@
+## 2.3.0-dev.3 (2026-11-08)
+
+### 🆕 New apps
+- **Allente** `6.2.1.0` - Disable telemetry
+- **B.T.** `4.5.8` - Disable ads, Disable telemetry
+- **Berlingske** `4.5.8` - Disable ads, Disable telemetry
+- **Blockbuster** `7.1.27` - Disable telemetry
+- **Ekstra Bladet** `2026.09.20` - Disable telemetry
+- **Fyens Stiftstidende** `15.32` - Disable ads, Disable telemetry, Unlock articles
+- **Herning Folkeblad** `15.0.0` - Disable telemetry
+- **Information** `4.37.0` - Disable telemetry
+- **JydskeVestkysten** `15.32` - Disable ads, Disable telemetry, Unlock articles
+- **Jyllands Posten** `2026.09.24` - Disable ads, Disable telemetry
+- **Nordisk Film+** `1.5.4` - Disable telemetry
+- **Nordjyske** `8.0.17` - Disable ads, Disable telemetry, Unlock articles
+- **Politiken** `4.1.4` - Disable ads, Disable telemetry
+- **Tipsbladet** `6.0` - Disable telemetry
+- **TV 2 Nyheder** `2026.10-10188:RELEASE` - Disable ads, Disable telemetry
+- **TV 2 Play** `2026.10-1` - Disable telemetry
+- **Weekendavisen** `8.4.0` - Disable telemetry
+- **YouSee Play** `13.11.0 (build 21977)` - Disable telemetry
+- **Århus Stiftstidende** `15.32` - Disable ads, Disable telemetry, Unlock articles
+
+### 📱 Sofascore `26.10.26`
+- New: Unlock developer options
+
+### 🔧 Other
+- New: Add Jyllands-Posten and Politiken telemetry
+- New: Block WebView ads in Jyllands-Posten and Politiken
+- New: Add the PugPig papers Fyens, Stiften and JydskeVestkysten
+- Fixed: Shorten patch descriptions
+
+**Download:** [patches-2.3.0-dev.3.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.3.0-dev.3/patches-2.3.0-dev.3.mpp)
+
 ## 2.3.0-dev.2 (2026-11-07)
 
 ### 🆕 New apps

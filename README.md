@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.3.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.3.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**92** apps&nbsp;&nbsp;•&nbsp;&nbsp;**266** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-07
+> **[v2.3.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.3.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**111** apps&nbsp;&nbsp;•&nbsp;&nbsp;**299** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-08
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -67,21 +67,39 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/com.livescore.png" width="20" height="20" alt=""> | **Livescore** | 🚫 1 | `10.4.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
 | <img src="assets/icons/one.cricket.app.png" width="20" height="20" alt=""> | **OneCricket** | 🚫 1 | `26.10.01` | APKM | [Play](https://play.google.com/store/apps/details?id=one.cricket.app) |
 | <img src="assets/icons/de.motain.iliga.png" width="20" height="20" alt=""> | **OneFootball** | 🚫 1 | `15.148.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
-| <img src="assets/icons/com.sofascore.results.png" width="20" height="20" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 22 | `26.10.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
+| <img src="assets/icons/com.sofascore.results.png" width="20" height="20" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 23 | `26.10.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
 | <img src="assets/icons/de.transfermarkt.v2.png" width="20" height="20" alt=""> | **Transfermarkt** | 🚫 🛡️ 2 | `4.3.3` | APKM | [Play](https://play.google.com/store/apps/details?id=de.transfermarkt.v2) |
 | <img src="assets/icons/com.yahoo.mobile.client.android.sportacular.png" width="20" height="20" alt=""> | **Yahoo Sports** | 🚫 🧩 2 | `12.27.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.sportacular) |
 
-#### 📰 News & finance <sub>7 apps</sub>
+#### 📰 News & finance <sub>25 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
+| <img src="https://img.shields.io/badge/-%20-0096D6?style=flat-square" height="14" alt=""> | **Allente** | 🛡️ 1 | `6.2.1.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.canaldigital.go) |
+| <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **B.T.** | 🚫 🛡️ 2 | `4.5.8` | APK | [Play](https://play.google.com/store/apps/details?id=com.mecom.bt) |
 | <img src="assets/icons/bbc.mobile.news.ww.png" width="20" height="20" alt=""> | **BBC News** | 🚫 1 | `2026.9.1` | APKM | [Play](https://play.google.com/store/apps/details?id=bbc.mobile.news.ww) |
+| <img src="https://img.shields.io/badge/-%20-002B5C?style=flat-square" height="14" alt=""> | **Berlingske** | 🚫 🛡️ 2 | `4.5.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mecom.Berlingske) |
+| <img src="https://img.shields.io/badge/-%20-0057B8?style=flat-square" height="14" alt=""> | **Blockbuster** | 🛡️ 1 | `7.1.27` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tdc.blockbuster.nordic) |
 | <img src="assets/icons/com.rammigsoftware.bluecoins.png" width="20" height="20" alt=""> | **Bluecoins** | 💎 1 | `13.1.149` | APK | [Play](https://play.google.com/store/apps/details?id=com.rammigsoftware.bluecoins) |
+| <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **Ekstra Bladet** | 🛡️ 1 | `2026.09.20` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.ekstrabladet.breakingnews) |
+| <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **Fyens Stiftstidende** | 🚫 🛡️ 🧩 3 | `15.32` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.fyensstifts.areader) |
+| <img src="https://img.shields.io/badge/-%20-0B4F87?style=flat-square" height="14" alt=""> | **Herning Folkeblad** | 🛡️ 1 | `15.0.0` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.herningfolkeblad.areader) |
+| <img src="https://img.shields.io/badge/-%20-C8102E?style=flat-square" height="14" alt=""> | **Information** | 🛡️ 1 | `4.37.0` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.information.areader) |
+| <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **JydskeVestkysten** | 🚫 🛡️ 🧩 3 | `15.32` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.jydskevestkystenmain.areader) |
+| <img src="https://img.shields.io/badge/-%20-C8102E?style=flat-square" height="14" alt=""> | **Jyllands Posten** | 🚫 🛡️ 2 | `2026.09.24` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.jyllandsposten.jp) |
 | <img src="assets/icons/com.monefy.app.lite.png" width="20" height="20" alt=""> | **Monefy** | 💎 1 | `1.22.11` | APKM | [Play](https://play.google.com/store/apps/details?id=com.monefy.app.lite) |
 | <img src="assets/icons/com.divum.MoneyControl.png" width="20" height="20" alt=""> | **Moneycontrol** | 🚫 🧪 1 | `14.6.3.RC0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.divum.MoneyControl) |
+| <img src="https://img.shields.io/badge/-%20-0B1F3A?style=flat-square" height="14" alt=""> | **Nordisk Film+** | 🛡️ 1 | `1.5.4` | APKM | [Play](https://play.google.com/store/apps/details?id=com.nordiskfilmplus.android) |
+| <img src="https://img.shields.io/badge/-%20-E20110?style=flat-square" height="14" alt=""> | **Nordjyske** | 🚫 🛡️ 🧩 3 | `8.0.17` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.nordjyske.reader) |
+| <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **Politiken** | 🚫 🛡️ 2 | `4.1.4` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.pol.news) |
 | <img src="assets/icons/ie.rte.news.png" width="20" height="20" alt=""> | **RTÃ‰ News** | 🚫 1 | `10.0.2` | APKM | [Play](https://play.google.com/store/apps/details?id=ie.rte.news) |
 | <img src="assets/icons/com.guardian.png" width="20" height="20" alt=""> | **The Guardian** | 🚫 🛡️ 🧩 3 | `6.241.23504` | APKM | [Play](https://play.google.com/store/apps/details?id=com.guardian) |
 | <img src="assets/icons/wsj.reader_sp.png" width="20" height="20" alt=""> | **The Wall Street Journal** | 🚫 1 | `15.12.0.42675` | APK | [Play](https://play.google.com/store/apps/details?id=wsj.reader_sp) |
+| <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **Tipsbladet** | 🛡️ 1 | `6.0` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tipsbladet.tipsbladet) |
+| <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **TV 2 Nyheder** | 🚫 🛡️ 2 | `2026.10-10188:RELEASE` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tv2.nyhedscenter) |
+| <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **TV 2 Play** | 🛡️ 1 | `2026.10-1` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tv2.tv2play) |
+| <img src="https://img.shields.io/badge/-%20-1B3A6B?style=flat-square" height="14" alt=""> | **Weekendavisen** | 🛡️ 1 | `8.4.0` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.weekendavisen.areader) |
+| <img src="https://img.shields.io/badge/-%20-00539B?style=flat-square" height="14" alt=""> | **Århus Stiftstidende** | 🚫 🛡️ 🧩 3 | `15.32` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.aasmain.areader) |
 
 #### 💬 Messaging, email & calls <sub>6 apps</sub>
 
@@ -106,7 +124,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/com.streema.simpleradio.png" width="20" height="20" alt=""> | **Simple Radio** | 🚫 💎 2 | `6.3.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.streema.simpleradio) |
 | <img src="assets/icons/com.melodis.midomiMusicIdentifier.freemium.png" width="20" height="20" alt=""> | **SoundHound** | 🚫 1 | `10.5.8` | APK | [Play](https://play.google.com/store/apps/details?id=com.melodis.midomiMusicIdentifier.freemium) |
 
-#### 📺 Video & TV <sub>5 apps</sub>
+#### 📺 Video & TV <sub>6 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
@@ -115,6 +133,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/com.duplila.screenshare.png" width="20" height="20" alt=""> | **Duplila** | 🚫 💎 🔑 3 | `5.4` | APKM | [Play](https://play.google.com/store/apps/details?id=com.duplila.screenshare) |
 | <img src="assets/icons/app.expert.player.png" width="20" height="20" alt=""> | **TV Smarters Player Expert** | 🚫 💎 2 | `11.6.1` | APKM | [Play](https://play.google.com/store/apps/details?id=app.expert.player) |
 | <img src="assets/icons/com.viaplay.android.png" width="20" height="20" alt=""> | **Viaplay** | 🚫 🛡️ 🧪 2 | `26.42.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.viaplay.android) |
+| <img src="https://img.shields.io/badge/-%20-00DC00?style=flat-square" height="14" alt=""> | **YouSee Play** | 🛡️ 1 | `13.11.0 (build 21977)` | APKS | [Play](https://play.google.com/store/apps/details?id=yiuo.mobile.tv) |
 
 #### 📚 Books & reading <sub>2 apps</sub>
 
@@ -424,7 +443,7 @@ Verified on: `15.148.0`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.sofascore.results.png" width="16" height="16" alt=""> <b>Sofascore</b> &nbsp;·&nbsp; 22 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
+<summary><img src="assets/icons/com.sofascore.results.png" width="16" height="16" alt=""> <b>Sofascore</b> &nbsp;·&nbsp; 23 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
 
 Verified on: `26.10.26`
 
@@ -452,6 +471,7 @@ Verified on: `26.10.26`
 | 🧩 **Patch settings** | Adds a screen to turn supported features on or off. | ✅ |
 | 🧩 **Slower widget refresh** | Refreshes home screen widgets every hour instead of every 30 minutes. | ➖ |
 | 🧩 **Spoof signature** | Fixes Google features that check the app's original signature. | ➖ |
+| 🧩 **Unlock developer options** | Opens the hidden developer menu without the password. | ➖ |
 
 </details>
 <details>
@@ -480,6 +500,27 @@ Verified on: `12.27.0`
 #### 📰 News & finance
 
 <details>
+<summary><b>Allente</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.canaldigital.go</code></summary>
+
+Verified on: `6.2.1.0`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🛡️ **Disable telemetry** | Disables analytics. | ✅ |
+
+</details>
+<details>
+<summary><b>B.T.</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.mecom.bt</code></summary>
+
+Verified on: `4.5.8`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Blocks the website's ad requests inside the article WebView. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
+
+</details>
+<details>
 <summary><img src="assets/icons/bbc.mobile.news.ww.png" width="16" height="16" alt=""> <b>BBC News</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>bbc.mobile.news.ww</code></summary>
 
 Verified on: `2026.9.1`
@@ -490,6 +531,27 @@ Verified on: `2026.9.1`
 
 </details>
 <details>
+<summary><b>Berlingske</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.mecom.Berlingske</code></summary>
+
+Verified on: `4.5.8`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Blocks the website's ad requests inside the article WebView. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
+
+</details>
+<details>
+<summary><b>Blockbuster</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>dk.tdc.blockbuster.nordic</code></summary>
+
+Verified on: `7.1.27`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
+
+</details>
+<details>
 <summary><img src="assets/icons/com.rammigsoftware.bluecoins.png" width="16" height="16" alt=""> <b>Bluecoins</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.rammigsoftware.bluecoins</code></summary>
 
 Verified on: `13.1.149`
@@ -497,6 +559,71 @@ Verified on: `13.1.149`
 | Patch | What it does | Default |
 |---|---|:-:|
 | 💎 **Enable Premium** | Unlocks premium features and removes ads. | ✅ |
+
+</details>
+<details>
+<summary><b>Ekstra Bladet</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>dk.ekstrabladet.breakingnews</code></summary>
+
+Verified on: `2026.09.20`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
+
+</details>
+<details>
+<summary><b>Fyens Stiftstidende</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>dk.fyensstifts.areader</code></summary>
+
+Verified on: `15.32`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Disables banner, interstitial and WebView ads. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics, crash reporting and session collection. | ✅ |
+| 🧩 **Unlock articles** | Treats every article as entitled, so the paywall is not shown. | ✅ |
+
+</details>
+<details>
+<summary><b>Herning Folkeblad</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>dk.herningfolkeblad.areader</code></summary>
+
+Verified on: `15.0.0`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🛡️ **Disable telemetry** | Disables analytics, crash reporting and session collection. | ✅ |
+
+</details>
+<details>
+<summary><b>Information</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>dk.information.areader</code></summary>
+
+Verified on: `4.37.0`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🛡️ **Disable telemetry** | Disables analytics trackers. | ✅ |
+
+</details>
+<details>
+<summary><b>JydskeVestkysten</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>dk.jydskevestkystenmain.areader</code></summary>
+
+Verified on: `15.32`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Disables banner, interstitial and WebView ads. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics, crash reporting and session collection. | ✅ |
+| 🧩 **Unlock articles** | Treats every article as entitled, so the paywall is not shown. | ✅ |
+
+</details>
+<details>
+<summary><b>Jyllands Posten</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>dk.jyllandsposten.jp</code></summary>
+
+Verified on: `2026.09.24`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Blocks the website's ad requests inside the article WebView. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
 
 </details>
 <details>
@@ -517,6 +644,39 @@ Verified on: `14.6.3.RC0`
 | Patch | What it does | Default |
 |---|---|:-:|
 | 🚫 **Disable ads** 🧪 | Removes all ads. | ✅ |
+
+</details>
+<details>
+<summary><b>Nordisk Film+</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.nordiskfilmplus.android</code></summary>
+
+Verified on: `1.5.4`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
+
+</details>
+<details>
+<summary><b>Nordjyske</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>dk.nordjyske.reader</code></summary>
+
+Verified on: `8.0.17`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Disables banner, interstitial and WebView ads. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics, crash reporting and session collection. | ✅ |
+| 🧩 **Unlock articles** | Treats every article as entitled, so the paywall is not shown. | ✅ |
+
+</details>
+<details>
+<summary><b>Politiken</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>dk.pol.news</code></summary>
+
+Verified on: `4.1.4`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Blocks the website's ad requests inside the article WebView. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
 
 </details>
 <details>
@@ -549,6 +709,59 @@ Verified on: `15.12.0.42675`
 | Patch | What it does | Default |
 |---|---|:-:|
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
+
+</details>
+<details>
+<summary><b>Tipsbladet</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>dk.tipsbladet.tipsbladet</code></summary>
+
+Verified on: `6.0`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🛡️ **Disable telemetry** | Disables analytics, crash reporting and session collection. | ✅ |
+
+</details>
+<details>
+<summary><b>TV 2 Nyheder</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>dk.tv2.nyhedscenter</code></summary>
+
+Verified on: `2026.10-10188:RELEASE`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Removes every Google Ad Manager ad. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
+
+</details>
+<details>
+<summary><b>TV 2 Play</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>dk.tv2.tv2play</code></summary>
+
+Verified on: `2026.10-1`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🛡️ **Disable telemetry** | Disables analytics. | ✅ |
+
+</details>
+<details>
+<summary><b>Weekendavisen</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>dk.weekendavisen.areader</code></summary>
+
+Verified on: `8.4.0`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🛡️ **Disable telemetry** | Disables analytics trackers. | ✅ |
+
+</details>
+<details>
+<summary><b>Århus Stiftstidende</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>dk.aasmain.areader</code></summary>
+
+Verified on: `15.32`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Disables banner, interstitial and WebView ads. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics, crash reporting and session collection. | ✅ |
+| 🧩 **Unlock articles** | Treats every article as entitled, so the paywall is not shown. | ✅ |
 
 </details>
 
@@ -784,6 +997,16 @@ Verified on: `26.42.1`
 |---|---|:-:|
 | 🛡️ **Disable telemetry** | Disables analytics, tracking and crash reporting. | ✅ |
 | 🚫 **Skip ads** 🧪 | Skips the ad breaks in on-demand videos. | ✅ |
+
+</details>
+<details>
+<summary><b>YouSee Play</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>yiuo.mobile.tv</code></summary>
+
+Verified on: `13.11.0 (build 21977)`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
 
 </details>
 
