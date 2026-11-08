@@ -21,6 +21,17 @@ import app.template.patches.sofascore.countries.COMPETITION_FILTER
 import app.template.patches.sofascore.countries.COUNTRY_FILTER
 import app.template.patches.sofascore.countries.HIDDEN_COUNTRIES
 import app.template.patches.sofascore.countries.NETWORK_COROUTINE_API
+import app.template.patches.sofascore.spoiler.EVENT_ACTIVITY
+import app.template.patches.sofascore.spoiler.LEAGUE_ACTIVITY
+import app.template.patches.sofascore.spoiler.SCORE_TEXT_VIEW
+import app.template.patches.sofascore.spoiler.SPOILER_FEATURES
+import app.template.patches.sofascore.spoiler.SPOILER_FREE
+import app.template.patches.sofascore.spoiler.SPOILER_FREE_MODE
+import app.template.patches.sofascore.spoiler.SPOILER_LISTS
+import app.template.patches.sofascore.spoiler.SPOILER_NOTIFICATIONS
+import app.template.patches.sofascore.spoiler.SPOILER_WIDGET
+import com.android.tools.smali.dexlib2.Opcodes
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -42,6 +53,8 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.nio.ByteBuffer
+import java.util.zip.ZipFile
 import javax.xml.parsers.DocumentBuilderFactory
 import org.w3c.dom.Element
 
@@ -96,6 +109,7 @@ private val SOFASCORE_PATCHES = setOf(
     "Hide promo sections",
     "Hide sports",
     "Slower widget refresh",
+    "Spoiler-free mode",
     "Spoof signature",
     "Unlock developer options",
 )
@@ -133,7 +147,8 @@ private val HEVAL_FEATURES: List<HevalFeature> = listOf(HIDE_AI_INSIGHTS) +
     HIDDEN_COUNTRIES +
     HIDDEN_COMPETITIONS +
     HIDE_MATCH_CHAT +
-    MAIN_TAB_FEATURES
+    MAIN_TAB_FEATURES +
+    SPOILER_FEATURES
 
 class SofascoreSmokeTest {
 
@@ -790,8 +805,128 @@ class SofascoreSmokeTest {
         // Update prompts, match chat and main tabs (2026-11-06).
         assertUpdateChatAndTabs(classes, byType)
 
+        // Spoiler-free mode (2026-11-08): push gate, menu items, list rows and widget.
+        assertSpoilerFree(byType, originalClasses(apk))
+
         // Heval Controls: extension, registry, manifest components and the Settings row.
         assertHevalControls(byType)
+    }
+
+    /** The unpatched classes, read straight from the APK's dex files. */
+    private fun originalClasses(apk: File): List<ClassDef> = ZipFile(apk).use { zip ->
+        zip.entries().toList()
+            .filter { Regex("classes\\d*\\.dex").matches(it.name) }
+            .flatMap { entry ->
+                val bytes = zip.getInputStream(entry).use { it.readBytes() }
+                DexBackedDexFile(Opcodes.forApi(36), ByteBuffer.wrap(bytes)).classes.toList()
+            }
+    }
+
+    private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
+
+    // Spoiler-free mode: every hook starts with the gate of its own switch (the master for the menu
+    // items, one switch per surface for the rest), the gate jumps straight into the unchanged stock
+    // code when that switch is off, and the enabled path calls the SpoilerFree helper.
+    private fun assertSpoilerFree(byType: Map<String, ClassDef>, stock: List<ClassDef>) {
+        check(SPOILER_FREE in byType) { "SpoilerFree is not in the patched dex" }
+        val stockByType = stock.associateBy { it.type }
+        fun List<Instruction>.opcodesWithoutNops() = map { it.opcode }.filter { it != Opcode.NOP }
+        fun Instruction.callsHelper(name: String) = call()?.let { it.definingClass == SPOILER_FREE && it.name == name } == true
+
+        /** The gate of [featureId] at [at], then [body] (calling [helper]); returns the gate's target. */
+        fun assertHook(method: Method, stockMethod: Method?, featureId: String, body: List<Opcode>, helper: String, at: Int = 0): Int {
+            val label = "${method.definingClass}->${method.name}"
+            val target = assertGate(method, featureId, label, at)
+            val insns = method.instructions()
+            val path = insns.subList(at + 4, target)
+            check(path.map { it.opcode } == body) { "$label: spoiler path is ${path.map { it.opcode }}, expected $body" }
+            check(path.any { it.callsHelper(helper) }) { "$label does not call SpoilerFree.$helper" }
+            if (stockMethod != null) {
+                check(insns.drop(target).opcodesWithoutNops() == stockMethod.instructions().opcodesWithoutNops()) {
+                    "$label: the stock code after the gate changed"
+                }
+            }
+            return target
+        }
+        fun pair(type: String, select: (Method) -> Boolean): Pair<Method, Method> {
+            val patched = byType.getValue(type).methods.filter(select)
+            val original = stockByType.getValue(type).methods.filter(select)
+            check(patched.size == 1 && original.size == 1) { "$type: ${patched.size}/${original.size} matching methods" }
+            return patched.single() to original.single()
+        }
+
+        // 1. Notifications: the message Bundle goes to blocksPush; a blocked push returns.
+        val (push, stockPush) = pair("Lcom/sofascore/results/firebase/push/FCMListenerService;") { it.name == "onMessageReceived" }
+        val pushTarget = assertHook(
+            push, stockPush, SPOILER_NOTIFICATIONS.id,
+            listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.RETURN_VOID),
+            "blocksPush",
+        )
+        val pushInsns = push.instructions()
+        check(pushInsns[5].field()?.let { it.definingClass == "Lcom/google/firebase/messaging/RemoteMessage;" && it.type == "Landroid/os/Bundle;" } == true) {
+            "onMessageReceived does not read the RemoteMessage Bundle"
+        }
+        check(pushInsns.branchTarget(8) == pushTarget) { "a push that is not blocked does not reach the stock code" }
+
+        // 2. and 3. The menu items and the page subjects (master switch).
+        val menu = listOf("Landroid/view/Menu;")
+        for ((type, subject, helpers) in listOf(
+            Triple(EVENT_ACTIVITY, "Lcom/sofascore/model/mvvm/model/Event;", "addMatchItem" to "onMatch"),
+            Triple(LEAGUE_ACTIVITY, "Lcom/sofascore/model/mvvm/model/UniqueTournament;", "addCompetitionItem" to "onCompetition"),
+        )) {
+            val (onMenu, stockMenu) = pair(type) { it.name == "onCreateOptionsMenu" && it.params() == menu }
+            assertHook(onMenu, stockMenu, SPOILER_FREE_MODE.id, listOf(Opcode.INVOKE_STATIC_RANGE), helpers.first)
+            val (setter, stockSetter) = pair(type) { it.returnType == "V" && it.params() == listOf(subject) && !it.isStatic() }
+            assertHook(setter, stockSetter, SPOILER_FREE_MODE.id, listOf(Opcode.INVOKE_STATIC_RANGE), helpers.second)
+        }
+
+        // 4. List rows: setText filters its text through scoreText into p1, and the row binder marks
+        // every score cell the stock binder reads for the row's Event.
+        val (setText, stockSetText) = pair(SCORE_TEXT_VIEW) { it.name == "setText" && it.params() == listOf("Ljava/lang/String;") }
+        assertHook(setText, stockSetText, SPOILER_LISTS.id, listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT_OBJECT), "scoreText")
+        val p1 = setText.implementation!!.registerCount - 1
+        check((setText.instructions()[5] as OneRegisterInstruction).registerA == p1) { "scoreText's result does not replace p1" }
+
+        val binders = byType.values.flatMap { it.methods }.filter { m -> m.instructions().any { it.callsHelper("markRow") } }
+        check(binders.size == 1) { "${binders.size} methods call SpoilerFree.markRow, expected one (the row binder)" }
+        val binder = binders.single()
+        val stockBinder = stockByType.getValue(binder.definingClass).methods.single { it.name == binder.name && it.params() == binder.params() }
+        val cells = stockBinder.instructions().filter { it.opcode == Opcode.IGET_OBJECT }
+            .mapNotNull { it.field() }.filter { it.type == SCORE_TEXT_VIEW }.distinctBy { it.name }
+        check(cells.size >= 5) { "the stock row binder reads ${cells.size} score cells" }
+        val rowTarget = assertHook(
+            binder, stockBinder, SPOILER_LISTS.id,
+            listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.IGET_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT) +
+                cells.flatMap { listOf(Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC) },
+            "markRow",
+        )
+        val marked = binder.instructions().subList(4, rowTarget).windowed(2)
+            .filter { it[1].opcode == Opcode.INVOKE_STATIC && it[1].call()?.name == "markRow" }.map { it[0].field()!!.name }
+        check(marked.toSet() == cells.map { it.name }.toSet()) { "markRow covers $marked, the binder's score cells are ${cells.map { it.name }}" }
+
+        // 5. Widget: the gate sits before the single return-object, a nop holds the return's old
+        // labels (so no branch skips the gate), and maskWidgetRow gets the returned RemoteViews.
+        val widgets = byType.values.flatMap { it.methods }.filter { m -> m.instructions().any { it.callsHelper("maskWidgetRow") } }
+        check(widgets.size == 1) { "${widgets.size} methods call SpoilerFree.maskWidgetRow, expected one" }
+        val widget = widgets.single()
+        val w = widget.instructions()
+        val gateAt = w.indexOfFirst { it.opcode == Opcode.CONST_STRING && it.stringOrNull() == SPOILER_WIDGET.id }
+        val widgetTarget = assertHook(
+            widget, null, SPOILER_WIDGET.id,
+            listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.IGET_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.INVOKE_STATIC),
+            "maskWidgetRow", at = gateAt,
+        )
+        check(w[gateAt - 1].opcode == Opcode.NOP) { "the widget gate is not preceded by the label-holding nop" }
+        check(w[widgetTarget].opcode == Opcode.RETURN_OBJECT) { "the widget gate does not jump to the return" }
+        val mask = w[widgetTarget - 1] as FiveRegisterInstruction
+        check(mask.registerD == (w[widgetTarget] as OneRegisterInstruction).registerA) { "maskWidgetRow does not get the returned RemoteViews" }
+        val switches = setOf(Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH)
+        val toReturn = w.indices.filter { w[it] is OffsetInstruction && w[it].opcode !in switches && w.branchTarget(it) == widgetTarget }
+        check(toReturn == listOf(gateAt + 3)) { "branches skip the widget gate: $toReturn" }
+        val stockWidget = stockByType.getValue(widget.definingClass).methods.single { it.name == widget.name && it.params() == widget.params() }
+        check(w.filterIndexed { i, _ -> i < gateAt - 1 || i >= widgetTarget }.opcodesWithoutNops() == stockWidget.instructions().opcodesWithoutNops()) {
+            "the widget row builder changed outside the gate"
+        }
     }
 
     private fun assertUpdateChatAndTabs(classes: List<ClassDef>, byType: Map<String, ClassDef>) {
