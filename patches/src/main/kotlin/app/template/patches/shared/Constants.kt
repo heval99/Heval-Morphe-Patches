@@ -68,6 +68,11 @@ object Constants {
     // re-enable ad paths and FORCE_TELEMETRY undoes Disable telemetry, hence opt-in and the warning
     // in the description. Smoke test, CLI without -f and an apkanalyzer dump (const/16 p1, 0x1
     // before the branch) pass; not run on a device.
+    // 2026-11-08 Spoiler-free mode (26.10.26, phase 1): master switch plus notification, match list
+    // and widget switches, anchored on FCMListenerService.onMessageReceived, EventActivity/
+    // LeagueActivity onCreateOptionsMenu and their (Event)V/(UniqueTournament)V methods,
+    // EventListScoreTextView.setText, the row binder (5+ score cells and an Event getter) and the
+    // widget row builder (first_main/second_main ids). Smoke test only; not run on a device.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",

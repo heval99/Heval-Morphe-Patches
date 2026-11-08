@@ -349,6 +349,12 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.slower_widget_refresh` | Slower widget refresh | off | yes | widget refresh interval (`widgetRefreshInterval`) |
 | `sofascore.hidden_countries` (list) | Hide countries | off | yes | SportCategoriesResponse.getCategories (`filterCategories`), CategoriesForDateResponse.getCategories (`filterCategoryWrappers`), SearchResponse.getResults (`filterSearchResults`), the sportLiveEvents and getIndexedEventsPage request returns (`filterEventList`), the categoryScheduledEvents request return (`filterCategoryEvents`), seeds by `CountryFilter.init` at the end of ReleaseApp.onCreate |
 | `sofascore.hidden_competitions` (list) | Hide competitions | off | yes | the same shared sites minus the leagues list, plus UniqueTournamentGroupResponse.getUniqueTournaments (`filterUniqueTournaments`); icons by `CompetitionFilter.init` (called from `CountryFilter.init`) |
+| `sofascore.spoiler_free` | Spoiler-free mode | on | no | EventActivity and LeagueActivity onCreateOptionsMenu (`addMatchItem`, `addCompetitionItem`) and their (Event)V / (UniqueTournament)V methods (`onMatch`, `onCompetition`); master of the five rows below |
+| `sofascore.spoiler_notifications` | Spoiler-free mode | on | no | FCMListenerService.onMessageReceived (`blocksPush`) |
+| `sofascore.spoiler_lists` | Spoiler-free mode | on | no | EventListScoreTextView.setText (`scoreText`), the match row binder's start (`markRow`) |
+| `sofascore.spoiler_widget` | Spoiler-free mode | on | no | the widget row builder's return (`maskWidgetRow`) |
+| `sofascore.spoiler_events` (list) | Spoiler-free mode | off | no | read by every spoiler hook; filled by the match page item |
+| `sofascore.spoiler_competitions` (list) | Spoiler-free mode | off | no | read by every spoiler hook; filled by the competition page item |
 
 Hidden countries (2026-11-03) keys are the categories' `alpha2` codes (Sofascore's own, e.g. EN
 England, SX Scotland, WA Wales, NX Northern Ireland, XK Kosovo); categories without one (World,
@@ -395,6 +401,22 @@ the framework resets it (a duration-scale listener on API 33+, and before each a
 Slower widget refresh changes the widget work's repeat interval from 30 minutes to one hour; the
 app enqueues it with the UPDATE policy from the widget receiver's onEnabled/onUpdate, so a change
 applies at the widget's next update.
+
+Spoiler-free mode (2026-11-08, Sofascore 26.10.26, phase 1) lets the user mark a match on its match
+page or a competition on its page ("Spoiler-free: on/off" in the overflow menu; `SpoilerFree` in
+`extensions/sofascore`). The marks are the two lists (event ids, UniqueTournament ids), which depend
+on the master switch, so the user can un-mark entries in Patch settings. Each surface has its own
+switch (on by default, depending on the master), so the user picks what is hidden and turning one
+off restores stock for that surface only: notifications drops a push whose "notification" JSON opens
+a marked event (pushes carry no competition id, so a marked competition does not block pushes);
+match lists blank every EventListScoreTextView cell of a marked match's row (scores, period scores,
+aggregate, penalties, status) also on later updates, while the kickoff time cell stays; the widget
+empties a marked match's score cells and shows its kickoff time as the status. Only the display
+changes: the Event objects, sorting, the Live tab, live updates and stored favourites are stock.
+Not covered: the match page header and tabs, search, favourites' and featured match views, the chat
+and share card, team form, standings, the winner colour of team names, Wear, notifications the
+system shows on its own while the app is in the background, and old finished marks (they stay
+until the user un-marks them).
 
 Not converted: Disable ads,
 Enable Premium, Disable telemetry, Disable Facebook SDK, GmsCore support and Spoof signature.
