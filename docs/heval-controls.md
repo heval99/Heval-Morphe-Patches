@@ -417,6 +417,27 @@ did not change for the converted patches.
 | `fotmob.slower_live_refresh` | Slower live refresh | off | no | match page ticker limit 15 -> 30 (value helper) |
 | `fotmob.hidden_countries` (list) | Hide countries | off | yes | LiveMatchesAndLeagueRank.<init> (`filterLiveMatches`), LeagueConverter.convert returns (`filterLeagues`), Suggestion constructors' league/team/match stores (`filterLeagueSuggestions`, `filterTeamSuggestions`, `filterMatchSuggestions`) |
 | `fotmob.hidden_competitions` (list) | Hide competitions | off | yes | the same shared sites (`fotMobListFiltersPatch`); logos and seeds by `CompetitionFilter.init` (called from `CountryFilter.init`) |
+| `fotmob.spoiler_free` | Spoiler-free mode | on | no | PushMessagingService.onMessageReceived (index 0, `SpoilerFree.blocksPush`), the menu/activity_match_facts_v2 and menu/league_info builders (index 0, `addMatchItem` / `addCompetitionItem`); widget row via `SpoilerFree.hidesScore` / `status` |
+| `fotmob.spoiler_matches` (list) | Spoiler-free mode | - | no | marked on the match page; needs `fotmob.spoiler_free` |
+| `fotmob.spoiler_competitions` (list) | Spoiler-free mode | - | no | marked on the competition page; needs `fotmob.spoiler_free` |
+
+Spoiler-free mode (2026-11-08, phase 1; smoke-tested on 241.18134, not run on a device). The user marks a
+match ("Spoiler-free: on/off" in the match page's overflow menu, keyed by FotMob's match id from the
+`PARAM_MATCHID` extra) or a competition (the same item on the competition page, keyed by the
+`leagueId` extra, like Hidden competitions). The marks are the two lists above; both depend on the
+switch, so turning it off restores stock everywhere, and marks can be removed in Patch settings. A
+match counts as marked when its id is marked or its league id or parent league id is a marked
+competition. Covered: match push notifications (the FCM message's `m`, `lid`, `plid`; the push is
+dropped before FotMob handles it) and the home-screen live score widget (kickoff time instead of the
+score, empty status label) and the six methods that format the live score and ask `Match` whether it
+has started (the live row, the fixture row, the match page header, two view-holder methods and the
+live-update worker): a marked match counts as not started there, so they show the kickoff time. Not
+covered yet: score-drawing methods that never ask whether the match started (the team form line,
+the holder-based builders, the shared string helper), the match page tabs (events, stats, momentum),
+the league and team widgets, search, head-to-head, brackets, standings, the bold winner in the live
+row, the status text ("FT", the minute) and the widget's bold winner after a penalty shootout. The
+live-update worker still shows an ongoing notification for a marked match, with kickoff time instead
+of the score. Marks of finished matches stay until the user removes them (at most 500 per list).
 
 Hidden countries (2026-11-03) keys are FotMob's league country codes (FIFA three-letter codes; `INT` national-team and `INT-2` club competitions, which match lists and search both call `INT`: `CountryData` in `extensions/fotmob` tells them apart by league id from the bundled `res/raw/available_leagues`, the last leagues list (saved in `heval_fotmob_countries`) and every leagues list loaded; while a league is unknown, a raw `INT` is hidden only when both are picked). Favourite leagues and favourite teams' matches always stay (FotMob's `FAVORITE_LEAGUES_JSON` / `FAVORITE_TEAMS_JSON`, re-read when they change). The picker is seeded with 217 FIFA codes plus the two International groups by `CountryFilter.init` from `ActivityHooks.register`, and the leagues list reports what it sees. The Leagues tab never goes empty (if every league would be hidden, the full list stays). The onboarding league picker uses the same leagues list, so it is filtered too; search filters leagues, teams (by league id) and matches, not players or referees; the widget and notifications are not filtered.
 
