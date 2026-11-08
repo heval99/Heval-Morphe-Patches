@@ -4679,6 +4679,25 @@ object Constants {
         targets = listOf(AppTarget(version = "4.5.8", versionCode = 117085))
     )
 
+    // Verified 2026-11-08 against dk.information.areader 4.37.0 (versionCode 2012312421, Google Play
+    // arm64-v8a split set merged with APKEditor; launcher label "Information"; signer O=Visiolink,
+    // C=DK, cert SHA-256 f0de5609...ad03). Visiolink reader platform, 258k methods, Play Billing.
+    // All analytics go through tracker subclasses of the shared
+    // com.visiolink.reader.base.tracking.AbstractTracker (FirebaseTracker, GoogleTagManagerTracker
+    // and the app's MatomoTracker/TealiumTracker); "Disable telemetry" no-ops every void method on
+    // every concrete subclass and sets six Firebase manifest switches. The e-paper/subscription
+    // content is server-side. The same platform is shared by Weekendavisen, Fyens, Stiften,
+    // JydskeVestkysten and Herning Folkeblad, so those can take the same patch after their own
+    // smoke test. Ads and the WebView content are not part of it yet. Not run on a device.
+    val COMPATIBILITY_INFORMATION = Compatibility(
+        name = "Information",
+        packageName = "dk.information.areader",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xC8102E, // Information red.
+        signatures = setOf("f0de5609400206e2830fde61ed2198e420e443adbc464d2f19306a529ba9ad03"), // O=Visiolink, C=DK
+        targets = listOf(AppTarget(version = "4.37.0", versionCode = 2012312421))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
