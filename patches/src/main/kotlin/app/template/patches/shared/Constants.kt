@@ -4833,6 +4833,26 @@ object Constants {
         targets = listOf(AppTarget(version = "2026.10-1", versionCode = 90851))
     )
 
+    // Verified 2026-11-08 against dk.tdc.blockbuster.nordic 7.1.27 (versionCode 610000900, Google
+    // Play arm64-v8a split set merged with APKEditor; signer O=Visualized, cert SHA-256
+    // a0b7ba54...a4e7). React Native (SF Anytime player modules bundled).
+    //   - Disable telemetry: @react-native-firebase/analytics (the JS consent flow can re-enable
+    //     collection, so the native module's setAnalyticsCollectionEnabled argument is pinned to
+    //     Boolean.FALSE) plus the Sentry RN SDK, whose every SentryAndroid.init overload returns at
+    //     once. Firebase auto-init of Sentry is already off in the stock manifest. Firebase
+    //     Messaging, the Play Billing purchase flow and the player are untouched.
+    //   - No ads: the only play-services-ads classes are the advertising-ID client; rentals and
+    //     subscriptions are Play Billing + SF Anytime account state, so no client-side premium gate.
+    // Smoke-tested; not run on a device.
+    val COMPATIBILITY_BLOCKBUSTER = Compatibility(
+        name = "Blockbuster",
+        packageName = "dk.tdc.blockbuster.nordic",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x0057B8, // Blockbuster blue.
+        signatures = setOf("a0b7ba546cc4a358aaf11d1055523c98d90b2e09d326c620864e8f34e25ae4e7"), // O=Visualized
+        targets = listOf(AppTarget(version = "7.1.27", versionCode = 610000900))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
