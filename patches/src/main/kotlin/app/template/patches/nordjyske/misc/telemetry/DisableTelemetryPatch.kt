@@ -5,6 +5,9 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_NORDJYSKE
+import app.template.patches.shared.Constants.COMPATIBILITY_FYENS
+import app.template.patches.shared.Constants.COMPATIBILITY_STIFTEN
+import app.template.patches.shared.Constants.COMPATIBILITY_JYDSKEVESTKYSTEN
 import org.w3c.dom.Element
 
 // PugPig Bolt funnels every analytics event through AnalyticsDispatcher, which forwards to the
@@ -17,7 +20,7 @@ private const val DISPATCHER = "Lcom/kaldorgroup/pugpigbolt/net/analytics/Analyt
  * through the manifest switches. OneSignal (push) and Firebase Messaging are not touched.
  */
 private val disableTelemetryManifestPatch = resourcePatch {
-    compatibleWith(COMPATIBILITY_NORDJYSKE)
+    compatibleWith(COMPATIBILITY_NORDJYSKE, COMPATIBILITY_FYENS, COMPATIBILITY_STIFTEN, COMPATIBILITY_JYDSKEVESTKYSTEN)
 
     execute {
         document("AndroidManifest.xml").use { doc ->
@@ -66,7 +69,7 @@ val disableTelemetryPatch = bytecodePatch(
     name = "Disable telemetry",
     description = "Disables analytics, crash reporting and session collection.",
 ) {
-    compatibleWith(COMPATIBILITY_NORDJYSKE)
+    compatibleWith(COMPATIBILITY_NORDJYSKE, COMPATIBILITY_FYENS, COMPATIBILITY_STIFTEN, COMPATIBILITY_JYDSKEVESTKYSTEN)
 
     dependsOn(disableTelemetryManifestPatch)
 

@@ -4,6 +4,9 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_NORDJYSKE
+import app.template.patches.shared.Constants.COMPATIBILITY_FYENS
+import app.template.patches.shared.Constants.COMPATIBILITY_STIFTEN
+import app.template.patches.shared.Constants.COMPATIBILITY_JYDSKEVESTKYSTEN
 
 // PugPig Bolt keeps its domain classes unobfuscated; Story is the article model shared by all
 // PugPig readers.
@@ -24,7 +27,7 @@ val unlockArticlesPatch = bytecodePatch(
     name = "Unlock articles",
     description = "Treats every article as entitled, so the paywall is not shown.",
 ) {
-    compatibleWith(COMPATIBILITY_NORDJYSKE)
+    compatibleWith(COMPATIBILITY_NORDJYSKE, COMPATIBILITY_FYENS, COMPATIBILITY_STIFTEN, COMPATIBILITY_JYDSKEVESTKYSTEN)
 
     execute {
         val story = mutableClassDefBy(STORY)

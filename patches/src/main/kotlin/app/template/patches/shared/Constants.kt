@@ -4718,6 +4718,63 @@ object Constants {
         targets = listOf(AppTarget(version = "8.4.0", versionCode = 2012312500))
     )
 
+    // Verified 2026-11-08 against dk.fyensstifts.areader 15.32 (versionCode 2012312710, Google Play
+    // arm64-v8a split set merged with APKEditor; launcher label "Fyens Stiftstidende"; Play
+    // app-signing key d2a6e458...d518). PugPig Bolt reader, same platform as Nordjyske, so the
+    // Nordjyske "Disable ads", "Disable telemetry" and "Unlock articles" patches apply unchanged.
+    // Smoke-tested; not run on a device.
+    val COMPATIBILITY_FYENS = Compatibility(
+        name = "Fyens Stiftstidende",
+        packageName = "dk.fyensstifts.areader",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE30613, // Fyens red.
+        signatures = setOf("d2a6e4587a311a6f83d6531fed0e6e4616c4b1e345859f84b9a41bd99e94d518"), // Play app-signing key
+        targets = listOf(AppTarget(version = "15.32", versionCode = 2012312710))
+    )
+
+    // Verified 2026-11-08 against dk.aasmain.areader 15.32 (versionCode 2012312710, Google Play
+    // arm64-v8a split set merged with APKEditor; launcher label "Århus Stiftstidende"; Play
+    // app-signing key c0fc4e51...f459). PugPig Bolt reader, same platform as Nordjyske; the same
+    // three patches apply. Smoke-tested; not run on a device.
+    val COMPATIBILITY_STIFTEN = Compatibility(
+        name = "Århus Stiftstidende",
+        packageName = "dk.aasmain.areader",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x00539B, // Stiften blue.
+        signatures = setOf("c0fc4e51454de69c159dd0e58693cee896ead3fcda6d588b2178d936ce4ef459"), // Play app-signing key
+        targets = listOf(AppTarget(version = "15.32", versionCode = 2012312710))
+    )
+
+    // Verified 2026-11-08 against dk.jydskevestkystenmain.areader 15.32 (versionCode 2012312710,
+    // Google Play arm64-v8a split set merged with APKEditor; launcher label "JydskeVestkysten";
+    // Play app-signing key 0502eeee...e23c). PugPig Bolt reader, same platform as Nordjyske; the
+    // same three patches apply. Smoke-tested; not run on a device.
+    val COMPATIBILITY_JYDSKEVESTKYSTEN = Compatibility(
+        name = "JydskeVestkysten",
+        packageName = "dk.jydskevestkystenmain.areader",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE30613, // JV red.
+        signatures = setOf("0502eeeedc11af996b8beed4a4aae0bb9f0ab43b7327b4d59425add358b1e23c"), // Play app-signing key
+        targets = listOf(AppTarget(version = "15.32", versionCode = 2012312710))
+    )
+
+    // Verified 2026-11-08 against dk.herningfolkeblad.areader 15.0.0 (versionCode 2024060211, Google
+    // Play arm64-v8a split set merged with APKEditor; launcher label "Nyheder"; signer O=visiolink,
+    // C=DK, cert SHA-256 491c1b6c...1e5e). Textalk/Prenly e-paper reader (se.textalk.media.reader),
+    // not PugPig or Visiolink: no ad SDK, and access to issues is decided by the Prenly backend
+    // (purchase sheet + login), so there is no client-side paywall to unlock. "Disable telemetry"
+    // no-ops the app's single analytics dispatcher (Analytics.invokeReporterWithCrashlyticsWrapper,
+    // which feeds Firebase, Prenlytics/Pulse and any configured Kantar Sifo reporter) and sets the
+    // Firebase Analytics/Crashlytics/Sessions switches. Smoke-tested; not run on a device.
+    val COMPATIBILITY_HERNING = Compatibility(
+        name = "Herning Folkeblad",
+        packageName = "dk.herningfolkeblad.areader",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x0B4F87, // Herning Folkeblad blue.
+        signatures = setOf("491c1b6c7ffb6d1fed7ae10423486af10d5cb176a387063c8d67ef8caf7a1e5e"), // O=visiolink, C=DK
+        targets = listOf(AppTarget(version = "15.0.0", versionCode = 2024060211))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).

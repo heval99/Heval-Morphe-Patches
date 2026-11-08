@@ -48,7 +48,11 @@
         "com.mecom.Berlingske",
         "com.mecom.bt",
         "dk.information.areader",
-        "dk.weekendavisen.areader"
+        "dk.weekendavisen.areader",
+        "dk.jydskevestkystenmain.areader",
+        "dk.aasmain.areader",
+        "dk.fyensstifts.areader",
+        "dk.herningfolkeblad.areader"
       ]
     },
     {

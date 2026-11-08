@@ -4,6 +4,9 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_NORDJYSKE
+import app.template.patches.shared.Constants.COMPATIBILITY_FYENS
+import app.template.patches.shared.Constants.COMPATIBILITY_STIFTEN
+import app.template.patches.shared.Constants.COMPATIBILITY_JYDSKEVESTKYSTEN
 import app.template.patches.shared.addInstructionsChecked
 
 // PugPig Bolt's ad module. The class and its public methods keep their names (it is a framework
@@ -25,7 +28,7 @@ val disableAdsPatch = bytecodePatch(
     name = "Disable ads",
     description = "Disables banner, interstitial and WebView ads.",
 ) {
-    compatibleWith(COMPATIBILITY_NORDJYSKE)
+    compatibleWith(COMPATIBILITY_NORDJYSKE, COMPATIBILITY_FYENS, COMPATIBILITY_STIFTEN, COMPATIBILITY_JYDSKEVESTKYSTEN)
 
     execute {
         val module = mutableClassDefBy(ADS)
