@@ -4651,8 +4651,11 @@ object Constants {
     // Firebase Analytics (the public class is R8-shrunk to logEvent/setUserProperty/setCurrentScreen)
     // plus Crashlytics; "Disable telemetry" no-ops those three event methods and sets six Firebase
     // manifest switches while leaving the components registered - the app calls
-    // FirebaseAnalytics.getInstance from a wrapper, so removing the component would fail. The
-    // article paywall is server-side. Smoke test and CLI without -f pass; not run on a device.
+    // FirebaseAnalytics.getInstance from a wrapper, so removing the component would fail. The app
+    // is a WebWrapper: articles load in WrapperActivity's WebView, so "Disable ads" adds the
+    // blocking shouldInterceptRequest to WrapperActivity$a (a WebViewClientCompat) and the
+    // website's ad/tracking hosts get an empty response; every other callback still runs. The
+    // article paywall is server-side. Smoke tests and CLI without -f pass; not run on a device.
     val COMPATIBILITY_BERLINGSKE = Compatibility(
         name = "Berlingske",
         packageName = "com.mecom.Berlingske",

@@ -1,5 +1,8 @@
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -10,6 +13,9 @@ import javax.xml.parsers.DocumentBuilderFactory
 private const val PKG = "com.mecom.Berlingske"
 private const val VERSION = "4.5.8"
 private const val ANALYTICS = "Lcom/google/firebase/analytics/FirebaseAnalytics;"
+private const val AD_BLOCK = "Lapp/template/extension/webviewads/AdBlock;"
+private const val WEBVIEW = "Landroid/webkit/WebView;"
+private const val REQUEST = "Landroid/webkit/WebResourceRequest;"
 
 private val TELEMETRY_META = mapOf(
     "firebase_analytics_collection_enabled" to "false",
@@ -24,6 +30,9 @@ class BerlingskeSmokeTest {
 
     @TempDir
     lateinit var workDir: File
+
+    private fun List<ClassDef>.type(type: String): ClassDef =
+        firstOrNull { it.type == type } ?: error("$type not found in emitted dexes")
 
     @Test
     fun `Disable telemetry stops the Firebase event methods and sets the switches`() {
@@ -42,8 +51,7 @@ class BerlingskeSmokeTest {
         )
 
         // 1. The three Firebase Analytics event methods return at once.
-        val analytics = classes.singleOrNull { it.type == ANALYTICS }
-            ?: error("$ANALYTICS not found in emitted dexes")
+        val analytics = classes.type(ANALYTICS)
         val eventMethods = analytics.methods.filter {
             it.returnType == "V" && (
                 (it.name == "a" && it.parameterTypes.size == 2) ||
@@ -72,5 +80,50 @@ class BerlingskeSmokeTest {
         for ((name, value) in TELEMETRY_META) {
             check(metaData[name] == listOf(value)) { "meta-data $name is ${metaData[name]}, expected [$value]" }
         }
+    }
+
+    @Test
+    fun `Disable ads adds the blocking shouldInterceptRequest to the WebViewClient`() {
+        val root = repoRoot()
+        val apk = File(root, "apks/berlingske/base.apk")
+
+        assumeTrue(apk.exists(), "skipping: base.apk not present at ${apk.path}")
+
+        val classes = applyPatches(
+            apk = apk,
+            workDir = workDir,
+            pkg = PKG,
+            version = VERSION,
+            patchNames = setOf("Disable ads"),
+            allPatches = loadAllPatches(newestPatchBundle(root)),
+        )
+
+        // The extension is merged into the emitted dex.
+        classes.type(AD_BLOCK)
+
+        // The app's WebViewClient gains the blocking override; the extension's own BlockingClient
+        // is merged too and also calls isAdUrl, so exclude the extension package.
+        val overrides = classes.flatMap { cls -> cls.methods.map { cls to it } }.filter { (cls, method) ->
+            !cls.type.startsWith("Lapp/template/extension/webviewads/") &&
+                method.name == "shouldInterceptRequest" &&
+                method.parameterTypes.map(CharSequence::toString) == listOf(WEBVIEW, REQUEST) &&
+                method.implementation?.instructions?.any { insn ->
+                    val call = (insn as? ReferenceInstruction)?.reference as? MethodReference
+                    call?.definingClass == AD_BLOCK && call.name == "isAdUrl"
+                } == true
+        }
+        check(overrides.size == 1) { "blocking overrides: ${overrides.map { it.first.type }}" }
+        val (client, method) = overrides.single()
+        val calls = method.implementation!!.instructions.mapNotNull {
+            (it as? ReferenceInstruction)?.reference as? MethodReference
+        }
+        check(calls.any { it.definingClass == AD_BLOCK && it.name == "emptyResponse" }) {
+            "$client: the override does not return the empty response"
+        }
+        check(
+            calls.any {
+                it.definingClass == "Landroidx/webkit/WebViewClientCompat;" && it.name == "shouldInterceptRequest"
+            },
+        ) { "$client: the override does not delegate to the WebViewClientCompat super" }
     }
 }
