@@ -59,6 +59,15 @@ object Constants {
     // expanded country of the date feed; ro3, which returns the result via move-object v0, v1).
     // All eight list anchors OK-unique in FingerprintProbe; smoke test, CLI without -f (all 19
     // Sofascore patches) and a disassembly of the new sites pass. Not run on the emulator yet.
+    // 2026-11-08: "Unlock developer options" (opt-in, off by default) on 26.10.19. The About screen's
+    // password dialog MD5s the typed value and looks it up in a two-entry Set; the patch pins the
+    // Set.contains result true before the if-eqz, so any password opens
+    // DeveloperOptionsFullScreenDialog. Anchored on that (unobfuscated) dialog class plus the
+    // Set.contains shape, not on the handler or the two hashes. The switches write local
+    // DEV_MODE_* SharedPreferences only (sz4.G/wse.h): ADS_TEST_MODE and FORCE_MAIN_INTERSTITIAL
+    // re-enable ad paths and FORCE_TELEMETRY undoes Disable telemetry, hence opt-in and the warning
+    // in the description. Smoke test, CLI without -f and an apkanalyzer dump (const/16 p1, 0x1
+    // before the branch) pass; not run on a device.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",
