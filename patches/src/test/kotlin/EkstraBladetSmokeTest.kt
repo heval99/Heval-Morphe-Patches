@@ -1,7 +1,10 @@
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
@@ -62,7 +65,31 @@ class EkstraBladetSmokeTest {
                 insns.take(3).map { it.opcode },
         )
 
-        // 2. The manifest switches are set exactly once on <application>.
+        // 2. Snowplow: the tracker's single emit method returns at once.
+        val snowplowWrapper = classes.singleOrNull { cls ->
+            cls.methods.any { method ->
+                method.implementation?.instructions?.any { insn ->
+                    ((insn as? ReferenceInstruction)?.reference as? StringReference)?.string
+                        ?.startsWith("iglu:com.snowplowanalytics.snowplow/button_click/") == true
+                } == true
+            }
+        } ?: error("Snowplow wrapper not found in emitted dexes")
+        val trackerType = snowplowWrapper.fields.single { field ->
+            !AccessFlags.STATIC.isSet(field.accessFlags) && classes.any { it.type == field.type }
+        }.type
+        val trackCall = snowplowWrapper.methods.asSequence()
+            .flatMap { method -> method.implementation?.instructions?.asSequence() ?: emptySequence() }
+            .mapNotNull { insn -> (insn as? ReferenceInstruction)?.reference as? MethodReference }
+            .first { call ->
+                call.definingClass == trackerType && call.returnType == "V" && call.parameterTypes.size == 1
+            }
+        val emit = classes.single { it.type == trackerType }.methods.single { method ->
+            method.name == trackCall.name && method.returnType == "V" &&
+                method.parameterTypes.size == 1 && method.implementation != null
+        }
+        assertReturnsEarlyVoid(emit, "$trackerType.${trackCall.name}")
+
+        // 3. The manifest switches are set exactly once on <application>.
         val manifestFile = workDir.walkTopDown()
             .filter { it.name == "AndroidManifest.xml" && it.readText().contains("firebase_crashlytics_collection_enabled") }
             .firstOrNull() ?: error("no decoded AndroidManifest.xml with the telemetry meta-data under $workDir")
@@ -77,7 +104,7 @@ class EkstraBladetSmokeTest {
             check(metaData[name] == listOf(value)) { "meta-data $name is ${metaData[name]}, expected [$value]" }
         }
 
-        // 3. Push must keep working: the MESSAGING_EVENT service is still declared.
+        // 4. Push must keep working: the MESSAGING_EVENT service is still declared.
         val messaging = application.children("service").filter { service ->
             service.children("action").any { it.getAttribute("android:name") == "com.google.firebase.MESSAGING_EVENT" }
         }

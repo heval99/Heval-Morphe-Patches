@@ -3,8 +3,12 @@ package app.template.patches.ekstrabladet.misc.telemetry
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
+import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_EKSTRABLADET
 import app.template.patches.shared.addInstructionsChecked
+import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import org.w3c.dom.Element
 
 // Push notifications must keep working, so nothing here touches Firebase Messaging, Firebase
@@ -13,6 +17,12 @@ import org.w3c.dom.Element
 // Crashlytics is registered as a Firebase component; the app's own classes never call it, so the
 // component can be removed from the component list entirely.
 private const val CRASHLYTICS_REGISTRAR = "Lcom/google/firebase/crashlytics/CrashlyticsRegistrar;"
+
+// Snowplow is shaded and R8-renamed, but the app's wrapper builds this schema; every tracked event
+// (button clicks, screen events, the WebView bridge and media analytics) ends in the tracker's
+// single void method.
+private const val SNOWPLOW_BUTTON_SCHEMA =
+    "iglu:com.snowplowanalytics.snowplow/button_click/jsonschema/1-0-0"
 
 /**
  * Turns off Crashlytics, Firebase Sessions, Performance Monitoring and the advertising-ID
@@ -58,13 +68,15 @@ private val disableTelemetryManifestPatch = resourcePatch {
 
 /**
  * Ekstra Bladet has no ad SDK at all: no ad-unit strings, no public ad API is referenced, and the
- * bundled Google Mobile Ads classes are only the manifest entry points. The only telemetry is
- * Firebase Crashlytics (plus the Sessions component that feeds it); Firebase Messaging is used by
+ * bundled Google Mobile Ads classes are only the manifest entry points. Telemetry is Firebase
+ * Crashlytics (plus the Sessions component that feeds it) and the JPPol Snowplow tracker, which
+ * sends button, screen, WebView and media events to c.ekstrabladet.dk. Firebase Messaging is used by
  * Pushwoosh and stays untouched.
  *
- * The manifest switches turn collection off at startup. The bytecode half removes the Crashlytics
- * component from Firebase's component list, so crash reporting cannot initialise even if a later
- * version starts using it.
+ * The manifest switches turn the Firebase collection off at startup. The bytecode half removes the
+ * Crashlytics component from Firebase's component list and makes the Snowplow tracker's single emit
+ * method return at once, so crash reporting and Snowplow events cannot initialise or send even if a
+ * later version starts using them.
  */
 @Suppress("unused")
 val disableTelemetryPatch = bytecodePatch(
@@ -89,5 +101,25 @@ val disableTelemetryPatch = bytecodePatch(
                 return-object v0
             """,
         )
+
+        // 2. Snowplow: the app's tracker wrapper builds the button_click schema and holds the
+        // tracker in its only non-static field whose type is an app class. Every event path ends in
+        // the tracker's single void (Event) method; returning there drops them all.
+        val snowplowWrapper = classDefByStrings(SNOWPLOW_BUTTON_SCHEMA).singleOrNull()
+            ?: throw PatchException("Snowplow wrapper ($SNOWPLOW_BUTTON_SCHEMA) not found")
+        val trackerType = snowplowWrapper.fields.singleOrNull { field ->
+            !AccessFlags.STATIC.isSet(field.accessFlags) && classDefByOrNull(field.type) != null
+        }?.type ?: throw PatchException("${snowplowWrapper.type} has no Snowplow tracker field")
+        val trackCall = snowplowWrapper.methods.asSequence()
+            .flatMap { method -> method.implementation?.instructions?.asSequence() ?: emptySequence() }
+            .mapNotNull { insn -> (insn as? ReferenceInstruction)?.reference as? MethodReference }
+            .firstOrNull { call ->
+                call.definingClass == trackerType && call.returnType == "V" && call.parameterTypes.size == 1
+            } ?: throw PatchException("${snowplowWrapper.type} never calls a Snowplow track method")
+        val emit = mutableClassDefBy(trackerType).methods.singleOrNull { method ->
+            method.name == trackCall.name && method.returnType == "V" && method.implementation != null &&
+                method.parameterTypes.map(CharSequence::toString) == trackCall.parameterTypes.map(CharSequence::toString)
+        } ?: throw PatchException("$trackerType.${trackCall.name} not found")
+        emit.returnEarly()
     }
 }
