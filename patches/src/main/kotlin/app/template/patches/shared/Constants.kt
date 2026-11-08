@@ -4702,6 +4702,22 @@ object Constants {
         targets = listOf(AppTarget(version = "4.37.0", versionCode = 2012312421))
     )
 
+    // Verified 2026-11-08 against dk.weekendavisen.areader 8.4.0 (versionCode 2012312500, Google Play
+    // arm64-v8a split set merged with APKEditor; launcher label "Weekendavisen e-avis"; signer
+    // O=Berlingske Media AS, cert SHA-256 80d91716...ed92). Same Visiolink reader platform as
+    // Information; its shared AbstractTracker subclasses are FirebaseTracker,
+    // GoogleTagManagerTracker, SnowplowTracker, TNSTracker and the app's own Matomo/Tealium
+    // trackers. "Disable telemetry" applies unchanged. The e-paper content is server-side. Smoke
+    // test and CLI without -f pass; not run on a device.
+    val COMPATIBILITY_WEEKENDAVISEN = Compatibility(
+        name = "Weekendavisen",
+        packageName = "dk.weekendavisen.areader",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x1B3A6B, // Weekendavisen blue.
+        signatures = setOf("80d91716e88298892a4d34076ae3562ac9e2212e08048d09dbfeca2c26a6ed92"), // O=Berlingske Media AS
+        targets = listOf(AppTarget(version = "8.4.0", versionCode = 2012312500))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).

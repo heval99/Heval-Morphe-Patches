@@ -5,6 +5,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_INFORMATION
+import app.template.patches.shared.Constants.COMPATIBILITY_WEEKENDAVISEN
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import org.w3c.dom.Element
@@ -19,7 +20,7 @@ private const val ABSTRACT_TRACKER = "Lcom/visiolink/reader/base/tracking/Abstra
  * manifest switches.
  */
 private val disableTelemetryManifestPatch = resourcePatch {
-    compatibleWith(COMPATIBILITY_INFORMATION)
+    compatibleWith(COMPATIBILITY_INFORMATION, COMPATIBILITY_WEEKENDAVISEN)
 
     execute {
         document("AndroidManifest.xml").use { doc ->
@@ -55,7 +56,7 @@ private val disableTelemetryManifestPatch = resourcePatch {
 }
 
 /**
- * Information is a Visiolink reader. All of its analytics send through tracker classes that extend
+ * Information and Weekendavisen are Visiolink readers. All of its analytics send through tracker classes that extend
  * the shared `AbstractTracker` (Firebase, Google Tag Manager, Matomo and Tealium implementations);
  * every event is a void `track...` method on one of those subclasses. The patch no-ops every void
  * method on every concrete subclass, which drops all four trackers at once while leaving their
@@ -67,7 +68,7 @@ val disableTelemetryPatch = bytecodePatch(
     name = "Disable telemetry",
     description = "Disables the reader's analytics trackers (Firebase, Google Tag Manager, Matomo, Tealium).",
 ) {
-    compatibleWith(COMPATIBILITY_INFORMATION)
+    compatibleWith(COMPATIBILITY_INFORMATION, COMPATIBILITY_WEEKENDAVISEN)
 
     dependsOn(disableTelemetryManifestPatch)
 
