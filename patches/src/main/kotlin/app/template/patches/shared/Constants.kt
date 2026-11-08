@@ -705,6 +705,9 @@ object Constants {
         // without -f with all five enabled applied them; the gates, readers, EntitlementState and Splash hook
         // decompile as patched. Rule 12 (aapt2, with GmsCore support): no value changes, only the
         // same three case-twin id pairs come back as id_0x... names. 2026-11-03 emulator: two patched cold starts, no crash.
+        // 2026-11-08: added "Spoiler-free mode" (phase 1: notification handler prologue, match and
+        // competition page toggles, list row formatter + binder, ScoreBoxView header; extensions/scores365
+        // store with one switch per surface). Smoke test only; not run on a device.
         targets = listOf(
             AppTarget(version = "15.0.0", versionCode = 1500)
         )
