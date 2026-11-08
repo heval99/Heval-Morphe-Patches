@@ -5,6 +5,7 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -15,6 +16,8 @@ import javax.xml.parsers.DocumentBuilderFactory
 private const val PKG = "dk.jyllandsposten.jp"
 private const val VERSION = "2026.09.24"
 private const val SNOWPLOW_ENDPOINT = "https://c.jyllands-posten.dk"
+private const val WEBVIEW = "Landroid/webkit/WebView;"
+private const val AD_BLOCK = "Lapp/template/extension/webviewads/AdBlock;"
 
 private val GEMIUS_EVENTS = listOf(
     "Lcom/gemius/sdk/audience/BaseEvent;",
@@ -38,6 +41,19 @@ class JyllandspostenSmokeTest {
 
     private fun List<ClassDef>.type(type: String): ClassDef =
         firstOrNull { it.type == type } ?: error("$type not found in emitted dexes")
+
+    private fun List<ClassDef>.appWebViewWrapper(): ClassDef = singleOrNull { cls ->
+        cls.type.startsWith("L") && !cls.type.startsWith("Lcom/") &&
+            !cls.type.startsWith("Landroid") && !cls.type.startsWith("Lkotlin") &&
+            cls.methods.any { method ->
+                val insns = method.implementation?.instructions?.toList().orEmpty()
+                insns.any { it.opcode == Opcode.NEW_INSTANCE && (it as? ReferenceInstruction)?.reference.let { ref -> (ref as? TypeReference)?.type == WEBVIEW } } &&
+                    insns.any { insn ->
+                        val call = (insn as? ReferenceInstruction)?.reference as? MethodReference
+                        call?.definingClass == WEBVIEW && call.name == "addJavascriptInterface"
+                    }
+            }
+    } ?: error("expected one app WebView wrapper")
 
     @Test
     fun `Disable telemetry stops Gemius, Snowplow and the Firebase switches`() {
@@ -99,5 +115,33 @@ class JyllandspostenSmokeTest {
         for ((name, value) in TELEMETRY_META) {
             check(metaData[name] == listOf(value)) { "meta-data $name is ${metaData[name]}, expected [$value]" }
         }
+    }
+
+    @Test
+    fun `Disable ads installs the blocking client on the article WebView`() {
+        val root = repoRoot()
+        val apk = File(root, "apks/jyllandsposten/base.apk")
+
+        assumeTrue(apk.exists(), "skipping: base.apk not present at ${apk.path}")
+
+        val classes = applyPatches(
+            apk = apk,
+            workDir = workDir,
+            pkg = PKG,
+            version = VERSION,
+            patchNames = setOf("Disable ads"),
+            allPatches = loadAllPatches(newestPatchBundle(root)),
+        )
+
+        // The extension is merged into the emitted dex.
+        classes.type(AD_BLOCK)
+
+        // The app's WebView wrapper still creates the WebView and now installs the blocking client.
+        val wrapper = classes.appWebViewWrapper()
+        val install = wrapper.methods.asSequence()
+            .flatMap { it.implementation?.instructions?.asSequence() ?: emptySequence() }
+            .mapNotNull { insn -> (insn as? ReferenceInstruction)?.reference as? MethodReference }
+            .any { it.definingClass == AD_BLOCK && it.name == "install" }
+        check(install) { "${wrapper.type} does not call ${AD_BLOCK}.install" }
     }
 }

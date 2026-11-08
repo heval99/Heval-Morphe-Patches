@@ -4614,8 +4614,10 @@ object Constants {
     // sendEvent), the JPPol Snowplow tracker (endpoint https://c.jyllands-posten.dk; the wrapper is
     // found by that string and its tracker emits through one void (payload) method) and Firebase
     // Crashlytics. "Disable telemetry" no-ops the three Gemius senders and the Snowplow tracker and
-    // sets six Firebase manifest switches. AdOcean ads and the web paywall are not part of it.
-    // Smoke test and CLI without -f pass; not run on a device.
+    // sets six Firebase manifest switches. "Disable ads" installs the webviewads extension's
+    // blocking client on the article WebView: page content, consent and the paywall are untouched,
+    // only ad/tracking hosts get an empty response. Smoke tests and CLI without -f pass; not run on
+    // a device.
     val COMPATIBILITY_JYLLANDSPOSTEN = Compatibility(
         name = "Jyllands Posten",
         packageName = "dk.jyllandsposten.jp",
@@ -4630,8 +4632,10 @@ object Constants {
     // O=Google Inc., cert SHA-256 a197b596...52e9). Shared JP/Politikens platform, 88k methods.
     // Telemetry: the Gemius audience senders plus Firebase Analytics/Crashlytics; "Disable
     // telemetry" no-ops the Gemius events, empties AnalyticsConnectorRegistrar and sets six
-    // Firebase manifest switches. There is no Snowplow. AdOcean ads and the web paywall are not part
-    // of it. Smoke test and CLI without -f pass; not run on a device.
+    // Firebase manifest switches. There is no Snowplow. "Disable ads" adds a blocking
+    // shouldInterceptRequest to the app's WebViewClient, so only ad/tracking hosts get an empty
+    // response; every other callback still runs. Smoke tests and CLI without -f pass; not run on a
+    // device.
     val COMPATIBILITY_POLNEWS = Compatibility(
         name = "Politiken",
         packageName = "dk.pol.news",
