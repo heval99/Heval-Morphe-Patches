@@ -2,58 +2,17 @@ package app.template.patches.jyllandsposten.misc.telemetry
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.patch.resourcePatch
 import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_JYLLANDSPOSTEN
+import app.template.patches.shared.misc.telemetry.forceFirebaseManifestSwitches
 import app.template.patches.shared.telemetry.disableGemiusAudience
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
-import org.w3c.dom.Element
 
 // The JPPol Snowplow tracker is built for this endpoint; the wrapper class is R8-renamed, the
 // endpoint string is not.
 private const val SNOWPLOW_ENDPOINT = "https://c.jyllands-posten.dk"
-
-/**
- * Turns off Firebase Analytics/Crashlytics/Sessions/Performance and ad-ID collection through the
- * manifest switches.
- */
-private val disableTelemetryManifestPatch = resourcePatch {
-    compatibleWith(COMPATIBILITY_JYLLANDSPOSTEN)
-
-    execute {
-        document("AndroidManifest.xml").use { doc ->
-            val applications = doc.getElementsByTagName("application")
-            if (applications.length == 0) throw PatchException("AndroidManifest.xml has no <application>")
-            val application = applications.item(0) as Element
-
-            val existing = buildMap {
-                val metas = application.getElementsByTagName("meta-data")
-                for (i in 0 until metas.length) {
-                    val meta = metas.item(i) as? Element ?: continue
-                    if (meta.parentNode != application) continue
-                    put(meta.getAttribute("android:name"), meta)
-                }
-            }
-
-            for ((name, value) in mapOf(
-                "firebase_analytics_collection_enabled" to "false",
-                "firebase_analytics_collection_deactivated" to "true",
-                "firebase_crashlytics_collection_enabled" to "false",
-                "firebase_performance_collection_deactivated" to "true",
-                "firebase_sessions_enabled" to "false",
-                "google_analytics_adid_collection_enabled" to "false",
-            )) {
-                val meta = existing[name] ?: doc.createElement("meta-data").also {
-                    it.setAttribute("android:name", name)
-                    application.appendChild(it)
-                }
-                meta.setAttribute("android:value", value)
-            }
-        }
-    }
-}
 
 /**
  * Jyllands-Posten is built on the shared JP/Politikens platform. Its telemetry is Gemius audience
@@ -61,8 +20,10 @@ private val disableTelemetryManifestPatch = resourcePatch {
  *
  * The Gemius events are no-opped by the shared helper. The Snowplow wrapper is found by the tracker
  * endpoint it builds; its only non-static app-typed field is the tracker, and both event methods
- * call the tracker's single void (payload) method, which returns at once. Firebase is switched off
- * at the manifest. AdOcean ads and the web paywall are separate and not part of this patch.
+ * call the tracker's single void (payload) method, which returns at once. Crashlytics and Firebase
+ * Sessions are switched off where they read their manifest switches; the app bundles no Firebase
+ * Analytics or Performance. AdOcean ads and the web paywall are separate and not part of this
+ * patch.
  */
 @Suppress("unused")
 val disableTelemetryPatch = bytecodePatch(
@@ -71,9 +32,18 @@ val disableTelemetryPatch = bytecodePatch(
 ) {
     compatibleWith(COMPATIBILITY_JYLLANDSPOSTEN)
 
-    dependsOn(disableTelemetryManifestPatch)
-
     execute {
+        // Crashlytics and Sessions off, as the manifest switches would set them but in the
+        // bytecode (no resource re-encode, rule 12). There is no Firebase Analytics (so no ad-ID
+        // switch either) and no Performance in this app.
+        forceFirebaseManifestSwitches(
+            app = "Jyllands-Posten",
+            analytics = false,
+            crashlytics = true,
+            sessions = true,
+            performance = false,
+        )
+
         disableGemiusAudience()
 
         val wrapper = classDefByStrings(SNOWPLOW_ENDPOINT).singleOrNull()

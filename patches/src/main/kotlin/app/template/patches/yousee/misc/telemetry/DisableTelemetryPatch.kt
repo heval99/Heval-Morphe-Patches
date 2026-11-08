@@ -2,10 +2,9 @@ package app.template.patches.yousee.misc.telemetry
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.patch.resourcePatch
 import app.template.patches.shared.Constants.COMPATIBILITY_YOUSEE
 import app.template.patches.shared.addInstructionsChecked
-import org.w3c.dom.Element
+import app.template.patches.shared.misc.telemetry.forceFirebaseManifestSwitches
 
 // Push notifications must keep working, so nothing here touches Firebase Messaging, Firebase
 // Installations or the app's notification services.
@@ -16,54 +15,16 @@ private const val ANALYTICS_REGISTRAR =
     "Lcom/google/firebase/analytics/connector/internal/AnalyticsConnectorRegistrar;"
 
 /**
- * Turns off Firebase Analytics, Crashlytics, Performance Monitoring, session collection and the
- * advertising-ID collection through their manifest switches.
- */
-private val disableTelemetryManifestPatch = resourcePatch {
-    compatibleWith(COMPATIBILITY_YOUSEE)
-
-    execute {
-        document("AndroidManifest.xml").use { doc ->
-            val applications = doc.getElementsByTagName("application")
-            if (applications.length == 0) throw PatchException("AndroidManifest.xml has no <application>")
-            val application = applications.item(0) as Element
-
-            val existing = buildMap {
-                val metas = application.getElementsByTagName("meta-data")
-                for (i in 0 until metas.length) {
-                    val meta = metas.item(i) as? Element ?: continue
-                    if (meta.parentNode != application) continue
-                    put(meta.getAttribute("android:name"), meta)
-                }
-            }
-
-            for ((name, value) in mapOf(
-                "firebase_analytics_collection_deactivated" to "true",
-                "firebase_crashlytics_collection_enabled" to "false",
-                "firebase_performance_collection_deactivated" to "true",
-                "firebase_sessions_enabled" to "false",
-                "google_analytics_adid_collection_enabled" to "false",
-            )) {
-                // Overwrite a stock entry in place, otherwise add one under <application>.
-                val meta = existing[name] ?: doc.createElement("meta-data").also {
-                    it.setAttribute("android:name", name)
-                    application.appendChild(it)
-                }
-                meta.setAttribute("android:value", value)
-            }
-        }
-    }
-}
-
-/**
  * YouSee Play has no ad SDK and its own classes never call an analytics API, but Firebase
  * Analytics, Crashlytics, Performance Monitoring and Sessions are registered as Firebase
  * components and collect automatically. Mixpanel is bundled but referenced only by its own
  * classes; AppsFlyer, Adjust, Branch and Amplitude exist only as strings.
  *
- * The manifest switches are what stop the SDKs at startup. The bytecode half removes the Google
- * Analytics component from Firebase's component list, so it cannot initialise even if the app
- * starts calling it in a later version. Firebase Messaging and Installations stay untouched.
+ * The Firebase manifest switches are what stop the SDKs at startup; they are applied in the
+ * bytecode, where each SDK reads them, so the resource table is not re-encoded (rule 12). The
+ * patch also removes the Google Analytics component from Firebase's component list, so it cannot
+ * initialise even if the app starts calling it in a later version. Firebase Messaging and
+ * Installations stay untouched.
  */
 @Suppress("unused")
 val disableTelemetryPatch = bytecodePatch(
@@ -72,9 +33,17 @@ val disableTelemetryPatch = bytecodePatch(
 ) {
     compatibleWith(COMPATIBILITY_YOUSEE)
 
-    dependsOn(disableTelemetryManifestPatch)
-
     execute {
+        // Firebase Analytics, Crashlytics, Performance, Sessions and ad-ID collection off, as the
+        // manifest switches would set them.
+        forceFirebaseManifestSwitches(
+            app = "YouSee Play",
+            analytics = true,
+            crashlytics = true,
+            sessions = true,
+            performance = true,
+        )
+
         val registrar = mutableClassDefBy(ANALYTICS_REGISTRAR)
         val getComponents = registrar.methods.singleOrNull {
             it.name == "getComponents" && it.parameterTypes.isEmpty() &&

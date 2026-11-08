@@ -4556,6 +4556,10 @@ object Constants {
     // Amplitude appear only as strings. "Disable telemetry" sets the five Firebase/ad-ID manifest
     // switches and removes Google Analytics from the Firebase component list; the other Firebase
     // components stay declared. The smoke test and the CLI without -f pass; not run on a device.
+    // 2026-11-08: the manifest switches moved to the bytecode (shared forceFirebaseManifestSwitches:
+    // Analytics deactivated/ad-ID reads, the Crashlytics arbiter getter, the Sessions override and
+    // the Performance collection reader), so the resource table is no longer re-encoded (13 id
+    // names had come out as type_0x...). Smoke-tested only; no CLI run or device run since.
     val COMPATIBILITY_YOUSEE = Compatibility(
         name = "YouSee Play",
         packageName = "yiuo.mobile.tv",
@@ -4602,6 +4606,11 @@ object Constants {
     // abonnement...") while the patched build renders the full article. The website still uses
     // Poool and stays paywalled; only the app's story JSON is unlocked. Smoke test and CLI without
     // -f pass.
+    // 2026-11-08: the Firebase switches (Analytics, ad ID, Crashlytics, Sessions; the four PugPig
+    // apps bundle no Performance) moved from the manifest to the bytecode (shared
+    // forceFirebaseManifestSwitches), so the resource table is no longer re-encoded (Fyens, Stiften
+    // and JydskeVestkysten had id/imageView+imageview and webView+webview renamed to type_0x...).
+    // Smoke-tested on all four APKs only; no CLI run or device run since.
     val COMPATIBILITY_NORDJYSKE = Compatibility(
         name = "Nordjyske",
         packageName = "dk.nordjyske.reader",
@@ -4622,6 +4631,11 @@ object Constants {
     // blocking client on the article WebView: page content, consent and the paywall are untouched,
     // only ad/tracking hosts get an empty response. Smoke tests and CLI without -f pass; not run on
     // a device.
+    // 2026-11-08: the Firebase switches moved from the manifest to the bytecode (shared
+    // forceFirebaseManifestSwitches), so the resource table is no longer re-encoded
+    // (xml/allowed_media_library_callers had been renamed). The dex has no Firebase Analytics or
+    // Performance, so only the Crashlytics arbiter getter and the Sessions override are forced.
+    // Smoke-tested only; no CLI run or device run since.
     val COMPATIBILITY_JYLLANDSPOSTEN = Compatibility(
         name = "Jyllands Posten",
         packageName = "dk.jyllandsposten.jp",
@@ -4693,6 +4707,11 @@ object Constants {
     // content is server-side. The same platform is shared by Weekendavisen, Fyens, Stiften,
     // JydskeVestkysten and Herning Folkeblad, so those can take the same patch after their own
     // smoke test. Ads and the WebView content are not part of it yet. Not run on a device.
+    // 2026-11-08: the Firebase switches moved from the manifest to the bytecode (shared
+    // forceFirebaseManifestSwitches), so the resource table is no longer re-encoded (about 50
+    // color names had been renamed). Information and Weekendavisen bundle only Firebase Analytics,
+    // so the deactivated and ad-ID reads are forced. Smoke-tested on both APKs only; no CLI run or
+    // device run since.
     val COMPATIBILITY_INFORMATION = Compatibility(
         name = "Information",
         packageName = "dk.information.areader",
@@ -4766,6 +4785,11 @@ object Constants {
     // no-ops the app's single analytics dispatcher (Analytics.invokeReporterWithCrashlyticsWrapper,
     // which feeds Firebase, Prenlytics/Pulse and any configured Kantar Sifo reporter) and sets the
     // Firebase Analytics/Crashlytics/Sessions switches. Smoke-tested; not run on a device.
+    // 2026-11-08: those switches moved from the manifest to the bytecode (shared
+    // forceFirebaseManifestSwitches: three inlined deactivated reads, two ad-ID reads, the merged
+    // Crashlytics arbiter's getter, the Sessions override), so the resource table is no longer
+    // re-encoded (string/translate_acute_* and translate_grave_* had been renamed). Smoke-tested
+    // only; no CLI run or device run since.
     val COMPATIBILITY_HERNING = Compatibility(
         name = "Herning Folkeblad",
         packageName = "dk.herningfolkeblad.areader",
