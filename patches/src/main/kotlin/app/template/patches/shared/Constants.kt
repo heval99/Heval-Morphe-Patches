@@ -4607,6 +4607,40 @@ object Constants {
         targets = listOf(AppTarget(version = "8.0.17", versionCode = 2012312510))
     )
 
+    // Verified 2026-11-08 against dk.jyllandsposten.jp 2026.09.24 (versionCode 90322937, Google Play
+    // arm64-v8a split set merged with APKEditor; launcher label "Jyllands Posten"; signer
+    // CN=Rune Lippert, O=Jyllands-Posten, cert SHA-256 ceca81c9...15d0). Shared JP/Politikens
+    // platform, 92k methods. Telemetry: Gemius audience (BaseEvent/NetpanelEvent/AudienceEvent
+    // sendEvent), the JPPol Snowplow tracker (endpoint https://c.jyllands-posten.dk; the wrapper is
+    // found by that string and its tracker emits through one void (payload) method) and Firebase
+    // Crashlytics. "Disable telemetry" no-ops the three Gemius senders and the Snowplow tracker and
+    // sets six Firebase manifest switches. AdOcean ads and the web paywall are not part of it.
+    // Smoke test and CLI without -f pass; not run on a device.
+    val COMPATIBILITY_JYLLANDSPOSTEN = Compatibility(
+        name = "Jyllands Posten",
+        packageName = "dk.jyllandsposten.jp",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xC8102E, // JP red.
+        signatures = setOf("ceca81c9c7ab3bd9327c1a33189d3511910f2e1191a97d8aebcb9c7a71d415d0"), // CN=Rune Lippert, O=Jyllands-Posten
+        targets = listOf(AppTarget(version = "2026.09.24", versionCode = 90322937))
+    )
+
+    // Verified 2026-11-08 against dk.pol.news 4.1.4 (versionCode 300, Google Play arm64-v8a split set
+    // merged with APKEditor; launcher label "Politiken"; the Play app-signing key, CN=Android,
+    // O=Google Inc., cert SHA-256 a197b596...52e9). Shared JP/Politikens platform, 88k methods.
+    // Telemetry: the Gemius audience senders plus Firebase Analytics/Crashlytics; "Disable
+    // telemetry" no-ops the Gemius events, empties AnalyticsConnectorRegistrar and sets six
+    // Firebase manifest switches. There is no Snowplow. AdOcean ads and the web paywall are not part
+    // of it. Smoke test and CLI without -f pass; not run on a device.
+    val COMPATIBILITY_POLNEWS = Compatibility(
+        name = "Politiken",
+        packageName = "dk.pol.news",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE30613, // Politiken red.
+        signatures = setOf("a197b59666f5df008b5c089e295a75f3851f3376de119e5918522f4fb70d52e9"), // Play app-signing key
+        targets = listOf(AppTarget(version = "4.1.4", versionCode = 300))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
