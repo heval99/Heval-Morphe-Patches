@@ -4569,11 +4569,13 @@ object Constants {
     // Google Play arm64-v8a split set merged with APKEditor; launcher label "Ekstra Bladet";
     // signer CN=Spoiled Milk, cert SHA-256 7a866b4e...80d2). Native Kotlin app, 67k methods.
     // No ad SDK: there is no ad-unit string, the app code never references a public ad API, and
-    // the bundled Google Mobile Ads classes are only the manifest entry points. The only telemetry
-    // is Firebase Crashlytics plus the Sessions component; there is no Analytics, AppsFlyer,
-    // Adjust, Branch, Amplitude or Mixpanel. "Disable telemetry" sets the five Firebase/ad-ID
-    // manifest switches and removes the Crashlytics component; Pushwoosh's Firebase Messaging
-    // services are untouched. Smoke test and CLI without -f pass; not run on a device.
+    // the bundled Google Mobile Ads classes are only the manifest entry points. Telemetry is
+    // Firebase Crashlytics (plus the Sessions component) and the JPPol Snowplow tracker that sends
+    // button, screen, WebView and media events to c.ekstrabladet.dk; there is no Analytics,
+    // AppsFlyer, Adjust, Branch, Amplitude or Mixpanel. "Disable telemetry" sets the five
+    // Firebase/ad-ID manifest switches, removes the Crashlytics component and makes the Snowplow
+    // tracker's single emit method return at once; Pushwoosh's Firebase Messaging services are
+    // untouched. Smoke test and CLI without -f pass; not run on a device.
     val COMPATIBILITY_EKSTRABLADET = Compatibility(
         name = "Ekstra Bladet",
         packageName = "dk.ekstrabladet.breakingnews",
