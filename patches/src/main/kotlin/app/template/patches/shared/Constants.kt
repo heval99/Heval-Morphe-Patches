@@ -4546,6 +4546,25 @@ object Constants {
         targets = listOf(AppTarget(version = "6.5.2", versionCode = 261))
     )
 
+    // Verified 2026-11-08 against yiuo.mobile.tv 13.11.0 (versionCode 130110000, owner-supplied
+    // APKCube .apks merged with APKEditor, arm64-v8a; launcher label "YouSee Play"; signer
+    // OU=YIOU, O=YouSee A/S, cert SHA-256 54c2ab66...b9c2). Native Android app, 118k methods.
+    // No ad SDK is used at all: there is no ad-unit string and the app code never references a
+    // public ad API, so there is nothing for "Disable ads". Telemetry: Firebase Analytics,
+    // Crashlytics, Performance and Sessions are registered as components and collect
+    // automatically; Mixpanel is bundled but never referenced, and AppsFlyer/Adjust/Branch/
+    // Amplitude appear only as strings. "Disable telemetry" sets the five Firebase/ad-ID manifest
+    // switches and removes Google Analytics from the Firebase component list; the other Firebase
+    // components stay declared. The smoke test and the CLI without -f pass; not run on a device.
+    val COMPATIBILITY_YOUSEE = Compatibility(
+        name = "YouSee Play",
+        packageName = "yiuo.mobile.tv",
+        apkFileType = ApkFileType.APKS,
+        appIconColor = 0x00DC00, // The adaptive icon's background colour.
+        signatures = setOf("54c2ab666332018c0e5f3870a78a185f84ae1b6ce870d0360bf7786cf9e1b9c2"), // O=YouSee A/S
+        targets = listOf(AppTarget(version = "13.11.0 (build 21977)", versionCode = 130110000))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
