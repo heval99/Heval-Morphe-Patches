@@ -32,6 +32,21 @@ internal object ScamFeedFeatureFingerprint : Fingerprint(
     filters = listOf(string("featureScamFeed")),
 )
 
+// The per-context referral gate (xrz.n(String)Z in 26.43.5): every referral entry point (drawer,
+// bottom bar, promo popup, search screen promo, deep link, Premium tab) asks it with its context
+// key. "featureReferralNavigationDrawer" goes to the toggle resolver as "featureReferralNavDrawer",
+// "featureGoPro" answers false, two keys answer true, and the rest are read from SharedPreferences
+// that a server map writes, so toggle overrides cannot reach them.
+internal object ReferralContextGateFingerprint : Fingerprint(
+    returnType = "Z",
+    parameters = listOf("Ljava/lang/String;"),
+    filters = listOf(
+        string("featureReferralNavigationDrawer"),
+        string("featureGoPro"),
+        methodCall(definingClass = "Landroid/content/SharedPreferences;", name = "getBoolean"),
+    ),
+)
+
 // The bottom bar builder (xm6.g(SparseIntArray) in 26.39.6, cp6.g in 26.40.5): reads the CALLS /
 // MESSAGES / SCAM_FEED badge counts, fills an array with one tab item per slot (null when a slot
 // has no tab), then filterNotNull(array).take(n) and hands the list to BottomBarView (inlined in

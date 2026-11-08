@@ -99,6 +99,15 @@ private const val DISABLE_CALL_HAPTICS = "truecaller.disable_call_button_haptics
 private const val HIDE_POOR_NETWORK_WARNING = "truecaller.hide_poor_network_warning"
 private const val SWAP_CALL_BUTTONS = "truecaller.swap_call_buttons"
 private const val SWAP_CALL_LAYOUTS = "Lapp/template/extension/truecaller/SwapCallButtons;"
+private const val DISABLE_WHO_VIEWED_ME = "truecaller.disable_who_viewed_me"
+
+// Disable telemetry step 8: first-party reporting toggles, off in every resolver.
+private val TELEMETRY_TOGGLE_KEYS = listOf(
+    "featureAppsInstalledHeartbeat",
+    "featureUploadTelecomOperatorNames",
+    "featureAppProcessHeartbeatReporter",
+    "featureCleverTapNotificationsTracking",
+)
 
 /** Patch name, feature id, category and restartRequired of every Truecaller Heval Controls feature. */
 private val HEVAL_FEATURES = listOf(
@@ -127,8 +136,10 @@ private val HEVAL_FEATURES = listOf(
 )
 
 // Controls that stay off in the app until the user turns them on (patch and registry default to
-// false). None at the moment.
-private val OPT_IN_FEATURES = emptyList<Triple<String, String, String>>()
+// false).
+private val OPT_IN_FEATURES = listOf(
+    Triple("Disable Who viewed me", DISABLE_WHO_VIEWED_ME, "Privacy"),
+)
 
 // "Hide profile menu items" (#120): five switches in one patch, all off by default, no restart.
 private const val PROFILE_MENU_PATCH = "Hide profile menu items"
@@ -378,6 +389,7 @@ class TruecallerSmokeTest {
                 "Swap call answer and decline buttons",
                 "Disable call button haptics",
                 "Hide poor network warning",
+                "Disable Who viewed me",
                 PROFILE_MENU_PATCH,
                 "GmsCore support",
                 "Spoof signature",
@@ -395,6 +407,7 @@ class TruecallerSmokeTest {
         assertPrivacyDefaults(classes)
         assertDisableUpdatePrompts(classes)
         assertFeatureToggles(classes)
+        assertReferralGate(classes)
         assertHiddenTabs(classes)
         assertHideMessagesTab(classes)
         assertHiddenSettingsRows(classes)
@@ -738,6 +751,7 @@ class TruecallerSmokeTest {
         check(Regex("""android:name="firebase_crashlytics_collection_enabled"\s+android:value="true"""").containsMatchIn(manifest) &&
             "firebase_analytics_collection_deactivated" !in manifest && "firebase_sessions_enabled" !in manifest
         ) { "Disable telemetry changed the Firebase manifest meta-data" }
+        // Step 8, the four reporting toggles (TELEMETRY_TOGGLE_KEYS), is checked in assertToggleOverrides.
     }
 
     private fun assertTurnOffAdCampaignAnalytics(classes: List<ClassDef>) {
@@ -970,6 +984,29 @@ class TruecallerSmokeTest {
         }
     }
 
+    private fun assertReferralGate(classes: List<ClassDef>) {
+        // Hide promotions step 3: the per-context referral gate, found as the patch finds it (the one
+        // (String)Z holding "featureReferralNavigationDrawer" and "featureGoPro" that reads
+        // SharedPreferences.getBoolean), starts with the feature's gate, whose patched path answers
+        // false; while the feature is off it runs its stock code, which still starts with the
+        // key's hashCode switch and keeps every key.
+        val keys = listOf("featureReferralNavigationDrawer", "featureGoPro", "featurePushNotification", "featureReferralPremiumTabV2")
+        val (cls, gate) = classes.singleMethod("referral context gate") { _, m ->
+            m.returnType == "Z" && m.params() == listOf("Ljava/lang/String;") && m.implementation != null &&
+                m.strings().containsAll(keys.take(2)) &&
+                m.instructions().any { it.call()?.let { c -> c.definingClass == "Landroid/content/SharedPreferences;" && c.name == "getBoolean" } == true }
+        }
+        val label = "${cls.type}.${gate.name}(String) (referral context gate)"
+        val stock = assertGate(gate, HIDE_PROMOTIONS, label)
+        val insns = gate.instructions()
+        check(stock == 6 && insns.subList(4, stock).isReturnZero()) { "$label does not answer false after the Hide promotions gate" }
+        check(insns[stock].opcode == Opcode.INVOKE_VIRTUAL && insns[stock].call()?.name == "hashCode") {
+            "$label: the stock path does not start with the key's hashCode; got ${insns[stock].opcode} ${insns[stock].call()}"
+        }
+        check(insns.drop(stock).mapNotNull { it.stringOrNull() }.containsAll(keys)) { "$label lost its stock code" }
+        check(insns.count { it.call()?.definingClass == HEVAL_SETTINGS_CLASS } == 1) { "$label has more than one Heval Controls gate" }
+    }
+
     private fun assertHiddenTabs(classes: List<ClassDef>) {
         // The bottom bar builder calls one helper per tab patch on the tab array right before
         // filterNotNull; together they null PREMIUM, BLOCKING, FAMILY_PROTECTION_CONFIG and MESSAGES.
@@ -1167,9 +1204,11 @@ class TruecallerSmokeTest {
         // finally to the stock code. Hide family button and Restore classic call log add one each,
         // Disable ads five (incl. the Offer Hub), Hide business media the seven verified business
         // campaign toggles, Disable contact upload the Call Assistant number sync and the contact
-        // editor name suggestion, Disable auto-launch one, Disable nags nine, Hide promotions four
-        // plus the Firebase experiment "DisableWVMNotifications_65487" (on), and Hide after-call
-        // screen for contacts two.
+        // editor name suggestion, Disable auto-launch one, Disable nags ten, Hide promotions four
+        // plus the Firebase experiment "DisableWVMNotifications_65487" (on), Hide after-call
+        // screen for contacts two, Disable Who viewed me one and Disable telemetry four
+        // (installed-apps and app process heartbeats, telecom operator name upload, CleverTap
+        // notification tracking).
         val resolvers = classes.methodsWhere { _, m ->
             m.returnType == "Z" && m.params() == listOf("Ljava/lang/String;", FEATURE_STATE) && m.implementation != null
         }
@@ -1208,14 +1247,18 @@ class TruecallerSmokeTest {
             "featureShowACSAllIncoming" to 0,
             "featureShowACSAllOutgoing" to 0,
             "DisableWVMNotifications_65487" to 1,
-        )
+            "featureInvalidProfileNotification" to 0,
+            "featureWhoViewedMe" to 0,
+        ) + TELEMETRY_TOGGLE_KEYS.associateWith { 0 }
         // The overrides of Heval Controls features apply only while their feature is on; the rest
-        // (Disable ads, Disable contact upload) are unconditional.
+        // (Disable ads, Disable contact upload, Disable telemetry) are unconditional.
         val gates = mapOf(
             "featureFamilyProtect" to HIDE_FAMILY_BUTTON,
             "featureCallLogRevamp" to RESTORE_CLASSIC_CALL_LOG,
             "featureAutoAppLaunchPassive" to DISABLE_AUTO_LAUNCH,
             "DisableWVMNotifications_65487" to HIDE_PROMOTIONS,
+            "featureInvalidProfileNotification" to DISABLE_NAGS,
+            "featureWhoViewedMe" to DISABLE_WHO_VIEWED_ME,
         ) + listOf(
             "featureBizVerifiedCampaigns", "featureBizVerifiedCampaignForOutgoingCalls", "featureBizVerifiedCampaignInRevampedInCallUi",
             "featureBizVerifiedCampaignsCarouselACS", "featureBizVerifiedCampaignsDetailsView",
@@ -1232,6 +1275,32 @@ class TruecallerSmokeTest {
         for ((cls, resolver) in resolvers) assertOverrideBlocks(cls, resolver, expected, gates)
         // The Firebase experiment and the SharedPreferences toggles are each read through some resolver.
         assertResolverReads(classes, resolvers, expected.keys)
+        // The keys added on 26.43.5 are also checked at register level: some method loads the key and
+        // passes that very register as the key argument of a resolver call (a key that only shares a
+        // method with another key's resolver read would pass assertResolverReads).
+        for (key in listOf("featureInvalidProfileNotification", "featureWhoViewedMe") + TELEMETRY_TOGGLE_KEYS) {
+            assertPassesKeyToResolver(classes, resolvers, key)
+        }
+    }
+
+    /** Some method loads [key] with const-string vK and the next instruction that touches vK is a resolver call taking vK as the key. */
+    private fun assertPassesKeyToResolver(classes: List<ClassDef>, resolvers: List<Pair<ClassDef, Method>>, key: String) {
+        val targets = resolvers.map { (cls, m) -> cls.type to m.name }.toSet()
+        val passes = classes.methodsWhere { _, m -> m.implementation != null && key in m.strings() }.any { (_, m) ->
+            val insns = m.instructions()
+            insns.indices.filter { insns[it].stringOrNull() == key }.any { load ->
+                val register = (insns[load] as OneRegisterInstruction).registerA
+                val use = (load + 1 until insns.size).firstOrNull { i ->
+                    insns[i].arguments()?.contains(register) == true ||
+                        (insns[i].opcode.setsRegister() && (insns[i] as? OneRegisterInstruction)?.registerA == register)
+                } ?: return@any false
+                val call = insns[use].call()
+                call != null && (call.definingClass to call.name) in targets && call.returnType == "Z" &&
+                    call.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", FEATURE_STATE) &&
+                    insns[use].arguments()?.getOrNull(1) == register // receiver, key, state
+            }
+        }
+        check(passes) { "no method passes \"$key\" itself as the key of a toggle resolver call" }
     }
 
     /** Some method other than a resolver loads each key and later calls one of the [resolvers] with it. */

@@ -283,8 +283,9 @@ never renamed.
 
 | Feature id | Patch | Restart | Gated sites |
 |---|---|---|---|
-| `truecaller.hide_promotions` | Hide promotions | yes | toggle overrides |
+| `truecaller.hide_promotions` | Hide promotions | yes | toggle overrides, referral context gate at index 0 (answers false) |
 | `truecaller.disable_nags` | Disable nags | no | toggle overrides |
+| `truecaller.disable_who_viewed_me` | Disable Who viewed me (off) | no | toggle override |
 | `truecaller.disable_auto_launch` | Disable auto-launch | no | toggle override |
 | `truecaller.disable_update_prompts` | Disable update prompts | no | gates at index 0 |
 | `truecaller.hide_assistant_tab` | Hide Assistant tab | yes | gate at index 0 (answers false) |
@@ -316,6 +317,13 @@ switch makes the row's MenuItemUiState invisible, which the menu already filters
 them is on, a section left without rows is dropped so no divider is left behind. The Premium banner
 switch makes the banner's row state (titled "Premium member" or "Upgrade to Premium") the Disabled
 state, which draws nothing. The Settings screen's Wear OS row is still "Hide Wear OS settings".
+
+Added 2026-11-08 (Truecaller 26.43.5, smoke test only): Hide promotions also makes the per-context
+referral gate answer false, so no referral entry point shows (most of its keys are read from
+server-written SharedPreferences, which toggle overrides cannot reach). Disable nags also covers the
+invalid-profile reminder ("featureInvalidProfileNotification"). Disable Who viewed me is opt-in and
+starts off: it reads "featureWhoViewedMe" as off, which stops the app reporting your views of other
+profiles and removes the feature; "No profile view notifications" only silences the notification.
 
 Hide call log filters is marked restart because its row is a composable: an open call log screen
 keeps the row it composed until the screen composes it again. Swap call answer and decline buttons
