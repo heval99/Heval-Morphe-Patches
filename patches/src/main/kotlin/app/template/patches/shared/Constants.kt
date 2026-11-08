@@ -4853,6 +4853,26 @@ object Constants {
         targets = listOf(AppTarget(version = "7.1.27", versionCode = 610000900))
     )
 
+    // Verified 2026-11-08 against com.nordiskfilmplus.android 1.5.4 (versionCode 1050401, Google
+    // Play arm64-v8a split set merged with APKEditor; Play app-signing key cc9acc7c...8c0e).
+    // Native Kotlin app on the Red Bee Enigma player.
+    //   - Disable telemetry: Sentry is bundled with R8-minified internals, but the auto-init
+    //     provider keeps its library name and both start paths (SentryInitProvider.onCreate and
+    //     MobileNFApplication.onCreate) call the same static init. The patch locates that method
+    //     through the provider and makes it return at once, and sets io.sentry.auto-init=false plus
+    //     the Firebase switches. Firebase Messaging (push) is untouched.
+    //   - No ads and no billing client: the subscription is an account state, so there is nothing
+    //     for Disable ads or Enable Premium to hook.
+    // Smoke-tested; not run on a device.
+    val COMPATIBILITY_NORDISKFILMPLUS = Compatibility(
+        name = "Nordisk Film+",
+        packageName = "com.nordiskfilmplus.android",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x0B1F3A, // Nordisk Film+ navy.
+        signatures = setOf("cc9acc7c3e4532a5a231d831d820517a7b89e70c4875f86199e5b971167f8c0e"), // Play app-signing key
+        targets = listOf(AppTarget(version = "1.5.4", versionCode = 1050401))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
