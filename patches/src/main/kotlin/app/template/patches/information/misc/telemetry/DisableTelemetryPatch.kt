@@ -66,7 +66,7 @@ private val disableTelemetryManifestPatch = resourcePatch {
 @Suppress("unused")
 val disableTelemetryPatch = bytecodePatch(
     name = "Disable telemetry",
-    description = "Disables the reader's analytics trackers (Firebase, Google Tag Manager, Matomo, Tealium).",
+    description = "Disables analytics trackers.",
 ) {
     compatibleWith(COMPATIBILITY_INFORMATION, COMPATIBILITY_WEEKENDAVISEN)
 

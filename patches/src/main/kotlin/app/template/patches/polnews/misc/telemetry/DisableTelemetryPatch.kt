@@ -61,7 +61,7 @@ private val disableTelemetryManifestPatch = resourcePatch {
 @Suppress("unused")
 val disableTelemetryPatch = bytecodePatch(
     name = "Disable telemetry",
-    description = "Disables Gemius audience measurement and Firebase analytics/crash reporting.",
+    description = "Disables analytics and crash reporting.",
 ) {
     compatibleWith(COMPATIBILITY_POLNEWS)
 

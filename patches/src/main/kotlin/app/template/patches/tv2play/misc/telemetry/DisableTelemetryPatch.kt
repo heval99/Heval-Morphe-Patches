@@ -65,7 +65,7 @@ private val disableTelemetryManifestPatch = resourcePatch {
 @Suppress("unused")
 val disableTelemetryPatch = bytecodePatch(
     name = "Disable telemetry",
-    description = "Disables Google Analytics for Firebase and crash reporting switches.",
+    description = "Disables analytics.",
 ) {
     compatibleWith(COMPATIBILITY_TV2PLAY)
 

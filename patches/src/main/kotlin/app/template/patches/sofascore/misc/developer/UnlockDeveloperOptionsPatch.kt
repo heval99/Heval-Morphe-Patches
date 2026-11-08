@@ -36,8 +36,7 @@ private const val SET = "Ljava/util/Set;"
 @Suppress("unused")
 val unlockDeveloperOptionsPatch = bytecodePatch(
     name = "Unlock developer options",
-    description = "Opens the hidden developer menu from About without the password. The switches are " +
-        "developer-only and some undo the ads and telemetry patches.",
+    description = "Opens the hidden developer menu without the password.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_SOFASCORE)

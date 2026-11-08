@@ -16,7 +16,7 @@ import app.template.patches.shared.misc.telemetry.disableBugsnagStartup
 @Suppress("unused")
 val disableTelemetryPatch = bytecodePatch(
     name = "Disable telemetry",
-    description = "Disables Chartbeat analytics and Bugsnag crash reporting.",
+    description = "Disables analytics and crash reporting.",
 ) {
     compatibleWith(COMPATIBILITY_TV2NYHEDER)
 

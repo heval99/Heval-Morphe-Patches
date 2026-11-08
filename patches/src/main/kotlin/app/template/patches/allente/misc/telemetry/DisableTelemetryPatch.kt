@@ -59,7 +59,7 @@ private val disableTelemetryManifestPatch = resourcePatch {
 @Suppress("unused")
 val disableTelemetryPatch = bytecodePatch(
     name = "Disable telemetry",
-    description = "Disables Google Analytics for Firebase.",
+    description = "Disables analytics.",
 ) {
     compatibleWith(COMPATIBILITY_ALLENTE)
 

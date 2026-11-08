@@ -61,7 +61,7 @@ private val disableTelemetryManifestPatch = resourcePatch {
 @Suppress("unused")
 val disableTelemetryPatch = bytecodePatch(
     name = "Disable telemetry",
-    description = "Disables Sentry crash reporting and the Firebase switches.",
+    description = "Disables analytics and crash reporting.",
 ) {
     compatibleWith(COMPATIBILITY_NORDISKFILMPLUS)
 
