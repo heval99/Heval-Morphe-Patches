@@ -4873,6 +4873,25 @@ object Constants {
         targets = listOf(AppTarget(version = "1.5.4", versionCode = 1050401))
     )
 
+    // Verified 2026-11-08 against com.canaldigital.go 6.2.1.0 (versionCode 1000006031, Google Play
+    // arm64-v8a split set merged with APKEditor; signer CN=Kristian Hesthaug, O=Canal Digital AS,
+    // cert SHA-256 2497860f...0d39d). React Native TV app.
+    //   - Disable telemetry: @react-native-firebase/analytics, shipped enabled by the stock
+    //     manifest. The native module's setAnalyticsCollectionEnabled argument is pinned to
+    //     Boolean.FALSE and the Firebase switches are set. Firebase Messaging (push) is untouched.
+    //   - No ads and no billing client: the subscription is an Allente account state. The bundled
+    //     Play Integrity API is only used by the Firebase Auth phone sign-in flow
+    //     (s7.b.a(FirebaseAuth, ...)), not as an anti-tamper check on the app signature.
+    // Smoke-tested; not run on a device.
+    val COMPATIBILITY_ALLENTE = Compatibility(
+        name = "Allente",
+        packageName = "com.canaldigital.go",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x0096D6, // Allente blue.
+        signatures = setOf("2497860f6d690d0178f76d9ee637c9ae7a38e03c7dd790fd8645850c74d0d39d"), // O=Canal Digital AS
+        targets = listOf(AppTarget(version = "6.2.1.0", versionCode = 1000006031))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
