@@ -5,6 +5,7 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.template.patches.shared.Constants.COMPATIBILITY_BERLINGSKE
+import app.template.patches.shared.Constants.COMPATIBILITY_BT
 import app.template.patches.shared.addInstructionsWithLabelsChecked
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -27,7 +28,7 @@ private const val REQUEST = "Landroid/webkit/WebResourceRequest;"
 private const val RESPONSE = "Landroid/webkit/WebResourceResponse;"
 
 /**
- * Berlingske is a WebWrapper app: WrapperActivity creates the WebView, adds the JS bridge and sets
+ * Berlingske and B.T. are the same WebWrapper app (one binary, two packages): WrapperActivity creates the WebView, adds the JS bridge and sets
  * its own WebViewClient (a WebViewClientCompat subclass). The page's ad slots are the website's
  * requests, so the SDK patches do not apply. The app's client does not override
  * shouldInterceptRequest; the patch adds that override, delegating to super for non-ad URLs, so
@@ -38,7 +39,7 @@ val disableAdsPatch = bytecodePatch(
     name = "Disable ads",
     description = "Blocks the website's ad requests inside the article WebView.",
 ) {
-    compatibleWith(COMPATIBILITY_BERLINGSKE)
+    compatibleWith(COMPATIBILITY_BERLINGSKE, COMPATIBILITY_BT)
 
     extendWith("extensions/webviewads.mpe")
 

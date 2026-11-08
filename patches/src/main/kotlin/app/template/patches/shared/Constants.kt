@@ -4665,6 +4665,20 @@ object Constants {
         targets = listOf(AppTarget(version = "4.5.8", versionCode = 117085))
     )
 
+    // Same binary as Berlingske: 4.5.8 (versionCode 117085), the same dk.berlingske.webwrapper
+    // classes, the same 30,851-method dex and the same Berlingske Media AS signer
+    // (80d91716...ed92); only the package and launcher label ("B.T.") differ. COMPATIBILITY_BT and
+    // COMPATIBILITY_BERLINGSKE therefore share the same patch code. Smoke-tested on both APKs; not
+    // run on a device.
+    val COMPATIBILITY_BT = Compatibility(
+        name = "B.T.",
+        packageName = "com.mecom.bt",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0xE30613, // B.T. red.
+        signatures = setOf("80d91716e88298892a4d34076ae3562ac9e2212e08048d09dbfeca2c26a6ed92"), // O=Berlingske Media AS
+        targets = listOf(AppTarget(version = "4.5.8", versionCode = 117085))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).

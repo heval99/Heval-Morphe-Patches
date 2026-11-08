@@ -5,6 +5,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_BERLINGSKE
+import app.template.patches.shared.Constants.COMPATIBILITY_BT
 import org.w3c.dom.Element
 
 // The app's Firebase Analytics is R8-shrunk to the three event methods; the public class keeps its
@@ -18,7 +19,7 @@ private const val ANALYTICS = "Lcom/google/firebase/analytics/FirebaseAnalytics;
  * stop collection while the objects stay available.
  */
 private val disableTelemetryManifestPatch = resourcePatch {
-    compatibleWith(COMPATIBILITY_BERLINGSKE)
+    compatibleWith(COMPATIBILITY_BERLINGSKE, COMPATIBILITY_BT)
 
     execute {
         document("AndroidManifest.xml").use { doc ->
@@ -55,7 +56,7 @@ private val disableTelemetryManifestPatch = resourcePatch {
 }
 
 /**
- * Berlingske is a small native news app with no ad SDK. Its only telemetry is Firebase Analytics
+ * Berlingske and B.T. are the same small native news app (one binary, two packages) with no ad SDK. Its only telemetry is Firebase Analytics
  * and Crashlytics; the Analytics instance is fetched once from a wrapper, but no events are sent
  * through the three event methods in this build. They are no-opped anyway so a later call cannot
  * log anything, and the manifest switches stop the automatic collection.
@@ -65,7 +66,7 @@ val disableTelemetryPatch = bytecodePatch(
     name = "Disable telemetry",
     description = "Disables Firebase analytics, crash reporting and session collection.",
 ) {
-    compatibleWith(COMPATIBILITY_BERLINGSKE)
+    compatibleWith(COMPATIBILITY_BERLINGSKE, COMPATIBILITY_BT)
 
     dependsOn(disableTelemetryManifestPatch)
 
