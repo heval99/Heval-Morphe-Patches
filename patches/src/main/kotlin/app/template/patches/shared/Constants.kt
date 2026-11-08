@@ -4565,6 +4565,24 @@ object Constants {
         targets = listOf(AppTarget(version = "13.11.0 (build 21977)", versionCode = 130110000))
     )
 
+    // Verified 2026-11-08 against dk.ekstrabladet.breakingnews 2026.09.20 (versionCode 90318107,
+    // Google Play arm64-v8a split set merged with APKEditor; launcher label "Ekstra Bladet";
+    // signer CN=Spoiled Milk, cert SHA-256 7a866b4e...80d2). Native Kotlin app, 67k methods.
+    // No ad SDK: there is no ad-unit string, the app code never references a public ad API, and
+    // the bundled Google Mobile Ads classes are only the manifest entry points. The only telemetry
+    // is Firebase Crashlytics plus the Sessions component; there is no Analytics, AppsFlyer,
+    // Adjust, Branch, Amplitude or Mixpanel. "Disable telemetry" sets the five Firebase/ad-ID
+    // manifest switches and removes the Crashlytics component; Pushwoosh's Firebase Messaging
+    // services are untouched. Smoke test and CLI without -f pass; not run on a device.
+    val COMPATIBILITY_EKSTRABLADET = Compatibility(
+        name = "Ekstra Bladet",
+        packageName = "dk.ekstrabladet.breakingnews",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE30613, // EB red.
+        signatures = setOf("7a866b4e501bae03df60687e1c574d041061fc01e40e7e077ac6e85849e580d2"), // CN=Spoiled Milk
+        targets = listOf(AppTarget(version = "2026.09.20", versionCode = 90318107))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
