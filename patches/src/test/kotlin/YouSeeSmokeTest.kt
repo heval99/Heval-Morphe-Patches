@@ -6,22 +6,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import org.w3c.dom.Element
 import java.io.File
-import javax.xml.parsers.DocumentBuilderFactory
 
 private const val PKG = "yiuo.mobile.tv"
 private const val VERSION = "13.11.0 (build 21977)"
 private const val ANALYTICS_REGISTRAR =
     "Lcom/google/firebase/analytics/connector/internal/AnalyticsConnectorRegistrar;"
-
-private val TELEMETRY_META = mapOf(
-    "firebase_analytics_collection_deactivated" to "true",
-    "firebase_crashlytics_collection_enabled" to "false",
-    "firebase_performance_collection_deactivated" to "true",
-    "firebase_sessions_enabled" to "false",
-    "google_analytics_adid_collection_enabled" to "false",
-)
 
 class YouSeeSmokeTest {
 
@@ -63,26 +53,8 @@ class YouSeeSmokeTest {
                 insns.take(3).map { it.opcode },
         )
 
-        // 2. The manifest switches are set exactly once on <application>.
-        val manifestFile = workDir.walkTopDown()
-            .filter { it.name == "AndroidManifest.xml" && it.readText().contains("firebase_analytics_collection_deactivated") }
-            .firstOrNull() ?: error("no decoded AndroidManifest.xml with the telemetry meta-data under $workDir")
-        val manifest = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(manifestFile).documentElement
-        fun Element.children(tag: String) =
-            getElementsByTagName(tag).let { list -> (0 until list.length).map { list.item(it) as Element } }
-        val application = manifest.children("application").single()
-        val metaData = application.children("meta-data")
-            .filter { it.parentNode == application }
-            .groupBy({ it.getAttribute("android:name") }, { it.getAttribute("android:value") })
-        for ((name, value) in TELEMETRY_META) {
-            check(metaData[name] == listOf(value)) { "meta-data $name is ${metaData[name]}, expected [$value]" }
-        }
-
-        // 3. Only collection is switched off: Firebase component discovery stays declared.
-        val services = application.children("service").map { it.getAttribute("android:name") }
-        assertTrue(
-            "com.google.firebase.components.ComponentDiscoveryService" in services,
-            "Firebase component discovery was removed",
-        )
+        // 2. The Firebase switches (all four SDKs and the ad ID) are forced in the bytecode; the
+        // manifest is no longer edited, so component discovery stays declared as in stock.
+        assertFirebaseSwitchesForced(classes, analytics = true, crashlytics = true, sessions = true, performance = true)
     }
 }
