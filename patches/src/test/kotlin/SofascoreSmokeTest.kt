@@ -97,6 +97,7 @@ private val SOFASCORE_PATCHES = setOf(
     "Hide sports",
     "Slower widget refresh",
     "Spoof signature",
+    "Unlock developer options",
 )
 
 private val AD_SDK_PROVIDERS = listOf(
@@ -661,6 +662,39 @@ class SofascoreSmokeTest {
         // assertion also checks ensurePlayServicesAvailable, here a(Context)V.
         assertGmsCoreSupport(classes, workDir, PKG, START_ACTIVITY, SIGNATURE_SHA1, expectCredentialRouting = true)
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
+
+        // Unlock developer options: the About password gate pins the Set.contains result to true.
+        val developerDialog = "Lcom/sofascore/results/settings/developer/DeveloperOptionsFullScreenDialog;"
+        fun Instruction.isDeveloperDialog() = opcode == Opcode.NEW_INSTANCE &&
+            ((this as? ReferenceInstruction)?.reference as? TypeReference)?.type == developerDialog
+        val gateHandlers = classes.flatMap { it.methods }.filter { method ->
+            val insns = method.implementation?.instructions?.toList() ?: return@filter false
+            insns.any { it.isDeveloperDialog() } && insns.any { insn ->
+                val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
+                ref?.definingClass == "Ljava/util/Set;" && ref.name == "contains"
+            }
+        }
+        check(gateHandlers.size == 1) {
+            "developer dialog handlers: ${gateHandlers.map { "${it.definingClass}->${it.name}" }}"
+        }
+        val handler = gateHandlers.single()
+        val handlerInsns = handler.instructions()
+        val dialogIndex = handlerInsns.indexOfFirst { it.isDeveloperDialog() }
+        val containsIndex = (0 until dialogIndex).last { index ->
+            val ref = (handlerInsns[index] as? ReferenceInstruction)?.reference as? MethodReference
+            ref?.definingClass == "Ljava/util/Set;" && ref.name == "contains"
+        }
+        val gateRegister = (handlerInsns[containsIndex + 1] as OneRegisterInstruction).registerA
+        val gateBranch = (containsIndex + 2..minOf(containsIndex + 4, handlerInsns.lastIndex)).first { index ->
+            (handlerInsns[index].opcode == Opcode.IF_EQZ || handlerInsns[index].opcode == Opcode.IF_NEZ) &&
+                (handlerInsns[index] as OneRegisterInstruction).registerA == gateRegister
+        }
+        val pinned = handlerInsns[gateBranch - 1]
+        check(
+            pinned is NarrowLiteralInstruction && pinned.opcode == Opcode.CONST_16 &&
+                pinned.narrowLiteral == 1 && (pinned as OneRegisterInstruction).registerA == gateRegister,
+        ) { "${handler.definingClass}->${handler.name}: the password gate is not pinned true" }
+        check(handlerInsns[gateBranch].opcode == Opcode.IF_EQZ) { "the password branch changed shape" }
 
         // Hide AI insights: EventHeadFlags.getAiInsights answers flag && !isEnabled.
         assertFlagGate(require(EVENT_HEAD_FLAGS).method("getAiInsights", emptyList()), HIDE_AI_INSIGHTS.id, "EventHeadFlags.getAiInsights()")
