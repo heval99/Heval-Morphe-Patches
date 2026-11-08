@@ -2659,6 +2659,10 @@ object Constants {
     // posts it, so the switch gates it to return-void. Smoke test asserts the gate and the stock
     // body; CLI without -f applied it and apkanalyzer shows the gate. (The earlier "harness cannot
     // see this class" note was a stale bundle: a rebuilt bundle passes.)
+    // 2026-11-08 (26.43.5): Hide promotions also gates the per-context referral (String)Z gate
+    // (anchored on "featureReferralNavigationDrawer" + "featureGoPro" + getBoolean), Disable nags adds
+    // featureInvalidProfileNotification, new opt-in "Disable Who viewed me" (featureWhoViewedMe), and
+    // Disable telemetry reads four first-party reporting toggles as off. Smoke test only; not run on a device.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",

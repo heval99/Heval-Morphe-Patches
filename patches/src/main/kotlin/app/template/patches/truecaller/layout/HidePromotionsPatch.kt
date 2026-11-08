@@ -1,7 +1,9 @@
 package app.template.patches.truecaller.layout
 
+import app.morphe.patcher.patch.PatchException
 import app.template.patches.shared.hevalcontrols.HevalFeature
 import app.template.patches.shared.hevalcontrols.featurePatch
+import app.template.patches.shared.hevalcontrols.hevalReturnEarly
 import app.template.patches.truecaller.controls.TruecallerControlsCategory
 import app.template.patches.truecaller.controls.truecallerControls
 import app.template.patches.truecaller.shared.overrideReadFeatureToggles
@@ -43,4 +45,17 @@ val hidePromotionsPatch = truecallerControls.featurePatch(
     // schedules anything. The key's experiment suffix can change with an update; the read
     // check then fails the patch.
     overrideReadFeatureToggles(listOf("DisableWVMNotifications_65487"), true, FEATURE)
+
+    // 3. The per-context referral gate answers false, so no referral entry point shows (bottom
+    // bar, promo popup, search screen promo, deep link and the rest). Most of its keys are read
+    // from server-written SharedPreferences, not from the toggle resolver, so step 1 cannot reach
+    // them. The gate is the only (String)Z method holding these keys; anything else fails the patch.
+    val referralGates = ReferralContextGateFingerprint.matchAllOrNull().orEmpty()
+    if (referralGates.size != 1) {
+        throw PatchException(
+            "Hide promotions: expected one referral context gate (String)Z with \"featureReferralNavigationDrawer\" " +
+                "and \"featureGoPro\", found ${referralGates.size}",
+        )
+    }
+    referralGates.single().method.hevalReturnEarly(FEATURE, false)
 }
