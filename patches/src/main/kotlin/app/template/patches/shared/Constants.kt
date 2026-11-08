@@ -4641,6 +4641,23 @@ object Constants {
         targets = listOf(AppTarget(version = "4.1.4", versionCode = 300))
     )
 
+    // Verified 2026-11-08 against com.mecom.Berlingske 4.5.8 (versionCode 117085, Google Play split
+    // set merged with APKEditor; launcher label "Berlingske"; signer O=Berlingske Media AS, cert
+    // SHA-256 80d91716...ed92). Small native news app, 31k methods, no ad SDK. Its only telemetry is
+    // Firebase Analytics (the public class is R8-shrunk to logEvent/setUserProperty/setCurrentScreen)
+    // plus Crashlytics; "Disable telemetry" no-ops those three event methods and sets six Firebase
+    // manifest switches while leaving the components registered - the app calls
+    // FirebaseAnalytics.getInstance from a wrapper, so removing the component would fail. The
+    // article paywall is server-side. Smoke test and CLI without -f pass; not run on a device.
+    val COMPATIBILITY_BERLINGSKE = Compatibility(
+        name = "Berlingske",
+        packageName = "com.mecom.Berlingske",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x002B5C, // Berlingske blue.
+        signatures = setOf("80d91716e88298892a4d34076ae3562ac9e2212e08048d09dbfeca2c26a6ed92"), // O=Berlingske Media AS
+        targets = listOf(AppTarget(version = "4.5.8", versionCode = 117085))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
