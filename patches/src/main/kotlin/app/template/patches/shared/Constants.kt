@@ -4596,8 +4596,12 @@ object Constants {
     // "Disable telemetry" sets the Firebase/ad-ID manifest switches and makes PugPig's
     // AnalyticsDispatcher sendEvent/setScreen/setUserInfo return at once, which drops Firebase,
     // Mixpanel, Facebook and the publisher's endpoint at one choke point; OneSignal push is
-    // untouched. The article paywall is server-side (Poool), see the blocklist. Smoke test and CLI
-    // without -f pass; not run on a device.
+    // untouched. "Unlock articles" forces Story.isEntitled() true, which is the gate behind every
+    // paywall manager (isLocked() is !isEntitled()). Runtime-verified 2026-11-08 on the emulator
+    // with the signed stock control: stock opens the subscription screen ("Du skal have et
+    // abonnement...") while the patched build renders the full article. The website still uses
+    // Poool and stays paywalled; only the app's story JSON is unlocked. Smoke test and CLI without
+    // -f pass.
     val COMPATIBILITY_NORDJYSKE = Compatibility(
         name = "Nordjyske",
         packageName = "dk.nordjyske.reader",

@@ -116,4 +116,27 @@ class NordjyskeSmokeTest {
             check(metaData[name] == listOf(value)) { "meta-data $name is ${metaData[name]}, expected [$value]" }
         }
     }
+
+    @Test
+    fun `Unlock articles forces Story isEntitled true`() {
+        val root = repoRoot()
+        val apk = File(root, "apks/nordjyske/base.apk")
+        assumeTrue(apk.exists(), "skipping: base.apk not present at ${apk.path}")
+
+        val classes = applyPatches(
+            apk = apk,
+            workDir = workDir,
+            pkg = PKG,
+            version = VERSION,
+            patchNames = setOf("Unlock articles"),
+            allPatches = loadAllPatches(newestPatchBundle(root)),
+        )
+
+        val story = classes.singleOrNull { it.type == "Lcom/kaldorgroup/pugpigbolt/domain/Story;" }
+            ?: error("Story not found in emitted dexes")
+        val isEntitled = story.methods.single {
+            it.name == "isEntitled" && it.returnType == "Z" && it.parameterTypes.isEmpty()
+        }
+        assertForcedBoolean(isEntitled, expected = true, label = "Story.isEntitled")
+    }
 }
