@@ -38,6 +38,7 @@ private const val MATCH = "Lcom/fotmob/models/Match;"
 private const val MATCH_STATUS = "Lcom/fotmob/models/Match\$MatchStatus;"
 private const val LEAGUE = "Lcom/fotmob/models/League;"
 private const val MATCH_ACTIVITY = "Lcom/fotmob/android/feature/match/ui/MatchActivity;"
+private const val LIVE_UPDATE_WORKER = "Lcom/fotmob/android/feature/liveupdate/worker/LiveUpdateWorker;"
 private const val REMOTE_MESSAGE = "Lcom/google/firebase/messaging/RemoteMessage;"
 private const val BUNDLE = "Landroid/os/Bundle;"
 
@@ -64,6 +65,33 @@ internal val SPOILER_FREE_COMPETITIONS = HevalListFeature(
     description = "Competitions you marked spoiler-free on their page.",
     category = FotMobControlsCategory.MATCH_PAGE,
     dependencies = listOf(SPOILER_FREE_MODE.id),
+)
+
+// One switch per surface, each default on and each off while the master switch is off, so the user
+// chooses what gets hidden. A hook checks its own surface (SpoilerFree.hidesScoreIn* / blocksPush).
+private fun spoilerSurface(id: String, name: String, description: String) = HevalFeature(
+    id = id,
+    name = name,
+    description = description,
+    category = FotMobControlsCategory.MATCH_PAGE,
+    dependencies = listOf(SPOILER_FREE_MODE.id),
+)
+
+internal val SPOILER_FREE_NOTIFICATIONS = spoilerSurface(
+    "fotmob.spoiler_notifications", "Spoiler-free notifications",
+    "Drops goal and result alerts and hides the score in the ongoing match notification for marked matches.",
+)
+internal val SPOILER_FREE_LISTS = spoilerSurface(
+    "fotmob.spoiler_lists", "Spoiler-free match lists",
+    "Shows the kickoff time instead of the score in match lists for marked matches.",
+)
+internal val SPOILER_FREE_MATCH_PAGE = spoilerSurface(
+    "fotmob.spoiler_match_page", "Spoiler-free match page",
+    "Shows the kickoff time instead of the score at the top of a marked match.",
+)
+internal val SPOILER_FREE_WIDGET = spoilerSurface(
+    "fotmob.spoiler_widget", "Spoiler-free widget",
+    "Shows the kickoff time instead of the score in the live score widget for marked matches.",
 )
 
 /**
@@ -131,7 +159,7 @@ private fun MutableMethod.addMenuItemHook(host: FieldReference, helper: String) 
     }
 }
 
-/** The fields SpoilerFree.hidesScore reads by name (kept Gson model names); a rename fails here. */
+/** The fields SpoilerFree reads by name (kept Gson model names); a rename fails here. */
 private fun BytecodePatchContext.requireMatchFields() {
     val wanted = mapOf(
         MATCH to mapOf("Id" to "Ljava/lang/String;", "league" to LEAGUE),
@@ -220,7 +248,7 @@ private fun MutableMethod.applyWidgetHooks(startedCall: Int, labelCall: Int, fla
         startedCall + 2,
         """
             if-eqz v$flag, :spoiler_keep
-            invoke-static/range { v$startedMatch .. v$startedMatch }, $SPOILER_FREE->hidesScore(Ljava/lang/Object;)Z
+            invoke-static/range { v$startedMatch .. v$startedMatch }, $SPOILER_FREE->hidesScoreInWidget(Ljava/lang/Object;)Z
             move-result v$flag
             xor-int/lit8 v$flag, v$flag, 0x1
         """,
@@ -267,13 +295,23 @@ private fun BytecodePatchContext.scoreRowHooks(): () -> Unit {
             val insns = row.instructions.toList()
             val calls = insns.indices.filter { insns[it].methodRef()?.isStarted() == true }
             // Later site first, so the earlier indexes stay valid.
-            for (call in calls.asReversed()) row.hideStartedAt(call, insns)
+            for (call in calls.asReversed()) row.hideStartedAt(call, insns, rowHelper(type))
         }
     }
 }
 
+/**
+ * The SpoilerFree check a row method uses, so each surface answers to its own Patch settings switch:
+ * the match page header, the live-update (ongoing) notification, and every other row (the lists).
+ */
+private fun rowHelper(type: String) = when (type) {
+    MATCH_ACTIVITY -> "hidesScoreOnMatchPage"
+    LIVE_UPDATE_WORKER -> "hidesScoreInNotifications"
+    else -> "hidesScoreInLists"
+}
+
 /** After Match's started check at [call]: a marked match that has started counts as not started. */
-private fun MutableMethod.hideStartedAt(call: Int, insns: List<Instruction>) {
+private fun MutableMethod.hideStartedAt(call: Int, insns: List<Instruction>, helper: String) {
     val where = "$definingClass->$name"
     val invoke = insns[call]
     val matchRegister = when (invoke) {
@@ -289,7 +327,7 @@ private fun MutableMethod.hideStartedAt(call: Int, insns: List<Instruction>) {
         call + 2,
         """
             if-eqz v$flag, :spoiler_keep
-            invoke-static/range { v$matchRegister .. v$matchRegister }, $SPOILER_FREE->hidesScore(Ljava/lang/Object;)Z
+            invoke-static/range { v$matchRegister .. v$matchRegister }, $SPOILER_FREE->$helper(Ljava/lang/Object;)Z
             move-result v$flag
             xor-int/lit8 v$flag, v$flag, 0x1
         """,
@@ -302,6 +340,9 @@ private fun MutableMethod.hideStartedAt(call: Int, insns: List<Instruction>) {
 // settings lists that depend on the switch, so turning the switch off restores stock everywhere and
 // the lists can be edited in Patch settings. Stored on the phone only (SpoilerFree in
 // extensions/fotmob). Read at use time (menu creation, each push), so no restart is needed.
+// What gets hidden is the user's choice: besides the master switch there is one switch per surface
+// (notifications, match lists, match page header, widget), each depending on the master. Every hook
+// calls its own SpoilerFree check, so turning one surface off restores stock there only.
 //
 // 1. Notifications: PushMessagingService.onMessageReceived returns at entry, behind the switch, when
 //    the message bundle's "m" (match id) is marked or its "lid"/"plid" (league, parent league) is a
@@ -378,4 +419,8 @@ val spoilerFreeModePatch = fotMobControls.featurePatch(
 
     fotMobControls.register(SPOILER_FREE_MATCHES)
     fotMobControls.register(SPOILER_FREE_COMPETITIONS)
+    fotMobControls.register(SPOILER_FREE_NOTIFICATIONS)
+    fotMobControls.register(SPOILER_FREE_LISTS)
+    fotMobControls.register(SPOILER_FREE_MATCH_PAGE)
+    fotMobControls.register(SPOILER_FREE_WIDGET)
 }

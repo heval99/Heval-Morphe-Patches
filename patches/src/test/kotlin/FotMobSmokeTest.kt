@@ -14,7 +14,11 @@ import app.template.patches.fotmob.spoiler.LIVE_SCORE_WIDGET
 import app.template.patches.fotmob.spoiler.SCORE_FORMAT
 import app.template.patches.fotmob.spoiler.SPOILER_FREE
 import app.template.patches.fotmob.spoiler.SPOILER_FREE_COMPETITIONS
+import app.template.patches.fotmob.spoiler.SPOILER_FREE_LISTS
 import app.template.patches.fotmob.spoiler.SPOILER_FREE_MATCHES
+import app.template.patches.fotmob.spoiler.SPOILER_FREE_MATCH_PAGE
+import app.template.patches.fotmob.spoiler.SPOILER_FREE_NOTIFICATIONS
+import app.template.patches.fotmob.spoiler.SPOILER_FREE_WIDGET
 import app.template.patches.fotmob.spoiler.SPOILER_FREE_MODE
 import app.template.patches.shared.hevalcontrols.HEVAL_SETTINGS_CLASS
 import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
@@ -515,6 +519,7 @@ class FotMobSmokeTest {
                 HIDE_BETTING_CONTENT, DISABLE_RATING_PROMPTS, DISABLE_PLUS_PROMO_POPUP, USE_SYSTEM_FONT,
                 DISABLE_ANIMATIONS, FASTER_ANIMATIONS, SLOWER_LIVE_REFRESH, HIDDEN_COUNTRIES, HIDDEN_COMPETITIONS,
                 SPOILER_FREE_MODE, SPOILER_FREE_MATCHES, SPOILER_FREE_COMPETITIONS,
+                SPOILER_FREE_NOTIFICATIONS, SPOILER_FREE_LISTS, SPOILER_FREE_MATCH_PAGE, SPOILER_FREE_WIDGET,
             ),
         ).split('\n')
         assertTrue(
@@ -622,7 +627,7 @@ class FotMobSmokeTest {
         val w = widget.instructions()
         val wLabel = "${widget.definingClass}->${widget.name}"
         fun calls(name: String) = w.indices.filter { w[it].methodRef()?.let { r -> r.definingClass == SPOILER_FREE && r.name == name } == true }
-        val hide = calls("hidesScore").also { assertEquals(1, it.size, "$wLabel: hidesScore calls") }.single()
+        val hide = calls("hidesScoreInWidget").also { assertEquals(1, it.size, "$wLabel: hidesScoreInWidget calls") }.single()
         val started = w[hide - 3].methodRef()
         assertTrue(
             w[hide - 3].opcode == Opcode.INVOKE_VIRTUAL && started?.definingClass == "Lcom/fotmob/models/Match;" &&
@@ -662,14 +667,14 @@ class FotMobSmokeTest {
         val rowMethods = classes.flatMap { it.methods }.filter { m ->
             val ins = m.instructions()
             ins.any { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == SCORE_FORMAT } &&
-                ins.any { it.methodRef()?.let { r -> r.definingClass == SPOILER_FREE && r.name == "hidesScore" } == true }
+                ins.any { it.methodRef()?.let { r -> r.definingClass == SPOILER_FREE && r.name.startsWith("hidesScore") } == true }
         }
         assertEquals(6, rowMethods.size, "methods that format the live score and carry the started override")
         for (row in rowMethods) {
             val r = row.instructions()
             val rLabel = "${row.definingClass}->${row.name}"
             val hides = r.indices.filter {
-                r[it].methodRef()?.let { ref -> ref.definingClass == SPOILER_FREE && ref.name == "hidesScore" } == true
+                r[it].methodRef()?.let { ref -> ref.definingClass == SPOILER_FREE && ref.name.startsWith("hidesScore") } == true
             }
             val startedCalls = r.indices.filter {
                 r[it].methodRef()?.let { ref ->
@@ -678,6 +683,17 @@ class FotMobSmokeTest {
                 } == true
             }
             assertEquals(startedCalls.size, hides.size, "$rLabel: started checks and overrides")
+            // Each surface answers to its own switch: the match page header, the ongoing notification
+            // and every other row use their own SpoilerFree check.
+            val expectedHelper = when (row.definingClass) {
+                "Lcom/fotmob/android/feature/match/ui/MatchActivity;" -> "hidesScoreOnMatchPage"
+                "Lcom/fotmob/android/feature/liveupdate/worker/LiveUpdateWorker;" -> "hidesScoreInNotifications"
+                else -> "hidesScoreInLists"
+            }
+            assertTrue(
+                hides.all { r[it].methodRef()?.name == expectedHelper },
+                "$rLabel: the override must call SpoilerFree.$expectedHelper; got ${hides.map { r[it].methodRef()?.name }}",
+            )
             for (h in hides) {
                 assertEquals(
                     listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.XOR_INT_LIT8),

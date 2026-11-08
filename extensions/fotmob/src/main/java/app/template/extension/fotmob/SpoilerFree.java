@@ -17,8 +17,10 @@ import app.template.extension.hevalcontrols.HevalSettings;
 /**
  * "Spoiler-free mode" (Patch settings switch {@value #FEATURE_ID}, on by default): the user marks
  * a match on its page or a whole competition on its page, and FotMob then posts no notification
- * for that match, and the home-screen live score widget shows its kickoff time instead of the score
- * (phase 1: the in-app match lists and the match page still show it).
+ * for that match, and the match rows, the match page header, the live-update notification and the
+ * home-screen live score widget show its kickoff time instead of the score. Each of those surfaces
+ * has its own Patch settings switch ({@value #NOTIFICATIONS}, {@value #LISTS}, {@value #MATCH_PAGE},
+ * {@value #WIDGET}, all depending on {@value #FEATURE_ID}), so the user chooses what gets hidden.
  *
  * <p>The marks are two Patch settings lists, {@value #MATCHES} (FotMob match ids, "4506263") and
  * {@value #COMPETITIONS} (league ids, keyed like "Hide competitions": "47" is the Premier League).
@@ -33,6 +35,11 @@ public final class SpoilerFree {
     static final String FEATURE_ID = "fotmob.spoiler_free";
     static final String MATCHES = "fotmob.spoiler_matches";
     static final String COMPETITIONS = "fotmob.spoiler_competitions";
+    /** The per-surface switches; each depends on {@link #FEATURE_ID}, so it is off while that is off. */
+    static final String NOTIFICATIONS = "fotmob.spoiler_notifications";
+    static final String LISTS = "fotmob.spoiler_lists";
+    static final String MATCH_PAGE = "fotmob.spoiler_match_page";
+    static final String WIDGET = "fotmob.spoiler_widget";
     private static final String TAG = "Morphe-FotMob";
 
     /** Outside FotMob's own 0x7f...... resource ids, so no inflated item clashes with it. */
@@ -87,7 +94,7 @@ public final class SpoilerFree {
      */
     public static boolean blocksPush(Bundle message) {
         try {
-            if (message == null) return false;
+            if (message == null || !HevalSettings.isEnabled(NOTIFICATIONS)) return false;
             String matchId = message.getString("m");
             int leagueId = parseId(message.getString("lid"));
             int parentId = parseId(message.getString("plid"));
@@ -111,14 +118,34 @@ public final class SpoilerFree {
         return field;
     }
 
+    /** The match rows (live, fixtures, form): the "match lists" switch. */
+    public static boolean hidesScoreInLists(Object match) {
+        return hides(match, LISTS);
+    }
+
+    /** The match page header: the "match page" switch. */
+    public static boolean hidesScoreOnMatchPage(Object match) {
+        return hides(match, MATCH_PAGE);
+    }
+
+    /** The live-update (ongoing) match notification: the "notifications" switch. */
+    public static boolean hidesScoreInNotifications(Object match) {
+        return hides(match, NOTIFICATIONS);
+    }
+
+    /** The home-screen live score widget: the "widget" switch. */
+    public static boolean hidesScoreInWidget(Object match) {
+        return hides(match, WIDGET);
+    }
+
     /**
-     * Whether FotMob's Match {@code match} is marked (by its id or its competition) while the switch
-     * is on. Patched after the "has the match started" check of the score widget: true makes the
-     * widget draw the kickoff time instead of the score.
+     * Whether FotMob's Match {@code match} is marked (by its id or its competition) while the master
+     * switch and the {@code surface} switch are on. Patched after a "has the match started" check:
+     * true makes that code draw the kickoff time instead of the score.
      */
-    public static boolean hidesScore(Object match) {
+    private static boolean hides(Object match, String surface) {
         try {
-            if (match == null || !HevalSettings.isEnabled(FEATURE_ID)) return false;
+            if (match == null || !HevalSettings.isEnabled(FEATURE_ID) || !HevalSettings.isEnabled(surface)) return false;
             if (matchId == null) {
                 Class<?> type = match.getClass();
                 Field league = field(type, "league");
@@ -139,7 +166,7 @@ public final class SpoilerFree {
 
     /** The widget's status label ("FT", "67'") of a marked match is empty, so it hides its view. */
     public static String status(String label, Object match) {
-        return hidesScore(match) ? "" : label;
+        return hidesScoreInWidget(match) ? "" : label;
     }
 
     // ---------------------------------------------------------------------------------------

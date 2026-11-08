@@ -417,9 +417,16 @@ did not change for the converted patches.
 | `fotmob.slower_live_refresh` | Slower live refresh | off | no | match page ticker limit 15 -> 30 (value helper) |
 | `fotmob.hidden_countries` (list) | Hide countries | off | yes | LiveMatchesAndLeagueRank.<init> (`filterLiveMatches`), LeagueConverter.convert returns (`filterLeagues`), Suggestion constructors' league/team/match stores (`filterLeagueSuggestions`, `filterTeamSuggestions`, `filterMatchSuggestions`) |
 | `fotmob.hidden_competitions` (list) | Hide competitions | off | yes | the same shared sites (`fotMobListFiltersPatch`); logos and seeds by `CompetitionFilter.init` (called from `CountryFilter.init`) |
-| `fotmob.spoiler_free` | Spoiler-free mode | on | no | PushMessagingService.onMessageReceived (index 0, `SpoilerFree.blocksPush`), the menu/activity_match_facts_v2 and menu/league_info builders (index 0, `addMatchItem` / `addCompetitionItem`); widget row via `SpoilerFree.hidesScore` / `status` |
+| `fotmob.spoiler_free` | Spoiler-free mode | on | no | PushMessagingService.onMessageReceived (index 0, `SpoilerFree.blocksPush`), the menu/activity_match_facts_v2 and menu/league_info builders (index 0, `addMatchItem` / `addCompetitionItem`); widget row via `SpoilerFree.hidesScoreInWidget` / `status`; the score rows via `SpoilerFree.hidesScoreInLists` (match page header: `hidesScoreOnMatchPage`, live-update notification: `hidesScoreInNotifications`) |
 | `fotmob.spoiler_matches` (list) | Spoiler-free mode | - | no | marked on the match page; needs `fotmob.spoiler_free` |
 | `fotmob.spoiler_competitions` (list) | Spoiler-free mode | - | no | marked on the competition page; needs `fotmob.spoiler_free` |
+| `fotmob.spoiler_notifications` | Spoiler-free mode | on | no | what gets hidden: the push drop and the ongoing live-update notification; needs `fotmob.spoiler_free` |
+| `fotmob.spoiler_lists` | Spoiler-free mode | on | no | what gets hidden: the score rows in the match lists; needs `fotmob.spoiler_free` |
+| `fotmob.spoiler_match_page` | Spoiler-free mode | on | no | what gets hidden: the score at the top of the match page; needs `fotmob.spoiler_free` |
+| `fotmob.spoiler_widget` | Spoiler-free mode | on | no | what gets hidden: the score in the live score widget; needs `fotmob.spoiler_free` |
+
+Each surface has its own switch (all default on, all off while `fotmob.spoiler_free` is off), so the
+user chooses in Patch settings what marked matches hide; every hook asks its own surface.
 
 Spoiler-free mode (2026-11-08, phase 1; smoke-tested on 241.18134, not run on a device). The user marks a
 match ("Spoiler-free: on/off" in the match page's overflow menu, keyed by FotMob's match id from the
