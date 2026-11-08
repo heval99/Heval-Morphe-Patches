@@ -446,6 +446,14 @@ object Constants {
     // The patch replaces the field read with const/4 1 and nops the normal-logo branch. Verified:
     // FotMobSmokeTest, CLI without -f, apkanalyzer (const/4 p0,1 and nop) and the emulator showing
     // "FOTMOB+" in the home header. The wordmark drawables themselves are untouched.
+    // 2026-11-08: "Spoiler-free mode" phase 1 (default on; push filter in onMessageReceived, menu
+    // items found by menu/activity_match_facts_v2 and menu/league_info, live score widget row, and the
+    // six methods that format the live score and ask Match whether it started: a marked match
+    // counts as not started there). One Patch settings switch per surface (notifications, match
+    // lists, match page, widget; each off while the master is off) chooses what gets hidden, and each
+    // hook calls its own check. Smoke test and a CLI run without -f (Applied; the six rows each call
+    // the check for their surface and both menu hooks are present in the patched dex); not run on
+    // a device.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",
