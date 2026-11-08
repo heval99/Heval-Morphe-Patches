@@ -4813,6 +4813,26 @@ object Constants {
         targets = listOf(AppTarget(version = "2026.10-10188:RELEASE", versionCode = 10188))
     )
 
+    // Verified 2026-11-08 against dk.tv2.tv2play 2026.10-1 (versionCode 90851, Google Play
+    // arm64-v8a split set merged with APKEditor; signer CN=Bjarne Lundgren, OU=Digital, O=TV 2,
+    // cert SHA-256 ed472cfc...e819 - the same key as TV 2 Nyheder). Native Kotlin app.
+    //   - Disable telemetry: Google Analytics for Firebase (the full measurement SDK is bundled) is
+    //     switched off through the manifest switches, and the Bugsnag start call inside
+    //     BugsnagContentProvider.onCreate is dropped through the shared helper. Firebase Messaging
+    //     (push) is left alone.
+    //   - No ads and no billing client: the only play-services-ads classes are the advertising-ID
+    //     client pulled in by Analytics, and the subscription is a TV 2 account state, so there is
+    //     nothing for Disable ads or Enable Premium to hook.
+    // Smoke-tested; not run on a device.
+    val COMPATIBILITY_TV2PLAY = Compatibility(
+        name = "TV 2 Play",
+        packageName = "dk.tv2.tv2play",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE30613, // TV 2 red.
+        signatures = setOf("ed472cfc59a2e354adafd9198e72ab1ada44ce088d77c5d0b58fbe8c233ee819"), // O=TV 2
+        targets = listOf(AppTarget(version = "2026.10-1", versionCode = 90851))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
