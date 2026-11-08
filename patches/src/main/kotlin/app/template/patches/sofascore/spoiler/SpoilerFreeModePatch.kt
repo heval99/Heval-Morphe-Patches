@@ -40,7 +40,7 @@ private const val MENU = "Landroid/view/Menu;"
 internal val SPOILER_FREE_MODE = HevalFeature(
     id = "sofascore.spoiler_free",
     name = "Spoiler-free mode",
-    description = "Lets you hide scores and goal alerts for matches and competitions you mark.",
+    description = "Lets you hide scores for matches and competitions you mark, and goal alerts for matches you mark.",
     category = SofascoreControlsCategory.MATCH_PAGE,
 )
 
