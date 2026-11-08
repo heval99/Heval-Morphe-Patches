@@ -4775,6 +4775,22 @@ object Constants {
         targets = listOf(AppTarget(version = "15.0.0", versionCode = 2024060211))
     )
 
+    // Verified 2026-11-08 against dk.tipsbladet.tipsbladet 6.0 (versionCode 68, Google Play
+    // arm64-v8a split set merged with APKEditor; signer CN=tipsbladet, cert SHA-256
+    // 5db20a74...ebf1). React Native app: no ad SDK, no billing and no server account, so ads and
+    // premium do not apply. "Disable telemetry" sets the Firebase Analytics/Crashlytics/Sessions
+    // manifest switches and pins the @react-native-firebase analytics module's
+    // setAnalyticsCollectionEnabled argument to Boolean.FALSE, so the consent flow cannot switch
+    // collection back on. OneSignal (push) is left alone. Smoke-tested; not run on a device.
+    val COMPATIBILITY_TIPSLABET = Compatibility(
+        name = "Tipsbladet",
+        packageName = "dk.tipsbladet.tipsbladet",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE30613, // Tipsbladet red.
+        signatures = setOf("5db20a74cd62371b0d25c8f322b576cab86202d8a778b6f44a21b5fbf640ebf1"), // CN=tipsbladet
+        targets = listOf(AppTarget(version = "6.0", versionCode = 68))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
