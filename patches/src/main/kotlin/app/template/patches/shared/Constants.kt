@@ -4791,6 +4791,28 @@ object Constants {
         targets = listOf(AppTarget(version = "6.0", versionCode = 68))
     )
 
+    // Verified 2026-11-08 against dk.tv2.nyhedscenter 2026.10-10188:RELEASE (versionCode 10188,
+    // Google Play arm64-v8a split set merged with APKEditor; signer CN=Bjarne Lundgren, OU=Digital,
+    // O=TV 2, cert SHA-256 ed472cfc...e819). Native Kotlin app.
+    //   - Disable ads: Google Ad Manager is the only network that serves. Banners load through
+    //     AdManagerAdView.loadAd (the app's Le fa; helper), native slots through AdLoader and
+    //     full-screen slots through InterstitialAd.load; Prebid Mobile only supplies bids, and the
+    //     bundled Gemius AdOcean SDK is never instantiated (no BillboardAd/FullScreenAd callers,
+    //     no layout). Every GMA load entry point is neutered through the shared GMA_LOAD_HOOKS.
+    //     MobileAds.initialize is left alone: NyhedscenterApplication.onCreate calls it and the SDK
+    //     statics keep working.
+    //   - Disable telemetry: Chartbeat Tracker.setupTracker (both overloads) is no-oped, and the
+    //     Bugsnag start call inside BugsnagContentProvider.onCreate is replaced with nop.
+    // Smoke-tested; not run on a device.
+    val COMPATIBILITY_TV2NYHEDER = Compatibility(
+        name = "TV 2 Nyheder",
+        packageName = "dk.tv2.nyhedscenter",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE30613, // TV 2 red.
+        signatures = setOf("ed472cfc59a2e354adafd9198e72ab1ada44ce088d77c5d0b58fbe8c233ee819"), // O=TV 2
+        targets = listOf(AppTarget(version = "2026.10-10188:RELEASE", versionCode = 10188))
+    )
+
     // Verified 2026-11-03 against com.gkfriend.gpsmapcameraeditor 1.0.31 (versionCode 89, Google
     // Play arm64-v8a split set merged with APKEditor; signer CN=Android, OU=Android, O=Google Inc.,
     // cert SHA-256 ad0e1988...8d37 - the Play app-signing key, confirmed by Play and APKPure only).
