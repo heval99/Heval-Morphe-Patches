@@ -506,6 +506,21 @@ overwritten before the hook.
 | `scores365.spoiler_status` | Spoiler-free mode | on | no | the status text of rows and the header (surface 3) |
 | `scores365.spoiler_winner` | Spoiler-free mode | on | no | winner hints of rows and the header (surface 4) |
 
+| `scores365.hidden_competitions` (list) | Hide competitions | off | no | `GamesObj.getGames()` and `getCompetitions()` (`ListFilters.filterGames` / `filterCompetitions`) |
+| `scores365.hidden_countries` (list) | Hide countries | off | no | the same two getters |
+
+Hidden competitions and countries (2026-11-09, owner request: 365Scores lacked what Sofascore and
+FotMob have). Both lists are read at run time, so a change needs no restart. Keys are competition
+ids (`GameObj.getCompetitionID()`, the key of the `competitions` map) and country ids
+(`CompetitionObj.getCid()`); labels are "country · name" and the country name, learned from the
+responses the app loads (`filterCompetitions` reports every competition and country of a response
+once). The shared hook patch (unnamed, `scores365ListFiltersPatch` in `scores365/lists`) makes the
+two getters of the parsed response return a filtered copy: a game of a hidden competition or of a
+hidden country is left out, and so is the competition; the response itself is unchanged, so paging
+and updates keep working. Because the getters belong to the shared response type, a hidden competition
+is also gone from the match lists of team and competition pages. Not filtered: standings, news,
+search results, widgets and notifications. Not run on a device.
+
 `SpoilerFree.isSurfaceOn(surface)` reads the surface's switch through `HevalSettings.isEnabled`, which
 is off while the master is off. The marked matches and competitions are still kept in the
 extension's own preference file (`morphe_spoiler_free`), so 365Scores has no "Marked matches" list

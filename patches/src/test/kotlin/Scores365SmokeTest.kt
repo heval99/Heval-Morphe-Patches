@@ -55,7 +55,7 @@ class Scores365SmokeTest {
             version = "15.0.0",
             patchNames = setOf(
                 "Disable ads", "Enable Premium", "Disable update prompts", "GmsCore support", "Spoof signature",
-                "Spoiler-free mode", "Patch settings",
+                "Spoiler-free mode", "Patch settings", "Hide competitions", "Hide countries",
             ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -68,6 +68,29 @@ class Scores365SmokeTest {
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
         assertSpoilerFree(classes, byType)
         assertPatchSettingsEntry(classes)
+        assertHideLists(byType)
+    }
+
+    /**
+     * Hide competitions / Hide countries: GamesObj.getGames() and getCompetitions() hand the value of
+     * every return-object to ListFilters first (filterGames / filterCompetitions), and the extension
+     * class is in the dex.
+     */
+    private fun assertHideLists(byType: Map<String, ClassDef>) {
+        val filters = "Lapp/template/extension/scores365/ListFilters;"
+        check(byType[filters] != null) { "ListFilters is not in the patched dex" }
+        val games = byType["Lcom/scores365/entitys/GamesObj;"] ?: error("GamesObj not found")
+        for ((name, helper) in listOf("getGames" to "filterGames", "getCompetitions" to "filterCompetitions")) {
+            val insns = games.method(name, emptyList()).instructions()
+            val returns = insns.indices.filter { insns[it].opcode == Opcode.RETURN_OBJECT }
+            assertTrue(returns.isNotEmpty(), "GamesObj.$name has a return")
+            for (at in returns) {
+                val call = insns[at - 2].call()
+                assertEquals(filters, call?.definingClass, "GamesObj.$name: filter before the return at $at")
+                assertEquals(helper, call?.name, "GamesObj.$name: filter before the return at $at")
+                assertEquals(Opcode.MOVE_RESULT_OBJECT, insns[at - 1].opcode, "GamesObj.$name: the filtered value is returned")
+            }
+        }
     }
 
     /**

@@ -27,6 +27,7 @@ internal const val SCORES365_SETTINGS_ENTRY = "Lapp/template/extension/scores365
 /** Categories of the 365Scores features. */
 internal object Scores365ControlsCategory {
     const val SPOILER_FREE = "Spoiler-free"
+    const val LEAGUES = "Leagues"
 }
 
 /** The dev-only "Change Server" row the Settings page adds last; the new row is built like it. */

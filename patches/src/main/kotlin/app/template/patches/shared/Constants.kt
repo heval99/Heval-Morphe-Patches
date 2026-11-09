@@ -728,6 +728,9 @@ object Constants {
         // -f applied it and the patched list builder, click hook and registry were inspected; not run on a
         // device. Rule 12 (aapt2): only the case-twin id pairs (subTitle/subtitle, tvSubTitle/tvSubtitle,
         // tvToolTipText/tvTooltipText) come back as id_0x... names.
+        // 2026-11-09: added "Hide competitions" and "Hide countries" (Patch settings lists; GamesObj.getGames()
+        // and getCompetitions() return a filtered copy via extensions/scores365 ListFilters). Smoke test and a CLI
+        // run without -f applied them and the patched getters were inspected; not run on a device.
         targets = listOf(
             AppTarget(version = "15.0.0", versionCode = 1500)
         )
