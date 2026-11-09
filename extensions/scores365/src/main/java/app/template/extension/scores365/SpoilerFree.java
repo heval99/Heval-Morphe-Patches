@@ -18,6 +18,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import app.template.extension.hevalcontrols.HevalSettings;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,10 +39,10 @@ import java.util.Set;
  * <ul>
  *   <li>{@value #KEY_MATCHES}: the marked game ids (string set);</li>
  *   <li>{@value #KEY_COMPETITIONS}: the marked competition ids (string set);</li>
- *   <li>one boolean per surface ({@link #SURFACE_KEYS}, default true): each hook checks its own
- *       surface, so a later settings screen can switch one surface off with
- *       {@link #setSurfaceOn(int, boolean)} without touching the others.</li>
  * </ul>
+ * Each surface is a Patch settings switch ({@link #SURFACE_FEATURES}, all on by default, all off
+ * while the master switch {@value #FEATURE_MASTER} is off): each hook checks its own surface through
+ * {@link #isSurfaceOn(int)}.
  * The file is read once into an immutable {@link Snapshot}; every write replaces the snapshot, so
  * the hot paths (list rows, the match header, each push) never touch the disk.
  *
@@ -66,13 +68,16 @@ public final class SpoilerFree {
     /** The winner hints: the row's result description and qualify icons, the header's winner marks. */
     public static final int SURFACE_WINNER = 4;
 
-    /** The preference key of each surface flag, indexed by the SURFACE_* constants. */
-    static final String[] SURFACE_KEYS = {
-            "surface_notifications",
-            "surface_lists",
-            "surface_match_header",
-            "surface_status",
-            "surface_winner",
+    /** The Patch settings master switch; the surface switches depend on it. */
+    public static final String FEATURE_MASTER = "scores365.spoiler_free";
+
+    /** The Patch settings switch of each surface, indexed by the SURFACE_* constants. */
+    static final String[] SURFACE_FEATURES = {
+            "scores365.spoiler_notifications",
+            "scores365.spoiler_lists",
+            "scores365.spoiler_match_header",
+            "scores365.spoiler_status",
+            "scores365.spoiler_winner",
     };
 
     private static final String GAME_OBJ = "com.scores365.entitys.GameObj";
@@ -93,12 +98,10 @@ public final class SpoilerFree {
     private static final class Snapshot {
         final Set<String> matches;
         final Set<String> competitions;
-        final boolean[] surfaces;
 
-        Snapshot(Set<String> matches, Set<String> competitions, boolean[] surfaces) {
+        Snapshot(Set<String> matches, Set<String> competitions) {
             this.matches = Collections.unmodifiableSet(matches);
             this.competitions = Collections.unmodifiableSet(competitions);
-            this.surfaces = surfaces;
         }
 
         boolean isEmpty() {
@@ -135,41 +138,36 @@ public final class SpoilerFree {
         synchronized (SpoilerFree.class) {
             if (snapshot != null) return snapshot;
             SharedPreferences prefs = prefs();
-            boolean[] surfaces = new boolean[SURFACE_KEYS.length];
             if (prefs == null) {
                 // Not cached: the next call retries once the application exists.
-                java.util.Arrays.fill(surfaces, true);
-                return new Snapshot(new HashSet<String>(), new HashSet<String>(), surfaces);
+                return new Snapshot(new HashSet<String>(), new HashSet<String>());
             }
-            for (int i = 0; i < SURFACE_KEYS.length; i++) surfaces[i] = prefs.getBoolean(SURFACE_KEYS[i], true);
             snapshot = new Snapshot(
                     new HashSet<>(prefs.getStringSet(KEY_MATCHES, Collections.<String>emptySet())),
-                    new HashSet<>(prefs.getStringSet(KEY_COMPETITIONS, Collections.<String>emptySet())),
-                    surfaces);
+                    new HashSet<>(prefs.getStringSet(KEY_COMPETITIONS, Collections.<String>emptySet())));
             return snapshot;
         }
     }
 
-    /** Whether surface {@code surface} (a SURFACE_* constant) hides marked matches. Default true. */
+    /**
+     * Whether surface {@code surface} (a SURFACE_* constant) hides marked matches: its Patch settings
+     * switch, which is off while the master switch is off. Fails open (false, stock) on any error.
+     */
     public static boolean isSurfaceOn(int surface) {
-        boolean[] surfaces = snapshot().surfaces;
-        return surface >= 0 && surface < surfaces.length && surfaces[surface];
+        try {
+            return surface >= 0 && surface < SURFACE_FEATURES.length && HevalSettings.isEnabled(SURFACE_FEATURES[surface]);
+        } catch (Throwable failure) {
+            return false;
+        }
     }
 
-    /**
-     * Switches one surface on or off (for a future settings row): writes {@code SURFACE_KEYS[surface]}
-     * in {@value #PREFS} and replaces the snapshot. Returns false when nothing could be written.
-     */
-    public static synchronized boolean setSurfaceOn(int surface, boolean on) {
-        if (surface < 0 || surface >= SURFACE_KEYS.length) return false;
-        SharedPreferences prefs = prefs();
-        if (prefs == null) return false;
-        Snapshot old = snapshot();
-        boolean[] surfaces = old.surfaces.clone();
-        surfaces[surface] = on;
-        prefs.edit().putBoolean(SURFACE_KEYS[surface], on).apply();
-        snapshot = new Snapshot(new HashSet<>(old.matches), new HashSet<>(old.competitions), surfaces);
-        return true;
+    /** Whether the master switch is on (the marking toggles are shown only then). */
+    static boolean isMasterOn() {
+        try {
+            return HevalSettings.isEnabled(FEATURE_MASTER);
+        } catch (Throwable failure) {
+            return false;
+        }
     }
 
     /** Whether game {@code gameId} of competition {@code competitionId} (0 when unknown) is marked. */
@@ -208,7 +206,7 @@ public final class SpoilerFree {
         prefs.edit()
                 .putStringSet(match ? KEY_MATCHES : KEY_COMPETITIONS, new HashSet<>(target))
                 .apply();
-        snapshot = new Snapshot(matches, competitions, old.surfaces);
+        snapshot = new Snapshot(matches, competitions);
         return marked;
     }
 
@@ -396,7 +394,7 @@ public final class SpoilerFree {
      */
     public static void addMatchToggle(ViewGroup group) {
         try {
-            if (group == null) return;
+            if (group == null || !isMasterOn()) return;
             final Activity host = activityOf(group.getContext());
             if (host == null || !isGameCenter(host.getClass())) return;
             final Object game = gameOf(host);
@@ -433,7 +431,7 @@ public final class SpoilerFree {
      */
     public static void addCompetitionToggle(ViewGroup group) {
         try {
-            if (group == null) return;
+            if (group == null || !isMasterOn()) return;
             final Activity host = activityOf(group.getContext());
             if (host == null || !DASHBOARD_ACTIVITY.equals(host.getClass().getName())) return;
             Intent intent = host.getIntent();

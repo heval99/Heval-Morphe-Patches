@@ -486,6 +486,32 @@ resources: its resource part only adds the `HevalSystemFontOverlay` styles, and
 activity hooks are registered from `FotMobApp.onCreate`. Not converted: Disable ads, Disable
 telemetry, Enable FotMob+, GmsCore support and Spoof signature.
 
+## 365Scores features
+
+365Scores 15.0.0 (2026-11-09). The entry point is a "Patch settings" row at the end of the Settings
+page (`scores365/controls/Scores365Controls.kt`): the page's list builder (found by the strings
+"Change Server" and "SETTINGS_CATEGORY_NOTIFICATIONS") gets one more row of the page's own row
+class, built like the dev-only "Change Server" row (same constructor and icon attribute) with the
+id 0x5EE7, and the row click handler (found by its `BolaoWebActivity` class constant) asks
+`SettingsEntry.handles(requireContext(), id)` first and returns when it answers true. The hook gets
+its Context from `Fragment.requireContext()` on p0, so the patch refuses to apply when p0 is
+overwritten before the hook.
+
+| Feature id | Patch | Default | Restart | Gated sites |
+|---|---|---|---|---|
+| `scores365.spoiler_free` | Spoiler-free mode | on | no | master; the match and competition toggles (`addMatchToggle`, `addCompetitionToggle`) are shown only while it is on |
+| `scores365.spoiler_notifications` | Spoiler-free mode | on | no | the notification handler (`blocksNotification`, surface 0) |
+| `scores365.spoiler_lists` | Spoiler-free mode | on | no | the row score formatter (`rowScoreText`, surface 1) |
+| `scores365.spoiler_match_header` | Spoiler-free mode | on | no | the ScoreBoxView header (`afterScoreBox`, surface 2) |
+| `scores365.spoiler_status` | Spoiler-free mode | on | no | the status text of rows and the header (surface 3) |
+| `scores365.spoiler_winner` | Spoiler-free mode | on | no | winner hints of rows and the header (surface 4) |
+
+`SpoilerFree.isSurfaceOn(surface)` reads the surface's switch through `HevalSettings.isEnabled`, which
+is off while the master is off. The marked matches and competitions are still kept in the
+extension's own preference file (`morphe_spoiler_free`), so 365Scores has no "Marked matches" list
+picker yet. Not converted: Disable ads, Enable Premium, Disable update prompts, GmsCore support and
+Spoof signature.
+
 ## App-specific Java helpers
 
 When a feature needs logic (list filtering, URL rewriting, reflection), put it in a per-app

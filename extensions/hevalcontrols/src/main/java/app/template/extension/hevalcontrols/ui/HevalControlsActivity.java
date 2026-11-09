@@ -611,6 +611,17 @@ public final class HevalControlsActivity extends Activity {
             }
             group.add(feature);
         }
+        // Within a category, a feature that others depend on (a master switch) is listed first;
+        // the registration order is otherwise kept.
+        Set<String> masters = new HashSet<>();
+        for (Feature feature : features) masters.addAll(feature.dependencies);
+        for (List<Feature> group : groups.values()) {
+            List<Feature> sorted = new ArrayList<>(group.size());
+            for (Feature feature : group) if (masters.contains(feature.id)) sorted.add(feature);
+            for (Feature feature : group) if (!masters.contains(feature.id)) sorted.add(feature);
+            group.clear();
+            group.addAll(sorted);
+        }
         // A "Spoiler-free" category goes first: it is the one a user opens the screen for.
         List<Feature> first = groups.remove(FIRST_CATEGORY);
         if (first == null) return groups;

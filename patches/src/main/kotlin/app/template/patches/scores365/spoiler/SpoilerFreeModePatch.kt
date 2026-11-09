@@ -5,10 +5,10 @@ import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
-import app.template.patches.shared.Constants.COMPATIBILITY_365SCORES
+import app.template.patches.scores365.controls.scores365Controls
+import app.template.patches.shared.hevalcontrols.featurePatch
 import app.template.patches.shared.addInstructionsAtControlFlowLabelChecked
 import app.template.patches.shared.addInstructionsChecked
 import app.template.patches.shared.addInstructionsWithLabelsChecked
@@ -179,10 +179,12 @@ private fun MutableMethod.addViewCall(descriptor: String): Pair<Int, Int> {
 }
 
 // Spoiler-free mode (2026-11-08, owner request), phase 1. The user marks a match on its match page
-// or a whole competition on its page (an eye icon next to the follow bell); the marks and one switch
-// per surface live in one SharedPreferences file of the extension (SpoilerFree in
-// extensions/scores365), read once into memory. 365Scores has no Patch settings screen, so every
-// surface is on; each hook asks its own surface first, so a later settings row can turn one off.
+// or a whole competition on its page (an eye icon next to the follow bell); the marks stay on the phone and one switch
+// per surface is a Patch settings switch (the master and the five surfaces are registered below,
+// all on by default; 365Scores' Settings page gets a "Patch settings" row, see
+// controls/Scores365Controls.kt); the marks live in one SharedPreferences file of the extension
+// (SpoilerFree in extensions/scores365), read once into memory. Each hook asks its own surface
+// first (SpoilerFree.isSurfaceOn).
 // A mark hides a match only once it has started; nothing about the match model, its scores, sorting
 // or the live indicators changes: the hooks replace or blank text that is already drawn.
 //
@@ -209,93 +211,89 @@ private fun MutableMethod.addViewCall(descriptor: String): Pair<Int, Int> {
 // head-to-head, brackets, tipster and player cards, news, in-app alerts, the match page tabs and
 // Wear OS.
 @Suppress("unused")
-val spoilerFreeModePatch = bytecodePatch(
-    name = "Spoiler-free mode",
-    description = "Lets you hide scores and goal alerts for matches and competitions you mark.",
+val spoilerFreeModePatch = scores365Controls.featurePatch(
+    SPOILER_FREE_MODE,
+    default = true,
 ) {
-    compatibleWith(COMPATIBILITY_365SCORES)
+    classDefBy(SPOILER_FREE)
 
-    extendWith("extensions/scores365.mpe")
+    // Find every site before the first edit.
+    requireModel()
+    val handler = single(NotificationHandlerFingerprint, "the notification handler")
+    val matchToolbar = single(MatchToolbarFingerprint, "the match page toolbar builder")
+    val entityHeader = single(EntityHeaderFingerprint, "the entity page header observer")
+    val formatter = single(RowScoreFormatterFingerprint, "the row score formatter")
+    val binder = rowBinder(formatter)
+    val scoreBox = scoreBoxBinder()
 
-    execute {
-        classDefBy(SPOILER_FREE)
+    handler.requireLocal()
+    formatter.requireLocal()
+    // The toolbar builder reuses its parameter registers, so both toggles take the group from
+    // the bell's addView call and the extension finds the activity through the group's context.
+    val (bellAdd, bellGroup) = matchToolbar.addViewCall("$VIEW_GROUP->addView(Landroid/view/View;Landroid/view/ViewGroup\$LayoutParams;)V")
+    matchToolbar.requireNoBranchTargetAt(bellAdd + 1, "match toggle")
+    val (headerAdd, headerGroup) = entityHeader.addViewCall("$VIEW_GROUP->addView(Landroid/view/View;ILandroid/view/ViewGroup\$LayoutParams;)V")
+    entityHeader.requireNoBranchTargetAt(headerAdd + 1, "competition toggle")
+    binder.requireUnwritten(binder.p(1)..binder.p(3), "binding/item/game")
+    // ScoreBoxView.a reuses its parameter registers, so it hands (this, game) over at entry.
+    val scoreBoxThis = scoreBox.p(0)
 
-        // Find every site before the first edit.
-        requireModel()
-        val handler = single(NotificationHandlerFingerprint, "the notification handler")
-        val matchToolbar = single(MatchToolbarFingerprint, "the match page toolbar builder")
-        val entityHeader = single(EntityHeaderFingerprint, "the entity page header observer")
-        val formatter = single(RowScoreFormatterFingerprint, "the row score formatter")
-        val binder = rowBinder(formatter)
-        val scoreBox = scoreBoxBinder()
+    // 1. Notifications.
+    val notification = handler.p(1)
+    handler.addInstructionsWithLabelsChecked(
+        0,
+        """
+            invoke-static/range { v$notification .. v$notification }, $SPOILER_FREE->blocksNotification(Ljava/lang/Object;)Z
+            move-result v0
+            if-eqz v0, :spoiler_stock
+            return-void
+        """,
+        ExternalLabel("spoiler_stock", handler.getInstruction(0)),
+    )
 
-        handler.requireLocal()
-        formatter.requireLocal()
-        // The toolbar builder reuses its parameter registers, so both toggles take the group from
-        // the bell's addView call and the extension finds the activity through the group's context.
-        val (bellAdd, bellGroup) = matchToolbar.addViewCall("$VIEW_GROUP->addView(Landroid/view/View;Landroid/view/ViewGroup\$LayoutParams;)V")
-        matchToolbar.requireNoBranchTargetAt(bellAdd + 1, "match toggle")
-        val (headerAdd, headerGroup) = entityHeader.addViewCall("$VIEW_GROUP->addView(Landroid/view/View;ILandroid/view/ViewGroup\$LayoutParams;)V")
-        entityHeader.requireNoBranchTargetAt(headerAdd + 1, "competition toggle")
-        binder.requireUnwritten(binder.p(1)..binder.p(3), "binding/item/game")
-        // ScoreBoxView.a reuses its parameter registers, so it hands (this, game) over at entry.
-        val scoreBoxThis = scoreBox.p(0)
+    // 2. Match page toggle, right after the bell is added to the toolbar group.
+    matchToolbar.addInstructionsChecked(
+        bellAdd + 1,
+        "invoke-static/range { v$bellGroup .. v$bellGroup }, $SPOILER_FREE->addMatchToggle($VIEW_GROUP)V",
+    )
 
-        // 1. Notifications.
-        val notification = handler.p(1)
-        handler.addInstructionsWithLabelsChecked(
-            0,
-            """
-                invoke-static/range { v$notification .. v$notification }, $SPOILER_FREE->blocksNotification(Ljava/lang/Object;)Z
-                move-result v0
-                if-eqz v0, :spoiler_stock
-                return-void
-            """,
-            ExternalLabel("spoiler_stock", handler.getInstruction(0)),
-        )
+    // 3. Competition page toggle, right after the bell is added to the header group.
+    entityHeader.addInstructionsChecked(
+        headerAdd + 1,
+        "invoke-static/range { v$headerGroup .. v$headerGroup }, $SPOILER_FREE->addCompetitionToggle($VIEW_GROUP)V",
+    )
 
-        // 2. Match page toggle, right after the bell is added to the toolbar group.
-        matchToolbar.addInstructionsChecked(
-            bellAdd + 1,
-            "invoke-static/range { v$bellGroup .. v$bellGroup }, $SPOILER_FREE->addMatchToggle($VIEW_GROUP)V",
-        )
+    // 4. List row score text.
+    val game = formatter.p(0)
+    formatter.addInstructionsWithLabelsChecked(
+        0,
+        """
+            invoke-static/range { v$game .. v$game }, $SPOILER_FREE->rowScoreText(Ljava/lang/Object;)Ljava/lang/String;
+            move-result-object v0
+            if-eqz v0, :spoiler_stock
+            return-object v0
+        """,
+        ExternalLabel("spoiler_stock", formatter.getInstruction(0)),
+    )
 
-        // 3. Competition page toggle, right after the bell is added to the header group.
-        entityHeader.addInstructionsChecked(
-            headerAdd + 1,
-            "invoke-static/range { v$headerGroup .. v$headerGroup }, $SPOILER_FREE->addCompetitionToggle($VIEW_GROUP)V",
-        )
-
-        // 4. List row score text.
-        val game = formatter.p(0)
-        formatter.addInstructionsWithLabelsChecked(
-            0,
-            """
-                invoke-static/range { v$game .. v$game }, $SPOILER_FREE->rowScoreText(Ljava/lang/Object;)Ljava/lang/String;
-                move-result-object v0
-                if-eqz v0, :spoiler_stock
-                return-object v0
-            """,
-            ExternalLabel("spoiler_stock", formatter.getInstruction(0)),
-        )
-
-        // 5. Row status line and winner hints, before every return of the binder.
-        for (index in binder.returnVoids()) {
-            binder.addInstructionsAtControlFlowLabelChecked(
-                index,
-                "invoke-static/range { v${binder.p(1)} .. v${binder.p(3)} }, " +
-                    "$SPOILER_FREE->afterRowBound(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V",
-            )
-        }
-
-        // 6. Match page header score box: (this, game) handed over at entry, applied before every return.
-        for (index in scoreBox.returnVoids()) {
-            scoreBox.addInstructionsAtControlFlowLabelChecked(index, "invoke-static { }, $SPOILER_FREE->afterScoreBox()V")
-        }
-        scoreBox.addInstructionsChecked(
-            0,
-            "invoke-static/range { v$scoreBoxThis .. v${scoreBoxThis + 1} }, " +
-                "$SPOILER_FREE->beforeScoreBox(Ljava/lang/Object;Ljava/lang/Object;)V",
+    // 5. Row status line and winner hints, before every return of the binder.
+    for (index in binder.returnVoids()) {
+        binder.addInstructionsAtControlFlowLabelChecked(
+            index,
+            "invoke-static/range { v${binder.p(1)} .. v${binder.p(3)} }, " +
+                "$SPOILER_FREE->afterRowBound(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V",
         )
     }
+
+    // 6. Match page header score box: (this, game) handed over at entry, applied before every return.
+    for (index in scoreBox.returnVoids()) {
+        scoreBox.addInstructionsAtControlFlowLabelChecked(index, "invoke-static { }, $SPOILER_FREE->afterScoreBox()V")
+    }
+    scoreBox.addInstructionsChecked(
+        0,
+        "invoke-static/range { v$scoreBoxThis .. v${scoreBoxThis + 1} }, " +
+            "$SPOILER_FREE->beforeScoreBox(Ljava/lang/Object;Ljava/lang/Object;)V",
+    )
+
+    SPOILER_FEATURES.drop(1).forEach { scores365Controls.register(it) }
 }

@@ -12,6 +12,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
@@ -54,7 +55,7 @@ class Scores365SmokeTest {
             version = "15.0.0",
             patchNames = setOf(
                 "Disable ads", "Enable Premium", "Disable update prompts", "GmsCore support", "Spoof signature",
-                "Spoiler-free mode",
+                "Spoiler-free mode", "Patch settings",
             ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -66,6 +67,49 @@ class Scores365SmokeTest {
         assertGmsCoreSupport(classes, workDir, PKG, SPLASH, SIGNATURE_SHA1)
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
         assertSpoilerFree(classes, byType)
+        assertPatchSettingsEntry(classes)
+    }
+
+    /**
+     * The Patch settings row: the Settings page's list builder (found by its "Change Server" and
+     * notifications strings, as the patch does) adds a "Patch settings" row built with the same row
+     * class before its single return, and the row click handler (found by the Bolao activity class)
+     * asks SettingsEntry.handles first and returns when it answers true.
+     */
+    private fun assertPatchSettingsEntry(classes: List<ClassDef>) {
+        val all = classes.flatMap { cls -> cls.methods.filter { it.implementation != null } }
+        val builders = all.filter { method ->
+            val strings = method.strings()
+            "Change Server" in strings && "SETTINGS_CATEGORY_NOTIFICATIONS" in strings
+        }
+        assertEquals(1, builders.size, "Settings list builders")
+        val build = builders.single().instructions()
+        val titleAt = build.indexOfFirst { it.stringOrNull() == "Patch settings" }
+        assertTrue(titleAt >= 0, "list builder: no Patch settings row")
+        val returnAt = build.indexOfFirst { it.opcode == Opcode.RETURN_OBJECT }
+        assertTrue(titleAt < returnAt, "list builder: the row is added before the return")
+        // Each row's constructor is the first (String, int, int) <init> after its title string.
+        fun constructorAfter(title: String): MethodReference {
+            val at = build.indexOfFirst { it.stringOrNull() == title }
+            assertTrue(at >= 0, "list builder: no $title row")
+            return build.drop(at).firstNotNullOf { insn ->
+                insn.call()?.takeIf { it.name == "<init>" && it.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", "I", "I") }
+            }
+        }
+        assertEquals(constructorAfter("Change Server").definingClass, constructorAfter("Patch settings").definingClass, "both rows use the same row class")
+        assertTrue(build.any { it is WideLiteralInstruction && it.wideLiteral == 0x5EE7L }, "list builder: the row id 0x5EE7")
+
+        val clicks = all.filter { method ->
+            method.returnType == "V" && method.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+                method.instructions().any { it.opcode == Opcode.CONST_CLASS && ((it as ReferenceInstruction).reference as? TypeReference)?.type == "Lcom/scores365/bolao/BolaoWebActivity;" }
+        }
+        assertEquals(1, clicks.size, "Settings row click handlers")
+        val click = clicks.single().instructions()
+        val handlesAt = click.indexOfFirst { it.call()?.definingClass == "Lapp/template/extension/scores365/SettingsEntry;" && it.call()?.name == "handles" }
+        assertTrue(handlesAt > 0, "click handler: no SettingsEntry.handles call")
+        assertEquals(Opcode.MOVE_RESULT, click[handlesAt + 1].opcode, "handles result is read")
+        assertTrue(click[handlesAt + 2].opcode == Opcode.IF_EQZ, "handles result is tested")
+        assertEquals(Opcode.RETURN_VOID, click[handlesAt + 3].opcode, "a handled click returns")
     }
 
     /**

@@ -721,6 +721,13 @@ object Constants {
         // 2026-11-08: added "Spoiler-free mode" (phase 1: notification handler prologue, match and
         // competition page toggles, list row formatter + binder, ScoreBoxView header; extensions/scores365
         // store with one switch per surface). Smoke test only; not run on a device.
+        // 2026-11-09: the app now has Patch settings: a "Patch settings" row ends the Settings page's
+        // list (built like the dev-only "Change Server" row, id 0x5EE7; the row click handler asks
+        // SettingsEntry first), and Spoiler-free mode's master and five surfaces are Patch settings
+        // switches (the marks still live in the extension's own store). Smoke test and a CLI run without
+        // -f applied it and the patched list builder, click hook and registry were inspected; not run on a
+        // device. Rule 12 (aapt2): only the case-twin id pairs (subTitle/subtitle, tvSubTitle/tvSubtitle,
+        // tvToolTipText/tvTooltipText) come back as id_0x... names.
         targets = listOf(
             AppTarget(version = "15.0.0", versionCode = 1500)
         )
