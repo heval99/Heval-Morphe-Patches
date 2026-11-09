@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.3.0-dev.4](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.3.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**111** apps&nbsp;&nbsp;•&nbsp;&nbsp;**303** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-09
+> **[v2.3.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.3.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**111** apps&nbsp;&nbsp;•&nbsp;&nbsp;**309** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-09
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -50,7 +50,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
-| <img src="assets/icons/com.scores365.png" width="20" height="20" alt=""> | **365Scores** | 🚫 💎 🔕 🧩 6 | `15.0.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.scores365) |
+| <img src="assets/icons/com.scores365.png" width="20" height="20" alt=""> | **365Scores** | 🚫 💎 🔕 🧩 10 | `15.0.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.scores365) |
 | <img src="assets/icons/com.football433.png" width="20" height="20" alt=""> | **433** | 🚫 🛡️ 🧪 2 | `2.3.608` | APKM | [Play](https://play.google.com/store/apps/details?id=com.football433) |
 | <img src="assets/icons/com.onesports.score.png" width="20" height="20" alt=""> | **AiScore** | 💎 🧩 2 | `4.3.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.onesports.score) |
 | <img src="assets/icons/com.resultadosfutbol.mobile.png" width="20" height="20" alt=""> | **BeSoccer** | 🚫 🔑 2 | `6.7.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.resultadosfutbol.mobile) |
@@ -61,13 +61,13 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/com.eurosport.png" width="20" height="20" alt=""> | **Eurosport** | 🚫 🛡️ 🧩 3 | `8.34.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.eurosport) |
 | <img src="assets/icons/eu.livesport.FlashScore_com.png" width="20" height="20" alt=""> | **Flashscore** | 🚫 🛡️ 🔕 🧩 12 | `26.11.4` | APKS | [Play](https://play.google.com/store/apps/details?id=eu.livesport.FlashScore_com) |
 | <img src="assets/icons/se.footballaddicts.livescore.png" width="20" height="20" alt=""> | **Forza Football** | 🚫 🛡️ 💎 🧩 5 | `6.15.10` | APKM | [Play](https://play.google.com/store/apps/details?id=se.footballaddicts.livescore) |
-| <img src="assets/icons/com.mobilefootie.wc2010.png" width="20" height="20" alt=""> | **FotMob** | 🚫 🛡️ 💎 🔕 🧩 17 | `241.18134.20261030` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mobilefootie.wc2010) |
+| <img src="assets/icons/com.mobilefootie.wc2010.png" width="20" height="20" alt=""> | **FotMob** | 🚫 🛡️ 💎 🔕 🧩 18 | `241.18134.20261030` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mobilefootie.wc2010) |
 | <img src="assets/icons/com.futbin.png" width="20" height="20" alt=""> | **Futbin** | 🚫 1 | `27.11` | APK | [Play](https://play.google.com/store/apps/details?id=com.futbin) |
 | <img src="assets/icons/lequipe.fr.png" width="20" height="20" alt=""> | **L'Ã‰quipe** | 🚫 🧪 1 | `10.70.0` | APKM | [Play](https://play.google.com/store/apps/details?id=lequipe.fr) |
 | <img src="assets/icons/com.livescore.png" width="20" height="20" alt=""> | **Livescore** | 🚫 1 | `10.4.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
 | <img src="assets/icons/one.cricket.app.png" width="20" height="20" alt=""> | **OneCricket** | 🚫 1 | `26.10.01` | APKM | [Play](https://play.google.com/store/apps/details?id=one.cricket.app) |
 | <img src="assets/icons/de.motain.iliga.png" width="20" height="20" alt=""> | **OneFootball** | 🚫 1 | `15.148.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
-| <img src="assets/icons/com.sofascore.results.png" width="20" height="20" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 24 | `26.10.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
+| <img src="assets/icons/com.sofascore.results.png" width="20" height="20" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 25 | `26.10.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
 | <img src="assets/icons/de.transfermarkt.v2.png" width="20" height="20" alt=""> | **Transfermarkt** | 🚫 🛡️ 2 | `4.3.3` | APKM | [Play](https://play.google.com/store/apps/details?id=de.transfermarkt.v2) |
 | <img src="assets/icons/com.yahoo.mobile.client.android.sportacular.png" width="20" height="20" alt=""> | **Yahoo Sports** | 🚫 🧩 2 | `12.27.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.sportacular) |
 
@@ -222,16 +222,20 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 #### ⚽ Sports & scores
 
 <details>
-<summary><img src="assets/icons/com.scores365.png" width="16" height="16" alt=""> <b>365Scores</b> &nbsp;·&nbsp; 6 patches &nbsp;·&nbsp; <code>com.scores365</code></summary>
+<summary><img src="assets/icons/com.scores365.png" width="16" height="16" alt=""> <b>365Scores</b> &nbsp;·&nbsp; 10 patches &nbsp;·&nbsp; <code>com.scores365</code></summary>
 
 Verified on: `15.0.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
+| 🧩 **AMOLED black** | Makes the dark theme pure black on OLED screens. | ➖ |
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
 | 🔕 **Disable update prompts** | Disables the update prompts. | ✅ |
 | 💎 **Enable Premium** | Unlocks premium features. | ✅ |
 | 🧩 **GmsCore support** | Makes Google sign-in and Google services work. Requires MicroG RE. | ➖ |
+| 🧩 **Hide competitions** | Hides the competitions you pick in Patch settings from the match lists. | ➖ |
+| 🧩 **Hide countries** | Hides every competition of the countries you pick in Patch settings from the match lists. | ➖ |
+| 🧩 **Patch settings** | Adds a screen to turn supported features on or off. | ✅ |
 | 🧩 **Spoiler-free mode** | Lets you hide scores and goal alerts for matches and competitions you mark. | ✅ |
 | 🧩 **Spoof signature** | Fixes Google features that check the app's original signature. | ➖ |
 
@@ -369,12 +373,13 @@ Verified on: `6.15.10`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.mobilefootie.wc2010.png" width="16" height="16" alt=""> <b>FotMob</b> &nbsp;·&nbsp; 17 patches &nbsp;·&nbsp; <code>com.mobilefootie.wc2010</code></summary>
+<summary><img src="assets/icons/com.mobilefootie.wc2010.png" width="16" height="16" alt=""> <b>FotMob</b> &nbsp;·&nbsp; 18 patches &nbsp;·&nbsp; <code>com.mobilefootie.wc2010</code></summary>
 
 Verified on: `241.18134.20261030`
 
 | Patch | What it does | Default |
 |---|---|:-:|
+| 🧩 **AMOLED black** | Makes the dark theme pure black on OLED screens. | ➖ |
 | 💎 **Disable FotMob+ promo popup** | Disables the FotMob+ promo popup. | ✅ |
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
 | 🔕 **Disable rating prompts** | Disables the rating prompt. | ✅ |
@@ -445,12 +450,13 @@ Verified on: `15.148.0`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.sofascore.results.png" width="16" height="16" alt=""> <b>Sofascore</b> &nbsp;·&nbsp; 24 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
+<summary><img src="assets/icons/com.sofascore.results.png" width="16" height="16" alt=""> <b>Sofascore</b> &nbsp;·&nbsp; 25 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
 
 Verified on: `26.10.26`
 
 | Patch | What it does | Default |
 |---|---|:-:|
+| 🧩 **AMOLED black** | Makes the dark theme pure black on OLED screens. | ➖ |
 | 🧩 **Animation speed** | Adds switches to turn off or speed up animations. | ➖ |
 | 🔕 **Block marketing notifications** | Blocks promo popups and banners. | ✅ |
 | 🛡️ **Disable Facebook SDK** | Disables Facebook ads and tracking. Facebook login keeps working. | ✅ |

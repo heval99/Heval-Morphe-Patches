@@ -1,3 +1,23 @@
+## 2.3.0-dev.5 (2026-11-09)
+
+### 📱 365Scores `15.0.0`
+- New: AMOLED black, Hide competitions, Hide countries, Patch settings
+- New: Add Patch settings with Spoiler-free switches
+
+### 📱 FotMob `241.18134.20261030`
+- New: AMOLED black
+
+### 📱 Sofascore `26.10.26`
+- New: AMOLED black
+
+### 🔧 Other
+- New: Add row and category icons, collapsible sections and search
+- New: Show animation speed as one Normal/Faster/Off choice
+- New: Give spoiler-free its own section and plain names
+- New: Add a custom DNS-over-HTTPS resolver option
+
+**Download:** [patches-2.3.0-dev.5.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.3.0-dev.5/patches-2.3.0-dev.5.mpp)
+
 ## 2.3.0-dev.4 (2026-11-09)
 
 ### 📱 365Scores `15.0.0`
