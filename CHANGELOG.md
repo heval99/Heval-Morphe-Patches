@@ -1,3 +1,25 @@
+## 2.3.0-dev.4 (2026-11-09)
+
+### 📱 365Scores `15.0.0`
+- New: Spoiler-free mode
+
+### 📱 FotMob `241.18134.20261030`
+- New: Spoiler-free mode
+- New: Choose what Spoiler-free mode hides in Patch settings
+
+### 📱 Sofascore `26.10.26`
+- New: Spoiler-free mode
+- Fixed: Describe the spoiler-free master switch accurately
+
+### 📱 Truecaller `26.43.5`
+- New: Disable Who viewed me
+- New: Hide all referral offers, add Disable Who viewed me and more privacy switches
+
+### 🔧 Other
+- Fixed: Apply Firebase telemetry switches in bytecode
+
+**Download:** [patches-2.3.0-dev.4.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.3.0-dev.4/patches-2.3.0-dev.4.mpp)
+
 ## 2.3.0-dev.3 (2026-11-08)
 
 ### 🆕 New apps
