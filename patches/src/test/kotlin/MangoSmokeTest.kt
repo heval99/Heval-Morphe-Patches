@@ -1,8 +1,10 @@
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -65,6 +67,32 @@ class MangoSmokeTest {
                 (forced as OneRegisterInstruction).registerA == register,
             "${client.type}.<init> does not force the Pro seed; got ${insns.drop(at).take(3).map { it.opcode }}\n$diagnostics",
         )
+
+        // Issue #145: the purchase query writes Boolean.valueOf(hasPurchase) into the same Pro flow, which
+        // undid the seed for a free user. Every such write now stores Boolean.TRUE.
+        val flowField = (insns.drop(at + 2).take(10).first { it.opcode == Opcode.IPUT_OBJECT } as ReferenceInstruction).reference as FieldReference
+        fun Instruction.isFlowRead() = opcode == Opcode.IGET_OBJECT && ((this as ReferenceInstruction).reference as? FieldReference) == flowField
+        fun Instruction.isBooleanValueOf() = (this as? ReferenceInstruction)?.reference.let {
+            opcode == Opcode.INVOKE_STATIC && it is MethodReference && it.definingClass == "Ljava/lang/Boolean;" && it.name == "valueOf"
+        }
+        var forcedWrites = 0
+        for (cls in classes) for (method in cls.methods) {
+            val code = method.implementation?.instructions?.toList() ?: continue
+            for (i in code.indices.filter { code[it].isFlowRead() }) {
+                val valueOf = (i + 1..minOf(code.lastIndex, i + 8)).firstOrNull { code[it].isBooleanValueOf() } ?: continue
+                val move = code[valueOf + 1]
+                if (move.opcode != Opcode.MOVE_RESULT_OBJECT) continue
+                val next = code[valueOf + 2]
+                val field = ((next as? ReferenceInstruction)?.reference as? FieldReference)
+                assertTrue(
+                    next.opcode == Opcode.SGET_OBJECT && field?.name == "TRUE" && field.definingClass == "Ljava/lang/Boolean;" &&
+                        (next as OneRegisterInstruction).registerA == (move as OneRegisterInstruction).registerA,
+                    "${cls.type}->${method.name}: a write of Boolean.valueOf into the Pro flow is not forced to TRUE\n$diagnostics",
+                )
+                forcedWrites++
+            }
+        }
+        assertTrue(forcedWrites >= 1, "no forced Pro flow write found\n$diagnostics")
 
         // Disable license check.
         val licenseClient = classes.single { it.type == "Lcom/pairip/licensecheck/LicenseClient;" }

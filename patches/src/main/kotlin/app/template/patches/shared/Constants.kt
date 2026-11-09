@@ -4193,6 +4193,12 @@ object Constants {
     // "billing_cached_is_pro") and seeds a StateFlow with "YEARLY, YEARLY_CANCELED or LIFETIME" in its
     // constructor; every Pro gate reads that flow. Enable Premium loads 1 into that seed. PairIP is
     // the licence-check wrapper only, so Disable license check returns from checkLicense(Context).
+    // 2026-11-09 (issue #145, reported with the 2.2.0 build): Enable Premium unlocked Pro only until
+    // Play Billing answered. The purchase query writes Boolean.valueOf(hasPurchase) into the same
+    // Pro flow, which is false for a user who never bought Pro, so Pro locked again seconds after
+    // start. The patch now also forces that write to Boolean.TRUE (the other writers - the purchase
+    // listener and the cached-Pro loader - only ever store true). Smoke test and a CLI run without -f
+    // checked the forced write in the patched query method; not run on a device.
     val COMPATIBILITY_MANGO = Compatibility(
         name = "Mango Launcher",
         packageName = "app.pinya.mango",
