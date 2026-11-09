@@ -23,8 +23,9 @@ internal fun amoledBlackResourcePatch(
     compatibility: Compatibility,
     colorsPath: String,
     colors: Map<String, AmoledColor>,
+    named: Boolean = true,
 ) = resourcePatch(
-    name = "AMOLED black",
+    name = if (named) "AMOLED black" else null,
     description = "Makes the dark theme pure black on OLED screens.",
     default = false,
 ) {

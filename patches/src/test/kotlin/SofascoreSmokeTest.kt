@@ -4,6 +4,7 @@ import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
 import app.template.patches.sofascore.controls.SOFASCORE_CONTROLS
 import app.template.patches.sofascore.controls.SOFASCORE_CONTROLS_ENTRY
 import app.template.patches.sofascore.layout.HIDE_AI_INSIGHTS
+import app.template.patches.sofascore.misc.theme.AMOLED_BLACK
 import app.template.patches.sofascore.layout.HIDE_MATCH_CHAT
 import app.template.patches.sofascore.layout.MAIN_TAB_FEATURES
 import app.template.patches.sofascore.layout.MATCH_TAB_FEATURES
@@ -149,7 +150,8 @@ private val HEVAL_FEATURES: List<HevalFeature> = listOf(HIDE_AI_INSIGHTS) +
     HIDDEN_COMPETITIONS +
     HIDE_MATCH_CHAT +
     MAIN_TAB_FEATURES +
-    SPOILER_FEATURES
+    SPOILER_FEATURES +
+    AMOLED_BLACK
 
 class SofascoreSmokeTest {
 

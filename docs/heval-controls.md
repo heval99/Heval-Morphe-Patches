@@ -364,6 +364,11 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.spoiler_events` (list) | Spoiler-free mode | off | no | read by every spoiler hook; filled by the match page item |
 | `sofascore.spoiler_competitions` (list) | Spoiler-free mode | off | no | read by every spoiler hook; filled by the competition page item |
 
+AMOLED black (2026-11-09, `sofascore.amoled_black`, build-time only) is an opt-in resource patch (the night values of
+`surface_1` and `surface_P`); the Patch settings screen shows it as a read-only "Applied at patch time" row.
+Sofascore reads its dark colors by name, so a runtime switch is not possible (the patcher's resource API can only
+edit entries of existing resource files, so a second color set under a new qualifier cannot be added).
+
 Hidden countries (2026-11-03) keys are the categories' `alpha2` codes (Sofascore's own, e.g. EN
 England, SX Scotland, WA Wales, NX Northern Ireland, XK Kosovo); categories without one (World,
 Europe, International, tennis tours) are `slug:<slug>`. The picker is seeded with the app's own
@@ -534,7 +539,9 @@ search results, widgets and notifications. Not run on a device.
 `SpoilerFree.isSurfaceOn(surface)` reads the surface's switch through `HevalSettings.isEnabled`, which
 is off while the master is off. The marked matches and competitions are still kept in the
 extension's own preference file (`morphe_spoiler_free`), so 365Scores has no "Marked matches" list
-picker yet. Not converted: Disable ads, Enable Premium, Disable update prompts, GmsCore support and
+picker yet. AMOLED black (`scores365.amoled_black`, build-time only) is shown as a read-only row for the same
+reason as on Sofascore: the app picks its dark colors by name in code and layouts and its themes have only three
+attributes. Not converted: Disable ads, Enable Premium, Disable update prompts, GmsCore support and
 Spoof signature.
 
 ## App-specific Java helpers
