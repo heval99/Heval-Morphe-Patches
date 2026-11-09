@@ -119,7 +119,7 @@ class FotMobSmokeTest {
                 "Disable ads", "Disable telemetry", "Enable FotMob+", "GmsCore support", "Spoof signature",
                 "Hide betting content", "Disable rating prompts", "Disable FotMob+ promo popup",
                 "Use system font", "Patch settings", "Turn off animations", "Faster animations", "Slower live refresh",
-                "Hide countries", "Hide competitions", "Show FotMob+ logo", "Spoiler-free mode",
+                "Hide countries", "Hide competitions", "Show FotMob+ logo", "Spoiler-free mode", "AMOLED black",
             ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -216,6 +216,9 @@ class FotMobSmokeTest {
         assertHideCountries(classes)
         assertHevalControls(classes)
         assertSpoilerFree(classes, stock)
+
+        // AMOLED black (2026-11-09): the night theme's cards, surfaces, bottom bar and sheets are AMOLED values.
+        assertAmoledBlack()
 
         // Show FotMob+ logo: the toolbar refresher's shouldUseFotMobPlusLogo read is replaced
         // with const/4 1, so it always picks the Plus wordmark.
@@ -561,6 +564,30 @@ class FotMobSmokeTest {
     // on the stock first instruction. 2/3: the (Menu, MenuInflater) builders that inflate
     // menu/activity_match_facts_v2 and menu/league_info (241 ids, aapt2 dump resources) start with the
     // gate, then pass the menu and the builder's activity field to the extension.
+    /** AMOLED black: ten attributes of the night Base.Theme.FotMob.DayNight carry AMOLED colors; the page stays black. */
+    private fun assertAmoledBlack() {
+        val file = workDir.walkTopDown().singleOrNull { it.name == "styles.xml" && it.parentFile.name == "values-night" }
+            ?: error("res/values-night/styles.xml was not decoded under $workDir")
+        val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
+        val styles = doc.getElementsByTagName("style")
+        val theme = (0 until styles.length).map { styles.item(it) as Element }.single { it.getAttribute("name") == "Base.Theme.FotMob.DayNight" }
+        val items = theme.getElementsByTagName("item")
+        val values = (0 until items.length).map { items.item(it) as Element }.associate { it.getAttribute("name") to it.textContent.trim() }
+        val expected = mapOf(
+            "cardBackgroundColor" to "#0a0a0a", "colorSurface" to "#0a0a0a", "colorSurfaceContainer" to "#0a0a0a",
+            "colorSurfaceContainerLow" to "#0a0a0a", "colorSurfaceContainerHigh" to "#0a0a0a",
+            "colorSurfaceContainerHighest" to "#0a0a0a", "bottomNavBackgroundColor" to "#000000",
+            "cardInCardHeaderBackground" to "#141414", "chipBackgroundUnselected" to "#141414",
+            "bottomSheetBackgroundColor" to "#121212",
+        )
+        for ((name, value) in expected) {
+            val actual = values[name]?.lowercase()?.let { if (it.length == 9 && it.startsWith("#ff")) "#" + it.substring(3) else it }
+            assertEquals(value, actual, "AMOLED black: $name")
+        }
+        assertEquals("@color/black", values["appBackground"], "appBackground stays black")
+        assertEquals("@color/dark_charcoal", values["dividerColor"], "dividers are untouched")
+    }
+
     private fun assertSpoilerFree(classes: List<ClassDef>, stock: List<ClassDef>) {
         val featureId = SPOILER_FREE_MODE.id
         assertTrue(classes.any { it.type == SPOILER_FREE }, "SpoilerFree is not in the patched dex")

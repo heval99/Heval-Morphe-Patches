@@ -463,6 +463,11 @@ object Constants {
     // hook calls its own check. Smoke test and a CLI run without -f (Applied; the six rows each call
     // the check for their surface and both menu hooks are present in the patched dex); not run on
     // a device.
+    // 2026-11-09: added "AMOLED black" (opt-in resource patch: ten attributes of the night
+    // Base.Theme.FotMob.DayNight are re-pointed at AMOLED colors, each checked against its stock color
+    // reference; the page background was already @color/black and the shared gray colors are untouched).
+    // A CLI run without -f changed exactly those ten items in the resource table (aapt2 diff, plus the
+    // usual id renames); not run on a device.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",
