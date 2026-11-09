@@ -4515,13 +4515,18 @@ object Constants {
     // reaches MainActivity and loads the home page with no crash, and the Nielsen SDK that stock
     // starts at launch stays silent. Playback needs a DR login, so the auto-skipped intro and
     // portrait rotation have not been seen; the owner accepted a clean start as enough.
+    // 2026-11-09: moved to 4.40.4 (versionCode 440400). The only drift was the null-check text of the
+    // skip button (the Kotlin message changed from "fragmentPlayerBinding.skipButton" to "skipButton"),
+    // which the Auto skip intro fingerprint used as an anchor; it now anchors on the method name
+    // checkForBingMarkerButton (kept by the Massive Axis SDK) plus its two BingeMarkerUtility calls.
+    // Bytecode-verified only (smoke test, CLI run); no emulator or device run.
     val COMPATIBILITY_DRTV = Compatibility(
         name = "DRTV",
         packageName = "dk.dr.webplayer",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFD001E,
         signatures = setOf("0f5de4c316dc42f22ed62dd9b442b19902005e005c169cf146180a03998d3743"), // CN=DR TV, O=DR TV
-        targets = listOf(AppTarget(version = "4.39.0", versionCode = 439000))
+        targets = listOf(AppTarget(version = "4.40.4", versionCode = 440400))
     )
 
     // Verified 2026-10-29 against com.viaplay.android 26.42.1 (versionCode 2642010, user-supplied
