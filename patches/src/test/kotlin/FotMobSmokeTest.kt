@@ -2,6 +2,7 @@ import app.template.patches.fotmob.betting.HIDE_BETTING_CONTENT
 import app.template.patches.fotmob.misc.animations.DISABLE_ANIMATIONS
 import app.template.patches.fotmob.misc.animations.FASTER_ANIMATIONS
 import app.template.patches.fotmob.misc.font.USE_SYSTEM_FONT
+import app.template.patches.fotmob.misc.theme.AMOLED_BLACK
 import app.template.patches.fotmob.misc.promotions.DISABLE_PLUS_PROMO_POPUP
 import app.template.patches.fotmob.misc.rating.DISABLE_RATING_PROMPTS
 import app.template.patches.fotmob.misc.refresh.SLOWER_LIVE_REFRESH
@@ -218,7 +219,7 @@ class FotMobSmokeTest {
         assertSpoilerFree(classes, stock)
 
         // AMOLED black (2026-11-09): the night theme's cards, surfaces, bottom bar and sheets are AMOLED values.
-        assertAmoledBlack()
+        assertAmoledBlack(classes)
 
         // Show FotMob+ logo: the toolbar refresher's shouldUseFotMobPlusLogo read is replaced
         // with const/4 1, so it always picks the Plus wordmark.
@@ -519,7 +520,7 @@ class FotMobSmokeTest {
         val encoded = registry[0].stringOrNull()!!.split('\n')
         val wanted = HevalRegistryCodec.encode(
             listOf(
-                HIDE_BETTING_CONTENT, DISABLE_RATING_PROMPTS, DISABLE_PLUS_PROMO_POPUP, USE_SYSTEM_FONT,
+                HIDE_BETTING_CONTENT, DISABLE_RATING_PROMPTS, DISABLE_PLUS_PROMO_POPUP, USE_SYSTEM_FONT, AMOLED_BLACK,
                 DISABLE_ANIMATIONS, FASTER_ANIMATIONS, SLOWER_LIVE_REFRESH, HIDDEN_COUNTRIES, HIDDEN_COMPETITIONS,
                 SPOILER_FREE_MODE, SPOILER_FREE_MATCHES, SPOILER_FREE_COMPETITIONS,
                 SPOILER_FREE_NOTIFICATIONS, SPOILER_FREE_LISTS, SPOILER_FREE_MATCH_PAGE, SPOILER_FREE_WIDGET,
@@ -564,15 +565,30 @@ class FotMobSmokeTest {
     // on the stock first instruction. 2/3: the (Menu, MenuInflater) builders that inflate
     // menu/activity_match_facts_v2 and menu/league_info (241 ids, aapt2 dump resources) start with the
     // gate, then pass the menu and the builder's activity field to the extension.
-    /** AMOLED black: ten attributes of the night Base.Theme.FotMob.DayNight carry AMOLED colors; the page stays black. */
-    private fun assertAmoledBlack() {
-        val file = workDir.walkTopDown().singleOrNull { it.name == "styles.xml" && it.parentFile.name == "values-night" }
-            ?: error("res/values-night/styles.xml was not decoded under $workDir")
-        val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
-        val styles = doc.getElementsByTagName("style")
-        val theme = (0 until styles.length).map { styles.item(it) as Element }.single { it.getAttribute("name") == "Base.Theme.FotMob.DayNight" }
-        val items = theme.getElementsByTagName("item")
-        val values = (0 until items.length).map { items.item(it) as Element }.associate { it.getAttribute("name") to it.textContent.trim() }
+    /**
+     * AMOLED black (a Patch settings switch): the night Base.Theme.FotMob.DayNight is untouched, a new
+     * HevalAmoledOverlay style holds the ten attributes at near-black values, and the activity hook
+     * applies it (AmoledBlack.applyTheme from ActivityHooks.onActivityCreated).
+     */
+    private fun assertAmoledBlack(classes: List<ClassDef>) {
+        fun styles(dir: String): Map<String, Map<String, String>> {
+            val file = workDir.walkTopDown().singleOrNull { it.name == "styles.xml" && it.parentFile.name == dir }
+                ?: error("no decoded $dir/styles.xml under $workDir")
+            val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
+            val nodes = doc.getElementsByTagName("style")
+            return (0 until nodes.length).map { nodes.item(it) as Element }.associate { style ->
+                val items = style.getElementsByTagName("item")
+                style.getAttribute("name") to (0 until items.length).map { items.item(it) as Element }
+                    .associate { it.getAttribute("name") to it.textContent.trim() }
+            }
+        }
+        val night = styles("values-night")["Base.Theme.FotMob.DayNight"] ?: error("values-night: Base.Theme.FotMob.DayNight not found")
+        assertEquals("@color/nero_black", night["cardBackgroundColor"], "the night theme keeps its stock cardBackgroundColor")
+        assertEquals("@color/chinese_black", night["bottomNavBackgroundColor"], "the night theme keeps its stock bottomNavBackgroundColor")
+        assertEquals("@color/black", night["appBackground"], "appBackground stays black")
+
+        val overlay = styles("values")["HevalAmoledOverlay"] ?: error("values: HevalAmoledOverlay not found")
+        fun String.opaque() = lowercase().let { if (it.length == 9 && it.startsWith("#ff")) "#" + it.substring(3) else it }
         val expected = mapOf(
             "cardBackgroundColor" to "#0a0a0a", "colorSurface" to "#0a0a0a", "colorSurfaceContainer" to "#0a0a0a",
             "colorSurfaceContainerLow" to "#0a0a0a", "colorSurfaceContainerHigh" to "#0a0a0a",
@@ -580,12 +596,17 @@ class FotMobSmokeTest {
             "cardInCardHeaderBackground" to "#141414", "chipBackgroundUnselected" to "#141414",
             "bottomSheetBackgroundColor" to "#121212",
         )
-        for ((name, value) in expected) {
-            val actual = values[name]?.lowercase()?.let { if (it.length == 9 && it.startsWith("#ff")) "#" + it.substring(3) else it }
-            assertEquals(value, actual, "AMOLED black: $name")
-        }
-        assertEquals("@color/black", values["appBackground"], "appBackground stays black")
-        assertEquals("@color/dark_charcoal", values["dividerColor"], "dividers are untouched")
+        assertEquals(expected, overlay.mapValues { it.value.opaque() }, "HevalAmoledOverlay items")
+
+        // The hook: ActivityHooks.onActivityCreated calls AmoledBlack.applyTheme.
+        val hooks = classes.single { it.type == "Lapp/template/extension/fotmob/ActivityHooks;" }
+        val created = hooks.methods.single { it.name == "onActivityCreated" }
+        val calls = created.implementation!!.instructions.mapNotNull { ((it as? ReferenceInstruction)?.reference as? MethodReference) }
+        assertTrue(
+            calls.any { it.definingClass == "Lapp/template/extension/fotmob/AmoledBlack;" && it.name == "applyTheme" },
+            "ActivityHooks.onActivityCreated does not apply the AMOLED overlay",
+        )
+        assertTrue(classes.any { it.type == "Lapp/template/extension/fotmob/AmoledBlack;" }, "AmoledBlack is not in the patched dex")
     }
 
     private fun assertSpoilerFree(classes: List<ClassDef>, stock: List<ClassDef>) {

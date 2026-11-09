@@ -55,30 +55,32 @@ internal fun amoledBlackResourcePatch(
 internal data class AmoledAttribute(val stockRef: String, val amoled: String)
 
 /**
- * The same patch for an app whose dark theme is a style of theme attributes instead of plain
- * color names (FotMob): inside [styleName] of [stylesPath], every listed `<item>` must reference its
- * stock color and is re-pointed at the AMOLED color. The shared color resources are not touched, so
- * the light theme and every other use of the stock gray stay as they were.
+ * The resource half of a runtime "AMOLED black" for an app whose dark theme is a style of theme
+ * attributes (FotMob). It changes nothing that exists: it checks that every attribute of [styleName]
+ * in [nightStylesPath] still references its stock color (a theme rework fails the patch) and adds a
+ * new style [overlayName] to [baseStylesPath] holding the AMOLED value of each attribute. The
+ * extension applies that overlay to the theme of each screen while the Patch settings switch is on
+ * and the screen is in dark mode, so the switch can turn AMOLED off again without patching.
  */
-internal fun amoledBlackStylePatch(
+internal fun amoledOverlayResourcePatch(
     compatibility: Compatibility,
-    stylesPath: String,
+    nightStylesPath: String,
+    baseStylesPath: String,
     styleName: String,
+    overlayName: String,
     attributes: Map<String, AmoledAttribute>,
 ) = resourcePatch(
-    name = "AMOLED black",
-    description = "Makes the dark theme pure black on OLED screens.",
-    default = false,
+    description = "Adds an AMOLED black theme overlay to the dark theme.",
 ) {
     compatibleWith(compatibility)
 
     execute {
-        decode(stylesPath)
+        decode(nightStylesPath, baseStylesPath)
         val remaining = attributes.keys.toMutableSet()
-        document(stylesPath).use { doc ->
+        document(nightStylesPath).use { doc ->
             val styles = doc.getElementsByTagName("style")
             val style = (0 until styles.length).map { styles.item(it) as Element }.singleOrNull { it.getAttribute("name") == styleName }
-                ?: throw PatchException("$stylesPath: style $styleName not found exactly once")
+                ?: throw PatchException("$nightStylesPath: style $styleName not found exactly once")
             val items = style.getElementsByTagName("item")
             for (index in 0 until items.length) {
                 val item = items.item(index) as? Element ?: continue
@@ -86,12 +88,25 @@ internal fun amoledBlackStylePatch(
                 val attribute = attributes[name] ?: continue
                 val value = item.textContent?.trim()
                 if (value != attribute.stockRef) {
-                    throw PatchException("$stylesPath: $styleName $name is $value, expected ${attribute.stockRef}")
+                    throw PatchException("$nightStylesPath: $styleName $name is $value, expected ${attribute.stockRef}")
                 }
-                item.textContent = attribute.amoled
                 remaining -= name
             }
         }
-        if (remaining.isNotEmpty()) throw PatchException("$stylesPath: $styleName is missing items $remaining")
+        if (remaining.isNotEmpty()) throw PatchException("$nightStylesPath: $styleName is missing items $remaining")
+
+        document(baseStylesPath).use { doc ->
+            val resources = doc.documentElement ?: throw PatchException("$baseStylesPath has no root element")
+            val existing = doc.getElementsByTagName("style")
+            if ((0 until existing.length).any { (existing.item(it) as Element).getAttribute("name") == overlayName }) return@use
+            val overlay = doc.createElement("style").apply { setAttribute("name", overlayName) }
+            attributes.forEach { (name, attribute) ->
+                overlay.appendChild(doc.createElement("item").apply {
+                    setAttribute("name", name)
+                    textContent = attribute.amoled
+                })
+            }
+            resources.appendChild(overlay)
+        }
     }
 }
