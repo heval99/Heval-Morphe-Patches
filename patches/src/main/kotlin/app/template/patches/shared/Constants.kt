@@ -731,6 +731,9 @@ object Constants {
         // 2026-11-09: added "Hide competitions" and "Hide countries" (Patch settings lists; GamesObj.getGames()
         // and getCompetitions() return a filtered copy via extensions/scores365 ListFilters). Smoke test and a CLI
         // run without -f applied them and the patched getters were inspected; not run on a device.
+        // 2026-11-09: added "AMOLED black" (opt-in resource patch: five dark_theme_* colors in values/colors.xml,
+        // each checked against its stock value; the dark background was already #000000). A CLI run without
+        // -f changed exactly those five values in the resource table (aapt2 diff); not run on a device.
         targets = listOf(
             AppTarget(version = "15.0.0", versionCode = 1500)
         )

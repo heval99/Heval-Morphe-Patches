@@ -55,7 +55,7 @@ class Scores365SmokeTest {
             version = "15.0.0",
             patchNames = setOf(
                 "Disable ads", "Enable Premium", "Disable update prompts", "GmsCore support", "Spoof signature",
-                "Spoiler-free mode", "Patch settings", "Hide competitions", "Hide countries",
+                "Spoiler-free mode", "Patch settings", "Hide competitions", "Hide countries", "AMOLED black",
             ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -69,6 +69,28 @@ class Scores365SmokeTest {
         assertSpoilerFree(classes, byType)
         assertPatchSettingsEntry(classes)
         assertHideLists(byType)
+        assertAmoledBlack(workDir)
+    }
+
+    /** AMOLED black: the five dark theme colors of the decoded values/colors.xml carry the AMOLED values. */
+    private fun assertAmoledBlack(workDir: File) {
+        val colors = workDir.walkTopDown().singleOrNull { it.name == "colors.xml" && it.parentFile.name == "values" }
+            ?: error("res/values/colors.xml was not decoded under $workDir")
+        val doc = javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(colors)
+        val nodes = doc.getElementsByTagName("color")
+        val values = (0 until nodes.length).associate { index ->
+            val node = nodes.item(index) as org.w3c.dom.Element
+            node.getAttribute("name") to node.textContent.trim().lowercase().let { if (it.length == 9 && it.startsWith("#ff")) "#" + it.substring(3) else it }
+        }
+        val expected = mapOf(
+            "dark_theme_card_background" to "#0a0a0a", "dark_theme_scores_new" to "#0a0a0a",
+            "dark_theme_surface_secondary" to "#0a0a0a", "dark_theme_toolbar_color" to "#000000",
+            "dark_theme_picks_trend_card" to "#121212",
+        )
+        for ((name, value) in expected) assertEquals(value, values[name], "AMOLED black: $name")
+        // The dark background stays pure black and the dividers are not touched.
+        assertEquals("#000000", values["dark_theme_background"], "dark_theme_background")
+        assertEquals("#3a4145", values["dark_theme_divider_color"], "dark_theme_divider_color")
     }
 
     /**
