@@ -189,7 +189,13 @@ public class RegistryCodecTest {
         RegistryCodec.Result result = RegistryCodec.decode(fixture("registry-v1-icons.txt"));
         assertTrue(result.supported);
         assertEquals(0, result.skipped);
-        assertEquals(3, result.features.size());
+        assertEquals(5, result.features.size());
+        // The last two switches form one choice group; the first three are plain.
+        assertEquals("", result.features.get(0).choice);
+        assertEquals("", result.features.get(2).choice);
+        assertEquals("Animation speed", result.features.get(3).choice);
+        assertEquals("Animation speed", result.features.get(4).choice);
+        assertEquals("play", result.features.get(3).icon);
         Feature ads = result.features.get(0);
         assertEquals("ads", ads.icon);
         assertFalse(ads.isList());

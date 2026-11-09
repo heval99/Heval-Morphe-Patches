@@ -35,6 +35,12 @@ data class HevalFeature(
      * see `ui/Icons.java`). Empty uses the icon of the category. Purely visual.
      */
     val icon: String = "",
+    /**
+     * Title of a single-choice group (for example "Animation speed"). Switches of one category that
+     * share a title are shown as one row with an option each plus "Normal" (all off); the switches,
+     * their ids and their hooks stay unchanged. Empty is a plain switch.
+     */
+    val choice: String = "",
 ) {
     init {
         require(ID_REGEX.matches(id)) { "Invalid Patch settings feature id: $id" }
@@ -51,6 +57,11 @@ data class HevalFeature(
         }
         require(dependencies.toSet().size == dependencies.size) { "Feature $id lists a dependency twice" }
         require(icon.isEmpty() || ICON_REGEX.matches(icon)) { "Feature $id has an invalid icon key: $icon" }
+        if (choice.isNotEmpty()) {
+            require(kind == HevalFeatureKind.SWITCH) { "List feature $id cannot be a choice option" }
+            require(!buildTimeOnly) { "Build-time-only feature $id cannot be a choice option" }
+            require(choice.isNotBlank() && choice.length <= 40) { "Feature $id has an invalid choice title" }
+        }
     }
 
     companion object {
@@ -144,7 +155,9 @@ object HevalRegistryCodec {
                 ).let { fields ->
                     val kind = if (feature.kind == HevalFeatureKind.LIST) KIND_LIST else ""
                     when {
-                        // The icon is the tenth field, so a switch with one gets an empty ninth.
+                        // The choice title is the eleventh field, the icon the tenth and the kind the
+                        // ninth; each earlier field is written empty when a later one is present.
+                        feature.choice.isNotEmpty() -> fields + kind + escape(feature.icon) + escape(feature.choice)
                         feature.icon.isNotEmpty() -> fields + kind + escape(feature.icon)
                         kind.isNotEmpty() -> fields + kind
                         else -> fields

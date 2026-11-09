@@ -36,6 +36,8 @@ internal val ANIMATION_FEATURES: List<HevalFeature> = listOf(
         category = FlashscoreControlsCategory.DISPLAY,
         default = false,
         restartRequired = true,
+        icon = "play",
+        choice = "Animation speed",
     ),
     HevalFeature(
         id = "flashscore.animations_fast",
@@ -44,6 +46,8 @@ internal val ANIMATION_FEATURES: List<HevalFeature> = listOf(
         category = FlashscoreControlsCategory.DISPLAY,
         default = false,
         restartRequired = true,
+        icon = "play",
+        choice = "Animation speed",
     ),
 )
 

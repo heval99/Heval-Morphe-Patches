@@ -34,6 +34,8 @@ internal val ANIMATION_FEATURES: List<HevalFeature> = listOf(
         category = SofascoreControlsCategory.PERFORMANCE,
         default = false,
         restartRequired = true,
+        icon = "play",
+        choice = "Animation speed",
     ),
     HevalFeature(
         id = "sofascore.animations_fast",
@@ -42,6 +44,8 @@ internal val ANIMATION_FEATURES: List<HevalFeature> = listOf(
         category = SofascoreControlsCategory.PERFORMANCE,
         default = false,
         restartRequired = true,
+        icon = "play",
+        choice = "Animation speed",
     ),
 )
 

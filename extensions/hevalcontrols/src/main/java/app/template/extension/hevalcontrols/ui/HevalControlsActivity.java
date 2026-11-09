@@ -43,10 +43,12 @@ import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import app.template.extension.hevalcontrols.CrashGuard;
 import app.template.extension.hevalcontrols.Feature;
@@ -98,6 +100,7 @@ public final class HevalControlsActivity extends Activity {
     private LinearLayout pauseRow;
     private final List<FeatureRow> rows = new ArrayList<>();
     private final List<Section> sections = new ArrayList<>();
+    private final List<ChoiceRow> choiceRows = new ArrayList<>();
     private TextView noMatch;
     private String query = "";
     private Object backCallback;
@@ -640,10 +643,10 @@ public final class HevalControlsActivity extends Activity {
         final View divider;
         final String haystack;
 
-        Item(LinearLayout box, View divider, Feature feature) {
+        Item(LinearLayout box, View divider, String searchText) {
             this.box = box;
             this.divider = divider;
-            this.haystack = (feature.name + " " + feature.description).toLowerCase(Locale.ROOT);
+            this.haystack = searchText.toLowerCase(Locale.ROOT);
         }
     }
 
@@ -670,14 +673,28 @@ public final class HevalControlsActivity extends Activity {
         LinearLayout card = views.card(palette.surface, palette.line);
         card.setPadding(0, 0, 0, 0);
         final Section section = new Section(category, header, count, chevron, card, features.size() > COLLAPSE_ABOVE);
+        Set<String> doneChoices = new HashSet<>();
         for (Feature feature : features) {
+            View rowView;
+            String searchText = feature.name + " " + feature.description;
+            List<Feature> options = choiceOptions(features, feature);
+            if (options.size() > 1) {
+                // The switches of one choice share a single row, built at the first of them.
+                if (!doneChoices.add(feature.choice)) continue;
+                rowView = choiceRow(feature.choice, options);
+                StringBuilder text = new StringBuilder(feature.choice);
+                for (Feature option : options) text.append(' ').append(option.name).append(' ').append(option.description);
+                searchText = text.toString();
+            } else {
+                rowView = feature.isList() ? listRow(feature) : featureRow(feature);
+            }
             LinearLayout box = views.column();
             View divider = new View(this);
             divider.setBackgroundColor(palette.line);
             box.addView(divider, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Math.max(1, views.dp(1) / 2)));
-            box.addView(feature.isList() ? listRow(feature) : featureRow(feature));
+            box.addView(rowView);
             card.addView(box);
-            section.items.add(new Item(box, divider, feature));
+            section.items.add(new Item(box, divider, searchText));
         }
         views.add(content, card, 8);
         sections.add(section);
@@ -777,6 +794,162 @@ public final class HevalControlsActivity extends Activity {
 
         boolean inactive = paused || safeMode || failed;
         for (FeatureRow row : rows) row.update(inactive, paused, safeMode, failed);
+        for (ChoiceRow row : choiceRows) row.update(inactive, paused, safeMode, failed);
+    }
+
+    // -------------------------------------------------------------------------------------------
+    // Single-choice rows
+    // -------------------------------------------------------------------------------------------
+
+    /** The runtime switches of {@code feature}'s choice group in this category (just it when it has none). */
+    private static List<Feature> choiceOptions(List<Feature> features, Feature feature) {
+        List<Feature> options = new ArrayList<>();
+        if (feature.choice.isEmpty() || feature.isList() || feature.buildTimeOnly) {
+            options.add(feature);
+            return options;
+        }
+        for (Feature other : features) {
+            if (feature.choice.equals(other.choice) && !other.isList() && !other.buildTimeOnly) options.add(other);
+        }
+        return options;
+    }
+
+    /**
+     * One row for the switches of a choice group ("Animation speed"): the state line shows the
+     * picked option, and tapping opens a single-choice dialog with "Normal" (every switch off) and one
+     * entry per switch. Picking an entry turns its switch on and the others off.
+     */
+    private View choiceRow(final String title, final List<Feature> options) {
+        boolean restart = false;
+        for (Feature option : options) restart |= option.restartRequired;
+        LinearLayout stateLine = views.row();
+        TextView state = views.text("", 12, palette.muted, true);
+        stateLine.addView(state);
+        if (restart) {
+            TextView badge = views.badge("Restart", palette.warning, palette.warningSurface);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.setMarginStart(views.dp(8));
+            stateLine.addView(badge, params);
+        }
+        final LinearLayout row = switchRow(title, "", null, null, iconKey(options.get(0)));
+        textColumn(row).addView(stateLine, topMargin(6));
+        TextView edit = views.text("Change", 14, palette.accent, true);
+        edit.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.setMarginStart(views.dp(12));
+        row.addView(edit, params);
+        final ChoiceRow holder = new ChoiceRow(title, options, row, state);
+        choiceRows.add(holder);
+        row.setClickable(true);
+        row.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                holder.pick();
+            }
+        });
+        row.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setClassName(Button.class.getName());
+            }
+        });
+        return row;
+    }
+
+    private final class ChoiceRow {
+        final String title;
+        final List<Feature> options;
+        final LinearLayout row;
+        final TextView state;
+
+        ChoiceRow(String title, List<Feature> options, LinearLayout row, TextView state) {
+            this.title = title;
+            this.options = options;
+            this.row = row;
+            this.state = state;
+        }
+
+        /** The option whose switch is on, or -1 for "Normal". */
+        int current() {
+            for (int i = 0; i < options.size(); i++) {
+                if (HevalSettings.isChosen(options.get(i).id)) return i;
+            }
+            return -1;
+        }
+
+        boolean allUnsupported() {
+            for (Feature option : options) {
+                if (HevalSettings.stateOf(option) != HevalSettings.State.UNSUPPORTED) return false;
+            }
+            return true;
+        }
+
+        void pick() {
+            if (allUnsupported()) return;
+            String[] labels = new String[options.size() + 1];
+            labels[0] = "Normal";
+            for (int i = 0; i < options.size(); i++) labels[i + 1] = options.get(i).name;
+            new android.app.AlertDialog.Builder(HevalControlsActivity.this)
+                    .setTitle(title)
+                    .setSingleChoiceItems(labels, current() + 1, new android.content.DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(android.content.DialogInterface dialog, int which) {
+                            apply(which - 1);
+                            dialog.dismiss();
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        }
+
+        /** Turns option {@code picked} on and every other off; -1 turns all off. */
+        void apply(int picked) {
+            boolean saved = true;
+            for (int i = 0; i < options.size(); i++) {
+                Feature option = options.get(i);
+                boolean wanted = i == picked;
+                if (HevalSettings.isChosen(option.id) != wanted) saved &= HevalSettings.setEnabled(option.id, wanted);
+            }
+            if (!saved) toast("Could not save the change");
+            refresh();
+            boolean restart = false;
+            for (Feature option : options) restart |= option.restartRequired;
+            row.announceForAccessibility(title + ": " + (picked < 0 ? "Normal" : options.get(picked).name)
+                    + (restart ? ". Restart the app to apply." : ""));
+        }
+
+        void update(boolean inactive, boolean paused, boolean safeMode, boolean failed) {
+            int current = current();
+            String text;
+            int color;
+            if (allUnsupported()) {
+                text = "Unsupported in this app";
+                color = palette.error;
+            } else {
+                String label = current < 0 ? "Normal" : options.get(current).name;
+                HevalSettings.State option = current < 0 ? HevalSettings.State.ENABLED : HevalSettings.stateOf(options.get(current));
+                if (current >= 0 && option == HevalSettings.State.RESTART_REQUIRED) {
+                    text = label + ", restart required";
+                    color = palette.warning;
+                } else if (current >= 0 && option == HevalSettings.State.FAILED) {
+                    text = label + ". Failed, using stock behaviour";
+                    color = palette.error;
+                } else if (current >= 0 && option != HevalSettings.State.ENABLED) {
+                    text = label + (failed ? " (settings unavailable)" : safeMode ? " (safe mode)" : paused ? " (paused)" : " (inactive)");
+                    color = palette.muted;
+                } else {
+                    text = label;
+                    color = current < 0 ? palette.muted : palette.success;
+                }
+            }
+            state.setText(text);
+            state.setTextColor(color);
+            row.setAlpha(inactive ? 0.6f : 1f);
+            describe(row, title, text);
+        }
     }
 
     private final class FeatureRow {

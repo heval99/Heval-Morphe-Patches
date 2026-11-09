@@ -34,6 +34,10 @@ import java.util.Set;
  * icon". The encoder writes it only for a feature that names an icon (with an empty ninth field
  * for a switch), so a registry without icons is byte-for-byte what it was before.
  *
+ * <p>An optional eleventh field is the title of a single-choice group (added 2026-11-09): switches
+ * of one category that share a title are shown as one choice row (see {@link Feature#choice}).
+ * Escaped like the text fields; empty or missing means a plain switch.
+ *
  * <p>The decoder never throws: a malformed record is skipped, an unknown header version yields an
  * empty, unsupported registry (every hook then answers stock).
  */
@@ -45,6 +49,8 @@ public final class RegistryCodec {
     private static final int KIND_FIELD = 8;
     /** Index of the optional icon field. */
     private static final int ICON_FIELD = 9;
+    /** Index of the optional single-choice group title field. */
+    private static final int CHOICE_FIELD = 10;
 
     /** Result of {@link #decode(String)}. */
     public static final class Result {
@@ -127,8 +133,10 @@ public final class RegistryCodec {
         }
         String icon = fields.length > ICON_FIELD ? unescape(fields[ICON_FIELD]) : "";
         if (icon == null) icon = "";
+        String choice = fields.length > CHOICE_FIELD ? unescape(fields[CHOICE_FIELD]) : "";
+        if (choice == null) choice = "";
         return new Feature(id, name, description, category, defaultOn == 1, restart == 1, buildTime == 1, dependencies,
-                list ? Feature.KIND_LIST : Feature.KIND_SWITCH, icon);
+                list ? Feature.KIND_LIST : Feature.KIND_SWITCH, icon, choice);
     }
 
     private static int flag(String field) {

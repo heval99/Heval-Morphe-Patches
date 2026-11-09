@@ -56,6 +56,15 @@ public final class Feature {
      */
     public final String icon;
 
+    /**
+     * Title of a single-choice group this switch belongs to, or empty. Switches of one category that
+     * share a non-empty title are shown as ONE row ("Animation speed: Normal, Faster, Off") instead
+     * of one switch each: picking an option turns that switch on and the others off, and "Normal"
+     * turns all of them off. The switches and their ids are unchanged, so hooks and saved choices
+     * work as before. Only meaningful for switches.
+     */
+    public final String choice;
+
     public Feature(String id, String name, String description, String category, boolean defaultEnabled,
                    boolean restartRequired, boolean buildTimeOnly, List<String> dependencies) {
         this(id, name, description, category, defaultEnabled, restartRequired, buildTimeOnly, dependencies, KIND_SWITCH);
@@ -68,11 +77,19 @@ public final class Feature {
 
     public Feature(String id, String name, String description, String category, boolean defaultEnabled,
                    boolean restartRequired, boolean buildTimeOnly, List<String> dependencies, String kind, String icon) {
+        this(id, name, description, category, defaultEnabled, restartRequired, buildTimeOnly, dependencies, kind, icon, "");
+    }
+
+    public Feature(String id, String name, String description, String category, boolean defaultEnabled,
+                   boolean restartRequired, boolean buildTimeOnly, List<String> dependencies, String kind, String icon,
+                   String choice) {
         if (!isValidId(id)) throw new IllegalArgumentException("Invalid feature id");
         boolean list = KIND_LIST.equals(kind);
         if (list && buildTimeOnly) throw new IllegalArgumentException("A list feature cannot be build-time-only");
         this.kind = list ? KIND_LIST : KIND_SWITCH;
         this.icon = icon == null ? "" : icon;
+        // A choice option is a runtime switch: a list or a patch-time-only row cannot join one.
+        this.choice = list || buildTimeOnly || choice == null ? "" : choice;
         this.id = id;
         this.name = name == null || name.isEmpty() ? id : name;
         this.description = description == null ? "" : description;

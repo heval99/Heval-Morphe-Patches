@@ -110,12 +110,20 @@ class HevalControlsTest {
                 "Leagues from the picked countries are hidden.", "Leagues", restartRequired = true, icon = "globe",
             ),
             HevalFeature("demo.plain", "Plain", "No icon of its own.", "Ads"),
+            HevalFeature(
+                "demo.anim_off", "Animations off", "Turns off animations.", "Display", default = false,
+                restartRequired = true, icon = "play", choice = "Animation speed",
+            ),
+            HevalFeature(
+                "demo.anim_fast", "Faster animations", "Plays animations faster.", "Display", default = false,
+                restartRequired = true, icon = "play", choice = "Animation speed",
+            ),
         )
         val fixture = File(repoRoot(), "extensions/hevalcontrols/core/src/test/resources/registry-v1-icons.txt")
         assertTrue(fixture.isFile, "missing ${fixture.path}")
         assertEquals(fixture.readText(Charsets.UTF_8).replace("\r\n", "\n"), HevalRegistryCodec.encode(features))
         // A feature without an icon still has exactly eight fields (the encoding is unchanged).
-        assertEquals(8, HevalRegistryCodec.encode(features.takeLast(1)).lines()[1].split('\t').size)
+        assertEquals(8, HevalRegistryCodec.encode(listOf(features[2])).lines()[1].split('\t').size)
     }
 
     @Test
@@ -123,6 +131,20 @@ class HevalControlsTest {
         assertThrows<IllegalArgumentException> { HevalFeature("demo.a", "A", "", "X", icon = "Bad Icon") }
         assertThrows<IllegalArgumentException> { HevalFeature("demo.a", "A", "", "X", icon = "tab\tkey") }
         assertEquals("eye_off", HevalFeature("demo.a", "A", "", "X", icon = "eye_off").icon)
+    }
+
+    @Test
+    fun choiceValidation() {
+        assertEquals("Animation speed", HevalFeature("demo.a", "A", "", "X", choice = "Animation speed").choice)
+        assertThrows<IllegalArgumentException> {
+            HevalFeature("demo.a", "A", "", "X", default = false, buildTimeOnly = true, choice = "Speed")
+        }
+        assertThrows<IllegalArgumentException> { HevalFeature("demo.a", "A", "", "X", choice = " ") }
+        assertThrows<IllegalArgumentException> { HevalFeature("demo.a", "A", "", "X", choice = "x".repeat(41)) }
+        // A list cannot be a choice option (HevalListFeature has no choice parameter).
+        assertThrows<IllegalArgumentException> {
+            HevalFeature("demo.a", "A", "", "X", default = false, kind = HevalFeatureKind.LIST, choice = "Speed")
+        }
     }
 
     @Test
