@@ -41,51 +41,57 @@ internal val SPOILER_FREE_MODE = HevalFeature(
     id = "sofascore.spoiler_free",
     name = "Spoiler-free mode",
     description = "Lets you hide scores for matches and competitions you mark, and goal alerts for matches you mark.",
-    category = SofascoreControlsCategory.MATCH_PAGE,
+    category = SofascoreControlsCategory.SPOILER_FREE,
+    icon = "eye_off",
 )
 
 /** Surface: pushes of marked matches. */
 internal val SPOILER_NOTIFICATIONS = HevalFeature(
     id = "sofascore.spoiler_notifications",
-    name = "Spoiler-free notifications",
-    description = "Blocks notifications for the matches you mark.",
-    category = SofascoreControlsCategory.MATCH_PAGE,
+    name = "Hide goal alerts",
+    description = "Blocks goal alerts for the matches you mark.",
+    category = SofascoreControlsCategory.SPOILER_FREE,
+    icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
 )
 
 /** Surface: the score and status cells of the match list rows. */
 internal val SPOILER_LISTS = HevalFeature(
     id = "sofascore.spoiler_lists",
-    name = "Spoiler-free match lists",
+    name = "Hide scores in match lists",
     description = "Hides the score of marked matches in match lists.",
-    category = SofascoreControlsCategory.MATCH_PAGE,
+    category = SofascoreControlsCategory.SPOILER_FREE,
+    icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
 )
 
 /** Surface: the home-screen widget's match rows. */
 internal val SPOILER_WIDGET = HevalFeature(
     id = "sofascore.spoiler_widget",
-    name = "Spoiler-free widget",
+    name = "Hide scores in the widget",
     description = "Hides the score of marked matches in the home-screen widget.",
-    category = SofascoreControlsCategory.MATCH_PAGE,
+    category = SofascoreControlsCategory.SPOILER_FREE,
+    icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
 )
 
 /** The matches marked on their match page (Sofascore event ids); the user can un-mark them here. */
 internal val SPOILER_EVENTS = HevalListFeature(
     id = "sofascore.spoiler_events",
-    name = "Spoiler-free matches",
-    description = "Matches you marked spoiler-free on their match page.",
-    category = SofascoreControlsCategory.MATCH_PAGE,
+    name = "Marked matches",
+    description = "Matches you marked on their match page. Remove one to show its score again.",
+    category = SofascoreControlsCategory.SPOILER_FREE,
+    icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
 )
 
 /** The competitions marked on their page (UniqueTournament ids, like "Hidden competitions"). */
 internal val SPOILER_COMPETITIONS = HevalListFeature(
     id = "sofascore.spoiler_competitions",
-    name = "Spoiler-free competitions",
-    description = "Competitions you marked spoiler-free on their page.",
-    category = SofascoreControlsCategory.MATCH_PAGE,
+    name = "Marked competitions",
+    description = "Competitions you marked on their page. Remove one to show its scores again.",
+    category = SofascoreControlsCategory.SPOILER_FREE,
+    icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
 )
 

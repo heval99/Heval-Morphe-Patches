@@ -46,24 +46,27 @@ internal val SPOILER_FREE_MODE = HevalFeature(
     id = "fotmob.spoiler_free",
     name = "Spoiler-free mode",
     description = "Lets you hide scores and goal alerts for matches and competitions you mark.",
-    category = FotMobControlsCategory.MATCH_PAGE,
+    category = FotMobControlsCategory.SPOILER_FREE,
+    icon = "eye_off",
 )
 
 /** The matches marked on their match page (FotMob match ids); the user can un-mark them here. */
 internal val SPOILER_FREE_MATCHES = HevalListFeature(
     id = "fotmob.spoiler_matches",
-    name = "Spoiler-free matches",
-    description = "Matches you marked spoiler-free on their match page.",
-    category = FotMobControlsCategory.MATCH_PAGE,
+    name = "Marked matches",
+    description = "Matches you marked on their match page. Remove one to show its score again.",
+    category = FotMobControlsCategory.SPOILER_FREE,
+    icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
 )
 
 /** The competitions marked on their page (league ids, like "Hidden competitions"). */
 internal val SPOILER_FREE_COMPETITIONS = HevalListFeature(
     id = "fotmob.spoiler_competitions",
-    name = "Spoiler-free competitions",
-    description = "Competitions you marked spoiler-free on their page.",
-    category = FotMobControlsCategory.MATCH_PAGE,
+    name = "Marked competitions",
+    description = "Competitions you marked on their page. Remove one to show its scores again.",
+    category = FotMobControlsCategory.SPOILER_FREE,
+    icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
 )
 
@@ -73,24 +76,25 @@ private fun spoilerSurface(id: String, name: String, description: String) = Heva
     id = id,
     name = name,
     description = description,
-    category = FotMobControlsCategory.MATCH_PAGE,
+    category = FotMobControlsCategory.SPOILER_FREE,
+    icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
 )
 
 internal val SPOILER_FREE_NOTIFICATIONS = spoilerSurface(
-    "fotmob.spoiler_notifications", "Spoiler-free notifications",
+    "fotmob.spoiler_notifications", "Hide goal alerts",
     "Drops goal and result alerts and hides the score in the ongoing match notification for marked matches.",
 )
 internal val SPOILER_FREE_LISTS = spoilerSurface(
-    "fotmob.spoiler_lists", "Spoiler-free match lists",
+    "fotmob.spoiler_lists", "Hide scores in match lists",
     "Shows the kickoff time instead of the score in match lists for marked matches.",
 )
 internal val SPOILER_FREE_MATCH_PAGE = spoilerSurface(
-    "fotmob.spoiler_match_page", "Spoiler-free match page",
+    "fotmob.spoiler_match_page", "Hide scores on the match page",
     "Shows the kickoff time instead of the score at the top of a marked match.",
 )
 internal val SPOILER_FREE_WIDGET = spoilerSurface(
-    "fotmob.spoiler_widget", "Spoiler-free widget",
+    "fotmob.spoiler_widget", "Hide scores in the widget",
     "Shows the kickoff time instead of the score in the live score widget for marked matches.",
 )
 

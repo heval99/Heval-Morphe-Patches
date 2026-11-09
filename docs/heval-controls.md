@@ -705,9 +705,18 @@ The limits are stated in the UI, too. Safe mode cannot help when:
 2. **Banners**: safe mode, engine failure, unreadable registry, and pending restarts with a
    "Restart now" button.
 3. **Master switch**: "Pause all patches".
-4. **Feature rows**, one section per category. Each row has a name, a description, a state line
-   and, for restart-required features, a "Restart" badge. A list feature's row opens its picker
-   (see [List settings](#list-settings-pickers)).
+4. **Feature rows**, one collapsible section per category (2026-11-09: an icon, a row count and a
+   chevron on the header; a category with more than 8 rows starts collapsed; a category named
+   "Spoiler-free" is always listed first). A search field above the sections (shown from 8
+   features on) filters rows by name, description or category. Each row has an icon (the
+   feature's `icon` key, else its category's: `ui/Icons.java`, drawn in code, no resources), a
+   name, a description, a state line and, for restart-required features, a "Restart" badge. A
+   list feature's row opens its picker (see [List settings](#list-settings-pickers)). Switches
+   that share a `choice` title in one category (2026-11-09) are one row with a picker dialog
+   ("Normal" plus one entry per switch; picking one turns its switch on and the others off): the
+   animation-speed pairs of Sofascore, FotMob and Flashscore. The switches, ids and hooks are
+   unchanged. In the registry the optional tenth field is the icon key and the eleventh the
+   choice title (earlier optional fields are written empty when a later one is present).
 5. **Appearance**: a theme cycle (System, Light, Dark, AMOLED black).
 6. **Diagnostics**: "Copy diagnostics".
 7. **App**: "Restart app", and "Reset all to defaults" with an inline confirmation.
@@ -739,8 +748,8 @@ counts only). Failures appear as an exception class and frame only. The report h
 app content or identifiers.
 The clipboard copy is marked sensitive.
 
-**Extension points** (not built yet): search above the categories, import and export next to
-"Copy diagnostics", and profiles after the master pause.
+**Extension points** (not built yet): import and export next to "Copy diagnostics", and
+profiles after the master pause.
 
 ## Registry format
 

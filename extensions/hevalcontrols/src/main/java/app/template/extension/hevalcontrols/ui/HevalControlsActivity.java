@@ -611,8 +611,17 @@ public final class HevalControlsActivity extends Activity {
             }
             group.add(feature);
         }
-        return groups;
+        // A "Spoiler-free" category goes first: it is the one a user opens the screen for.
+        List<Feature> first = groups.remove(FIRST_CATEGORY);
+        if (first == null) return groups;
+        Map<String, List<Feature>> ordered = new LinkedHashMap<>();
+        ordered.put(FIRST_CATEGORY, first);
+        ordered.putAll(groups);
+        return ordered;
     }
+
+    /** The category shown above all others, when an app has it. */
+    static final String FIRST_CATEGORY = "Spoiler-free";
 
     // -------------------------------------------------------------------------------------------
     // Sections and search
