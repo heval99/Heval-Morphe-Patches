@@ -4,6 +4,7 @@
 // modified 2026-10-14: new, much smaller screen for the patch-time registry (categories, states, restart badge),
 // minSdk 23 guards, light/dark/AMOLED palettes, OnBackInvokedCallback on API 33+, row-level accessibility.
 // 2026-11-03: list settings (a row per list feature and the ListPicker panel).
+// 2026-11-09: row and category icons (Icons), collapsible category sections and a search field.
 
 package app.template.extension.hevalcontrols.ui;
 
@@ -18,6 +19,9 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +30,10 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Switch;
@@ -38,6 +45,7 @@ import android.window.OnBackInvokedDispatcher;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import app.template.extension.hevalcontrols.CrashGuard;
@@ -53,12 +61,21 @@ import app.template.extension.hevalcontrols.Registry;
  * <p>A list feature gets a row with an "N hidden" summary; tapping it shows {@link ListPicker} in
  * place of the main screen (back or Done returns).
  *
- * <p>Extension points for later steps (not built yet): search above the categories, import and
- * export next to "Copy diagnostics", and profiles as a section after the master pause.
+ * <p>Each category is a collapsible section with an icon and a count (a section with more than
+ * {@link #COLLAPSE_ABOVE} rows starts collapsed), every row has an icon (its own or its
+ * category's), and a search field above the sections filters rows by name, description or category.
+ *
+ * <p>Extension points for later steps (not built yet): import and export next to "Copy
+ * diagnostics", and profiles as a section after the master pause.
  */
 @SuppressWarnings("unused")
 public final class HevalControlsActivity extends Activity {
     static final String TITLE = "Patch settings";
+
+    /** A category with more rows than this starts collapsed. */
+    static final int COLLAPSE_ABOVE = 8;
+    /** The search field shows from this many features on. */
+    static final int SEARCH_FROM = 8;
 
     /** Opens the screen; for in-app menu hooks. Never throws. */
     public static void open(Context context) {
@@ -80,6 +97,9 @@ public final class HevalControlsActivity extends Activity {
     private Switch pauseSwitch;
     private LinearLayout pauseRow;
     private final List<FeatureRow> rows = new ArrayList<>();
+    private final List<Section> sections = new ArrayList<>();
+    private TextView noMatch;
+    private String query = "";
     private Object backCallback;
     private LinearLayout root;
     private ScrollView scroll;
@@ -255,18 +275,14 @@ public final class HevalControlsActivity extends Activity {
         pauseCard.addView(pauseRow);
         views.add(content, pauseCard, 16);
 
+        if (registry.features().size() >= SEARCH_FROM) views.add(content, searchField(), 20);
         for (Map.Entry<String, List<Feature>> category : byCategory(registry.features()).entrySet()) {
-            views.add(content, views.heading(category.getKey()), 24);
-            LinearLayout card = views.card(palette.surface, palette.line);
-            card.setPadding(0, 0, 0, 0);
-            boolean first = true;
-            for (Feature feature : category.getValue()) {
-                if (!first) views.divider(card);
-                first = false;
-                card.addView(feature.isList() ? listRow(feature) : featureRow(feature));
-            }
-            views.add(content, card, 8);
+            buildSection(content, category.getKey(), category.getValue());
         }
+        noMatch = views.text("No setting matches your search.", 14, palette.muted, false);
+        noMatch.setVisibility(View.GONE);
+        views.add(content, noMatch, 16);
+        applyFilter();
 
         views.add(content, views.heading("Appearance"), 24);
         final Button theme = views.button(themeLabel(HevalSettings.theme()));
@@ -440,11 +456,24 @@ public final class HevalControlsActivity extends Activity {
 
     /** A focusable row with title, description, a state line and an optional trailing switch. */
     private LinearLayout switchRow(String title, String description, TextView stateLine, Switch toggle) {
+        return switchRow(title, description, stateLine, toggle, null);
+    }
+
+    /** As above, with a leading icon when {@code iconKey} is not null (see {@link Icons}). */
+    private LinearLayout switchRow(String title, String description, TextView stateLine, Switch toggle, String iconKey) {
         LinearLayout row = views.row();
         row.setMinimumHeight(views.dp(64));
         row.setPaddingRelative(views.dp(16), views.dp(12), views.dp(12), views.dp(12));
         row.setBackground(views.interactive(palette.surface, 0, 14, palette.accent));
         row.setFocusable(true);
+        if (iconKey != null) {
+            ImageView icon = new ImageView(this);
+            icon.setImageDrawable(Icons.of(iconKey, palette.accent, views.dp(22)));
+            icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(views.dp(22), views.dp(22));
+            iconParams.setMarginEnd(views.dp(14));
+            row.addView(icon, iconParams);
+        }
         LinearLayout texts = views.column();
         texts.addView(views.text(title, 16, palette.text, true));
         if (!description.isEmpty()) views.add(texts, views.text(description, 13, palette.muted, false), 4);
@@ -471,8 +500,8 @@ public final class HevalControlsActivity extends Activity {
             stateLine.addView(badge, params);
         }
         final Switch toggle = feature.buildTimeOnly ? null : views.toggle(false);
-        final LinearLayout row = switchRow(feature.name, feature.description, null, toggle);
-        ((LinearLayout) row.getChildAt(0)).addView(stateLine, topMargin(6));
+        final LinearLayout row = switchRow(feature.name, feature.description, null, toggle, iconKey(feature));
+        textColumn(row).addView(stateLine, topMargin(6));
         final FeatureRow holder = new FeatureRow(feature, row, toggle, state);
         rows.add(holder);
         if (toggle == null) return row;
@@ -516,8 +545,8 @@ public final class HevalControlsActivity extends Activity {
             params.setMarginStart(views.dp(8));
             stateLine.addView(badge, params);
         }
-        final LinearLayout row = switchRow(feature.name, feature.description, null, null);
-        ((LinearLayout) row.getChildAt(0)).addView(stateLine, topMargin(6));
+        final LinearLayout row = switchRow(feature.name, feature.description, null, null, iconKey(feature));
+        textColumn(row).addView(stateLine, topMargin(6));
         TextView edit = views.text("Edit", 14, palette.accent, true);
         edit.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -543,6 +572,20 @@ public final class HevalControlsActivity extends Activity {
         return row;
     }
 
+    /** The icon key of a row: its own, else its category's. */
+    private static String iconKey(Feature feature) {
+        return feature.icon.isEmpty() ? Icons.forCategory(feature.category) : feature.icon;
+    }
+
+    /** The column holding the title, description and state line (the child after the optional icon). */
+    private static LinearLayout textColumn(LinearLayout row) {
+        for (int i = 0; i < row.getChildCount(); i++) {
+            View child = row.getChildAt(i);
+            if (child instanceof LinearLayout) return (LinearLayout) child;
+        }
+        throw new IllegalStateException("Row has no text column");
+    }
+
     /** "None hidden", "1 hidden", "12 hidden". */
     static String hiddenSummary(int count) {
         return count == 0 ? "None hidden" : count + " hidden";
@@ -566,6 +609,152 @@ public final class HevalControlsActivity extends Activity {
             group.add(feature);
         }
         return groups;
+    }
+
+    // -------------------------------------------------------------------------------------------
+    // Sections and search
+    // -------------------------------------------------------------------------------------------
+
+    /** One category: a header (icon, name, count, chevron) over a card of rows. */
+    private final class Section {
+        final String category;
+        final LinearLayout header;
+        final TextView count, chevron;
+        final LinearLayout card;
+        final List<Item> items = new ArrayList<>();
+        boolean collapsed;
+
+        Section(String category, LinearLayout header, TextView count, TextView chevron, LinearLayout card, boolean collapsed) {
+            this.category = category;
+            this.header = header;
+            this.count = count;
+            this.chevron = chevron;
+            this.card = card;
+            this.collapsed = collapsed;
+        }
+    }
+
+    /** A row with the divider above it, so a filtered section never shows a stray divider. */
+    private static final class Item {
+        final LinearLayout box;
+        final View divider;
+        final String haystack;
+
+        Item(LinearLayout box, View divider, Feature feature) {
+            this.box = box;
+            this.divider = divider;
+            this.haystack = (feature.name + " " + feature.description).toLowerCase(Locale.ROOT);
+        }
+    }
+
+    private void buildSection(LinearLayout content, String category, List<Feature> features) {
+        LinearLayout header = views.row();
+        header.setMinimumHeight(views.dp(48));
+        header.setClickable(true);
+        header.setFocusable(true);
+        header.setBackground(views.interactive(0, 0, 10, palette.accent));
+        ImageView icon = new ImageView(this);
+        icon.setImageDrawable(Icons.of(Icons.forCategory(category), palette.muted, views.dp(20)));
+        icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(views.dp(20), views.dp(20));
+        iconParams.setMarginEnd(views.dp(10));
+        header.addView(icon, iconParams);
+        TextView title = views.heading(category);
+        header.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        TextView count = views.text("", 12, palette.muted, true);
+        header.addView(count, wrap(8));
+        TextView chevron = views.text("", 16, palette.muted, true);
+        header.addView(chevron, wrap(10));
+        views.add(content, header, 16);
+
+        LinearLayout card = views.card(palette.surface, palette.line);
+        card.setPadding(0, 0, 0, 0);
+        final Section section = new Section(category, header, count, chevron, card, features.size() > COLLAPSE_ABOVE);
+        for (Feature feature : features) {
+            LinearLayout box = views.column();
+            View divider = new View(this);
+            divider.setBackgroundColor(palette.line);
+            box.addView(divider, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Math.max(1, views.dp(1) / 2)));
+            box.addView(feature.isList() ? listRow(feature) : featureRow(feature));
+            card.addView(box);
+            section.items.add(new Item(box, divider, feature));
+        }
+        views.add(content, card, 8);
+        sections.add(section);
+        header.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                section.collapsed = !section.collapsed;
+                applyFilter();
+                view.announceForAccessibility(section.category + (section.collapsed ? " collapsed" : " expanded"));
+            }
+        });
+        header.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setClassName(Button.class.getName());
+            }
+        });
+    }
+
+    private View searchField() {
+        EditText field = new EditText(this);
+        field.setHint("Search settings");
+        field.setHintTextColor(palette.muted);
+        field.setTextColor(palette.text);
+        field.setTextSize(15);
+        field.setSingleLine(true);
+        field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        field.setImeOptions(EditorInfo.IME_ACTION_SEARCH | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+        field.setMinHeight(views.dp(48));
+        field.setPaddingRelative(views.dp(14), views.dp(8), views.dp(14), views.dp(8));
+        field.setBackground(views.shape(palette.surface, palette.outline, 12));
+        field.setContentDescription("Search settings");
+        if (Build.VERSION.SDK_INT >= 26) field.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
+        field.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence text, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence text, int start, int before, int count) { }
+
+            @Override
+            public void afterTextChanged(Editable text) {
+                query = text.toString().trim().toLowerCase(Locale.ROOT);
+                applyFilter();
+            }
+        });
+        return field;
+    }
+
+    /** Shows the rows that match the search (all when empty) and each section's collapsed state. */
+    private void applyFilter() {
+        boolean searching = !query.isEmpty();
+        boolean anySection = false;
+        for (Section section : sections) {
+            boolean categoryMatches = searching && section.category.toLowerCase(Locale.ROOT).contains(query);
+            boolean anyMatch = false, firstShown = true;
+            for (Item item : section.items) {
+                boolean match = !searching || categoryMatches || item.haystack.contains(query);
+                boolean show = match && (searching || !section.collapsed);
+                item.box.setVisibility(show ? View.VISIBLE : View.GONE);
+                if (show) {
+                    item.divider.setVisibility(firstShown ? View.GONE : View.VISIBLE);
+                    firstShown = false;
+                }
+                anyMatch |= match;
+            }
+            boolean open = searching || !section.collapsed;
+            section.header.setVisibility(anyMatch ? View.VISIBLE : View.GONE);
+            section.card.setVisibility(anyMatch && open ? View.VISIBLE : View.GONE);
+            section.count.setText(String.valueOf(section.items.size()));
+            section.chevron.setText(open ? "▾" : "▸");
+            describe(section.header, section.category + ", " + section.items.size()
+                    + (section.items.size() == 1 ? " setting" : " settings"), open ? "Expanded" : "Collapsed");
+            anySection |= anyMatch;
+        }
+        if (noMatch != null) noMatch.setVisibility(searching && !anySection ? View.VISIBLE : View.GONE);
     }
 
     // -------------------------------------------------------------------------------------------

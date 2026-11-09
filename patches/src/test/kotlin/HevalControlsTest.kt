@@ -102,6 +102,30 @@ class HevalControlsTest {
     }
 
     @Test
+    fun iconRecordsMatchTheSharedFixture() {
+        val features = listOf(
+            HevalFeature("demo.hide_ads", "Hide ads", "Removes banner and feed ads.", "Ads", icon = "ads"),
+            HevalListFeature(
+                "demo.hidden_countries", "Hidden countries",
+                "Leagues from the picked countries are hidden.", "Leagues", restartRequired = true, icon = "globe",
+            ),
+            HevalFeature("demo.plain", "Plain", "No icon of its own.", "Ads"),
+        )
+        val fixture = File(repoRoot(), "extensions/hevalcontrols/core/src/test/resources/registry-v1-icons.txt")
+        assertTrue(fixture.isFile, "missing ${fixture.path}")
+        assertEquals(fixture.readText(Charsets.UTF_8).replace("\r\n", "\n"), HevalRegistryCodec.encode(features))
+        // A feature without an icon still has exactly eight fields (the encoding is unchanged).
+        assertEquals(8, HevalRegistryCodec.encode(features.takeLast(1)).lines()[1].split('\t').size)
+    }
+
+    @Test
+    fun iconKeyValidation() {
+        assertThrows<IllegalArgumentException> { HevalFeature("demo.a", "A", "", "X", icon = "Bad Icon") }
+        assertThrows<IllegalArgumentException> { HevalFeature("demo.a", "A", "", "X", icon = "tab\tkey") }
+        assertEquals("eye_off", HevalFeature("demo.a", "A", "", "X", icon = "eye_off").icon)
+    }
+
+    @Test
     fun listFeatureValidation() {
         val list = HevalListFeature("demo.countries", "Hidden countries", "", "Leagues")
         assertEquals(HevalFeatureKind.LIST, list.kind)

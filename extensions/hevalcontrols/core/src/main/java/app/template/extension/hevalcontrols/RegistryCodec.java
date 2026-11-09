@@ -29,6 +29,11 @@ import java.util.Set;
  * buildTimeOnly {@code 1} is malformed and skipped; its default is always off. Fields after the
  * ninth are ignored, so a version-1 reader keeps working when a later bundle appends fields.
  *
+ * <p>An optional tenth field is the row's icon key (added 2026-11-09): a short lower-case key such
+ * as {@code eye_off}, escaped like the text fields; empty or missing means "use the category's
+ * icon". The encoder writes it only for a feature that names an icon (with an empty ninth field
+ * for a switch), so a registry without icons is byte-for-byte what it was before.
+ *
  * <p>The decoder never throws: a malformed record is skipped, an unknown header version yields an
  * empty, unsupported registry (every hook then answers stock).
  */
@@ -38,6 +43,8 @@ public final class RegistryCodec {
     private static final int FIELDS_V1 = 8;
     /** Index of the optional kind field. */
     private static final int KIND_FIELD = 8;
+    /** Index of the optional icon field. */
+    private static final int ICON_FIELD = 9;
 
     /** Result of {@link #decode(String)}. */
     public static final class Result {
@@ -118,8 +125,10 @@ public final class RegistryCodec {
                 }
             }
         }
+        String icon = fields.length > ICON_FIELD ? unescape(fields[ICON_FIELD]) : "";
+        if (icon == null) icon = "";
         return new Feature(id, name, description, category, defaultOn == 1, restart == 1, buildTime == 1, dependencies,
-                list ? Feature.KIND_LIST : Feature.KIND_SWITCH);
+                list ? Feature.KIND_LIST : Feature.KIND_SWITCH, icon);
     }
 
     private static int flag(String field) {

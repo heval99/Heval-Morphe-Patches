@@ -50,6 +50,12 @@ public final class Feature {
     /** {@link #KIND_SWITCH} or {@link #KIND_LIST}. */
     public final String kind;
 
+    /**
+     * Key of the row's icon on the settings screen (for example {@code "eye_off"}), or empty to use
+     * the icon of the feature's category. Purely visual; an unknown key draws the generic icon.
+     */
+    public final String icon;
+
     public Feature(String id, String name, String description, String category, boolean defaultEnabled,
                    boolean restartRequired, boolean buildTimeOnly, List<String> dependencies) {
         this(id, name, description, category, defaultEnabled, restartRequired, buildTimeOnly, dependencies, KIND_SWITCH);
@@ -57,10 +63,16 @@ public final class Feature {
 
     public Feature(String id, String name, String description, String category, boolean defaultEnabled,
                    boolean restartRequired, boolean buildTimeOnly, List<String> dependencies, String kind) {
+        this(id, name, description, category, defaultEnabled, restartRequired, buildTimeOnly, dependencies, kind, "");
+    }
+
+    public Feature(String id, String name, String description, String category, boolean defaultEnabled,
+                   boolean restartRequired, boolean buildTimeOnly, List<String> dependencies, String kind, String icon) {
         if (!isValidId(id)) throw new IllegalArgumentException("Invalid feature id");
         boolean list = KIND_LIST.equals(kind);
         if (list && buildTimeOnly) throw new IllegalArgumentException("A list feature cannot be build-time-only");
         this.kind = list ? KIND_LIST : KIND_SWITCH;
+        this.icon = icon == null ? "" : icon;
         this.id = id;
         this.name = name == null || name.isEmpty() ? id : name;
         this.description = description == null ? "" : description;
