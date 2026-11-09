@@ -813,6 +813,15 @@ missing from the text is imported as empty (the text is a snapshot). A profile o
 in one write (`HevalSettings.applyChoices`). Covered by `SettingsTransferTest`; the screen part has
 not run on a device.
 
+**Calm mode** (2026-11-09) is a one-tap row at the top of the Profiles section, shown when the registry has
+at least one switch with the `calm` flag (`HevalFeature(calm = true)`, the twelfth registry field, `1`). It
+first saves the current choices as the profile "Before Calm mode" (replacing an older one), then turns every
+calm switch on in one write; nothing else changes, so turning it off is applying that profile. The flag is set
+on: FotMob - Spoiler-free mode and its four surfaces, Hide betting content, Disable rating prompts, Disable
+FotMob+ promo popup; Sofascore - Spoiler-free mode and its three surfaces, Hide betting content, Disable
+rating prompts, Block marketing notifications and the hide-modal pop-up switches; 365Scores - Spoiler-free
+mode and its five surfaces. Not run on a device.
+
 **Extension points** (not built yet): none open at the moment; a launcher shortcut and translations
 remain on the list below.
 

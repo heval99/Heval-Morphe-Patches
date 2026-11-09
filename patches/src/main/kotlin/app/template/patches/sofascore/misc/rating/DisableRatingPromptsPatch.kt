@@ -14,6 +14,7 @@ internal const val RATING_MODAL = "Rating Info"
 
 internal val DISABLE_RATING_PROMPTS = HevalFeature(
     id = "sofascore.disable_rating_prompts",
+    calm = true,
     name = "Disable rating prompts",
     description = "Disables the rating prompt.",
     category = SofascoreControlsCategory.POPUPS,

@@ -41,6 +41,11 @@ data class HevalFeature(
      * their ids and their hooks stay unchanged. Empty is a plain switch.
      */
     val choice: String = "",
+    /**
+     * Part of the "Calm mode" preset (a one-tap row of the Profiles section that turns on spoiler
+     * protection and hides betting and promotions). Only for runtime switches.
+     */
+    val calm: Boolean = false,
 ) {
     init {
         require(ID_REGEX.matches(id)) { "Invalid Patch settings feature id: $id" }
@@ -57,6 +62,10 @@ data class HevalFeature(
         }
         require(dependencies.toSet().size == dependencies.size) { "Feature $id lists a dependency twice" }
         require(icon.isEmpty() || ICON_REGEX.matches(icon)) { "Feature $id has an invalid icon key: $icon" }
+        if (calm) {
+            require(kind == HevalFeatureKind.SWITCH) { "List feature $id cannot be part of Calm mode" }
+            require(!buildTimeOnly) { "Build-time-only feature $id cannot be part of Calm mode" }
+        }
         if (choice.isNotEmpty()) {
             require(kind == HevalFeatureKind.SWITCH) { "List feature $id cannot be a choice option" }
             require(!buildTimeOnly) { "Build-time-only feature $id cannot be a choice option" }
@@ -155,8 +164,10 @@ object HevalRegistryCodec {
                 ).let { fields ->
                     val kind = if (feature.kind == HevalFeatureKind.LIST) KIND_LIST else ""
                     when {
-                        // The choice title is the eleventh field, the icon the tenth and the kind the
-                        // ninth; each earlier field is written empty when a later one is present.
+                        // The calm flag is the twelfth field, the choice title the eleventh, the icon the
+                        // tenth and the kind the ninth; each earlier field is written empty when a later
+                        // one is present.
+                        feature.calm -> fields + kind + escape(feature.icon) + escape(feature.choice) + "1"
                         feature.choice.isNotEmpty() -> fields + kind + escape(feature.icon) + escape(feature.choice)
                         feature.icon.isNotEmpty() -> fields + kind + escape(feature.icon)
                         kind.isNotEmpty() -> fields + kind

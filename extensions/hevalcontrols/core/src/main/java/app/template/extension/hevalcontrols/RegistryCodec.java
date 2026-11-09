@@ -38,6 +38,9 @@ import java.util.Set;
  * of one category that share a title are shown as one choice row (see {@link Feature#choice}).
  * Escaped like the text fields; empty or missing means a plain switch.
  *
+ * <p>An optional twelfth field is the calm-mode flag (added 2026-11-09): {@code 1} marks a switch
+ * that the "Calm mode" preset turns on; empty, missing or anything else is not calm.
+ *
  * <p>The decoder never throws: a malformed record is skipped, an unknown header version yields an
  * empty, unsupported registry (every hook then answers stock).
  */
@@ -51,6 +54,8 @@ public final class RegistryCodec {
     private static final int ICON_FIELD = 9;
     /** Index of the optional single-choice group title field. */
     private static final int CHOICE_FIELD = 10;
+    /** Index of the optional calm-mode flag field. */
+    private static final int CALM_FIELD = 11;
 
     /** Result of {@link #decode(String)}. */
     public static final class Result {
@@ -135,8 +140,9 @@ public final class RegistryCodec {
         if (icon == null) icon = "";
         String choice = fields.length > CHOICE_FIELD ? unescape(fields[CHOICE_FIELD]) : "";
         if (choice == null) choice = "";
+        boolean calm = fields.length > CALM_FIELD && "1".equals(fields[CALM_FIELD]);
         return new Feature(id, name, description, category, defaultOn == 1, restart == 1, buildTime == 1, dependencies,
-                list ? Feature.KIND_LIST : Feature.KIND_SWITCH, icon, choice);
+                list ? Feature.KIND_LIST : Feature.KIND_SWITCH, icon, choice, calm);
     }
 
     private static int flag(String field) {

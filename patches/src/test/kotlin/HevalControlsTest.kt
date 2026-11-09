@@ -118,6 +118,7 @@ class HevalControlsTest {
                 "demo.anim_fast", "Faster animations", "Plays animations faster.", "Display", default = false,
                 restartRequired = true, icon = "play", choice = "Animation speed",
             ),
+            HevalFeature("demo.calm_on", "Calm", "Part of calm mode.", "Ads", calm = true),
         )
         val fixture = File(repoRoot(), "extensions/hevalcontrols/core/src/test/resources/registry-v1-icons.txt")
         assertTrue(fixture.isFile, "missing ${fixture.path}")
@@ -131,6 +132,17 @@ class HevalControlsTest {
         assertThrows<IllegalArgumentException> { HevalFeature("demo.a", "A", "", "X", icon = "Bad Icon") }
         assertThrows<IllegalArgumentException> { HevalFeature("demo.a", "A", "", "X", icon = "tab\tkey") }
         assertEquals("eye_off", HevalFeature("demo.a", "A", "", "X", icon = "eye_off").icon)
+    }
+
+    @Test
+    fun calmValidation() {
+        assertEquals(true, HevalFeature("demo.a", "A", "", "X", calm = true).calm)
+        assertThrows<IllegalArgumentException> {
+            HevalFeature("demo.a", "A", "", "X", default = false, kind = HevalFeatureKind.LIST, calm = true)
+        }
+        assertThrows<IllegalArgumentException> {
+            HevalFeature("demo.a", "A", "", "X", default = false, buildTimeOnly = true, calm = true)
+        }
     }
 
     @Test

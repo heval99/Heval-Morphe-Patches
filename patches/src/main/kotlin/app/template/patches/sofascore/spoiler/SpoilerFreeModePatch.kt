@@ -39,6 +39,7 @@ private const val MENU = "Landroid/view/Menu;"
 /** The master switch: marking (the menu items) and every surface below depend on it. */
 internal val SPOILER_FREE_MODE = HevalFeature(
     id = "sofascore.spoiler_free",
+    calm = true,
     name = "Spoiler-free mode",
     description = "Lets you hide scores for matches and competitions you mark, and goal alerts for matches you mark.",
     category = SofascoreControlsCategory.SPOILER_FREE,
@@ -48,6 +49,7 @@ internal val SPOILER_FREE_MODE = HevalFeature(
 /** Surface: pushes of marked matches. */
 internal val SPOILER_NOTIFICATIONS = HevalFeature(
     id = "sofascore.spoiler_notifications",
+    calm = true,
     name = "Hide goal alerts",
     description = "Blocks goal alerts for the matches you mark.",
     category = SofascoreControlsCategory.SPOILER_FREE,
@@ -58,6 +60,7 @@ internal val SPOILER_NOTIFICATIONS = HevalFeature(
 /** Surface: the score and status cells of the match list rows. */
 internal val SPOILER_LISTS = HevalFeature(
     id = "sofascore.spoiler_lists",
+    calm = true,
     name = "Hide scores in match lists",
     description = "Hides the score of marked matches in match lists.",
     category = SofascoreControlsCategory.SPOILER_FREE,
@@ -68,6 +71,7 @@ internal val SPOILER_LISTS = HevalFeature(
 /** Surface: the home-screen widget's match rows. */
 internal val SPOILER_WIDGET = HevalFeature(
     id = "sofascore.spoiler_widget",
+    calm = true,
     name = "Hide scores in the widget",
     description = "Hides the score of marked matches in the home-screen widget.",
     category = SofascoreControlsCategory.SPOILER_FREE,

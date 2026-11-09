@@ -189,8 +189,12 @@ public class RegistryCodecTest {
         RegistryCodec.Result result = RegistryCodec.decode(fixture("registry-v1-icons.txt"));
         assertTrue(result.supported);
         assertEquals(0, result.skipped);
-        assertEquals(5, result.features.size());
-        // The last two switches form one choice group; the first three are plain.
+        assertEquals(6, result.features.size());
+        // The calm-mode flag is the twelfth field.
+        assertTrue(result.features.get(5).calm);
+        assertFalse(result.features.get(0).calm);
+        assertFalse(result.features.get(1).calm);
+        // The fourth and fifth switches form one choice group; the first three are plain.
         assertEquals("", result.features.get(0).choice);
         assertEquals("", result.features.get(2).choice);
         assertEquals("Animation speed", result.features.get(3).choice);

@@ -1183,6 +1183,7 @@ public final class HevalControlsActivity extends Activity {
     /** Fills the Profiles card: save, one row per saved profile, then copy, share and import. */
     private void rebuildProfiles() {
         profileCard.removeAllViews();
+        addCalmRow();
         profileCard.addView(actionRow("Save current settings as a profile",
                 "Give the current choices a name, for example Match day.", "sliders", new View.OnClickListener() {
                     @Override
@@ -1223,6 +1224,35 @@ public final class HevalControlsActivity extends Activity {
                         importFromClipboard();
                     }
                 }));
+    }
+
+    /** "Calm mode": one row that turns on every switch the patches marked as calm (spoilers, betting, promotions). */
+    private void addCalmRow() {
+        final Map<String, Boolean> calm = new LinkedHashMap<>();
+        for (Feature feature : Registry.get().features()) {
+            if (feature.calm && !feature.buildTimeOnly && !feature.isList()) calm.put(feature.id, Boolean.TRUE);
+        }
+        if (calm.isEmpty()) return;
+        profileCard.addView(actionRow("Calm mode",
+                "Turns on spoiler protection and hides betting and promotions. Your current choices are saved first, as the profile Before Calm mode.",
+                "eye_off", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        applyCalm(calm);
+                    }
+                }));
+        views.divider(profileCard);
+    }
+
+    private void applyCalm(Map<String, Boolean> calm) {
+        boolean saved = profiles.save("Before Calm mode", SettingsTransfer.export(Registry.get()));
+        if (HevalSettings.applyChoices(calm, null)) {
+            rebuildProfiles();
+            refresh();
+            toast("Calm mode is on (" + calm.size() + " settings)" + (saved ? ". Your earlier choices are saved as Before Calm mode." : ""));
+        } else {
+            toast("Could not turn Calm mode on");
+        }
     }
 
     private void askProfileName() {

@@ -6,6 +6,7 @@ import app.template.patches.shared.hevalcontrols.HevalFeature
 /** The master switch: the marking toggles and every surface below depend on it. */
 internal val SPOILER_FREE_MODE = HevalFeature(
     id = "scores365.spoiler_free",
+    calm = true,
     name = "Spoiler-free mode",
     description = "Lets you hide scores and goal alerts for matches and competitions you mark.",
     category = Scores365ControlsCategory.SPOILER_FREE,
@@ -14,6 +15,7 @@ internal val SPOILER_FREE_MODE = HevalFeature(
 
 private fun spoilerSurface(id: String, name: String, description: String) = HevalFeature(
     id = id,
+    calm = true,
     name = name,
     description = description,
     category = Scores365ControlsCategory.SPOILER_FREE,

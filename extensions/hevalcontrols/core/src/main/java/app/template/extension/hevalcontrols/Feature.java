@@ -65,6 +65,12 @@ public final class Feature {
      */
     public final String choice;
 
+    /**
+     * Part of the "Calm mode" preset: the preset turns this switch on. Only meaningful for runtime
+     * switches; a list or a patch-time-only feature is never calm.
+     */
+    public final boolean calm;
+
     public Feature(String id, String name, String description, String category, boolean defaultEnabled,
                    boolean restartRequired, boolean buildTimeOnly, List<String> dependencies) {
         this(id, name, description, category, defaultEnabled, restartRequired, buildTimeOnly, dependencies, KIND_SWITCH);
@@ -83,6 +89,12 @@ public final class Feature {
     public Feature(String id, String name, String description, String category, boolean defaultEnabled,
                    boolean restartRequired, boolean buildTimeOnly, List<String> dependencies, String kind, String icon,
                    String choice) {
+        this(id, name, description, category, defaultEnabled, restartRequired, buildTimeOnly, dependencies, kind, icon, choice, false);
+    }
+
+    public Feature(String id, String name, String description, String category, boolean defaultEnabled,
+                   boolean restartRequired, boolean buildTimeOnly, List<String> dependencies, String kind, String icon,
+                   String choice, boolean calm) {
         if (!isValidId(id)) throw new IllegalArgumentException("Invalid feature id");
         boolean list = KIND_LIST.equals(kind);
         if (list && buildTimeOnly) throw new IllegalArgumentException("A list feature cannot be build-time-only");
@@ -90,6 +102,7 @@ public final class Feature {
         this.icon = icon == null ? "" : icon;
         // A choice option is a runtime switch: a list or a patch-time-only row cannot join one.
         this.choice = list || buildTimeOnly || choice == null ? "" : choice;
+        this.calm = calm && !list && !buildTimeOnly;
         this.id = id;
         this.name = name == null || name.isEmpty() ? id : name;
         this.description = description == null ? "" : description;

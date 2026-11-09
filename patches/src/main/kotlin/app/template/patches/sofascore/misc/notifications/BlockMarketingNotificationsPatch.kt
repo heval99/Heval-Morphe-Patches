@@ -21,6 +21,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 
 internal val BLOCK_MARKETING_NOTIFICATIONS = HevalFeature(
     id = FEATURE,
+    calm = true,
     name = "Block marketing notifications",
     description = "Blocks promo popups and banners.",
     category = SofascoreControlsCategory.POPUPS,

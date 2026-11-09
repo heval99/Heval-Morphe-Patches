@@ -25,6 +25,7 @@ internal val PROMO_POPUP_FEATURES: List<Pair<String, HevalFeature>> = listOf(
 ).map { (modal, key, title) ->
     modal to HevalFeature(
         id = "sofascore.hide_modal_$key",
+        calm = true,
         name = "Hide ${title.replaceFirstChar(Char::uppercaseChar)} pop-up",
         description = "Stops the $title pop-up.",
         category = SofascoreControlsCategory.POPUPS,

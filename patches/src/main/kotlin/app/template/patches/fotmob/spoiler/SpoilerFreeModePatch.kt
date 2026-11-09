@@ -44,6 +44,7 @@ private const val BUNDLE = "Landroid/os/Bundle;"
 
 internal val SPOILER_FREE_MODE = HevalFeature(
     id = "fotmob.spoiler_free",
+    calm = true,
     name = "Spoiler-free mode",
     description = "Lets you hide scores and goal alerts for matches and competitions you mark.",
     category = FotMobControlsCategory.SPOILER_FREE,
@@ -74,6 +75,7 @@ internal val SPOILER_FREE_COMPETITIONS = HevalListFeature(
 // chooses what gets hidden. A hook checks its own surface (SpoilerFree.hidesScoreIn* / blocksPush).
 private fun spoilerSurface(id: String, name: String, description: String) = HevalFeature(
     id = id,
+    calm = true,
     name = name,
     description = description,
     category = FotMobControlsCategory.SPOILER_FREE,

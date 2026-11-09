@@ -11,6 +11,7 @@ import app.template.patches.sofascore.controls.sofascoreControls
 
 internal val HIDE_BETTING_CONTENT = HevalFeature(
     id = "sofascore.hide_betting_content",
+    calm = true,
     name = "Hide betting content",
     description = "Hides odds and betting content.",
     category = SofascoreControlsCategory.BETTING,
