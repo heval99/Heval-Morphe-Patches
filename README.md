@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.3.0-dev.5](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.3.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**111** apps&nbsp;&nbsp;•&nbsp;&nbsp;**309** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-09
+> **[v2.3.0-dev.6](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.3.0-dev.6)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**111** apps&nbsp;&nbsp;•&nbsp;&nbsp;**309** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-09
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -129,7 +129,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="https://img.shields.io/badge/-%20-E94122?style=flat-square" height="14" alt=""> | **Add Music** | 💎 1 | `9.5` | APKM | [Play](https://play.google.com/store/apps/details?id=kgs.com.addmusictovideos) |
-| <img src="assets/icons/dk.dr.webplayer.png" width="20" height="20" alt=""> | **DRTV** | 🛡️ 🧩 3 | `4.39.0` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.dr.webplayer) |
+| <img src="assets/icons/dk.dr.webplayer.png" width="20" height="20" alt=""> | **DRTV** | 🛡️ 🧩 3 | `4.40.4` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.dr.webplayer) |
 | <img src="assets/icons/com.duplila.screenshare.png" width="20" height="20" alt=""> | **Duplila** | 🚫 💎 🔑 3 | `5.4` | APKM | [Play](https://play.google.com/store/apps/details?id=com.duplila.screenshare) |
 | <img src="assets/icons/app.expert.player.png" width="20" height="20" alt=""> | **TV Smarters Player Expert** | 🚫 💎 2 | `11.6.1` | APKM | [Play](https://play.google.com/store/apps/details?id=app.expert.player) |
 | <img src="assets/icons/com.viaplay.android.png" width="20" height="20" alt=""> | **Viaplay** | 🚫 🛡️ 🧪 2 | `26.42.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.viaplay.android) |
@@ -379,7 +379,7 @@ Verified on: `241.18134.20261030`
 
 | Patch | What it does | Default |
 |---|---|:-:|
-| 🧩 **AMOLED black** | Makes the dark theme pure black on OLED screens. | ➖ |
+| 🧩 **AMOLED black** | Makes the dark theme pure black on OLED screens. Can be turned off in Patch settings. | ➖ |
 | 💎 **Disable FotMob+ promo popup** | Disables the FotMob+ promo popup. | ✅ |
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
 | 🔕 **Disable rating prompts** | Disables the rating prompt. | ✅ |
@@ -966,7 +966,7 @@ Verified on: `9.5`
 <details>
 <summary><img src="assets/icons/dk.dr.webplayer.png" width="16" height="16" alt=""> <b>DRTV</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>dk.dr.webplayer</code></summary>
 
-Verified on: `4.39.0`
+Verified on: `4.40.4`
 
 | Patch | What it does | Default |
 |---|---|:-:|

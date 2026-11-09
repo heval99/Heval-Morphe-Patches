@@ -1,3 +1,26 @@
+## 2.3.0-dev.6 (2026-11-09)
+
+### 📱 FotMob `241.18134.20261030`
+- New: Make AMOLED black a Patch settings switch
+
+### 📱 Mango Launcher `1.64`
+- Fixed: Keep Pro unlocked after the Play Billing purchase query
+
+### 📱 Truecaller `26.43.5`
+- New: Hide promotions also turns off the Gold gift promo
+
+### ⬆️ Updated apps
+| App | From | To |
+|---|---|---|
+| DRTV | `4.39.0` | `4.40.4` |
+
+### 🔧 Other
+- New: Add profiles, export and import
+- New: Add a one-tap Calm mode preset
+- New: Show AMOLED black as a read-only row in Sofascore and 365Scores
+
+**Download:** [patches-2.3.0-dev.6.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.3.0-dev.6/patches-2.3.0-dev.6.mpp)
+
 ## 2.3.0-dev.5 (2026-11-09)
 
 ### 📱 365Scores `15.0.0`
