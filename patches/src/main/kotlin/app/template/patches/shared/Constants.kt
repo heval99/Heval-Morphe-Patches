@@ -73,6 +73,10 @@ object Constants {
     // LeagueActivity onCreateOptionsMenu and their (Event)V/(UniqueTournament)V methods,
     // EventListScoreTextView.setText, the row binder (5+ score cells and an Event getter) and the
     // widget row builder (first_main/second_main ids). Smoke test only; not run on a device.
+    // 2026-11-09: added "AMOLED black" (opt-in resource patch: the night values of surface_1 and
+    // surface_P in values-night/colors.xml, each checked against its stock value; surface_0 was
+    // already #000000). A CLI run without -f changed exactly those two values in the resource table
+    // (aapt2 diff, plus the usual case-twin id renames); not run on a device.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",

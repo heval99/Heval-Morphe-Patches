@@ -88,6 +88,7 @@ private const val START_ACTIVITY = "Lcom/sofascore/results/main/start/StartActiv
 private const val SIGNATURE_SHA1 = "e235776bc0ad3837b01359177c438658b1424d23"
 
 private val SOFASCORE_PATCHES = setOf(
+    "AMOLED black",
     "Animation speed",
     "Block marketing notifications",
     "Disable Facebook SDK",
@@ -808,6 +809,9 @@ class SofascoreSmokeTest {
         // Spoiler-free mode (2026-11-08): push gate, menu items, list rows and widget.
         assertSpoilerFree(byType, originalClasses(apk))
 
+        // AMOLED black (2026-11-09): the night cards and elevated surfaces are near black.
+        assertAmoledBlack()
+
         // Heval Controls: extension, registry, manifest components and the Settings row.
         assertHevalControls(byType)
     }
@@ -827,6 +831,22 @@ class SofascoreSmokeTest {
     // Spoiler-free mode: every hook starts with the gate of its own switch (the master for the menu
     // items, one switch per surface for the rest), the gate jumps straight into the unchanged stock
     // code when that switch is off, and the enabled path calls the SpoilerFree helper.
+    /** AMOLED black: surface_1 and surface_P of the decoded values-night/colors.xml carry the AMOLED values. */
+    private fun assertAmoledBlack() {
+        val colors = workDir.walkTopDown().singleOrNull { it.name == "colors.xml" && it.parentFile.name == "values-night" }
+            ?: error("res/values-night/colors.xml was not decoded under $workDir")
+        val doc = javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(colors)
+        val nodes = doc.getElementsByTagName("color")
+        val values = (0 until nodes.length).associate { index ->
+            val node = nodes.item(index) as org.w3c.dom.Element
+            node.getAttribute("name") to node.textContent.trim().lowercase().let { if (it.length == 9 && it.startsWith("#ff")) "#" + it.substring(3) else it }
+        }
+        org.junit.jupiter.api.Assertions.assertEquals("#0a0a0a", values["surface_1"], "AMOLED black: surface_1")
+        org.junit.jupiter.api.Assertions.assertEquals("#141414", values["surface_P"], "AMOLED black: surface_P")
+        // The page background stays pure black.
+        org.junit.jupiter.api.Assertions.assertEquals("#000000", values["surface_0"], "surface_0")
+    }
+
     private fun assertSpoilerFree(byType: Map<String, ClassDef>, stock: List<ClassDef>) {
         check(SPOILER_FREE in byType) { "SpoilerFree is not in the patched dex" }
         val stockByType = stock.associateBy { it.type }
