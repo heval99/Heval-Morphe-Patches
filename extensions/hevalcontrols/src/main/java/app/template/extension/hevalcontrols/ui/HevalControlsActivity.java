@@ -54,6 +54,7 @@ import app.template.extension.hevalcontrols.CrashGuard;
 import app.template.extension.hevalcontrols.Feature;
 import app.template.extension.hevalcontrols.HevalSettings;
 import app.template.extension.hevalcontrols.Registry;
+import app.template.extension.hevalcontrols.SettingsTransfer;
 
 /**
  * The Patch settings screen. Declared {@code exported="false"} by the patch: only the
@@ -101,6 +102,8 @@ public final class HevalControlsActivity extends Activity {
     private final List<FeatureRow> rows = new ArrayList<>();
     private final List<Section> sections = new ArrayList<>();
     private final List<ChoiceRow> choiceRows = new ArrayList<>();
+    private Profiles profiles;
+    private LinearLayout profileCard;
     private TextView noMatch;
     private String query = "";
     private Object backCallback;
@@ -286,6 +289,15 @@ public final class HevalControlsActivity extends Activity {
         noMatch.setVisibility(View.GONE);
         views.add(content, noMatch, 16);
         applyFilter();
+
+        profiles = new Profiles(this);
+        views.add(content, views.heading("Profiles"), 24);
+        views.add(content, views.text("Save the current settings under a name and apply them later, or move them to another phone.",
+                13, palette.muted, false), 8);
+        profileCard = views.card(palette.surface, palette.line);
+        profileCard.setPadding(0, 0, 0, 0);
+        views.add(content, profileCard, 8);
+        rebuildProfiles();
 
         views.add(content, views.heading("Appearance"), 24);
         final Button theme = views.button(themeLabel(HevalSettings.theme()));
@@ -1148,6 +1160,186 @@ public final class HevalControlsActivity extends Activity {
     // -------------------------------------------------------------------------------------------
     // Actions
     // -------------------------------------------------------------------------------------------
+
+    // -------------------------------------------------------------------------------------------
+    // Profiles, export and import
+    // -------------------------------------------------------------------------------------------
+
+    /** A tappable row of the Profiles card. */
+    private View actionRow(String title, String description, String iconKey, View.OnClickListener action) {
+        LinearLayout row = switchRow(title, description, null, null, iconKey);
+        row.setClickable(true);
+        row.setOnClickListener(action);
+        row.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setClassName(Button.class.getName());
+            }
+        });
+        return row;
+    }
+
+    /** Fills the Profiles card: save, one row per saved profile, then copy, share and import. */
+    private void rebuildProfiles() {
+        profileCard.removeAllViews();
+        profileCard.addView(actionRow("Save current settings as a profile",
+                "Give the current choices a name, for example Match day.", "sliders", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        askProfileName();
+                    }
+                }));
+        for (final String name : profiles.names()) {
+            views.divider(profileCard);
+            profileCard.addView(actionRow(name, "Tap to apply or delete this profile.", "list", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    profileActions(name);
+                }
+            }));
+        }
+        views.divider(profileCard);
+        profileCard.addView(actionRow("Copy settings", "Copies your choices as text, to keep or to paste on another phone.",
+                "tabs", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        copySettings();
+                    }
+                }));
+        views.divider(profileCard);
+        profileCard.addView(actionRow("Share settings", "Sends your choices as text through the share sheet.",
+                "chat", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        shareSettings();
+                    }
+                }));
+        views.divider(profileCard);
+        profileCard.addView(actionRow("Import settings from the clipboard",
+                "Applies settings you copied with Copy settings.", "refresh", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        importFromClipboard();
+                    }
+                }));
+    }
+
+    private void askProfileName() {
+        final EditText input = new EditText(this);
+        input.setSingleLine(true);
+        input.setHint("Profile name");
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Save profile")
+                .setView(input)
+                .setPositiveButton("Save", new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface dialog, int which) {
+                        String name = Profiles.cleanName(input.getText().toString());
+                        if (name == null) {
+                            toast("Use a name of 1 to " + Profiles.MAX_NAME + " characters");
+                        } else if (profiles.save(name, SettingsTransfer.export(Registry.get()))) {
+                            rebuildProfiles();
+                            toast("Saved " + name);
+                        } else {
+                            toast("Could not save the profile (at most " + Profiles.MAX_PROFILES + ")");
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void profileActions(final String name) {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(name)
+                .setItems(new String[] {"Apply", "Delete"}, new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface dialog, int which) {
+                        if (which == 0) applySettingsText(profiles.get(name), name);
+                        else if (profiles.delete(name)) {
+                            rebuildProfiles();
+                            toast("Deleted " + name);
+                        } else {
+                            toast("Could not delete the profile");
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /** Applies a settings text right away (a saved profile), saying what it did. */
+    private void applySettingsText(String text, String what) {
+        SettingsTransfer.Parsed parsed = SettingsTransfer.parse(text, Registry.get());
+        if (!parsed.valid) {
+            toast("That profile can't be read");
+        } else if (!SettingsTransfer.apply(parsed)) {
+            toast("Could not apply " + what);
+        } else {
+            refresh();
+            toast("Applied " + what + (parsed.skipped > 0 ? " (" + parsed.skipped + " not in this app)" : ""));
+        }
+    }
+
+    private void copySettings() {
+        try {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setPrimaryClip(ClipData.newPlainText("Patch settings", SettingsTransfer.export(Registry.get())));
+            toast("Settings copied");
+        } catch (Throwable failure) {
+            toast("Could not copy the settings");
+        }
+    }
+
+    private void shareSettings() {
+        try {
+            Intent send = new Intent(Intent.ACTION_SEND);
+            send.setType("text/plain");
+            send.putExtra(Intent.EXTRA_TEXT, SettingsTransfer.export(Registry.get()));
+            startActivity(Intent.createChooser(send, "Share settings"));
+        } catch (Throwable failure) {
+            toast("Could not share the settings");
+        }
+    }
+
+    private void importFromClipboard() {
+        String text = null;
+        try {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = clipboard.getPrimaryClip();
+            if (clip != null && clip.getItemCount() > 0) {
+                CharSequence copied = clip.getItemAt(0).coerceToText(this);
+                if (copied != null) text = copied.toString();
+            }
+        } catch (Throwable failure) {
+            // Treated as an empty clipboard.
+        }
+        final SettingsTransfer.Parsed parsed = SettingsTransfer.parse(text, Registry.get());
+        if (!parsed.valid) {
+            toast("The clipboard has no copied Patch settings");
+            return;
+        }
+        final String summary = parsed.count() + " settings"
+                + (parsed.skipped > 0 ? ", " + parsed.skipped + " not in this app are skipped" : "");
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Import settings")
+                .setMessage("Apply " + summary + "? Your current choices are replaced.")
+                .setPositiveButton("Apply", new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface dialog, int which) {
+                        if (SettingsTransfer.apply(parsed)) {
+                            refresh();
+                            toast("Settings imported");
+                        } else {
+                            toast("Could not import the settings");
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
 
     private void copyDiagnostics() {
         try {

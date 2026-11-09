@@ -789,8 +789,22 @@ counts only). Failures appear as an exception class and frame only. The report h
 app content or identifiers.
 The clipboard copy is marked sensitive.
 
-**Extension points** (not built yet): import and export next to "Copy diagnostics", and
-profiles after the master pause.
+**Profiles, export and import** (2026-11-09). A "Profiles" section above Appearance: "Save current
+settings as a profile" (a name of 1 to 40 characters, at most 20 profiles, kept in their own
+`heval_profiles` file so "Reset all to defaults" never removes them), one row per saved profile
+(Apply or Delete), "Copy settings", "Share settings" and "Import settings from the clipboard"
+(with a confirmation that says how many settings it applies). The text is
+`hevalcontrols-settings:1` followed by one line per choice (`f TAB id TAB 1|0` for a switch,
+`l TAB id TAB key` for each picked key of a list), written by `SettingsTransfer.export` and read by
+`SettingsTransfer.parse`; it holds choices only, not the pause, safe mode, theme or the options a
+picker has seen. Importing is forgiving: records for features this app does not have, of the wrong
+kind or with a bad value are skipped and counted, text without the header is rejected, and a list
+missing from the text is imported as empty (the text is a snapshot). A profile or import is applied
+in one write (`HevalSettings.applyChoices`). Covered by `SettingsTransferTest`; the screen part has
+not run on a device.
+
+**Extension points** (not built yet): none open at the moment; a launcher shortcut and translations
+remain on the list below.
 
 ## Registry format
 
