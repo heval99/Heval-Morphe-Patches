@@ -1244,6 +1244,7 @@ class TruecallerSmokeTest {
             "featureAcsWhoViewedMeBanner" to 0,
             "featureReferralNavDrawer" to 0,
             "featureRedeemPromo" to 0,
+            "featureGoldPremiumGift" to 0,
             "featureShowACSAllIncoming" to 0,
             "featureShowACSAllOutgoing" to 0,
             "DisableWVMNotifications_65487" to 1,
@@ -1269,6 +1270,7 @@ class TruecallerSmokeTest {
             "featureRatingsAndReviewsSurveys", "featureBlockSurveyFlow", "featureFeedbackSurvey",
         ).associateWith { DISABLE_NAGS } + listOf(
             "featurePersonalSafetyPromo", "featureAcsWhoViewedMeBanner", "featureReferralNavDrawer", "featureRedeemPromo",
+            "featureGoldPremiumGift",
         ).associateWith { HIDE_PROMOTIONS } + listOf(
             "featureShowACSAllIncoming", "featureShowACSAllOutgoing",
         ).associateWith { HIDE_AFTER_CALL_CONTACTS }

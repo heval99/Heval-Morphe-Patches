@@ -26,6 +26,9 @@ val hidePromotionsPatch = truecallerControls.featurePatch(
     // (Guardians home promo), "featureAcsWhoViewedMeBanner" (after-call upsell banner),
     // "featureReferralNavDrawer" and "featureRedeemPromo" (one read with the key right before
     // the call, two where the const-string is hoisted further up; the read check needs one).
+    // "featureGoldPremiumGift" (2026-11-09) is the Gold gift promo: its getter backs the check that
+    // decides whether the "gift Gold" promo and its notification worker (GoldGiftNotificationWorker)
+    // run, next to the server flag "goldGiftPromoEnabled_31409" that is not touched here.
     // "featurePersonalSafetyMenuItem" and "featureTruecallerNewsMenuItem" are only in the
     // toggle catalogue (no reads), and "featureChatWithZipZipMenuItem" is the Help "Chat with
     // us" support row, so all three are left alone.
@@ -35,6 +38,7 @@ val hidePromotionsPatch = truecallerControls.featurePatch(
             "featureAcsWhoViewedMeBanner",
             "featureReferralNavDrawer",
             "featureRedeemPromo",
+            "featureGoldPremiumGift",
         ),
         false,
         FEATURE,
