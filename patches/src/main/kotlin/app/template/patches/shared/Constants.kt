@@ -2809,13 +2809,19 @@ object Constants {
     // 3 fresh-install cold starts with no crash, no ad row or gap and no "Remove ads" toolbar item;
     // a workout runs and counts down. Pause, the finish screen, sounds and an explicit config
     // re-sync were not checked.
+    // 2026-11-11: updated to 2.3.31 (versionCode 239031, Play, same O=dreamspark.cc signer). The User
+    // model (id, token, config_ads, config_*) lost the rewarded-ad window fields ("local_ads_time",
+    // "local_ads_off") and its ad-state getter lost the "2" branch (3 ad-free, 1 ads, 0 unknown), so
+    // the User anchor is now JSON fields "config_ads" + "token" with literals 3 and 1; AppInstallation
+    // keeps its old anchor ("device" + the three ad fields, literals 3/2/1). The old User getter name
+    // is not referenced. Smoke test and CLI without -f verified on 2.3.31.
     val COMPATIBILITY_INTERVALTIMER = Compatibility(
         name = "Interval Timer",
         packageName = "cc.dreamspark.intervaltimer",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x607D8B,
         signatures = setOf("3de6afd771d45215b2fed0573cf27a726a78ec4d151b04efb1c0ce160fa96a48"), // CN=Su-Au Hwang, O=dreamspark.cc
-        targets = listOf(AppTarget(version = "2.3.30", versionCode = 239030))
+        targets = listOf(AppTarget(version = "2.3.31", versionCode = 239031))
     )
 
     // Added 2026-10-14 from the Reddit request queue (ads only: premium is an account role from
