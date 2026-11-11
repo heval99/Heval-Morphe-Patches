@@ -1329,7 +1329,24 @@ object Constants {
             // Flutter bridge handlers still match. OneFootballSmokeTest passes; CLI (no -f)
             // Applied and the changed methods decompile as intended. 15.147.0 dropped (latest
             // verified version only). 2026-11-03 emulator: stock and patched both hit a splash ANR under emulator load (not the patch); no crash.
-            AppTarget(version = "15.148.0", versionCode = 1045029590)
+            // 2026-11-11: updated to version 15.150.0 (versionCode 1045049820; Google Play, arm64-v8a
+            // split bundle merged; signer CN=Appsolute OU=SD, cert SHA-256 5099231f...56ab, matches).
+            // R8 renamed the protobuf Any class (com.google.protobuf.Any -> Lkq0;) that both ad
+            // component parsers take as their fourth parameter, so those two fingerprints now
+            // accept any object type there (the rest of the parse shape and the generated
+            // Ads$...ComponentProperties.parseFrom call are unchanged); both match uniquely again.
+            // The getAdData / getOMPAdData handlers are unchanged. The Google Mobile Ads SDK is not:
+            // 15.150.0 ships it R8-compacted (84 classes against 661): InterstitialAd, RewardedAd,
+            // AppOpenAd and AdLoader are renamed, AppOpenAdPreloader is gone, and MobileAds.initialize /
+            // openDebugMenu are renamed (a / b). Disable ads is reworked on stable anchors: the shared
+            // Flutter google_mobile_ads plugin hook (all eight concrete loads report NO_FILL), every MobileAds
+            // static void neutered (no names required; a static void taking Context must exist), and the
+            // native loads found by signature (void taking an AdRequest / AdManagerAdRequest inside
+            // com.google.android.gms.ads, static void (Context, String, request, ...) anywhere; the
+            // BaseAdView and AdManagerAdView loadAd are required). Smoke test passes; CLI (no -f)
+            // Applied, 24 classes changed, MobileAds / BaseAdView / AdLoader disassembled (apkanalyzer).
+            // 15.148.0 dropped (latest verified version only). Not run on an emulator.
+            AppTarget(version = "15.150.0", versionCode = 1045049820)
         )
     )
 
