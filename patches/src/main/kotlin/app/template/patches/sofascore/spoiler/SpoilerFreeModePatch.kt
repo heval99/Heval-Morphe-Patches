@@ -41,7 +41,7 @@ internal val SPOILER_FREE_MODE = HevalFeature(
     id = "sofascore.spoiler_free",
     calm = true,
     name = "Spoiler-free mode",
-    description = "Lets you hide scores for matches and competitions you mark, and goal alerts for matches you mark.",
+    description = "Adds a Spoiler-free item to match and competition menus to hide their scores.",
     category = SofascoreControlsCategory.SPOILER_FREE,
     icon = "eye_off",
 )
@@ -50,8 +50,8 @@ internal val SPOILER_FREE_MODE = HevalFeature(
 internal val SPOILER_NOTIFICATIONS = HevalFeature(
     id = "sofascore.spoiler_notifications",
     calm = true,
-    name = "Hide goal alerts",
-    description = "Blocks goal alerts for the matches you mark.",
+    name = "Hide alerts for marked matches",
+    description = "Blocks alerts, goals included, for the matches you mark.",
     category = SofascoreControlsCategory.SPOILER_FREE,
     icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
@@ -62,7 +62,7 @@ internal val SPOILER_LISTS = HevalFeature(
     id = "sofascore.spoiler_lists",
     calm = true,
     name = "Hide scores in match lists",
-    description = "Hides the score of marked matches in match lists.",
+    description = "Hides the scores of marked matches in match lists.",
     category = SofascoreControlsCategory.SPOILER_FREE,
     icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
@@ -72,8 +72,8 @@ internal val SPOILER_LISTS = HevalFeature(
 internal val SPOILER_WIDGET = HevalFeature(
     id = "sofascore.spoiler_widget",
     calm = true,
-    name = "Hide scores in the widget",
-    description = "Hides the score of marked matches in the home-screen widget.",
+    name = "Hide scores in the home screen widget",
+    description = "Hides the scores of marked matches in the widget.",
     category = SofascoreControlsCategory.SPOILER_FREE,
     icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
@@ -83,17 +83,17 @@ internal val SPOILER_WIDGET = HevalFeature(
 internal val SPOILER_EVENTS = HevalListFeature(
     id = "sofascore.spoiler_events",
     name = "Marked matches",
-    description = "Matches you marked on their match page. Remove one to show its score again.",
+    description = "Remove a match here to show its score again.",
     category = SofascoreControlsCategory.SPOILER_FREE,
     icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
 )
 
-/** The competitions marked on their page (UniqueTournament ids, like "Hidden competitions"). */
+/** The competitions marked on their page (UniqueTournament ids, like "Hide competitions"). */
 internal val SPOILER_COMPETITIONS = HevalListFeature(
     id = "sofascore.spoiler_competitions",
     name = "Marked competitions",
-    description = "Competitions you marked on their page. Remove one to show its scores again.",
+    description = "Remove a competition here to show its scores again.",
     category = SofascoreControlsCategory.SPOILER_FREE,
     icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
@@ -262,6 +262,8 @@ private fun BytecodePatchContext.widgetRow(): Pair<MutableMethod, String> {
 @Suppress("unused")
 val spoilerFreeModePatch = sofascoreControls.featurePatch(
     SPOILER_FREE_MODE,
+    // The Manager patch keeps its name and description; only the Patch settings row was reworded (2026-11-11).
+    description = "Lets you hide scores for matches and competitions you mark, and goal alerts for matches you mark.",
     default = true,
 ) {
     // The Sofascore extension comes with the Patch settings host (its Settings row lives there).

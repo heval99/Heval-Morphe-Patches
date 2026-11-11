@@ -365,9 +365,15 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.spoiler_competitions` (list) | Spoiler-free mode | off | no | read by every spoiler hook; filled by the competition page item |
 
 AMOLED black (2026-11-09, `sofascore.amoled_black`, build-time only) is an opt-in resource patch (the night values of
-`surface_1` and `surface_P`); the Patch settings screen shows it as a read-only "Applied at patch time" row.
+`surface_1` and `surface_P`); the Patch settings screen shows it as a read-only "Applied at patch time" row
+(titled "Pure black dark theme" since 2026-11-11; the Manager patch is still "AMOLED black").
 Sofascore reads its dark colors by name, so a runtime switch is not possible (the patcher's resource API can only
 edit entries of existing resource files, so a second color set under a new qualifier cannot be added).
+
+Sofascore row titles changed on 2026-11-11 (ids and Manager patch names unchanged): "Hidden countries" and
+"Hidden competitions" are "Hide countries" and "Hide competitions", "Turn off animations" is "No animations",
+"Hide goal alerts" is "Hide alerts for marked matches"; the sections are Scores and spoilers, Leagues and
+countries, Sports, Match page, Bottom tabs, Pop-ups and banners, Betting and promotions, Look and feel.
 
 Hidden countries (2026-11-03) keys are the categories' `alpha2` codes (Sofascore's own, e.g. EN
 England, SX Scotland, WA Wales, NX Northern Ireland, XK Kosovo); categories without one (World,
@@ -763,9 +769,12 @@ The limits are stated in the UI, too. Safe mode cannot help when:
 2. **Banners**: safe mode, engine failure, unreadable registry, and pending restarts with a
    "Restart now" button.
 3. **Master switch**: "Pause all patches".
-4. **Feature rows**, one collapsible section per category (2026-11-09: an icon, a row count and a
-   chevron on the header; a category with more than 8 rows starts collapsed; a category named
-   "Spoiler-free" is always listed first). A search field above the sections (shown from 8
+4. **Feature rows**, one collapsible section per category (2026-11-09: an icon and a chevron on the
+   header; 2026-11-11: the header reads "N of M on", in accent when something is on; when the screen
+   has a search field (8+ features) a section starts collapsed unless one of its rows is on; a
+   category whose name contains "spoiler" is listed first; core `Sections.java`). An enabled row has
+   a 4 dp accent bar at its start and a bold accent "On"; descriptions are 14sp, cut at two lines
+   (the spoken description keeps the full text). A search field above the sections (shown from 8
    features on) filters rows by name, description or category. Each row has an icon (the
    feature's `icon` key, else its category's: `ui/Icons.java`, drawn in code, no resources), a
    name, a description, a state line and, for restart-required features, a "Restart" badge. A

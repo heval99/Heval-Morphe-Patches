@@ -29,8 +29,8 @@ private val amoledColorsPatch = amoledBlackResourcePatch(
 // needs the app's dark colors to come from theme attributes, as FotMob's do.
 internal val AMOLED_BLACK = HevalFeature(
     id = "sofascore.amoled_black",
-    name = "AMOLED black",
-    description = "The dark theme was made pure black when the app was patched. Patch again without AMOLED black to go back.",
+    name = "Pure black dark theme",
+    description = "Set when the app was patched; patch again without AMOLED black to undo it.",
     category = SofascoreControlsCategory.DISPLAY,
     buildTimeOnly = true,
     icon = "moon",

@@ -39,15 +39,16 @@ final class Icons {
         if (name.contains("competition") || name.contains("league")) return TROPHY;
         if (name.contains("sport")) return BALL;
         if (name.contains("animation") || name.contains("video") || name.contains("player")) return PLAY;
+        // Before "promo", so "Betting and promotions" keeps the betting icon.
+        if (name.contains("bett") || name.contains("odds")) return TICKET;
         if (name.contains("promo") || name.contains("marketing") || name.contains("pop")) return TAG;
         if (name.contains("chat") || name.contains("message") || name.contains("comment")) return CHAT;
         if (name.contains("widget") || name.contains("refresh") || name.contains("sync")) return REFRESH;
         if (name.contains("font") || name.contains("text")) return TEXT;
         if (name.contains("theme") || name.contains("appearance") || name.contains("amoled") || name.contains("dark")
-                || name.contains("display")) return MOON;
+                || name.contains("display") || name.contains("look")) return MOON;
         if (name.contains("speed") || name.contains("battery") || name.contains("perform")) return CLOCK;
         if (name.contains("develop") || name.contains("debug")) return BUG;
-        if (name.contains("bett") || name.contains("odds")) return TICKET;
         if (name.contains("tab") || name.contains("bar") || name.contains("match") || name.contains("layout") || name.contains("home")
                 || name.contains("screen") || name.contains("menu")) return TABS;
         if (name.contains("call") || name.contains("contact") || name.contains("profile")) return LIST;

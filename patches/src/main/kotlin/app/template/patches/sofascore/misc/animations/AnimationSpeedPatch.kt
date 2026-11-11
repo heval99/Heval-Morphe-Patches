@@ -23,14 +23,14 @@ import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodRefere
 
 /**
  * The two "Animation speed" switches. The Patch settings registry only has on/off switches, so
- * the three-way choice (stock / faster / off) is two switches, and "Turn off animations" wins when
+ * the three-way choice (stock / faster / off) is two switches, and "No animations" wins when
  * both are on. Both start off (stock) and are read once per process.
  */
 internal val ANIMATION_FEATURES: List<HevalFeature> = listOf(
     HevalFeature(
         id = "sofascore.animations_off",
-        name = "Turn off animations",
-        description = "Turns off animations and screen transitions. Wins over Faster animations.",
+        name = "No animations",
+        description = "Turns off animations and screen transitions.",
         category = SofascoreControlsCategory.PERFORMANCE,
         default = false,
         restartRequired = true,

@@ -17,6 +17,24 @@ import app.template.patches.shared.hevalcontrols.addHevalValueHelper
 import app.template.patches.shared.hevalcontrols.filterThroughHevalHelper
 import app.template.patches.shared.hevalcontrols.hevalReturnEarly
 import app.template.patches.shared.hevalcontrols.hevalReturnNull
+import app.template.patches.sofascore.betting.HIDE_BETTING_CONTENT
+import app.template.patches.sofascore.competitions.HIDDEN_COMPETITIONS
+import app.template.patches.sofascore.controls.SofascoreControlsCategory
+import app.template.patches.sofascore.countries.HIDDEN_COUNTRIES
+import app.template.patches.sofascore.layout.HIDE_AI_INSIGHTS
+import app.template.patches.sofascore.layout.HIDE_MATCH_CHAT
+import app.template.patches.sofascore.layout.MAIN_TAB_FEATURES
+import app.template.patches.sofascore.layout.MATCH_TAB_FEATURES
+import app.template.patches.sofascore.misc.animations.ANIMATION_FEATURES
+import app.template.patches.sofascore.misc.notifications.BLOCK_MARKETING_NOTIFICATIONS
+import app.template.patches.sofascore.misc.popups.PROMO_POPUP_FEATURES
+import app.template.patches.sofascore.misc.promo.PROMO_SECTION_FEATURES
+import app.template.patches.sofascore.misc.rating.DISABLE_RATING_PROMPTS
+import app.template.patches.sofascore.misc.theme.AMOLED_BLACK
+import app.template.patches.sofascore.misc.video.TURN_OFF_VIDEO_AUTOPLAY
+import app.template.patches.sofascore.misc.widget.SLOWER_WIDGET_REFRESH
+import app.template.patches.sofascore.spoiler.SPOILER_FEATURES
+import app.template.patches.sofascore.sports.SPORT_FEATURES
 import app.template.patches.truecaller.controls.truecallerHevalControlsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -171,6 +189,48 @@ class HevalControlsTest {
             HevalFeature("demo.a", "A", "", "X", default = false, buildTimeOnly = true, kind = HevalFeatureKind.LIST)
         }
         assertThrows<IllegalArgumentException> { HevalListFeature("Bad-Id", "A", "", "X") }
+    }
+
+    /**
+     * The Sofascore rows (2026-11-11 readability pass): every shipped id is kept (the ids name the
+     * saved choices), the sections are few and plain with the spoiler section first, and every row
+     * has one short plain sentence without SDK or technical names.
+     */
+    @Test
+    fun sofascoreRowsKeepTheirIdsAndArePlain() {
+        val features = listOf(HIDE_AI_INSIGHTS, HIDE_MATCH_CHAT, HIDE_BETTING_CONTENT, HIDDEN_COUNTRIES, HIDDEN_COMPETITIONS,
+            BLOCK_MARKETING_NOTIFICATIONS, DISABLE_RATING_PROMPTS, AMOLED_BLACK, SLOWER_WIDGET_REFRESH, TURN_OFF_VIDEO_AUTOPLAY) +
+            MAIN_TAB_FEATURES + MATCH_TAB_FEATURES.map { it.second } + SPORT_FEATURES.map { it.second } +
+            PROMO_POPUP_FEATURES.map { it.second } + PROMO_SECTION_FEATURES.map { it.second } + ANIMATION_FEATURES + SPOILER_FEATURES
+        val sports = listOf("football", "tennis", "basketball", "ice_hockey", "volleyball", "handball", "esports", "mma",
+            "baseball", "cricket", "motorsport", "american_football", "rugby", "badminton", "snooker", "darts", "futsal",
+            "minifootball", "table_tennis", "beach_volley", "waterpolo", "cycling", "aussie_rules", "floorball", "bandy")
+        val shipped = listOf(
+            "hide_ai_insights", "hide_match_chat", "hide_betting_content", "hidden_countries", "hidden_competitions",
+            "block_marketing_notifications", "disable_rating_prompts", "amoled_black", "slower_widget_refresh",
+            "turn_off_video_autoplay", "animations_off", "animations_fast", "spoiler_free", "spoiler_notifications", "spoiler_lists", "spoiler_widget",
+            "spoiler_events", "spoiler_competitions",
+        ) + listOf("favorites", "feed", "fantasy", "featured").map { "hide_main_tab_$it" } +
+            listOf("commentary", "crowdsourcing", "media", "graphs", "standings", "cup_tree", "matches").map { "hide_tab_$it" } +
+            sports.map { "hide_sport_$it" } +
+            listOf("match_of_the_week", "remove_ads", "promotion", "weekly_challenge", "survey", "propose_follow").map { "hide_modal_$it" } +
+            listOf("world_cup", "sofa_season", "referral", "fantasy", "dream_team", "nba", "sfl", "utr", "sevilla_marseille",
+                "in_app_messages").map { "hide_promo_$it" }
+        assertEquals(shipped.map { "sofascore.$it" }.sorted(), features.map { it.id }.sorted())
+
+        val sections = features.map { it.category }.distinct()
+        assertTrue(sections.size <= 8, "too many sections: $sections")
+        assertTrue(SofascoreControlsCategory.SPOILER_FREE.contains("spoiler", ignoreCase = true), "the spoiler section is not listed first")
+        sections.forEach { assertTrue(it.first().isUpperCase() && it.drop(1) == it.drop(1).lowercase(), "not sentence case: $it") }
+
+        val technical = Regex("\\b(SDK|Firebase|Remote Config|FCM|R8|API|modal|flag|enum)\\b", RegexOption.IGNORE_CASE)
+        features.forEach { feature ->
+            val text = feature.description
+            assertTrue(text.endsWith('.') && ". " !in text && '\n' !in text, "${feature.id}: not one sentence: $text")
+            assertTrue(text.length <= 90, "${feature.id}: description too long (${text.length}): $text")
+            assertTrue(feature.name.length <= 40, "${feature.id}: name too long: ${feature.name}")
+            assertTrue(!technical.containsMatchIn(text) && !technical.containsMatchIn(feature.name), "${feature.id}: technical words: ${feature.name} / $text")
+        }
     }
 
     @Test

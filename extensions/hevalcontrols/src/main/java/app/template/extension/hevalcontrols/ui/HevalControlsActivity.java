@@ -5,6 +5,9 @@
 // minSdk 23 guards, light/dark/AMOLED palettes, OnBackInvokedCallback on API 33+, row-level accessibility.
 // 2026-11-03: list settings (a row per list feature and the ListPicker panel).
 // 2026-11-09: row and category icons (Icons), collapsible category sections and a search field.
+// 2026-11-11: readability: larger, higher-contrast descriptions cut at two lines, sentence-case headings,
+// an accent "on" marker and bold "On" per row, an "N of M on" count per section, and sections that start
+// collapsed unless one of their features is on.
 
 package app.template.extension.hevalcontrols.ui;
 
@@ -16,6 +19,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -54,6 +58,7 @@ import app.template.extension.hevalcontrols.CrashGuard;
 import app.template.extension.hevalcontrols.Feature;
 import app.template.extension.hevalcontrols.HevalSettings;
 import app.template.extension.hevalcontrols.Registry;
+import app.template.extension.hevalcontrols.Sections;
 import app.template.extension.hevalcontrols.SettingsTransfer;
 
 /**
@@ -64,9 +69,11 @@ import app.template.extension.hevalcontrols.SettingsTransfer;
  * <p>A list feature gets a row with an "N hidden" summary; tapping it shows {@link ListPicker} in
  * place of the main screen (back or Done returns).
  *
- * <p>Each category is a collapsible section with an icon and a count (a section with more than
- * {@link #COLLAPSE_ABOVE} rows starts collapsed), every row has an icon (its own or its
- * category's), and a search field above the sections filters rows by name, description or category.
+ * <p>Each category is a collapsible section with an icon and an "N of M on" count. A section starts
+ * collapsed unless one of its features is on (an app with fewer than {@link #SEARCH_FROM} features
+ * keeps every section open). Every row has an icon (its own or its category's) and, while on, an
+ * accent marker at its start; a search field above the sections filters rows by name, description or
+ * category and opens the sections it matches.
  *
  * <p>Extension points for later steps (not built yet): import and export next to "Copy
  * diagnostics", and profiles as a section after the master pause.
@@ -75,10 +82,10 @@ import app.template.extension.hevalcontrols.SettingsTransfer;
 public final class HevalControlsActivity extends Activity {
     static final String TITLE = "Patch settings";
 
-    /** A category with more rows than this starts collapsed. */
-    static final int COLLAPSE_ABOVE = 8;
-    /** The search field shows from this many features on. */
+    /** The search field shows from this many features on; below it every section stays open. */
     static final int SEARCH_FROM = 8;
+    /** Row descriptions are cut after this many lines; the spoken description has the full text. */
+    static final int DESCRIPTION_LINES = 2;
 
     /** Opens the screen; for in-app menu hooks. Never throws. */
     public static void open(Context context) {
@@ -228,7 +235,7 @@ public final class HevalControlsActivity extends Activity {
         TextView title = views.text(TITLE, 26, palette.text, true);
         Views.markHeading(title);
         views.add(content, title, 12);
-        views.add(content, views.text("Turn patched features on or off without patching the app again.", 14, palette.muted, false), 6);
+        views.add(content, views.text("Turn patched features on or off without patching the app again.", 14, palette.secondary, false), 6);
 
         LinearLayout info = views.card(palette.surface, palette.line);
         infoLine(info, "App version", Diagnostics.runningVersion(this));
@@ -259,7 +266,7 @@ public final class HevalControlsActivity extends Activity {
         pauseCard.setPadding(0, 0, 0, 0);
         pauseSwitch = views.toggle(false);
         pauseRow = switchRow("Pause all patches",
-                "Every runtime feature behaves like the stock app. Your choices are kept.", null, pauseSwitch);
+                "Every runtime feature behaves like the stock app. Your choices are kept.", pauseSwitch, null, false, 0);
         pauseRow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -281,9 +288,10 @@ public final class HevalControlsActivity extends Activity {
         pauseCard.addView(pauseRow);
         views.add(content, pauseCard, 16);
 
-        if (registry.features().size() >= SEARCH_FROM) views.add(content, searchField(), 20);
+        boolean collapsible = registry.features().size() >= SEARCH_FROM;
+        if (collapsible) views.add(content, searchField(), 20);
         for (Map.Entry<String, List<Feature>> category : byCategory(registry.features()).entrySet()) {
-            buildSection(content, category.getKey(), category.getValue());
+            buildSection(content, category.getKey(), category.getValue(), collapsible);
         }
         noMatch = views.text("No setting matches your search.", 14, palette.muted, false);
         noMatch.setVisibility(View.GONE);
@@ -293,7 +301,7 @@ public final class HevalControlsActivity extends Activity {
         profiles = new Profiles(this);
         views.add(content, views.heading("Profiles"), 24);
         views.add(content, views.text("Save the current settings under a name and apply them later, or move them to another phone.",
-                13, palette.muted, false), 8);
+                14, palette.secondary, false), 8);
         profileCard = views.card(palette.surface, palette.line);
         profileCard.setPadding(0, 0, 0, 0);
         views.add(content, profileCard, 8);
@@ -312,7 +320,7 @@ public final class HevalControlsActivity extends Activity {
 
         views.add(content, views.heading("Diagnostics"), 24);
         views.add(content, views.text("Versions, device model and feature states. No account data or app content.",
-                13, palette.muted, false), 8);
+                14, palette.secondary, false), 8);
         Button copy = views.button("Copy diagnostics");
         copy.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -350,10 +358,10 @@ public final class HevalControlsActivity extends Activity {
 
     private TextView infoLine(LinearLayout card, String label, String value) {
         LinearLayout line = views.row();
-        line.setMinimumHeight(views.dp(28));
-        TextView name = views.text(label, 13, palette.muted, false);
+        line.setMinimumHeight(views.dp(32));
+        TextView name = views.text(label, 14, palette.secondary, false);
         line.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-        TextView text = views.text(value, 13, palette.text, true);
+        TextView text = views.text(value, 14, palette.text, true);
         text.setGravity(Gravity.END);
         text.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
         line.addView(text, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
@@ -377,7 +385,7 @@ public final class HevalControlsActivity extends Activity {
         TextView heading = views.text(title, 15, color, true);
         Views.markHeading(heading);
         card.addView(heading);
-        views.add(card, views.text(body, 13, palette.text, false), 6);
+        views.add(card, views.text(body, 14, palette.text, false), 6);
         return card;
     }
 
@@ -387,10 +395,10 @@ public final class HevalControlsActivity extends Activity {
         Views.markHeading(heading);
         card.addView(heading);
         views.add(card, views.text("The app crashed three times in a row within a minute of starting, so Patch settings "
-                + "switched every runtime feature off. The app now uses its stock behaviour everywhere below.", 13, palette.text, false), 6);
+                + "switched every runtime feature off. The app now uses its stock behaviour everywhere below.", 14, palette.text, false), 6);
         views.add(card, views.text("Safe mode cannot help when the crash comes from a change made at patch time, happens "
                 + "before Patch settings starts, or is a native crash on Android 10 or older. If the app still crashes, "
-                + "patch it again without the feature that causes it.", 12, palette.muted, false), 8);
+                + "patch it again without the feature that causes it.", 13, palette.secondary, false), 8);
         LinearLayout buttons = views.row();
         Button resume = views.primaryButton("Resume");
         resume.setOnClickListener(new View.OnClickListener() {
@@ -469,18 +477,19 @@ public final class HevalControlsActivity extends Activity {
         return params;
     }
 
-    /** A focusable row with title, description, a state line and an optional trailing switch. */
-    private LinearLayout switchRow(String title, String description, TextView stateLine, Switch toggle) {
-        return switchRow(title, description, stateLine, toggle, null);
-    }
-
-    /** As above, with a leading icon when {@code iconKey} is not null (see {@link Icons}). */
-    private LinearLayout switchRow(String title, String description, TextView stateLine, Switch toggle, String iconKey) {
+    /**
+     * A focusable row: an optional "on" marker ({@link #markerOf}), a leading icon when
+     * {@code iconKey} is not null (see {@link Icons}), title, description (cut after
+     * {@code descriptionLines} lines when above 0) and an optional trailing switch.
+     */
+    private LinearLayout switchRow(String title, String description, Switch toggle, String iconKey,
+            boolean marker, int descriptionLines) {
         LinearLayout row = views.row();
         row.setMinimumHeight(views.dp(64));
-        row.setPaddingRelative(views.dp(16), views.dp(12), views.dp(12), views.dp(12));
+        row.setPaddingRelative(views.dp(16), views.dp(14), views.dp(12), views.dp(14));
         row.setBackground(views.interactive(palette.surface, 0, 14, palette.accent));
         row.setFocusable(true);
+        if (marker) row.setTag(views.onMarker(row));
         if (iconKey != null) {
             ImageView icon = new ImageView(this);
             icon.setImageDrawable(Icons.of(iconKey, palette.accent, views.dp(22)));
@@ -491,8 +500,7 @@ public final class HevalControlsActivity extends Activity {
         }
         LinearLayout texts = views.column();
         texts.addView(views.text(title, 16, palette.text, true));
-        if (!description.isEmpty()) views.add(texts, views.text(description, 13, palette.muted, false), 4);
-        if (stateLine != null) views.add(texts, stateLine, 6);
+        if (!description.isEmpty()) views.add(texts, views.description(description, descriptionLines), 4);
         row.addView(texts, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         if (toggle != null) {
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -503,9 +511,33 @@ public final class HevalControlsActivity extends Activity {
         return row;
     }
 
+    /** The "on" marker of a row built with one, else null. */
+    private static View markerOf(LinearLayout row) {
+        Object tag = row.getTag();
+        return tag instanceof View ? (View) tag : null;
+    }
+
+    /** A state line: 13 sp, coloured per state by the row's update. */
+    private TextView stateText() {
+        return views.text("", 13, palette.muted, true);
+    }
+
+    /**
+     * Shows a row's state line, bold when {@code bold} (the working "On", picked option or list
+     * count, in accent), and the row's "on" marker while the user's choice is on ({@code marked}),
+     * also when pause, safe mode or a pending restart keeps it from applying (the row is dimmed then).
+     */
+    private static void showState(LinearLayout row, TextView state, String text, int color, boolean bold, boolean marked) {
+        state.setText(text);
+        state.setTextColor(color);
+        state.setTypeface(Typeface.create("sans-serif-medium", bold ? Typeface.BOLD : Typeface.NORMAL));
+        View marker = markerOf(row);
+        if (marker != null) marker.setVisibility(marked ? View.VISIBLE : View.INVISIBLE);
+    }
+
     private View featureRow(final Feature feature) {
         LinearLayout stateLine = views.row();
-        TextView state = views.text("", 12, palette.muted, true);
+        TextView state = stateText();
         stateLine.addView(state);
         if (feature.restartRequired && !feature.buildTimeOnly) {
             TextView badge = views.badge("Restart", palette.warning, palette.warningSurface);
@@ -515,8 +547,8 @@ public final class HevalControlsActivity extends Activity {
             stateLine.addView(badge, params);
         }
         final Switch toggle = feature.buildTimeOnly ? null : views.toggle(false);
-        final LinearLayout row = switchRow(feature.name, feature.description, null, toggle, iconKey(feature));
-        textColumn(row).addView(stateLine, topMargin(6));
+        final LinearLayout row = switchRow(feature.name, feature.description, toggle, iconKey(feature), true, DESCRIPTION_LINES);
+        textColumn(row).addView(stateLine, topMargin(8));
         final FeatureRow holder = new FeatureRow(feature, row, toggle, state);
         rows.add(holder);
         if (toggle == null) return row;
@@ -551,7 +583,7 @@ public final class HevalControlsActivity extends Activity {
      */
     private View listRow(final Feature feature) {
         LinearLayout stateLine = views.row();
-        TextView state = views.text("", 12, palette.muted, true);
+        TextView state = stateText();
         stateLine.addView(state);
         if (feature.restartRequired) {
             TextView badge = views.badge("Restart", palette.warning, palette.warningSurface);
@@ -560,8 +592,8 @@ public final class HevalControlsActivity extends Activity {
             params.setMarginStart(views.dp(8));
             stateLine.addView(badge, params);
         }
-        final LinearLayout row = switchRow(feature.name, feature.description, null, null, iconKey(feature));
-        textColumn(row).addView(stateLine, topMargin(6));
+        final LinearLayout row = switchRow(feature.name, feature.description, null, iconKey(feature), true, DESCRIPTION_LINES);
+        textColumn(row).addView(stateLine, topMargin(8));
         TextView edit = views.text("Edit", 14, palette.accent, true);
         edit.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -634,23 +666,26 @@ public final class HevalControlsActivity extends Activity {
             group.clear();
             group.addAll(sorted);
         }
-        // A "Spoiler-free" category goes first: it is the one a user opens the screen for.
-        List<Feature> first = groups.remove(FIRST_CATEGORY);
-        if (first == null) return groups;
+        // A spoiler category ("Spoiler-free", "Scores and spoilers") goes first: it is the one a user
+        // opens the screen for (Sections.isFirst).
         Map<String, List<Feature>> ordered = new LinkedHashMap<>();
-        ordered.put(FIRST_CATEGORY, first);
+        for (Map.Entry<String, List<Feature>> group : groups.entrySet()) {
+            if (Sections.isFirst(group.getKey())) ordered.put(group.getKey(), group.getValue());
+        }
         ordered.putAll(groups);
         return ordered;
     }
-
-    /** The category shown above all others, when an app has it. */
-    static final String FIRST_CATEGORY = "Spoiler-free";
 
     // -------------------------------------------------------------------------------------------
     // Sections and search
     // -------------------------------------------------------------------------------------------
 
-    /** One category: a header (icon, name, count, chevron) over a card of rows. */
+    /** A row that can say whether the user's choice is on (for its section's "N of M on"). */
+    private interface OnState {
+        boolean isOn();
+    }
+
+    /** One category: a header (icon, name, "N of M on" count, chevron) over a card of rows. */
     private final class Section {
         final String category;
         final LinearLayout header;
@@ -674,51 +709,67 @@ public final class HevalControlsActivity extends Activity {
         final LinearLayout box;
         final View divider;
         final String haystack;
+        final OnState state;
 
-        Item(LinearLayout box, View divider, String searchText) {
+        Item(LinearLayout box, View divider, String searchText, OnState state) {
             this.box = box;
             this.divider = divider;
             this.haystack = searchText.toLowerCase(Locale.ROOT);
+            this.state = state;
         }
     }
 
-    private void buildSection(LinearLayout content, String category, List<Feature> features) {
+    /** How many rows of a section are on. */
+    private static int onCount(Section section) {
+        int on = 0;
+        for (Item item : section.items) if (item.state.isOn()) on++;
+        return on;
+    }
+
+    /**
+     * Builds one section. With {@code collapsible} (an app with enough features for the search field)
+     * it starts collapsed unless one of its rows is on.
+     */
+    private void buildSection(LinearLayout content, String category, List<Feature> features, boolean collapsible) {
         LinearLayout header = views.row();
         header.setMinimumHeight(views.dp(48));
         header.setClickable(true);
         header.setFocusable(true);
         header.setBackground(views.interactive(0, 0, 10, palette.accent));
         ImageView icon = new ImageView(this);
-        icon.setImageDrawable(Icons.of(Icons.forCategory(category), palette.muted, views.dp(20)));
+        icon.setImageDrawable(Icons.of(Icons.forCategory(category), palette.secondary, views.dp(20)));
         icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(views.dp(20), views.dp(20));
         iconParams.setMarginEnd(views.dp(10));
         header.addView(icon, iconParams);
         TextView title = views.heading(category);
         header.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-        TextView count = views.text("", 12, palette.muted, true);
+        TextView count = views.text("", 13, palette.muted, true);
         header.addView(count, wrap(8));
-        TextView chevron = views.text("", 16, palette.muted, true);
+        TextView chevron = views.text("", 18, palette.secondary, true);
         header.addView(chevron, wrap(10));
-        views.add(content, header, 16);
+        views.add(content, header, 20);
 
         LinearLayout card = views.card(palette.surface, palette.line);
         card.setPadding(0, 0, 0, 0);
-        final Section section = new Section(category, header, count, chevron, card, features.size() > COLLAPSE_ABOVE);
+        final Section section = new Section(category, header, count, chevron, card, false);
         Set<String> doneChoices = new HashSet<>();
         for (Feature feature : features) {
             View rowView;
+            OnState state;
             String searchText = feature.name + " " + feature.description;
             List<Feature> options = choiceOptions(features, feature);
             if (options.size() > 1) {
                 // The switches of one choice share a single row, built at the first of them.
                 if (!doneChoices.add(feature.choice)) continue;
                 rowView = choiceRow(feature.choice, options);
+                state = choiceRows.get(choiceRows.size() - 1);
                 StringBuilder text = new StringBuilder(feature.choice);
                 for (Feature option : options) text.append(' ').append(option.name).append(' ').append(option.description);
                 searchText = text.toString();
             } else {
                 rowView = feature.isList() ? listRow(feature) : featureRow(feature);
+                state = rows.get(rows.size() - 1);
             }
             LinearLayout box = views.column();
             View divider = new View(this);
@@ -726,8 +777,9 @@ public final class HevalControlsActivity extends Activity {
             box.addView(divider, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Math.max(1, views.dp(1) / 2)));
             box.addView(rowView);
             card.addView(box);
-            section.items.add(new Item(box, divider, searchText));
+            section.items.add(new Item(box, divider, searchText, state));
         }
+        section.collapsed = Sections.startsCollapsed(collapsible, onCount(section));
         views.add(content, card, 8);
         sections.add(section);
         header.setOnClickListener(new View.OnClickListener() {
@@ -797,13 +849,19 @@ public final class HevalControlsActivity extends Activity {
             boolean open = searching || !section.collapsed;
             section.header.setVisibility(anyMatch ? View.VISIBLE : View.GONE);
             section.card.setVisibility(anyMatch && open ? View.VISIBLE : View.GONE);
-            section.count.setText(String.valueOf(section.items.size()));
             section.chevron.setText(open ? "▾" : "▸");
-            describe(section.header, section.category + ", " + section.items.size()
-                    + (section.items.size() == 1 ? " setting" : " settings"), open ? "Expanded" : "Collapsed");
+            updateCount(section, open);
             anySection |= anyMatch;
         }
         if (noMatch != null) noMatch.setVisibility(searching && !anySection ? View.VISIBLE : View.GONE);
+    }
+
+    /** The header's "N of M on" (accent while any row is on) and its spoken summary. */
+    private void updateCount(Section section, boolean open) {
+        int on = onCount(section), total = section.items.size();
+        section.count.setText(Sections.onCount(on, total));
+        section.count.setTextColor(on > 0 ? palette.accent : palette.muted);
+        describe(section.header, section.category + ", " + Sections.spokenCount(on, total), open ? "Expanded" : "Collapsed");
     }
 
     // -------------------------------------------------------------------------------------------
@@ -827,6 +885,8 @@ public final class HevalControlsActivity extends Activity {
         boolean inactive = paused || safeMode || failed;
         for (FeatureRow row : rows) row.update(inactive, paused, safeMode, failed);
         for (ChoiceRow row : choiceRows) row.update(inactive, paused, safeMode, failed);
+        boolean searching = !query.isEmpty();
+        for (Section section : sections) updateCount(section, searching || !section.collapsed);
     }
 
     // -------------------------------------------------------------------------------------------
@@ -855,7 +915,7 @@ public final class HevalControlsActivity extends Activity {
         boolean restart = false;
         for (Feature option : options) restart |= option.restartRequired;
         LinearLayout stateLine = views.row();
-        TextView state = views.text("", 12, palette.muted, true);
+        TextView state = stateText();
         stateLine.addView(state);
         if (restart) {
             TextView badge = views.badge("Restart", palette.warning, palette.warningSurface);
@@ -864,8 +924,8 @@ public final class HevalControlsActivity extends Activity {
             params.setMarginStart(views.dp(8));
             stateLine.addView(badge, params);
         }
-        final LinearLayout row = switchRow(title, "", null, null, iconKey(options.get(0)));
-        textColumn(row).addView(stateLine, topMargin(6));
+        final LinearLayout row = switchRow(title, "", null, iconKey(options.get(0)), true, DESCRIPTION_LINES);
+        textColumn(row).addView(stateLine, topMargin(8));
         TextView edit = views.text("Change", 14, palette.accent, true);
         edit.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -891,7 +951,7 @@ public final class HevalControlsActivity extends Activity {
         return row;
     }
 
-    private final class ChoiceRow {
+    private final class ChoiceRow implements OnState {
         final String title;
         final List<Feature> options;
         final LinearLayout row;
@@ -974,17 +1034,23 @@ public final class HevalControlsActivity extends Activity {
                     color = palette.muted;
                 } else {
                     text = label;
-                    color = current < 0 ? palette.muted : palette.success;
+                    color = current < 0 ? palette.muted : palette.accent;
                 }
             }
-            state.setText(text);
-            state.setTextColor(color);
+            boolean working = current >= 0 && color == palette.accent;
+            showState(row, state, text, color, working, isOn());
             row.setAlpha(inactive ? 0.6f : 1f);
             describe(row, title, text);
         }
+
+        /** An option other than "Normal" is picked. */
+        @Override
+        public boolean isOn() {
+            return current() >= 0;
+        }
     }
 
-    private final class FeatureRow {
+    private final class FeatureRow implements OnState {
         final Feature feature;
         final LinearLayout row;
         final Switch toggle;
@@ -1009,7 +1075,7 @@ public final class HevalControlsActivity extends Activity {
             switch (current) {
                 case ENABLED:
                     text = "On";
-                    color = palette.success;
+                    color = palette.accent;
                     break;
                 case RESTART_REQUIRED:
                     text = "Restart required";
@@ -1025,7 +1091,7 @@ public final class HevalControlsActivity extends Activity {
                     break;
                 case BUILD_TIME_ONLY:
                     text = "Applied at patch time";
-                    color = palette.muted;
+                    color = palette.secondary;
                     break;
                 default:
                     text = failed ? "Off (settings unavailable)" : safeMode ? "Off (safe mode)" : paused ? "Off (paused)"
@@ -1033,8 +1099,7 @@ public final class HevalControlsActivity extends Activity {
                     color = palette.muted;
                     break;
             }
-            state.setText(text);
-            state.setTextColor(color);
+            showState(row, state, text, color, current == HevalSettings.State.ENABLED, isOn());
             if (toggle != null) {
                 toggle.setChecked(chosen);
                 toggle.setEnabled(current != HevalSettings.State.UNSUPPORTED);
@@ -1063,7 +1128,7 @@ public final class HevalControlsActivity extends Activity {
                     break;
                 case ENABLED:
                     text = picked;
-                    color = palette.success;
+                    color = palette.accent;
                     break;
                 default:
                     text = count == 0 ? picked : picked + (failed ? " (settings unavailable)" : safeMode ? " (safe mode)"
@@ -1071,10 +1136,15 @@ public final class HevalControlsActivity extends Activity {
                     color = palette.muted;
                     break;
             }
-            state.setText(text);
-            state.setTextColor(color);
+            showState(row, state, text, color, current == HevalSettings.State.ENABLED, isOn());
             row.setAlpha(inactive ? 0.6f : 1f);
             describe(row, feature.name + (feature.description.isEmpty() ? "" : ". " + feature.description), text);
+        }
+
+        /** The user's choice is on: a chosen switch, a list with picks, or a patch-time change. */
+        @Override
+        public boolean isOn() {
+            return HevalSettings.showsOn(feature);
         }
     }
 
@@ -1167,7 +1237,8 @@ public final class HevalControlsActivity extends Activity {
 
     /** A tappable row of the Profiles card. */
     private View actionRow(String title, String description, String iconKey, View.OnClickListener action) {
-        LinearLayout row = switchRow(title, description, null, null, iconKey);
+        // Few rows, so their descriptions are not cut.
+        LinearLayout row = switchRow(title, description, null, iconKey, false, 0);
         row.setClickable(true);
         row.setOnClickListener(action);
         row.setAccessibilityDelegate(new View.AccessibilityDelegate() {

@@ -22,8 +22,8 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 internal val BLOCK_MARKETING_NOTIFICATIONS = HevalFeature(
     id = FEATURE,
     calm = true,
-    name = "Block marketing notifications",
-    description = "Blocks promo popups and banners.",
+    name = "Hide promo banners",
+    description = "Hides promotional banners, offer sheets and pop-up campaigns.",
     category = SofascoreControlsCategory.POPUPS,
 )
 
@@ -103,7 +103,12 @@ private fun BytecodePatchContext.keepGone(type: String): () -> Unit {
 
 // A Heval Controls feature: on by default, like the always-on patch it replaced.
 @Suppress("unused")
-val blockMarketingNotificationsPatch = sofascoreControls.featurePatch(BLOCK_MARKETING_NOTIFICATIONS) {
+val blockMarketingNotificationsPatch = sofascoreControls.featurePatch(
+    BLOCK_MARKETING_NOTIFICATIONS,
+    // The Manager patch keeps its name and description; only the Patch settings row was reworded (2026-11-11).
+    name = "Block marketing notifications",
+    description = "Blocks promo popups and banners.",
+) {
     // Validate every site before the first edit.
     val promotionModal = PromotionModalFingerprint.method
     val banners = PROMO_BANNERS.map { keepGone(it) }

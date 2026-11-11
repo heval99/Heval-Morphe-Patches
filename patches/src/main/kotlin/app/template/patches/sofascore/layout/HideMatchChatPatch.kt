@@ -34,8 +34,8 @@ internal object ChatButtonHelperFingerprint : Fingerprint(
 
 internal val HIDE_MATCH_CHAT = HevalFeature(
     id = "sofascore.hide_match_chat",
-    name = "Hide match chat",
-    description = "Hides the Chat button on match and league pages.",
+    name = "Hide chat",
+    description = "Hides the chat button on match and league pages.",
     category = SofascoreControlsCategory.MATCH_PAGE,
 )
 
@@ -65,6 +65,9 @@ private fun MutableMethod.returnWhenChatHidden(what: String) {
 @Suppress("unused")
 val hideMatchChatPatch = sofascoreControls.featurePatch(
     HIDE_MATCH_CHAT,
+    // The Manager patch keeps its name and description; only the Patch settings row was reworded (2026-11-11).
+    name = "Hide match chat",
+    description = "Hides the Chat button on match and league pages.",
     default = false,
 ) {
     // The chat button is the ExtendedFloatingActionButton with the id floating_action_button, the

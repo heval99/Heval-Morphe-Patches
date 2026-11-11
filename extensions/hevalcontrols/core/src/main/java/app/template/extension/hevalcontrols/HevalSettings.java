@@ -774,6 +774,16 @@ public final class HevalSettings {
         return chosen != null && chosen;
     }
 
+    /**
+     * Whether the Patch settings screen marks a feature as on (its row marker and its section's "N on"
+     * count): a chosen switch, a list with at least one pick, or a patch-time change. Like
+     * {@link #isChosen}, it ignores pause, safe mode, dependencies and pending restarts.
+     */
+    public static boolean showsOn(Feature feature) {
+        if (feature == null) return false;
+        return feature.buildTimeOnly || isChosen(feature.id);
+    }
+
     /** The picked keys of a list feature, ignoring pause, safe mode and dependencies. Never null. */
     public static Set<String> pickedHidden(String listId) {
         Snapshot current = snapshot;
