@@ -1894,13 +1894,15 @@ object Constants {
     // the Billing library's transitive dependency and gates nothing. No PairIP.
     // 2026-10-25: updated to version 4.8.0 (versionCode 411; APKPure APK, same signer);
     // FishingPointsSmokeTest passes on patcher 2.0.0; anchors unchanged.
+    // 2026-11-11: updated to version 4.8.1 (versionCode 412; Play build via gplaydl, same signer);
+    // anchors unchanged; FishingPointsSmokeTest passes.
     val COMPATIBILITY_FISHINGPOINTS = Compatibility(
         name = "Fishing Points",
         packageName = "com.gregacucnik.fishingpoints",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1565C0,
         signatures = setOf("4e8e4f711a222f9c9c75b4fa1560bb3cb09d7a25b1ce26db1808b2b0e042ca15"), // CN=Grega Cucnik
-        targets = listOf(AppTarget(version = "4.8.0", versionCode = 411))
+        targets = listOf(AppTarget(version = "4.8.1", versionCode = 412))
     )
 
     // Verified 2026-10-07 against com.onesports.score 4.3.1 (versionCode 296, APKPure split
