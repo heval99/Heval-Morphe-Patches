@@ -3664,13 +3664,16 @@ object Constants {
     // interstitial callers were only renamed by R8. Smoke test and CLI decompile (no -f; the same
     // 25 GMA methods change) pass; not run on the emulator (an armeabi-v7a APK doesn't install on
     // it). Still experimental (arm64 device check pending).
+    // 2026-11-11: updated to 10.71.1 (versionCode 1626; Play arm64-v8a build via gplaydl, same Airweb
+    // signer). The GMA library anchors are unchanged; LequipeSmokeTest passes. This is the first
+    // arm64-v8a build of the target (earlier targets were armeabi-v7a only). Still experimental.
     val COMPATIBILITY_LEQUIPE = Compatibility(
         name = "L'Ã‰quipe",
         packageName = "lequipe.fr",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0A1E32,
         signatures = setOf("6d9f086b1df6eb441304d1d114c674185c985bc46fafcb045211db6172bd6e59"), // CN=Xavier Debbasch, O=Airweb
-        targets = listOf(AppTarget(version = "10.70.0", versionCode = 1620, isExperimental = true))
+        targets = listOf(AppTarget(version = "10.71.1", versionCode = 1626, isExperimental = true))
     )
 
     // Written 2026-10-17 against de.transfermarkt.v2 4.3.2 (versionCode 2075, Play bundle merged).
