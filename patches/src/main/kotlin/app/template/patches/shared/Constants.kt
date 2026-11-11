@@ -1772,7 +1772,8 @@ object Constants {
             // 2026-11-04: updated to 16.66.0-261029 (versionCode 1606600; Play arm64 split bundle
             // merged, same signer). All four patches apply unchanged: smoke test green and CLI
             // without -f applied them.
-            AppTarget(version = "16.66.0-261029", versionCode = 1606600),
+            // 2026-11-11: updated to 16.67.0-261105 (versionCode 1606700): all fingerprints unique on the real matcher; smoke test passed.
+            AppTarget(version = "16.67.0-261105", versionCode = 1606700),
         )
     )
 
