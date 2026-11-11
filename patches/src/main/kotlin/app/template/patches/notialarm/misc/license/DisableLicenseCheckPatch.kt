@@ -12,7 +12,7 @@ private const val LICENSE_CLIENT = "Lcom/pairip/licensecheck/LicenseClient;"
  * manifest Application is com.pairip.application.Application, which calls
  * LicenseClient.checkLicense(Context) from attachBaseContext; PairIP's LicenseContentProvider
  * calls it too (it is registered here). Re-signed builds fail that Play licensing check, get
- * LicenseActivity and then exit, so the check is skipped. Same approach as BeSoccer/Duplila.
+ * LicenseActivity and then exit, so the check is skipped. Same approach as BeSoccer.
  */
 @Suppress("unused")
 val disableLicenseCheckPatch = bytecodePatch(

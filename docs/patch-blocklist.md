@@ -115,6 +115,14 @@ not the story.
 | WiFi Analyzer | `com.farproc.wifi.analyzer` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. Last verified target 3.11.2; the patch was Disable ads. |
 | Unified Remote | `com.Relmtech.Remote` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. Last verified 3.25.1; the patch was Enable Pro. |
 | LuckyClick (auto clicker) | `com.peter890331.luckyclick.app` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. Last verified 3.28 (versionCode 68); the patches were Disable ads and Disable license check. |
+| RareCam | `com.rarecam.app` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. Last verified 1.0.90 (versionCode 90); the patches were Enable Premium and Disable license check. |
+| Duplila | `com.duplila.screenshare` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. Last verified 5.1; the patches were Disable ads, Disable license check and Enable Premium. |
+| Herning Folkeblad | `dk.herningfolkeblad.areader` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. The only patch was Disable telemetry; see the Danish note below the table. |
+| Information | `dk.information.areader` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. The only patch was Disable telemetry; see the Danish note below the table. |
+| Tipsbladet | `dk.tipsbladet.tipsbladet` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. The only patch was Disable telemetry; see the Danish note below the table. |
+| Weekendavisen | `dk.weekendavisen.areader` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. The only patch was Disable telemetry; see the Danish note below the table. |
+
+The owner asked to drop any Danish app that is not worth it; the rule applied to the four Danish readers above (Herning Folkeblad, Information, Tipsbladet, Weekendavisen) was 10K or fewer Play installs with Disable telemetry as the only patch.
 
 ## Known fingerprint drift (re-anchor later, app stays supported)
 

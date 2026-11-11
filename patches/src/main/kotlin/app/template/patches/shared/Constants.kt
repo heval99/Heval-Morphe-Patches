@@ -2851,43 +2851,6 @@ object Constants {
         targets = listOf(AppTarget(version = "2.3.30", versionCode = 239030))
     )
 
-    // Verified 2026-10-14 against com.duplila.screenshare 5.1 (versionCode 68, APKPure XAPK merged
-    // with APKEditor, armeabi-v7a only, Play source stamp) for GitHub issue #51 ("unlock premium").
-    // App classes are not obfuscated. PairIP license check only (Application wrapper, no VM
-    // shield): "Disable license check" no-ops LicenseClient.checkLicense(Context). Premium is local:
-    // every gate (main screen, banner, consent branch, preferences, checkout, the mirror screen's
-    // watermark and unlockedVideoSize) awaits BillingManager.userPaid(), which runs Play
-    // queryPurchasesAsync under a 10 s timeout; Enable Premium makes it return Boolean.TRUE at once
-    // (anchor: name + suspend shape + BuildersKt.withContext). Disable ads: the UMP consent flow
-    // (the (Z)V method calling ConsentInformation.requestConsentInfoUpdate) returns early, the
-    // banner composable (static (Modifier, Z, Composer, I, I)V in the class whose AdView factory
-    // calls setAdUnitId + loadAd) emits nothing, and every MobileAds static void plus
-    // BaseAdView.loadAd is a no-op. No signature check in the app, its scrcpy-based
-    // duplila_screen_server.apk or its native adb libs. DuplilaSmokeTest asserts every hook and the
-    // CLI (no -f) applies all three. NOT runtime-tested: the app ships armeabi-v7a libs only and the
-    // x86_64 test emulator refuses it (INSTALL_FAILED_NO_MATCHING_ABIS).
-    // Disable license check is a pre-rule licence bypass the owner kept (2026-10-19).
-    // 2026-10-25: updated to version 5.3 (versionCode 70; APKPure XAPK merged, same signer);
-    // DuplilaSmokeTest passes on patcher 2.0.0; anchors unchanged.
-    // 2026-11-04: updated to version 5.4 (versionCode 71; Play arm64 split bundle via gplaydl,
-    // merged, same Play signing key). 5.4 R8-renames the GMA and UMP libraries (no
-    // com.google.android.ump classes, AdView/BaseAdView/AdRequest are g7.*, MobileAds keeps only a
-    // private setPlugin and MobileAds.initialize is inlined into the banner's LaunchedEffect), so
-    // Disable ads now anchors on app code and GMA's own strings: the consent flow is MainActivity's
-    // (Z)V reading its getConsentInformation() getter, the banner composable is the static
-    // (Modifier, Z, Composer, I, I)V holding "Cannot show ads", and BaseAdView.loadAd is the
-    // BaseAdView method creating the runnable tagged "BaseAdView.loadAd". The MobileAds statics step
-    // was dropped (nothing left to neuter). Enable Premium and Disable license check are unchanged.
-    // DuplilaSmokeTest asserts every hook; CLI without -f applies all three. NOT runtime-tested.
-    val COMPATIBILITY_DUPLILA = Compatibility(
-        name = "Duplila",
-        packageName = "com.duplila.screenshare",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0x009FE3,
-        signatures = setOf("45469bfeef3d01413dbffc3530ebe6849bb08312317774f9fbc4f2d999a29294"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "5.4", versionCode = 71))
-    )
-
     // Added 2026-10-14 from the Reddit request queue (ads only: premium is an account role from
     // the server's /api/mv4, so it cannot be unlocked locally). Verified against
     // com.astrapaging.vff 6.7.8 (versionCode 678, APKPure XAPK merged, arm64-v8a only, signer
@@ -4142,36 +4105,6 @@ object Constants {
         targets = listOf(AppTarget(version = "10.0.2", versionCode = 440))
     )
 
-    // Verified 2026-10-27 against com.rarecam.app 1.0.90 (versionCode 90, APKPure XAPK merged with
-    // APKEditor; signer CN=Android, OU=Android, O=Google Inc., cert SHA-256 42947b25...31cd - the Play
-    // app-signing key, still to be cross-checked against a second mirror). Kotlin/Compose app, R8
-    // renamed, no ad SDK. RevenueCat sells the single "rarecam_pro" entitlement; PairIP is the
-    // licence-check wrapper only (LicenseClient, no VMRunner/libpairipcore), so a re-signed stock
-    // build stops at LicenseActivity.
-    // Disable license check: LicenseClient.checkLicense(Context) returns at its entry.
-    // Enable Premium: the app's only CustomerInfo consumer is a static (CustomerInfo)V that reads
-    // entitlements.get("rarecam_pro")?.isActive() and stores the boolean into a Compose MutableState
-    // every Pro gate reads; the patch loads 1 into that boolean at the merge point before the state
-    // write, so both the missing and the expired branch report Pro. RevenueCat, the offerings and the
-    // purchase screen are untouched.
-    // RareCamSmokeTest asserts both hooks and that the state method otherwise matches stock. The CLI
-    // (no -f) applies both; resources.arsc and AndroidManifest.xml stay byte-identical. Emulator
-    // (x86_64, stock + licence check only vs full patch, same data): the licence-only build starts and
-    // shows "PRO" badges on LOG and StackND; the fully patched build runs the same screens with no PRO
-    // badges, no paywall when a Pro format is selected, and no crash. The licence bypass alone is what
-    // lets either build start; the premium hook is what removes the badges.
-    val COMPATIBILITY_RARECAM = Compatibility(
-        name = "RareCam",
-        packageName = "com.rarecam.app",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0xFF6D00,
-        signatures = setOf("42947b25f3b0a5fc1b3905ba33f7e61cfc4b1fab9be3cc2173edf4103f2231cd"),
-        // 2026-11-03: updated to 1.0.95 (versionCode 95, Play build via gplaydl, same Play signer),
-        // both patches apply unchanged; smoke + CLI without -f.
-        // 2026-11-03 emulator: patched cold starts reach MainActivity (stock stops at the PairIP licence screen), no crash.
-        targets = listOf(AppTarget(version = "1.0.95", versionCode = 95))
-    )
-
     // Verified 2026-10-26 against se.footballaddicts.livescore 6.15.10 (versionCode 731,
     // owner-supplied APKCube split bundle merged with APKEditor, arm64-v8a only), developer signer
     // O=FootballAddicts, C=SE (cert SHA-256 57c298f0...6c2c). Kotlin Multiplatform app, heavily
@@ -4659,46 +4592,6 @@ object Constants {
         targets = listOf(AppTarget(version = "4.5.8", versionCode = 117085))
     )
 
-    // Verified 2026-11-08 against dk.information.areader 4.37.0 (versionCode 2012312421, Google Play
-    // arm64-v8a split set merged with APKEditor; launcher label "Information"; signer O=Visiolink,
-    // C=DK, cert SHA-256 f0de5609...ad03). Visiolink reader platform, 258k methods, Play Billing.
-    // All analytics go through tracker subclasses of the shared
-    // com.visiolink.reader.base.tracking.AbstractTracker (FirebaseTracker, GoogleTagManagerTracker
-    // and the app's MatomoTracker/TealiumTracker); "Disable telemetry" no-ops every void method on
-    // every concrete subclass and sets six Firebase manifest switches. The e-paper/subscription
-    // content is server-side. The same platform is shared by Weekendavisen, Fyens, Stiften,
-    // JydskeVestkysten and Herning Folkeblad, so those can take the same patch after their own
-    // smoke test. Ads and the WebView content are not part of it yet. Not run on a device.
-    // 2026-11-08: the Firebase switches moved from the manifest to the bytecode (shared
-    // forceFirebaseManifestSwitches), so the resource table is no longer re-encoded (about 50
-    // color names had been renamed). Information and Weekendavisen bundle only Firebase Analytics,
-    // so the deactivated and ad-ID reads are forced. Smoke-tested on both APKs only; no CLI run or
-    // device run since.
-    val COMPATIBILITY_INFORMATION = Compatibility(
-        name = "Information",
-        packageName = "dk.information.areader",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0xC8102E, // Information red.
-        signatures = setOf("f0de5609400206e2830fde61ed2198e420e443adbc464d2f19306a529ba9ad03"), // O=Visiolink, C=DK
-        targets = listOf(AppTarget(version = "4.37.0", versionCode = 2012312421))
-    )
-
-    // Verified 2026-11-08 against dk.weekendavisen.areader 8.4.0 (versionCode 2012312500, Google Play
-    // arm64-v8a split set merged with APKEditor; launcher label "Weekendavisen e-avis"; signer
-    // O=Berlingske Media AS, cert SHA-256 80d91716...ed92). Same Visiolink reader platform as
-    // Information; its shared AbstractTracker subclasses are FirebaseTracker,
-    // GoogleTagManagerTracker, SnowplowTracker, TNSTracker and the app's own Matomo/Tealium
-    // trackers. "Disable telemetry" applies unchanged. The e-paper content is server-side. Smoke
-    // test and CLI without -f pass; not run on a device.
-    val COMPATIBILITY_WEEKENDAVISEN = Compatibility(
-        name = "Weekendavisen",
-        packageName = "dk.weekendavisen.areader",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0x1B3A6B, // Weekendavisen blue.
-        signatures = setOf("80d91716e88298892a4d34076ae3562ac9e2212e08048d09dbfeca2c26a6ed92"), // O=Berlingske Media AS
-        targets = listOf(AppTarget(version = "8.4.0", versionCode = 2012312500))
-    )
-
     // Verified 2026-11-08 against dk.fyensstifts.areader 15.32 (versionCode 2012312710, Google Play
     // arm64-v8a split set merged with APKEditor; launcher label "Fyens Stiftstidende"; Play
     // app-signing key d2a6e458...d518). PugPig Bolt reader, same platform as Nordjyske, so the
@@ -4737,44 +4630,6 @@ object Constants {
         appIconColor = 0xE30613, // JV red.
         signatures = setOf("0502eeeedc11af996b8beed4a4aae0bb9f0ab43b7327b4d59425add358b1e23c"), // Play app-signing key
         targets = listOf(AppTarget(version = "15.32", versionCode = 2012312710))
-    )
-
-    // Verified 2026-11-08 against dk.herningfolkeblad.areader 15.0.0 (versionCode 2024060211, Google
-    // Play arm64-v8a split set merged with APKEditor; launcher label "Nyheder"; signer O=visiolink,
-    // C=DK, cert SHA-256 491c1b6c...1e5e). Textalk/Prenly e-paper reader (se.textalk.media.reader),
-    // not PugPig or Visiolink: no ad SDK, and access to issues is decided by the Prenly backend
-    // (purchase sheet + login), so there is no client-side paywall to unlock. "Disable telemetry"
-    // no-ops the app's single analytics dispatcher (Analytics.invokeReporterWithCrashlyticsWrapper,
-    // which feeds Firebase, Prenlytics/Pulse and any configured Kantar Sifo reporter) and sets the
-    // Firebase Analytics/Crashlytics/Sessions switches. Smoke-tested; not run on a device.
-    // 2026-11-08: those switches moved from the manifest to the bytecode (shared
-    // forceFirebaseManifestSwitches: three inlined deactivated reads, two ad-ID reads, the merged
-    // Crashlytics arbiter's getter, the Sessions override), so the resource table is no longer
-    // re-encoded (string/translate_acute_* and translate_grave_* had been renamed). Smoke-tested
-    // only; no CLI run or device run since.
-    val COMPATIBILITY_HERNING = Compatibility(
-        name = "Herning Folkeblad",
-        packageName = "dk.herningfolkeblad.areader",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0x0B4F87, // Herning Folkeblad blue.
-        signatures = setOf("491c1b6c7ffb6d1fed7ae10423486af10d5cb176a387063c8d67ef8caf7a1e5e"), // O=visiolink, C=DK
-        targets = listOf(AppTarget(version = "15.0.0", versionCode = 2024060211))
-    )
-
-    // Verified 2026-11-08 against dk.tipsbladet.tipsbladet 6.0 (versionCode 68, Google Play
-    // arm64-v8a split set merged with APKEditor; signer CN=tipsbladet, cert SHA-256
-    // 5db20a74...ebf1). React Native app: no ad SDK, no billing and no server account, so ads and
-    // premium do not apply. "Disable telemetry" sets the Firebase Analytics/Crashlytics/Sessions
-    // manifest switches and pins the @react-native-firebase analytics module's
-    // setAnalyticsCollectionEnabled argument to Boolean.FALSE, so the consent flow cannot switch
-    // collection back on. OneSignal (push) is left alone. Smoke-tested; not run on a device.
-    val COMPATIBILITY_TIPSLABET = Compatibility(
-        name = "Tipsbladet",
-        packageName = "dk.tipsbladet.tipsbladet",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0xE30613, // Tipsbladet red.
-        signatures = setOf("5db20a74cd62371b0d25c8f322b576cab86202d8a778b6f44a21b5fbf640ebf1"), // CN=tipsbladet
-        targets = listOf(AppTarget(version = "6.0", versionCode = 68))
     )
 
     // Verified 2026-11-08 against dk.tv2.nyhedscenter 2026.10-10188:RELEASE (versionCode 10188,
