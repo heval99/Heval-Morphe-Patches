@@ -328,9 +328,23 @@ object Constants {
             //   on (team calendar, new box score, basketball rating, sort by final score, enhanced
             //   images are already true on the server) and "chat_translate_showDialog" (it gates the
             //   chat translation feature itself, not a pop-up).
+            // 2026-11-11: updated to 26.11.03 (versionCode 261103003, signer unchanged
+            // ecd3a2c9...f841). The launcher entry changed: main.start.StartActivity is now an
+            // <activity-alias> targeting main.MainActivity (MAIN/LAUNCHER), so GmsCore support hooks
+            // MainActivity.onCreate(Bundle) (public final, p0 is the Activity) instead of
+            // StartActivity.onCreate. Two more patches needed re-anchoring:
+            //   - Hide sports: R8 split the shared Room lambda (rows + selected sport in one class,
+            //     names + selected sport in another, names alone in a third) and every query now loads
+            //     its SQL right before its own prepare call; a selected-sport site is a prepare call
+            //     whose nearest preceding SQL load is the selected-sport one.
+            //   - Unlock developer options: a Compose lambda now also opens the developer dialog behind
+            //     an unrelated Set.contains; the password gate is picked by String.getBytes (the typed
+            //     value is hashed) shortly before its contains call.
+            //   Every other fingerprint resolved unchanged except the documented optional
+            //   TennisPromoSheet (gone since 26.09.28). Smoke test passes.
             AppTarget(
-                version = "26.10.26",
-                versionCode = 261026004
+                version = "26.11.03",
+                versionCode = 261103003
             )
         )
     )

@@ -85,7 +85,7 @@ private const val RELEASE_APP = "Lcom/sofascore/results/ReleaseApp;"
 private const val FIREBASE_BUNDLE = "Lcom/sofascore/model/FirebaseBundle;"
 private val CONSENT_TYPES = listOf("ad_personalization", "ad_user_data", "analytics_storage", "ad_storage")
 
-private const val START_ACTIVITY = "Lcom/sofascore/results/main/start/StartActivity;"
+private const val START_ACTIVITY = "Lcom/sofascore/results/main/MainActivity;"
 private const val SIGNATURE_SHA1 = "e235776bc0ad3837b01359177c438658b1424d23"
 
 private val SOFASCORE_PATCHES = setOf(
@@ -373,7 +373,7 @@ class SofascoreSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.10.26",
+            version = "26.11.03",
             patchNames = SOFASCORE_PATCHES,
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -690,6 +690,11 @@ class SofascoreSmokeTest {
             insns.any { it.isDeveloperDialog() } && insns.any { insn ->
                 val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
                 ref?.definingClass == "Ljava/util/Set;" && ref.name == "contains"
+            } && insns.any { insn ->
+                // The password gate hashes the typed value; since 26.11.03 a Compose lambda also
+                // opens the dialog behind an unrelated Set.contains.
+                val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
+                ref?.definingClass == "Ljava/lang/String;" && ref.name == "getBytes"
             }
         }
         check(gateHandlers.size == 1) {
@@ -751,13 +756,16 @@ class SofascoreSmokeTest {
                 ) { "$helper in ${m.definingClass}.${m.name} is not vX = $helper(vX); return vX" }
             }
         }
-        val allQueries = "SELECT * FROM sport_order ORDER BY sportOrder ASC, SELECT sportName FROM sport_order ORDER BY sportOrder ASC, " +
-            "SELECT sportName FROM sport_order WHERE isSelected = 1"
-        assertReturnFilter("filterSportOrders", mapOf(allQueries to 1))
-        // The names query lives in the shared lambda and in a second lambda class.
-        assertReturnFilter("filterSportNames", mapOf(allQueries to 1, "SELECT sportName FROM sport_order ORDER BY sportOrder ASC" to 1))
+        // 26.11.03 split the old shared lambda: the rows and one selected-sport case share one
+        // lambda class, the names query and the other selected-sport case another, and a third
+        // lambda class holds the names query alone.
+        val rowsAndSelected = "SELECT * FROM sport_order ORDER BY sportOrder ASC, SELECT sportName FROM sport_order WHERE isSelected = 1"
+        val namesAndSelected = "SELECT sportName FROM sport_order ORDER BY sportOrder ASC, SELECT sportName FROM sport_order WHERE isSelected = 1"
+        val namesOnly = "SELECT sportName FROM sport_order ORDER BY sportOrder ASC"
+        assertReturnFilter("filterSportOrders", mapOf(rowsAndSelected to 1))
+        assertReturnFilter("filterSportNames", mapOf(namesAndSelected to 1, namesOnly to 1))
         // Two selected-sport cases, and the three returns of the PREF_HOME_SPORT_V2 getter.
-        assertReturnFilter("visibleSport", mapOf(allQueries to 2, "PREF_HOME_SPORT_V2" to 3))
+        assertReturnFilter("visibleSport", mapOf(rowsAndSelected to 1, namesAndSelected to 1, "PREF_HOME_SPORT_V2" to 3))
 
         // Hide promo sections: Remote Config getBoolean (the instance (String)Z reading the value
         // handler's Patterns; the handler is found by its TRUE regex) asks hidePromoSection(key)

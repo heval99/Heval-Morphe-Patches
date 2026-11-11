@@ -48,6 +48,12 @@ val unlockDeveloperOptionsPatch = bytecodePatch(
                 val insns = method.implementation?.instructions?.toList() ?: return@forEach
                 if (insns.none { it.isNewInstanceOfDialog() }) return@forEach
                 if (insns.none { it.isSetContains() }) return@forEach
+                // Since 26.11.03 a Compose lambda also opens the dialog behind an unrelated
+                // Set.contains; the password gate hashes the typed value (String.getBytes) right
+                // before its contains call.
+                val dialog = insns.indexOfFirst { it.isNewInstanceOfDialog() }
+                val contains = (0 until dialog).lastOrNull { insns[it].isSetContains() } ?: return@forEach
+                if ((maxOf(0, contains - 8) until contains).none { insns[it].isStringGetBytes() }) return@forEach
                 candidates += classDef to method
             }
         }
@@ -92,6 +98,13 @@ private fun com.android.tools.smali.dexlib2.iface.instruction.Instruction.isNewI
     opcode == Opcode.NEW_INSTANCE && (this as? ReferenceInstruction)?.reference.let {
         (it as? TypeReference)?.type == DIALOG
     }
+
+/** `invoke-virtual String.getBytes()[B`, the first step of hashing the typed password. */
+private fun com.android.tools.smali.dexlib2.iface.instruction.Instruction.isStringGetBytes(): Boolean {
+    if (opcode != Opcode.INVOKE_VIRTUAL) return false
+    val call = (this as? ReferenceInstruction)?.reference as? MethodReference ?: return false
+    return call.definingClass == "Ljava/lang/String;" && call.name == "getBytes" && call.parameterTypes.isEmpty()
+}
 
 /** `invoke-interface Set.contains(Object)Z`. */
 private fun com.android.tools.smali.dexlib2.iface.instruction.Instruction.isSetContains(): Boolean {
