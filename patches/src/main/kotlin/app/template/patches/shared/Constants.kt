@@ -585,7 +585,8 @@ object Constants {
         // decision decompiles to Skip(FLAG_DISABLED).
         // 2026-11-04: updated to 26.44.0 (versionCode 51651; Play arm64 split bundle merged, same
         // signer). Both patches apply unchanged: smoke test green and CLI without -f applied both.
-        targets = listOf(AppTarget(version = "26.44.0", versionCode = 51651))
+        // 2026-11-11: updated to 26.45.0 (versionCode 51670): all fingerprints unique on the real matcher; smoke test passed.
+        targets = listOf(AppTarget(version = "26.45.0", versionCode = 51670))
     )
 
     // Verified 2026-09-18 against club.boxbox.android 5.4.9 (versionCode 251, the current
