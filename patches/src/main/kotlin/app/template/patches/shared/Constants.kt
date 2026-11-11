@@ -1660,7 +1660,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFF6D00,
         signatures = setOf("e9dc74df7439ad7a73c7cb916b7dd5697281e0a3f6bfac93208ec7bd9f70725a"), // OU=Streema
-        targets = listOf(AppTarget(version = "6.3.0", versionCode = 899))
+        // 2026-11-11: updated to 6.3.1 (versionCode 901): all fingerprints unique on the real matcher; smoke test passed.
+        targets = listOf(AppTarget(version = "6.3.1", versionCode = 901))
     )
 
     // Verified 2026-09-29 against com.Project100Pi.themusicplayer 3.2.0.0_release_2
