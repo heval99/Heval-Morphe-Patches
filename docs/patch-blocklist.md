@@ -108,6 +108,14 @@ not the story.
 | IPTV (free; Pro is the separate `ru.iptvremote.android.iptv.pro`) | `ru.iptvremote.android.iptv` | Removed by the owner 2026-10-23. Patches were Disable ads (delegates the in-app ad mediation provider to the built-in no-ads provider) and Enable Premium (unlocks the access-control/parental PIN settings shipped in the free app), both verified on 9.1.25 (versionCode 5010). No developer signing certificate was ever recorded: APKPure's 9.1.25 is signed CN=Alexander Sofronov, cert SHA-256 `516c01f1…a915ad`, and no second mirror (Uptodown, APKCombo, APKMirror) could confirm it. The code is in git history up to dev commit `2fba58a`. Not to be re-added unless the owner asks. |
 | LibrePods | `me.kavishdevar.librepods` | Removed 2026-11-03 at the developer's request (issue #101), which the owner granted. The only patch was Enable Premium (the Play build's one-time "advanced features" purchase), last verified on 1.0.4-play (versionCode 100040301). The developer points users to the free FOSS build on GitHub instead. The code is in git history before this removal. Not to be re-added. |
 
+## Dropped by the owner (quality focus, 2026-11-12)
+
+| App | Package | Why |
+|---|---|---|
+| WiFi Analyzer | `com.farproc.wifi.analyzer` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. Last verified target 3.11.2; the patch was Disable ads. |
+| Unified Remote | `com.Relmtech.Remote` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. Last verified 3.25.1; the patch was Enable Pro. |
+| LuckyClick (auto clicker) | `com.peter890331.luckyclick.app` | **Dropped 2026-11-12**: owner decision, quality focus; code is in git history before this commit. Last verified 3.28 (versionCode 68); the patches were Disable ads and Disable license check. |
+
 ## Known fingerprint drift (re-anchor later, app stays supported)
 
 None at the moment.

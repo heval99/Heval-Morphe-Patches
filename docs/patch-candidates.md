@@ -16,7 +16,7 @@ test + decompile-verify.
 |---|---|---|---|
 | Shazam | `com.shazam.android` | 16.62.1 | **Shipped 2026-10-05** - "Disable telemetry" (FirebaseAnalytics.logEvent + public Crashlytics surface). **2026-10-11** - "Open in Morphe YouTube apps" (issue #48: remaps the YouTube / YT Music "Open in" rows to the Morphe packages, falling back to stock; first extension module `extensions/shazam`). No ad SDK, billing or shields in the dex; no premium gate (free app) |
 | Simple Radio | `com.streema.simpleradio` | 6.2.0 | **Shipped 2026-09-29** - "Enable Premium" (local `iab_premium` pref gate + `isPremium()`) and "Disable ads" (GMA init + MAX interstitial load/show) |
-| WiFi Analyzer | `com.farproc.wifi.analyzer` | 3.11.2 | **Shipped 2026-09-29** - "Disable ads" (single `Settings` show-ad gate on the `next_show_ad_time_millisec` pref) |
+| WiFi Analyzer | `com.farproc.wifi.analyzer` | 3.11.2 | **Dropped by the owner 2026-11-12 (quality focus)** (shipped 2026-09-29) - "Disable ads" (single `Settings` show-ad gate on the `next_show_ad_time_millisec` pref) |
 | SoundHound | `com.melodis.midomiMusicIdentifier.freemium` | 10.5.8 | **Shipped 2026-10-07** - "Disable ads" (GMA init + startPreload, every load/loadAd/loadAds on banner/native/interstitial/rewarded/app-open/Ad Manager classes, Meta AN init). NOTE the package: the earlier `com.melodis.soundhound.android` guess does not exist. Premium (Play Billing, obfuscated) parked |
 | Dictionary.com | `com.dictionary` | 12.1.3 | **Parked 2026-10-07, needs deep dive.** Package/version verified against the APK (677). No IAP surface in app code (the billingclient bytes come from AppsFlyer's SDK). Ads are the problem: R8 stripped/inlined the GMA lite wrappers - only `MobileAds` + `nativead.NativeAd` remain public; banner/native/interstitial load through an R8-renamed Amazon-APS pipeline (Q4.d slots, P5.i/M5 flows, Q5.b placement enum with `/1027916/ANDROID_*` GAM units) and the readable `com.dictionary.foundation.ads.AdInitializer` bootstrap only covers the startup path, not the on-demand composable path (Q6.v). Candidate anchors for a future attempt: AdInitializer.b(Context) preamble, P5.i.b(Q5.a), GMA ClientApi located by its creator strings |
 | Moon+ Reader | `com.flyersoft.moonreader` | 10.7 | **Shipped 2026-10-06** - "Disable ads" (MrAd.disableAds() forced true; the only app class touching the ad SDK) |
@@ -101,7 +101,7 @@ Tier 1 progress, all checked against the latest APKMirror builds:
 |---|---|
 | Textra SMS | **Shipped** - "Enable Pro" (license pref class located structurally; l() -> true, k() -> false) |
 | jetAudio | **Shipped** - "Enable Pro" (purchase info class located by its inline literal; leaf getters -> true) |
-| Unified Remote | **Shipped** - "Enable Pro" (RevenueCat `EntitlementInfo.isActive()` -> true) |
+| Unified Remote | **Dropped by the owner 2026-11-12 (quality focus)** (shipped; last verified 3.25.1) - "Enable Pro" (forced the local `License.Status` check; RevenueCat only feeds the paywall UI) |
 | AZ Screen Recorder | **Blocked** - full PairIP (`SignatureCheck`, `VMRunner`, `VmDecryptor`); see patch-blocklist |
 | ACR Phone | Parked - readable billing prefs bridge but the premium computation is obfuscated and a periodic purchase-refresh worker can overwrite cached state |
 | Car Scanner ELM OBD2 | Parked - fully obfuscated app code, no RevenueCat; billing path not located yet |
@@ -140,7 +140,7 @@ In queue order. Verdicts are first impressions; nothing has been triaged yet.
 | 15 | Cronometer | `com.cronometer.android` | Not specified | Already on the blocklist (APKMirror 403, likely server-side) |
 | 16 | UniTV | not on Google Play | Full version | Off-Play IPTV service from a download site; skip |
 
-| 17 | LuckyClick (auto clicker) | `com.peter890331.luckyclick.app` | Remove ads ("really long and unskippable") | **Triaged 2026-10-14 (3.28, vc 68):** **Shipped 2026-10-14** - Disable ads (app's own AD_FREE_PERMANENT flag + GMA backstop) and Disable license check (PairIP licence check only). Emulator: no ads, Start goes straight to capture |
+| 17 | LuckyClick (auto clicker) | `com.peter890331.luckyclick.app` | Remove ads ("really long and unskippable") | **Triaged 2026-10-14 (3.28, vc 68):** **Dropped by the owner 2026-11-12 (quality focus)** (shipped 2026-10-14; last verified 3.28, vc 68) - Disable ads (app's own AD_FREE_PERMANENT flag + GMA backstop) and Disable license check (PairIP licence check only). Emulator: no ads, Start goes straight to capture |
 | 18 | Car Scanner ELM OBD2 | `com.ovz.carscanner` | Unlock premium | Already parked (fully obfuscated, billing path not located; see "Also covered" list). Genuine APK in apks/carscanner |
 | 19 | Cherrygram (Telegram fork) | github.com/arslan4k1390/Cherrygram | Premium | Open source; "premium" is Telegram Premium, which is server-side. Likely skip |
 | 20 | Lovora | unknown | Not specified | Find the package first |

@@ -1456,23 +1456,6 @@ object Constants {
         targets = listOf(AppTarget(version = "13.2.0", versionCode = 261370))
     )
 
-// Verified 2026-09-19 against com.Relmtech.Remote 3.25.1 (versionCode 325001) from
-// APKMirror. The app code is R8-obfuscated (`bh0` here); "Full" is a
-// `License.Status` SharedPreferences int (0 = Free, 1 = Locked, 2 = Full) and the
-// canonical Full check is the single `Z(Context)` method that reads it through the
-// same-class `I(Context)` getter - called from ~20 feature sites. The patch locates
-// that class by the unique "License.Status" literal and forces the check true.
-// (RevenueCat only feeds the paywall UI for actual buyers - non-buyers get an empty
-// entitlements map, so an `isActive()` force can never unlock anything here.)
-    val COMPATIBILITY_UNIFIEDREMOTE = Compatibility(
-        name = "Unified Remote",
-        packageName = "com.Relmtech.Remote",
-        apkFileType = ApkFileType.APK,
-        appIconColor = 0x2962FF,
-        signatures = setOf("b506be7e0c84f44785538ff9034687d52c3b8080c3c745cb79da07891c3c92cb"), // CN=Jakob Berglund, O=Relmtech
-        targets = listOf(AppTarget(version = "3.25.1", versionCode = 325001))
-    )
-
     // Verified 2026-09-27 against com.futbin 27.02 (versionCode 7002, user-supplied
     // APKPure APK). The app code is obfuscated, but all ads run through Google Mobile
     // Ads (the app's own `x.cv3` ad manager only calls the GMA surface, and the Nimbus
@@ -1744,35 +1727,6 @@ object Constants {
         appIconColor = 0xFF6D00,
         signatures = setOf("e9dc74df7439ad7a73c7cb916b7dd5697281e0a3f6bfac93208ec7bd9f70725a"), // OU=Streema
         targets = listOf(AppTarget(version = "6.3.0", versionCode = 899))
-    )
-
-    // Verified 2026-09-29 against com.farproc.wifi.analyzer 3.10.5-L (versionCode 999,
-    // APKPure). Tiny single-dex app, not obfuscated. Banner ads are gated by
-    // Settings.a(Context), which reads the "next_show_ad_time_millisec" preference and
-    // returns true once the hide-until date passes; MainScreen.N() shows the legacy
-    // AdMob banner (com.google.android.gms.ads.e) only when the gate is true. Forcing
-    // the gate false hides the banner everywhere.
-    // 2026-10-13, 3.11.2 (versionCode 139): patch unchanged, the CLI applies it without -f.
-    // MainScreen's ad methods were renamed (gate wrapper E(), banner H(), interstitial D());
-    // the gate Settings.a(Context) still has exactly two callers, MainScreen.E and
-    // LanNeighborsScreen.j, so the main banner, the interstitial and the LAN banner all reach
-    // the forced-false gate (checked in the patched bytecode). The LeadBolt web ad that
-    // 3.10.5-L carried is gone from 3.11.2; on 3.10.5-L it is not blocked, and only the banner
-    // was checked there. 3.11.2 has a lower versionCode (139) than 3.10.5-L (999), so moving
-    // from 3.10.5-L needs an uninstall first.
-    // 2026-10-19: the gate is now the single static (Context)Z that reads the
-    // "next_show_ad_time_millisec" key (singleOrNull; a second match fails the patch).
-    // 2026-10-19: older target 3.10.5-L dropped (latest version only, owner);
-    // WifiAnalyzerSmokeTest runs against 3.11.2.
-    val COMPATIBILITY_WIFIANALYZER = Compatibility(
-        name = "WiFi Analyzer",
-        packageName = "com.farproc.wifi.analyzer",
-        apkFileType = ApkFileType.APK,
-        appIconColor = 0x00ACC1,
-        signatures = setOf("90c579818cc58567db12e7f1150a60e4bba9a393e3c269eaba46d89af402f881"), // O=farproc.com
-        targets = listOf(
-            AppTarget(version = "3.11.2", versionCode = 139)
-        )
     )
 
     // Verified 2026-09-29 against com.Project100Pi.themusicplayer 3.2.0.0_release_2
@@ -2932,53 +2886,6 @@ object Constants {
         appIconColor = 0x009FE3,
         signatures = setOf("45469bfeef3d01413dbffc3530ebe6849bb08312317774f9fbc4f2d999a29294"), // Google Play app signing key
         targets = listOf(AppTarget(version = "5.4", versionCode = 71))
-    )
-
-    // Added 2026-10-14 from the Reddit request queue ("the ads are really long and unskippable").
-    // Verified against com.peter890331.luckyclick.app 3.28 (versionCode 68, single APK, no native
-    // code, Play-signed). PairIP license check only (no VMRunner / libpairipcore): Disable license
-    // check no-ops LicenseClient.checkLicense(Context). Ad-free is local: Play purchases are
-    // stored as AD_FREE_PERMANENT / AD_FREE_EXPIRE_TIME in SharedPreferences and mirrored into one
-    // state that gates the banner, the interstitial preloads and the full-screen interstitial
-    // shown before Start. Disable ads forces every getBoolean("AD_FREE_PERMANENT") read true
-    // (MainActivity.onCreate is mandatory), makes the onQueryPurchasesResponse restore store
-    // Boolean.TRUE (found by its Boolean.valueOf + "AD_FREE_PERMANENT" putBoolean), and no-ops
-    // every MobileAds static void, InterstitialAd.load and BaseAdView.loadAd. No rewarded ads in
-    // the app. LuckyClickSmokeTest asserts every hook.
-    // The APK is the base of a split bundle (requiredSplitTypes base__abi,base__density), so it
-    // will not install alone; apkFileType is APKM. Emulator 2026-10-14 (base with the split
-    // requirement removed for the test only): stock shows PairIP's licence error; patched starts
-    // with no paywall, no banner or gap, "Ads removed (Permanent)", and Start goes straight to
-    // screen capture, also after background/resume; the accessibility service binds; no crashes.
-    // The TRADE/EVOLVE modes and the overlay window were not reached.
-    // Disable license check is a pre-rule licence bypass the owner kept (2026-10-19).
-    // 2026-10-25: updated to version 4.8 (versionCode 77; APKPure XAPK merged, armeabi-v7a, same
-    // signer; minSdk 29). The prefs keys are no longer string literals: AD_FREE_PERMANENT is now a
-    // lazily decoded key on MainActivity (iget-object; Lazy.getValue(); check-cast String), and
-    // the startup read moved from onCreate into a helper called from onCreate and onResume.
-    // Disable ads now takes the key field from the purchase restore's only putBoolean and the
-    // ad-free state from the setValue storing its only Boolean.valueOf(Z); it forces every
-    // getBoolean on that key true (mandatory: a read in the method that sets the state TRUE).
-    // The restore fingerprint anchors on Boolean.valueOf + putBoolean instead of the old string.
-    // 4.8 adds a rewarded ad that unlocks an extra automation flow. While ad-free the app's own
-    // code adds that flow without the ad, so patched users get it free; RewardedAd.load is also
-    // no-oped. PairIP LicenseClient.checkLicense(Context) and its callers are unchanged.
-    // LuckyClickSmokeTest asserts every hook on 4.8; CLI (no -f) changes exactly 22 methods (the
-    // hooks above) and nothing else. Emulator 2026-10-25 (x86_64, lib/armeabi-v7a stripped from
-    // stock and patched to install): stock shows the PairIP "Something went wrong" dialog;
-    // patched starts without it, Settings shows "Ads removed (Permanent)", no banner or gap, Start
-    // goes straight to the capture prompt (also after resume), adding a flow shows no ad, no crash.
-    val COMPATIBILITY_LUCKYCLICK = Compatibility(
-        name = "LuckyClick",
-        packageName = "com.peter890331.luckyclick.app",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0x3A362F,
-        signatures = setOf("f7430d18f3745825b6a7a21171d1bc6d6fa2320fb1c9d094d022d66fb372346d"), // Google Play app signing key
-        // 2026-11-03: updated to "2026/10/22" (versionCode 100, Play arm64 build via gplaydl, same
-        // Play signer; the developer now uses the release date as versionName), both patches apply
-        // unchanged; smoke + CLI without -f.
-        // 2026-11-03 emulator: patched cold starts reach MainActivity (stock stops at the PairIP licence screen), no crash.
-        targets = listOf(AppTarget(version = "2026/10/22", versionCode = 100))
     )
 
     // Added 2026-10-14 from the Reddit request queue (ads only: premium is an account role from
