@@ -4009,7 +4009,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF5A524,
         signatures = setOf("7959db394ab099fd6827d09ecc2ae865b1e5952f0bdf4e273aa37004a668e98d"),
-        targets = listOf(AppTarget(version = "1.64", versionCode = 64))
+        // 2026-11-11: updated to 1.67 (versionCode 67): all fingerprints unique on the real matcher; smoke test passed.
+        targets = listOf(AppTarget(version = "1.67", versionCode = 67))
     )
 
     // Verified 2026-10-27 against ie.rte.news 10.0.2 (versionCode 440, APKPure XAPK merged with

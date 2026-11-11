@@ -43,7 +43,7 @@ class MangoSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "1.64",
+            version = "1.67",
             patchNames = setOf("Enable Premium", "Disable license check"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
