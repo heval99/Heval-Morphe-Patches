@@ -502,6 +502,11 @@ object Constants {
     // tints itself via getColorStateList(getResourceId(cardBackgroundColor)), which threw on a raw value
     // and left the stats unbound. Smoke test, CLI run without -f and aapt2 dump (10 items -> 4 colors,
     // strings unchanged); not run on a device.
+    // 2026-11-11 (241.18134.20261030): nine more night fills (colorContainer, predictor card and sheet,
+    // onboarding sheet, top-transfer item, segmented track and inside-card selected, FIFA rank graph,
+    // switch track unchecked) and popupMenuBackgroundColor joined the overlay, 20 attributes in all;
+    // each was checked against its stock night gray and is used only as a fill (predictorCardBackgroundColor has no consumer in 241 yet; onboardingBottomSheetBackground only themes the Wear onboarding sheet). No app code reads any of them.
+    // Smoke test, CLI run without -f and aapt2 dump; not run on a device.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",

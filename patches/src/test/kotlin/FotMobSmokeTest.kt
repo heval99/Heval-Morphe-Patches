@@ -567,7 +567,7 @@ class FotMobSmokeTest {
     // gate, then pass the menu and the builder's activity field to the extension.
     /**
      * AMOLED black (a Patch settings switch): the night Base.Theme.FotMob.DayNight is untouched, a new
-     * HevalAmoledOverlay style holds the ten attributes at near-black values, and the activity hook
+     * HevalAmoledOverlay style holds the twenty attributes at near-black values, and the activity hook
      * applies it (AmoledBlack.applyTheme from ActivityHooks.onActivityCreated).
      */
     private fun assertAmoledBlack(classes: List<ClassDef>) {
@@ -586,6 +586,8 @@ class FotMobSmokeTest {
         assertEquals("@color/nero_black", night["cardBackgroundColor"], "the night theme keeps its stock cardBackgroundColor")
         assertEquals("@color/chinese_black", night["bottomNavBackgroundColor"], "the night theme keeps its stock bottomNavBackgroundColor")
         assertEquals("@color/black", night["appBackground"], "appBackground stays black")
+        assertEquals("@color/nero_black", night["colorContainer"], "the night theme keeps its stock colorContainer")
+        assertEquals("@color/dark_charcoal", night["popupMenuBackgroundColor"], "the night theme keeps its stock popupMenuBackgroundColor")
 
         val overlay = styles("values")["HevalAmoledOverlay"] ?: error("values: HevalAmoledOverlay not found")
         fun String.opaque() = lowercase().let { if (it.length == 9 && it.startsWith("#ff")) "#" + it.substring(3) else it }
@@ -594,7 +596,12 @@ class FotMobSmokeTest {
             "colorSurfaceContainerLow" to "#0a0a0a", "colorSurfaceContainerHigh" to "#0a0a0a",
             "colorSurfaceContainerHighest" to "#0a0a0a", "bottomNavBackgroundColor" to "#000000",
             "cardInCardHeaderBackground" to "#141414", "chipBackgroundUnselected" to "#141414",
-            "bottomSheetBackgroundColor" to "#121212",
+            "bottomSheetBackgroundColor" to "#121212", "popupMenuBackgroundColor" to "#121212",
+            "colorContainer" to "#0a0a0a", "predictorCardBackgroundColor" to "#0a0a0a",
+            "predictorBottomSheetBackgroundColor" to "#0a0a0a", "onboardingBottomSheetBackground" to "#0a0a0a",
+            "newsTopTransferItemBackgroundColor" to "#0a0a0a", "segmentedButtonsBackgroundColor" to "#0a0a0a",
+            "segmentedButtonsInsideCardSelectedBackgroundColor" to "#0a0a0a",
+            "fifaRankGraphBackgroundColor" to "#0a0a0a", "switchTrackBackgroundColorUnchecked" to "#0a0a0a",
         )
         // Issue #146: every item must reference a color resource, never a raw value. FotMob resolves
         // some of these attributes through TypedArray.getResourceId + Context.getColorStateList (qo0.z,

@@ -29,8 +29,8 @@ internal val AMOLED_BLACK = HevalFeature(
 // the bottom bar `chinese_black` (#141414), the card headers and unselected chips `raisin_black`
 // (#262626) and the bottom sheets `dark_charcoal` (#333333). Those grays are shared color names
 // (they also colour other things), so nothing is edited in place: the resource step adds an overlay
-// style that holds ten attributes at AMOLED values (#0a0a0a cards and surfaces, #000000 bottom bar,
-// #141414 headers and chips, #121212 sheets) after checking that the night theme still references
+// style that holds twenty attributes at AMOLED values (#0a0a0a cards and surfaces, #000000 bottom bar,
+// #141414 headers and chips, #121212 sheets and popup menus) after checking that the night theme still references
 // the stock grays. The extension applies the overlay to each new screen while the Patch settings
 // switch is on and the screen is in dark mode (restart required for screens already open). The
 // light theme, the shared colors, dividers and texts are untouched. Not covered: screens that draw
@@ -39,6 +39,14 @@ internal val AMOLED_BLACK = HevalFeature(
 // instead of raw values. The league table row (TableLine item) tints its background with
 // qo0.z = getColorStateList(TypedArray.getResourceId(cardBackgroundColor)); a raw value has resource
 // id 0, so that threw and the row stopped binding after the team name (no played/W/D/L/GD/points).
+// 2026-11-11: nine more night fills that were still gray joined (all nero_black, each used only as a
+// background/fill in the decoded layouts and drawables, never as text): colorContainer (M3 button
+// containers), predictorCardBackgroundColor, predictorBottomSheetBackgroundColor,
+// onboardingBottomSheetBackground, newsTopTransferItemBackgroundColor, segmentedButtonsBackgroundColor,
+// segmentedButtonsInsideCardSelectedBackgroundColor (still darker than the onyx inside-card track, and
+// the other segmented selection stays outer_space), fifaRankGraphBackgroundColor and
+// switchTrackBackgroundColorUnchecked, plus popupMenuBackgroundColor (dark_charcoal, #121212 like the
+// sheets). compoundButtonIconTint is left out: it is a tint, not a fill.
 private val amoledResourcePatch = amoledOverlayResourcePatch(
     COMPATIBILITY_FOTMOB,
     nightStylesPath = "res/values-night/styles.xml",
@@ -56,6 +64,16 @@ private val amoledResourcePatch = amoledOverlayResourcePatch(
         "cardInCardHeaderBackground" to AmoledAttribute("@color/raisin_black", "#ff141414"),
         "chipBackgroundUnselected" to AmoledAttribute("@color/raisin_black", "#ff141414"),
         "bottomSheetBackgroundColor" to AmoledAttribute("@color/dark_charcoal", "#ff121212"),
+        "popupMenuBackgroundColor" to AmoledAttribute("@color/dark_charcoal", "#ff121212"),
+        "colorContainer" to AmoledAttribute("@color/nero_black", "#ff0a0a0a"),
+        "predictorCardBackgroundColor" to AmoledAttribute("@color/nero_black", "#ff0a0a0a"),
+        "predictorBottomSheetBackgroundColor" to AmoledAttribute("@color/nero_black", "#ff0a0a0a"),
+        "onboardingBottomSheetBackground" to AmoledAttribute("@color/nero_black", "#ff0a0a0a"),
+        "newsTopTransferItemBackgroundColor" to AmoledAttribute("@color/nero_black", "#ff0a0a0a"),
+        "segmentedButtonsBackgroundColor" to AmoledAttribute("@color/nero_black", "#ff0a0a0a"),
+        "segmentedButtonsInsideCardSelectedBackgroundColor" to AmoledAttribute("@color/nero_black", "#ff0a0a0a"),
+        "fifaRankGraphBackgroundColor" to AmoledAttribute("@color/nero_black", "#ff0a0a0a"),
+        "switchTrackBackgroundColorUnchecked" to AmoledAttribute("@color/nero_black", "#ff0a0a0a"),
     ),
 )
 
