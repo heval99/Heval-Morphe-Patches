@@ -9,7 +9,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 private const val PKG = "yiuo.mobile.tv"
-private const val VERSION = "13.11.0 (build 21977)"
+private const val VERSION = "13.12.0 (build 22025)"
 private const val ANALYTICS_REGISTRAR =
     "Lcom/google/firebase/analytics/connector/internal/AnalyticsConnectorRegistrar;"
 

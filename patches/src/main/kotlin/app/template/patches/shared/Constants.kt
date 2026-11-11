@@ -4389,13 +4389,15 @@ object Constants {
     // Analytics deactivated/ad-ID reads, the Crashlytics arbiter getter, the Sessions override and
     // the Performance collection reader), so the resource table is no longer re-encoded (13 id
     // names had come out as type_0x...). Smoke-tested only; no CLI run or device run since.
+    // 2026-11-11: updated to 13.12.0 (build 22025) (versionCode 130120000; Play arm64 build via
+    // gplaydl, same signer); anchors unchanged; YouSeeSmokeTest passes.
     val COMPATIBILITY_YOUSEE = Compatibility(
         name = "YouSee Play",
         packageName = "yiuo.mobile.tv",
         apkFileType = ApkFileType.APKS,
         appIconColor = 0x00DC00, // The adaptive icon's background colour.
         signatures = setOf("54c2ab666332018c0e5f3870a78a185f84ae1b6ce870d0360bf7786cf9e1b9c2"), // O=YouSee A/S
-        targets = listOf(AppTarget(version = "13.11.0 (build 21977)", versionCode = 130110000))
+        targets = listOf(AppTarget(version = "13.12.0 (build 22025)", versionCode = 130120000))
     )
 
     // Verified 2026-11-08 against dk.ekstrabladet.breakingnews 2026.09.20 (versionCode 90318107,
