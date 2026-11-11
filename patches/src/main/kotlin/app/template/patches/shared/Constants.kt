@@ -1693,13 +1693,15 @@ object Constants {
     // runtime-tested.
     // 2026-10-25: updated to version 3.2.1.0_release_1 (versionCode 32101; APKPure XAPK merged,
     // same signer); PiMusicPlayerSmokeTest passes on patcher 2.0.0; anchors unchanged.
+    // 2026-11-11: updated to version 3.2.3.0_release_1 (versionCode 32301; Play arm64 build via
+    // gplaydl, same signer); anchors unchanged; PiMusicPlayerSmokeTest passes.
     val COMPATIBILITY_PIMUSICPLAYER = Compatibility(
         name = "Pi Music Player",
         packageName = "com.Project100Pi.themusicplayer",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3F51B5,
         signatures = setOf("f1b56e1d0e7901712e4ed9be385a34b7a11b696c60c9f458cf804ae3cf0f8636"), // CN=100PiDevs, O=Team100Pi
-        targets = listOf(AppTarget(version = "3.2.1.0_release_1", versionCode = 32101))
+        targets = listOf(AppTarget(version = "3.2.3.0_release_1", versionCode = 32301))
     )
 
     // Verified 2026-10-05 against com.shazam.android 16.62.0 (versionCode 1606200,
