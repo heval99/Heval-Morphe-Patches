@@ -1967,13 +1967,15 @@ object Constants {
     // signing certificate). Both patches apply unchanged: BeSoccerSmokeTest passes (the app still
     // makes the same nine next-gen SDK calls) and a CLI run without -f applied both; checkLicense
     // and the MobileAds/load methods disassemble to an immediate return. 2026-11-03 emulator (patched build of the release batch, stock control): two cold starts, no crash.
+    // 2026-11-11: updated to the 6.7.1 rebuild with versionCode 23005546 (Play arm64 via gplaydl, same
+    // signer); anchors unchanged; BeSoccerSmokeTest passes.
     val COMPATIBILITY_BESOCCER = Compatibility(
         name = "BeSoccer",
         packageName = "com.resultadosfutbol.mobile",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x2E7D32,
         signatures = setOf("97f9d6deb3d9d3ca623528b77dddc530c49516c90e948628e0354bb530cc3b6f"), // CN=Alejandro Sanchez Blanes, O=Resultados-Futbol.com
-        targets = listOf(AppTarget(version = "6.7.1", versionCode = 23005545))
+        targets = listOf(AppTarget(version = "6.7.1", versionCode = 23005546))
     )
 
     // Verified 2026-10-07 against com.rawcam.app 1.4.3 (versionCode 55, APKPure split bundle
