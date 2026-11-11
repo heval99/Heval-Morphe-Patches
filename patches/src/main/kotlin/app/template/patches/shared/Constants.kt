@@ -3015,9 +3015,8 @@ object Constants {
     // that kept showing); new opt-in "Hide activity banners" drops ActivityBanner units (event and
     // promo banners such as "Lucky Egg Smash"); Hide premium banners also empties
     // GetMembershipDiscountPopupRes.getInfosList() (the membership discount / free-trial pop-up).
-    // The Egg and Rebates shortcut icons are not done: the grid is server-configured and the
-    // entries' identifiers are unknown. Smoke test only; the units are server-driven and may be
-    // region-gated, so they were not seen on the emulator.
+    // (The Egg and Rebates shortcuts: see 2026-11-11 below.) Smoke test only; the units are
+    // server-driven and may be region-gated, so they were not seen on the emulator.
     // 2026-11-11 (#135, same 3.5.5 build): Hide activity banners also forces
     // LocationResourceProto$LocationConf.hasHomePopupConf / hasNewHomePopupConf / hasHomeStickyConf /
     // hasNewHomeStickyConf to false. Small Function1 filters (invoke-virtual on those accessors) pick the
@@ -3026,6 +3025,27 @@ object Constants {
     // conf falls through without throwing). If R8 ever inlines locationConfCase_ checks into the filters,
     // this silently stops working: re-check the filters on every update. Smoke test, CLI without -f and
     // the patched bytecode verified; not run on the emulator (server-driven).
+    // 2026-11-11 (#135, same 3.5.5 build): new opt-in "Hide shortcut promotions" (extensions/wemuslim).
+    // HomeStreamListView.setDiscoverData(List) (kept name; the only sink of the Home/Prayer shortcut
+    // grid, also feeding the folder dialog) first passes its list through ShortcutFilter.filterDiscover,
+    // which rebuilds DiscoverResourceUiModelWithFolder entries by reflection (kept names) without
+    // entries whose ResourceUiModel.getJumpUrl() (also URL-encoded inside a deep link) points at
+    // activity.wemuapp.com/...smash-egg... ("Egg"), h5.wemuapp.com/front/ota/... ("Rebates") or
+    // *.trip.com ("Trip."), drops a folder whose own link matches or that is left empty, and collapses
+    // a one-child folder like the app does; on any reflection failure the list is passed on unchanged.
+    // The link patterns are static-only (from research, not from captured server data) until confirmed
+    // on a device: the filter logs every grid entry at debug level (tag Morphe-WeMuslim; type, id,
+    // host/path, never the query). Smoke test, unit tests and CLI without -f verified. Owner-approved
+    // emulator run (morphe-test, logged out): the server sent no Egg/Rebates/Trip entries even to the
+    // control, the grid showed the app's local default tiles and the filter logged nothing, so runtime is
+    // inconclusive and the patterns stay static-only. The /front/ota/ rule would also hide any other page
+    // under that path; if every server entry were dropped the app shows its local default grid.
+    // 2026-11-11 (#135, same 3.5.5 build): new opt-in "Hide Ummah tab". The data class AvailableModule
+    // (hasUmmah, hasSocial; lk0 in 3.5.5, found by its toString text "AvailableModule(hasUmmah=") gets
+    // const/4 p1, 0x0 at the start of its <init>(ZZ)V, so hasUmmah is always false: MainActivity skips
+    // the Ummah page and MainBottomNavigationLayout hides its nav item (tabs are matched by type, not
+    // index). Smoke test, CLI without -f and the patched bytecode verified; on the emulator (vs a control
+    // with only the encryption fix) the patched build launches, the Ummah tab is gone, no crash.
     val COMPATIBILITY_WEMUSLIM = Compatibility(
         name = "WeMuslim",
         packageName = "com.fyxtech.muslim",
