@@ -4,6 +4,15 @@ extension {
 
 android {
     namespace = "app.template.extension"
+
+    testOptions {
+        // Plain JVM unit tests: android.jar stubs answer defaults instead of throwing "not mocked".
+        unitTests.isReturnDefaultValues = true
+    }
+}
+
+dependencies {
+    testImplementation(libs.junit)
 }
 
 // Pure-Java extension. AGP's built-in Kotlin adds kotlin-stdlib by default, which would grow the

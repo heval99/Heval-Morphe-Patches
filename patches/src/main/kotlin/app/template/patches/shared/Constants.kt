@@ -4516,6 +4516,10 @@ object Constants {
     // blocking shouldInterceptRequest to WrapperActivity$a (a WebViewClientCompat) and the
     // website's ad/tracking hosts get an empty response; every other callback still runs. The
     // article paywall is server-side. Smoke tests and CLI without -f pass; not run on a device.
+    // 2026-11-11: checked against the Jyllands-Posten client-replacement bug in the webviewads
+    // extension. Not affected: this patch never calls AdBlock.install; it adds the override to the
+    // app's own client and uses only isAdUrl/emptyResponse. BerlingskeSmokeTest and CLI without -f
+    // pass with the updated extension.
     val COMPATIBILITY_BERLINGSKE = Compatibility(
         name = "Berlingske",
         packageName = "com.mecom.Berlingske",
