@@ -497,6 +497,11 @@ object Constants {
     // background was already @color/black and the shared gray colors are untouched). A CLI run without
     // -f added exactly that style to the resource table (aapt2 diff, plus the usual id renames); not run
     // on a device.
+    // 2026-11-11 (issue #146, 241.18134.20261030): the overlay items now reference four added colors
+    // @color/heval_amoled_{0a0a0a,000000,141414,121212} instead of raw values. The league table row
+    // tints itself via getColorStateList(getResourceId(cardBackgroundColor)), which threw on a raw value
+    // and left the stats unbound. Smoke test, CLI run without -f and aapt2 dump (10 items -> 4 colors,
+    // strings unchanged); not run on a device.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",

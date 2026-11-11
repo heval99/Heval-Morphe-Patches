@@ -596,7 +596,23 @@ class FotMobSmokeTest {
             "cardInCardHeaderBackground" to "#141414", "chipBackgroundUnselected" to "#141414",
             "bottomSheetBackgroundColor" to "#121212",
         )
-        assertEquals(expected, overlay.mapValues { it.value.opaque() }, "HevalAmoledOverlay items")
+        // Issue #146: every item must reference a color resource, never a raw value. FotMob resolves
+        // some of these attributes through TypedArray.getResourceId + Context.getColorStateList (qo0.z,
+        // used by the league table row); a raw value has resource id 0, the call throws and the row
+        // stops binding, so the table showed no points.
+        overlay.forEach { (name, value) ->
+            assertTrue(value.startsWith("@color/"), "HevalAmoledOverlay $name must reference a color resource, is $value")
+        }
+        val colorsFile = workDir.walkTopDown().singleOrNull { it.name == "colors.xml" && it.parentFile.name == "values" }
+            ?: error("no decoded values/colors.xml under $workDir")
+        val colorDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(colorsFile)
+        val colorNodes = colorDoc.getElementsByTagName("color")
+        val colors = (0 until colorNodes.length).map { colorNodes.item(it) as Element }
+            .associate { it.getAttribute("name") to it.textContent.trim() }
+        val resolved = overlay.mapValues { (name, ref) ->
+            colors[ref.removePrefix("@color/")]?.opaque() ?: error("values/colors.xml has no ${ref.removePrefix("@color/")} for $name")
+        }
+        assertEquals(expected, resolved, "HevalAmoledOverlay items (resolved colors)")
 
         // The hook: ActivityHooks.onActivityCreated calls AmoledBlack.applyTheme.
         val hooks = classes.single { it.type == "Lapp/template/extension/fotmob/ActivityHooks;" }

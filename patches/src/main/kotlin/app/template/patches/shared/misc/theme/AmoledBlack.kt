@@ -62,6 +62,11 @@ internal data class AmoledAttribute(val stockRef: String, val amoled: String)
  * new style [overlayName] to [baseStylesPath] holding the AMOLED value of each attribute. The
  * extension applies that overlay to the theme of each screen while the Patch settings switch is on
  * and the screen is in dark mode, so the switch can turn AMOLED off again without patching.
+ *
+ * Each AMOLED value is added as a `<color name="heval_amoled_<rrggbb>">` resource in [colorsPath] and
+ * the overlay items reference it, exactly like the stock items reference `@color/...`. A raw color
+ * value in a style item has no resource id, and apps that resolve an attribute with
+ * `TypedArray.getResourceId` + `getColorStateList` (FotMob's league table row) then throw: issue #146.
  */
 internal fun amoledOverlayResourcePatch(
     compatibility: Compatibility,
@@ -70,13 +75,14 @@ internal fun amoledOverlayResourcePatch(
     styleName: String,
     overlayName: String,
     attributes: Map<String, AmoledAttribute>,
+    colorsPath: String = "res/values/colors.xml",
 ) = resourcePatch(
     description = "Adds an AMOLED black theme overlay to the dark theme.",
 ) {
     compatibleWith(compatibility)
 
     execute {
-        decode(nightStylesPath, baseStylesPath)
+        decode(nightStylesPath, baseStylesPath, colorsPath)
         val remaining = attributes.keys.toMutableSet()
         document(nightStylesPath).use { doc ->
             val styles = doc.getElementsByTagName("style")
@@ -96,6 +102,29 @@ internal fun amoledOverlayResourcePatch(
         }
         if (remaining.isNotEmpty()) throw PatchException("$nightStylesPath: $styleName is missing items $remaining")
 
+        // One color resource per distinct AMOLED value, e.g. heval_amoled_0a0a0a = #0a0a0a.
+        val colorNames = attributes.values.map { it.amoled.opaqueColor() }.distinct().associateWith { value ->
+            if (!Regex("#[0-9a-f]{6}").matches(value)) throw PatchException("AMOLED value $value is not an opaque #rrggbb color")
+            "heval_amoled_${value.substring(1)}"
+        }
+        document(colorsPath).use { doc ->
+            val resources = doc.documentElement ?: throw PatchException("$colorsPath has no root element")
+            val existing = doc.getElementsByTagName("color").let { nodes ->
+                (0 until nodes.length).map { nodes.item(it) as Element }.associateBy { it.getAttribute("name") }
+            }
+            colorNames.forEach { (value, colorName) ->
+                val present = existing[colorName]
+                when {
+                    present == null -> resources.appendChild(doc.createElement("color").apply {
+                        setAttribute("name", colorName)
+                        textContent = value
+                    })
+                    present.textContent.trim().opaqueColor() != value ->
+                        throw PatchException("$colorsPath: $colorName exists with ${present.textContent.trim()}, expected $value")
+                }
+            }
+        }
+
         document(baseStylesPath).use { doc ->
             val resources = doc.documentElement ?: throw PatchException("$baseStylesPath has no root element")
             val existing = doc.getElementsByTagName("style")
@@ -104,7 +133,7 @@ internal fun amoledOverlayResourcePatch(
             attributes.forEach { (name, attribute) ->
                 overlay.appendChild(doc.createElement("item").apply {
                     setAttribute("name", name)
-                    textContent = attribute.amoled
+                    textContent = "@color/" + colorNames.getValue(attribute.amoled.opaqueColor())
                 })
             }
             resources.appendChild(overlay)

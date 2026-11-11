@@ -35,6 +35,10 @@ internal val AMOLED_BLACK = HevalFeature(
 // switch is on and the screen is in dark mode (restart required for screens already open). The
 // light theme, the shared colors, dividers and texts are untouched. Not covered: screens that draw
 // hard-coded grays or images.
+// 2026-11-11 (issue #146): the overlay items reference new `heval_amoled_<rrggbb>` color resources
+// instead of raw values. The league table row (TableLine item) tints its background with
+// qo0.z = getColorStateList(TypedArray.getResourceId(cardBackgroundColor)); a raw value has resource
+// id 0, so that threw and the row stopped binding after the team name (no played/W/D/L/GD/points).
 private val amoledResourcePatch = amoledOverlayResourcePatch(
     COMPATIBILITY_FOTMOB,
     nightStylesPath = "res/values-night/styles.xml",
