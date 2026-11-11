@@ -4340,7 +4340,13 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xE40050, // The icon's pink-to-red gradient (mid-tone).
         signatures = setOf("8b1a306bfad5bc14025c488f6350751657dcb2b6e7eab311778d64c78a82aa2c"), // CN=Niklas BJorkholm, OU=MTG
-        targets = listOf(AppTarget(version = "26.42.1", versionCode = 2642010))
+        // 2026-11-11: updated to version 26.44.0 (versionCode 2644000; Google Play, arm64-v8a split
+        // bundle merged; signer CN=Niklas BJorkholm OU=MTG, cert SHA-256 8b1a306b...2aa2c, matches).
+        // All six Disable telemetry steps (Crashlytics gate, Firebase Performance check, Firebase
+        // Analytics manifest flag, NPAW and Nielsen initializers, Cronos dispatcher) are unchanged
+        // in shape and match uniquely (real matcher); ViaplaySmokeTest passes. 26.42.1 dropped
+        // (latest verified version only).
+        targets = listOf(AppTarget(version = "26.44.0", versionCode = 2644000))
     )
 
     // Same app, used only by "Skip ads", so Morphe Manager flags it as experimental (2026-10-29,
@@ -4365,7 +4371,19 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xE40050,
         signatures = setOf("8b1a306bfad5bc14025c488f6350751657dcb2b6e7eab311778d64c78a82aa2c"), // CN=Niklas BJorkholm, OU=MTG
-        targets = listOf(AppTarget(version = "26.42.1", versionCode = 2642010, isExperimental = true))
+        // 2026-11-11: updated to version 26.44.0 (versionCode 2644000), re-anchored. From 26.43 R8
+        // renames Media3's common classes (AdPlaybackState, Timeline, the updater interface) and
+        // inlines the app's only AdPlaybackStateUpdater and AdPlaybackState.withSkippedAd into
+        // ServerSideAdInsertionMediaSource's onChildSourceInfoRefreshed(MediaSource, Timeline)V, so
+        // the old interface/builder-call fingerprint matched nothing (also on 26.43.1). The method
+        // is now found by shape: a (X, Timeline)V that calls the kept-package exo/tools period check
+        // (Timeline, int)Z and holds the Set.contains + move-result + if-eqz guard. The guard is kept
+        // and now tests adGroups.length (an iget-object of the state's only AdGroup[] field plus
+        // array-length into the guard register, inserted before the if-eqz), so states with an ad
+        // group are skipped and empty ones (content, live) are left alone as before. Smoke-verified
+        // and disassembled from the CLI-patched APK; no ad break has been watched at runtime, so it
+        // stays experimental. 26.42.1 dropped (latest verified version only).
+        targets = listOf(AppTarget(version = "26.44.0", versionCode = 2644000, isExperimental = true))
     )
 
     // Verified 2026-10-29 against dk.bold 6.5.2 (versionCode 261, owner-supplied APKCube .apks
