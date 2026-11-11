@@ -4476,13 +4476,26 @@ object Constants {
     // (xml/allowed_media_library_callers had been renamed). The dex has no Firebase Analytics or
     // Performance, so only the Crashlytics arbiter getter and the Sessions override are forced.
     // Smoke-tested only; no CLI run or device run since.
+    // 2026-11-11: updated to 2026.10.15 (versionCode 90353255; Play arm64 build via gplaydl, same
+    // signer); JyllandspostenSmokeTest passes. Two anchors widened: the article WebView is now an app
+    // subclass of android.webkit.WebView (Disable ads accepts the framework class or a direct subclass),
+    // and the Snowplow wrapper has three app-typed fields (the tracker is the one the wrapper
+    // instantiates itself).
+    // 2026-11-11: fixed "Disable ads" replacing the app's own WebViewClient. The wrapper's configure
+    // callback sets a WebViewClientCompat (link routing, page callbacks, its own
+    // shouldInterceptRequest, renderer-crash handling) before the injected AdBlock.install, which used
+    // to overwrite it. install() now reads the client back (API 26+) and wraps it in a client that
+    // forwards every WebViewClient callback and only answers ad/tracking hosts itself; below API 26
+    // it still replaces the client. The configure callback also calls MobileAds.registerWebView, whose
+    // GMA client wraps whatever client it finds, so the two chain. Extension unit tests, smoke test and
+    // CLI without -f pass; not run on a device.
     val COMPATIBILITY_JYLLANDSPOSTEN = Compatibility(
         name = "Jyllands Posten",
         packageName = "dk.jyllandsposten.jp",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xC8102E, // JP red.
         signatures = setOf("ceca81c9c7ab3bd9327c1a33189d3511910f2e1191a97d8aebcb9c7a71d415d0"), // CN=Rune Lippert, O=Jyllands-Posten
-        targets = listOf(AppTarget(version = "2026.09.24", versionCode = 90322937))
+        targets = listOf(AppTarget(version = "2026.10.15", versionCode = 90353255))
     )
 
     // Verified 2026-11-08 against dk.pol.news 4.1.4 (versionCode 300, Google Play arm64-v8a split set

@@ -12,10 +12,11 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 private const val PKG = "dk.jyllandsposten.jp"
-private const val VERSION = "2026.09.24"
+private const val VERSION = "2026.10.15"
 private const val SNOWPLOW_ENDPOINT = "https://c.jyllands-posten.dk"
 private const val WEBVIEW = "Landroid/webkit/WebView;"
 private const val AD_BLOCK = "Lapp/template/extension/webviewads/AdBlock;"
+private const val BLOCKING_CLIENT = "Lapp/template/extension/webviewads/AdBlock\$BlockingClient;"
 
 private val GEMIUS_EVENTS = listOf(
     "Lcom/gemius/sdk/audience/BaseEvent;",
@@ -31,18 +32,23 @@ class JyllandspostenSmokeTest {
     private fun List<ClassDef>.type(type: String): ClassDef =
         firstOrNull { it.type == type } ?: error("$type not found in emitted dexes")
 
-    private fun List<ClassDef>.appWebViewWrapper(): ClassDef = singleOrNull { cls ->
-        cls.type.startsWith("L") && !cls.type.startsWith("Lcom/") &&
-            !cls.type.startsWith("Landroid") && !cls.type.startsWith("Lkotlin") &&
-            cls.methods.any { method ->
-                val insns = method.implementation?.instructions?.toList().orEmpty()
-                insns.any { it.opcode == Opcode.NEW_INSTANCE && (it as? ReferenceInstruction)?.reference.let { ref -> (ref as? TypeReference)?.type == WEBVIEW } } &&
-                    insns.any { insn ->
-                        val call = (insn as? ReferenceInstruction)?.reference as? MethodReference
-                        call?.definingClass == WEBVIEW && call.name == "addJavascriptInterface"
-                    }
-            }
-    } ?: error("expected one app WebView wrapper")
+    private fun List<ClassDef>.appWebViewWrapper(): ClassDef {
+        // The WebView is the framework class or an app subclass of it (a subclass since 2026.10.15).
+        val webViewTypes = mutableSetOf(WEBVIEW)
+        forEach { if (it.superclass == WEBVIEW) webViewTypes += it.type }
+        return singleOrNull { cls ->
+            cls.type.startsWith("L") && !cls.type.startsWith("Lcom/") &&
+                !cls.type.startsWith("Landroid") && !cls.type.startsWith("Lkotlin") &&
+                cls.methods.any { method ->
+                    val insns = method.implementation?.instructions?.toList().orEmpty()
+                    insns.any { it.opcode == Opcode.NEW_INSTANCE && (it as? ReferenceInstruction)?.reference.let { ref -> (ref as? TypeReference)?.type in webViewTypes } } &&
+                        insns.any { insn ->
+                            val call = (insn as? ReferenceInstruction)?.reference as? MethodReference
+                            call?.definingClass == WEBVIEW && call.name == "addJavascriptInterface"
+                        }
+                }
+        } ?: error("expected one app WebView wrapper")
+    }
 
     @Test
     fun `Disable telemetry stops Gemius, Snowplow and the Firebase switches`() {
@@ -76,8 +82,14 @@ class JyllandspostenSmokeTest {
                 } == true
             }
         } ?: error("Snowplow wrapper ($SNOWPLOW_ENDPOINT) not found")
+        val instantiated = wrapper.methods.asSequence()
+            .flatMap { method -> method.implementation?.instructions?.asSequence() ?: emptySequence() }
+            .filter { it.opcode == Opcode.NEW_INSTANCE }
+            .mapNotNull { ((it as? ReferenceInstruction)?.reference as? TypeReference)?.type }
+            .toSet()
         val trackerType = wrapper.fields.single { field ->
-            !AccessFlags.STATIC.isSet(field.accessFlags) && classes.any { it.type == field.type }
+            !AccessFlags.STATIC.isSet(field.accessFlags) && classes.any { it.type == field.type } &&
+                field.type in instantiated
         }.type
         val trackCall = wrapper.methods.asSequence()
             .flatMap { method -> method.implementation?.instructions?.asSequence() ?: emptySequence() }
@@ -111,8 +123,31 @@ class JyllandspostenSmokeTest {
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
 
-        // The extension is merged into the emitted dex.
-        classes.type(AD_BLOCK)
+        // The extension is merged into the emitted dex, and install() keeps the app's own client: it
+        // reads it back and wraps it in the delegating blocking client instead of replacing it.
+        // D8 outlines the API 26 getWebViewClient call into a synthetic AdBlock$$ExternalSynthetic...
+        // helper (minSdk 23), so follow one level of calls into the extension's own classes.
+        fun MethodReference.callsIn(): List<MethodReference> =
+            classes.firstOrNull { it.type == definingClass }?.methods
+                ?.firstOrNull { m -> m.name == name && m.parameterTypes.map(CharSequence::toString) == parameterTypes.map(CharSequence::toString) }
+                ?.implementation?.instructions
+                ?.mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
+                ?.toList().orEmpty()
+        val installMethod = classes.type(AD_BLOCK).methods.single { it.name == "install" }
+        val direct = installMethod.implementation!!.instructions
+            .mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
+            .toList()
+        val installCalls = (direct + direct.filter { it.definingClass.startsWith(AD_BLOCK.removeSuffix(";")) }.flatMap { it.callsIn() })
+            .map { "${it.definingClass}->${it.name}" }
+        check("$WEBVIEW->getWebViewClient" in installCalls) { "AdBlock.install does not read the existing client" }
+        check("$BLOCKING_CLIENT-><init>" in installCalls) { "AdBlock.install does not build the blocking client" }
+        val blockingClient = classes.type(BLOCKING_CLIENT)
+        check(blockingClient.fields.any { it.type == "Landroid/webkit/WebViewClient;" }) {
+            "$BLOCKING_CLIENT has no delegate field"
+        }
+        for (callback in listOf("shouldOverrideUrlLoading", "onPageStarted", "onPageFinished", "onRenderProcessGone", "onReceivedHttpError")) {
+            check(blockingClient.methods.any { it.name == callback }) { "$BLOCKING_CLIENT does not forward $callback" }
+        }
 
         // The app's WebView wrapper still creates the WebView and now installs the blocking client.
         val wrapper = classes.appWebViewWrapper()

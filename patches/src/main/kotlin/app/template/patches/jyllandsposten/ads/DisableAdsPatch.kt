@@ -16,11 +16,14 @@ import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 private const val WEBVIEW = "Landroid/webkit/WebView;"
 
 /**
- * Jyllands-Posten renders articles in a WebView (the app's own wrapper creates it, enables
- * JavaScript and adds the bridge, and never sets a WebViewClient). The page's ad slots are the
- * website's own requests, so the SDK patches do not apply; this installs the shared blocking client
- * from the webviewads extension on the wrapper's WebView. Content, consent and the paywall pages
- * are untouched; only the ad/tracking hosts are answered with an empty response.
+ * Jyllands-Posten renders articles in a WebView. The app's wrapper creates it, adds the JS bridge
+ * and runs a configure callback that sets the app's own WebViewClientCompat (link routing, page
+ * callbacks, its own request interception, renderer-crash handling) and registers the WebView with
+ * GMA. The page's ad slots are the website's own requests, so the SDK patches do not apply. At the
+ * wrapper constructor's return this calls AdBlock.install from the webviewads extension, which on
+ * API 26+ reads that client back and wraps it: every callback is forwarded to the app's client and
+ * only ad/tracking hosts get an empty response. Below API 26 the client cannot be read and is
+ * replaced, as before 2026-11-11. Content, consent and the paywall pages are untouched.
  */
 @Suppress("unused")
 val disableAdsPatch = bytecodePatch(
@@ -32,6 +35,9 @@ val disableAdsPatch = bytecodePatch(
     extendWith("extensions/webviewads.mpe")
 
     execute {
+        // The WebView is the framework class or, since 2026.10.15, an app subclass of it.
+        val webViewTypes = mutableSetOf(WEBVIEW)
+        classDefForEach { classDef -> if (classDef.superclass == WEBVIEW) webViewTypes += classDef.type }
         val candidates = mutableListOf<Pair<ClassDef, Method>>()
         classDefForEach { classDef ->
             if (classDef.type.startsWith("Lcom/") || classDef.type.startsWith("Landroid") ||
@@ -42,7 +48,7 @@ val disableAdsPatch = bytecodePatch(
             classDef.methods.forEach { method ->
                 val insns = method.implementation?.instructions?.toList() ?: return@forEach
                 val createsWebView = insns.any {
-                    it.opcode == Opcode.NEW_INSTANCE && it.typeOf() == WEBVIEW
+                    it.opcode == Opcode.NEW_INSTANCE && it.typeOf() in webViewTypes
                 }
                 val addsBridge = insns.any { insn ->
                     val call = (insn as? ReferenceInstruction)?.reference as? MethodReference
@@ -55,8 +61,8 @@ val disableAdsPatch = bytecodePatch(
             "expected one app WebView wrapper, found ${candidates.size}: " +
                 candidates.joinToString { "${it.first.type}->${it.second.name}" },
         )
-        val field = classDef.fields.singleOrNull { it.type == WEBVIEW }
-            ?: throw PatchException("${classDef.type} has no $WEBVIEW field")
+        val field = classDef.fields.singleOrNull { it.type in webViewTypes }
+            ?: throw PatchException("${classDef.type} has no WebView field")
         val mutable = mutableClassDefBy(classDef).methods.single {
             it.name == method.name && it.returnType == method.returnType &&
                 it.parameterTypes.map(CharSequence::toString) == method.parameterTypes.map(CharSequence::toString)
