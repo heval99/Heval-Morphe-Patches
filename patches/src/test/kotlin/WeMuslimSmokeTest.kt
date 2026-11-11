@@ -314,5 +314,15 @@ class WeMuslimSmokeTest {
             } ?: error("$INFO_STREAM_UNIT->$name()Z not found")
             assertForcedBoolean(accessor, expected = false, label = "${unit.type}->$name()")
         }
+
+        // Hide activity banners (#135, 2026-11-11): no server resource is selected for the home
+        // pop-up (e.g. "SMASH & WIN") or the floating sticky icon (Smash / GIFTS).
+        val conf = cls("Lcom/fyxtech/muslim/protobuf/LocationResourceProto\$LocationConf;")
+        for (name in listOf("hasHomePopupConf", "hasNewHomePopupConf", "hasHomeStickyConf", "hasNewHomeStickyConf")) {
+            val accessor = conf.methods.singleOrNull {
+                it.name == name && it.returnType == "Z" && it.params().isEmpty()
+            } ?: error("${conf.type}->$name()Z not found")
+            assertForcedBoolean(accessor, expected = false, label = "${conf.type}->$name()")
+        }
     }
 }

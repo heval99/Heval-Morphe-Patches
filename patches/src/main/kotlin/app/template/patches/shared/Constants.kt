@@ -3018,6 +3018,14 @@ object Constants {
     // The Egg and Rebates shortcut icons are not done: the grid is server-configured and the
     // entries' identifiers are unknown. Smoke test only; the units are server-driven and may be
     // region-gated, so they were not seen on the emulator.
+    // 2026-11-11 (#135, same 3.5.5 build): Hide activity banners also forces
+    // LocationResourceProto$LocationConf.hasHomePopupConf / hasNewHomePopupConf / hasHomeStickyConf /
+    // hasNewHomeStickyConf to false. Small Function1 filters (invoke-virtual on those accessors) pick the
+    // LocationResources for the home pop-up ("SMASH & WIN") and the floating sticky icon (Smash / GIFTS),
+    // so both placements stay empty; the only other reader is LocResourceTrack (analytics; an unmatched
+    // conf falls through without throwing). If R8 ever inlines locationConfCase_ checks into the filters,
+    // this silently stops working: re-check the filters on every update. Smoke test, CLI without -f and
+    // the patched bytecode verified; not run on the emulator (server-driven).
     val COMPATIBILITY_WEMUSLIM = Compatibility(
         name = "WeMuslim",
         packageName = "com.fyxtech.muslim",
