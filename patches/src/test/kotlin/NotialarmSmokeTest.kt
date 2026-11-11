@@ -33,7 +33,7 @@ class NotialarmSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "1.3.29",
+            version = "1.3.31",
             patchNames = setOf("Disable license check", "Enable Premium"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )

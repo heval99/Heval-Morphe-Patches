@@ -4153,7 +4153,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFAF5FF, // The adaptive icon's background colour (ic_launcher_background).
         signatures = setOf("5848c2237e07f41aa409ca5ff5076f5a46cc74170330aa5b34d51c720ac62df3"), // CN=soosu, OU=soosu studio, O=soosu studio
-        targets = listOf(AppTarget(version = "1.3.29", versionCode = 350103236))
+        // 2026-11-11: updated to 1.3.31 (versionCode 350103238): all fingerprints unique on the real matcher; smoke test passed.
+        targets = listOf(AppTarget(version = "1.3.31", versionCode = 350103238))
     )
 
     // 2026-11-07 (#133): EX File Manager 1.6.2 (versionCode 51), Play arm64 via gplaydl. The Play
