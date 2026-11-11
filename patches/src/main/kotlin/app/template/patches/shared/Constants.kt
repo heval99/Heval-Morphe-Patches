@@ -4485,13 +4485,15 @@ object Constants {
     // shouldInterceptRequest to the app's WebViewClient, so only ad/tracking hosts get an empty
     // response; every other callback still runs. Smoke tests and CLI without -f pass; not run on a
     // device.
+    // 2026-11-11: updated to 4.1.5 (versionCode 301; Play arm64 build via gplaydl, same Play
+    // app-signing key); anchors unchanged; PolnewsSmokeTest passes.
     val COMPATIBILITY_POLNEWS = Compatibility(
         name = "Politiken",
         packageName = "dk.pol.news",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xE30613, // Politiken red.
         signatures = setOf("a197b59666f5df008b5c089e295a75f3851f3376de119e5918522f4fb70d52e9"), // Play app-signing key
-        targets = listOf(AppTarget(version = "4.1.4", versionCode = 300))
+        targets = listOf(AppTarget(version = "4.1.5", versionCode = 301))
     )
 
     // Verified 2026-11-08 against com.mecom.Berlingske 4.5.8 (versionCode 117085, Google Play split

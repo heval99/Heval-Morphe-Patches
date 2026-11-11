@@ -13,7 +13,7 @@ import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 
 private const val PKG = "dk.pol.news"
-private const val VERSION = "4.1.4"
+private const val VERSION = "4.1.5"
 private const val ANALYTICS_REGISTRAR =
     "Lcom/google/firebase/analytics/connector/internal/AnalyticsConnectorRegistrar;"
 private const val AD_BLOCK = "Lapp/template/extension/webviewads/AdBlock;"
