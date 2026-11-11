@@ -1509,7 +1509,8 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1E88E5,
         signatures = setOf("cdf4e1c31c41a55ed72896bf443ce56d50fb34bb933e3189b3ddc2609c90d8f9"), // CN=Ivan Ivanenko
-        targets = listOf(AppTarget(version = "10.0.22", versionCode = 7536))
+        // 2026-11-11: updated to 10.0.31 (versionCode 7572): all fingerprints unique on the real matcher; smoke test passed.
+        targets = listOf(AppTarget(version = "10.0.31", versionCode = 7572))
     )
 
     // Verified 2026-10-10 against com.alarmclock.xtreme.free 26.06.0 (versionCode 70004221) from
