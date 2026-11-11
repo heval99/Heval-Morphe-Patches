@@ -106,9 +106,6 @@ private fun BytecodePatchContext.keepGone(type: String): () -> Unit {
 val blockMarketingNotificationsPatch = sofascoreControls.featurePatch(BLOCK_MARKETING_NOTIFICATIONS) {
     // Validate every site before the first edit.
     val promotionModal = PromotionModalFingerprint.method
-    // The tennis AI-insights promo sheet exists up to 26.09.14 and was removed in 26.09.28, so it
-    // is genuinely optional.
-    val tennisPromoSheet = TennisPromoSheetFingerprint.methodOrNull
     val banners = PROMO_BANNERS.map { keepGone(it) }
     val displays = inAppMessagingDisplays()
 
@@ -119,7 +116,6 @@ val blockMarketingNotificationsPatch = sofascoreControls.featurePatch(BLOCK_MARK
         return-void
     """.trimIndent()
     promotionModal.addHevalGate(FEATURE) { dismissEarly }
-    tennisPromoSheet?.addHevalGate(FEATURE) { dismissEarly }
 
     banners.forEach { it() }
 

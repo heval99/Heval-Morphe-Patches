@@ -342,6 +342,19 @@ object Constants {
             //     value is hashed) shortly before its contains call.
             //   Every other fingerprint resolved unchanged except the documented optional
             //   TennisPromoSheet (gone since 26.09.28). Smoke test passes.
+            // 2026-11-11, 26.11.03: new Patch settings switch "Turn off video autoplay" (off by
+            //   default, Display). Anchor: the embedded YouTube player's load-or-cue helper (vmp.c in
+            //   26.10.26, hep.c in 26.11.03), found as a static (?, Z, String, F)V holding both
+            //   "loadVideo" and "cueVideo" (the only other "cueVideo" holder is the player's command
+            //   runnable). The method has no local register, so the Z argument goes through a new
+            //   (Z)Z helper on its class that answers false while the switch is on, so the player cues
+            //   instead of loading. Block marketing notifications no longer looks for the tennis promo
+            //   sheet (gone since 26.09.28). Manual play is unaffected (it sends "playVideo", not this
+            //   helper). Not covered: in the Shorts viewer a swipe to the next short sends "loadVideo"
+            //   directly, so only the first short is cued; after a player error the library's resumer
+            //   re-cues instead of resuming. FingerprintProbe OK-unique on 26.10.26 (vmp.c); on
+            //   26.11.03 the smoke test (real matcher, exactly one match) and dexindex; CLI patch
+            //   without -f; not run on a device.
             AppTarget(
                 version = "26.11.03",
                 versionCode = 261103003

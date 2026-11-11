@@ -5,6 +5,7 @@ import app.template.patches.sofascore.controls.SOFASCORE_CONTROLS
 import app.template.patches.sofascore.controls.SOFASCORE_CONTROLS_ENTRY
 import app.template.patches.sofascore.layout.HIDE_AI_INSIGHTS
 import app.template.patches.sofascore.misc.theme.AMOLED_BLACK
+import app.template.patches.sofascore.misc.video.TURN_OFF_VIDEO_AUTOPLAY
 import app.template.patches.sofascore.layout.HIDE_MATCH_CHAT
 import app.template.patches.sofascore.layout.MAIN_TAB_FEATURES
 import app.template.patches.sofascore.layout.MATCH_TAB_FEATURES
@@ -69,7 +70,6 @@ private const val ANALYTICS_DEACTIVATED_KEY = "firebase_analytics_collection_dea
 private const val FACEBOOK_PROVIDER = "Lcom/facebook/internal/FacebookInitProvider;"
 private const val AUDIENCE_PROVIDER = "Lcom/facebook/ads/AudienceNetworkContentProvider;"
 private const val PROMOTION_MODAL = "Lcom/sofascore/results/event/details/view/promotion/PromotionModal;"
-private const val TENNIS_PROMO_SHEET = "Lcom/sofascore/results/event/aiInsights/SofascoreAnalystTennisPromoBottomSheet;"
 private const val CRASHLYTICS_KEY = "firebase_crashlytics_collection_enabled"
 private val PROMO_BANNERS = listOf(
     "Lcom/sofascore/results/event/details/view/promotion/PromotionBannerView;",
@@ -113,6 +113,7 @@ private val SOFASCORE_PATCHES = setOf(
     "Slower widget refresh",
     "Spoiler-free mode",
     "Spoof signature",
+    "Turn off video autoplay",
     "Unlock developer options",
 )
 
@@ -151,7 +152,8 @@ private val HEVAL_FEATURES: List<HevalFeature> = listOf(HIDE_AI_INSIGHTS) +
     HIDE_MATCH_CHAT +
     MAIN_TAB_FEATURES +
     SPOILER_FEATURES +
-    AMOLED_BLACK
+    AMOLED_BLACK +
+    TURN_OFF_VIDEO_AUTOPLAY
 
 class SofascoreSmokeTest {
 
@@ -543,17 +545,13 @@ class SofascoreSmokeTest {
         // bundled in this build (the AppsFlyer SDK only references them, behind a catch), so
         // there is nothing to patch. The patch was removed as part of the 26.09.07 update.
 
-        // Block marketing notifications (a Heval Controls switch): while it is on, both promo sheets
-        // dismiss before rendering, the promotion banners stay GONE and every FIAM display returns.
+        // Block marketing notifications (a Heval Controls switch): while it is on, the promo sheet
+        // dismisses before rendering, the promotion banners stay GONE and every FIAM display returns.
         val marketing = BLOCK_MARKETING_NOTIFICATIONS.id
         val dismiss = listOf(Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID)
         assertGatedPath(require(PROMOTION_MODAL).methodsNamed("onViewCreated").single(), marketing, "PromotionModal.onViewCreated()", dismiss)
         check(require(PROMOTION_MODAL).methodsNamed("onViewCreated").single().instructions()[4].call()?.name == "dismiss") {
             "PromotionModal.onViewCreated() does not dismiss"
-        }
-        // The tennis promo sheet was removed in 26.09.28; assert it only where it exists.
-        byType[TENNIS_PROMO_SHEET]?.let { sheet ->
-            assertGatedPath(sheet.methodsNamed("onViewCreated").single(), marketing, "SofascoreAnalystTennisPromoBottomSheet.onViewCreated()", dismiss)
         }
         for (banner in PROMO_BANNERS) {
             // const/16 p1, 0x8, then the stock setVisibility (the gate falls through).
@@ -1196,6 +1194,36 @@ class SofascoreSmokeTest {
             "AnimationSpeed.getFloat no longer calls through to Settings.Global.getFloat"
         }
 
+        // Turn off video autoplay: the YouTube player's load-or-cue helper (static (?, Z, String, F)V
+        // holding "loadVideo" and "cueVideo", 4 registers = all parameters, so no scratch register)
+        // starts with invoke-static/range {p1 .. p1}, <class>->morpheVideoAutoplay(Z)Z; move-result p1.
+        // That (Z)Z helper (added to the same class) runs the Patch settings gate on v0 and, only
+        // while the switch is on, answers false (const/4 v0, 0x0; return v0) instead of its
+        // argument, so the helper cues the video instead of loading it. The extension is merged.
+        require(HEVAL_SETTINGS_CLASS)
+        val loadOrCue = classes.flatMap { it.methods }.filter { m ->
+            m.isStatic() && m.returnType == "V" && m.params().let { p ->
+                p.size == 4 && p[1] == "Z" && p[2] == "Ljava/lang/String;" && p[3] == "F"
+            } && m.strings().containsAll(listOf("loadVideo", "cueVideo"))
+        }
+        check(loadOrCue.size == 1) { "expected one load-or-cue helper, found ${loadOrCue.size}\n$diagnostics" }
+        val cueMethod = loadOrCue.single()
+        val cueInsns = cueMethod.instructions()
+        // p1 = the second parameter of a static method, i.e. register (registers - 4 + 1).
+        val autoPlay = cueMethod.implementation!!.registerCount - 4 + 1
+        val filter = cueInsns[0] as? RegisterRangeInstruction
+        check(filter != null && filter.opcode == Opcode.INVOKE_STATIC_RANGE && filter.startRegister == autoPlay &&
+            filter.registerCount == 1 && filter.call()?.definingClass == cueMethod.definingClass &&
+            filter.call()?.name == "morpheVideoAutoplay" && filter.call()?.returnType == "Z" &&
+            cueInsns[1].opcode == Opcode.MOVE_RESULT && (cueInsns[1] as OneRegisterInstruction).registerA == autoPlay
+        ) { "load-or-cue helper does not pass autoPlay (v$autoPlay) through morpheVideoAutoplay first; got ${cueInsns[0].opcode} ${cueInsns[0].call()}" }
+        // The stock calls are still there.
+        check(cueMethod.strings().containsAll(listOf("loadVideo", "cueVideo"))) { "load-or-cue helper lost its player commands" }
+        val autoPlayHelper = classes.single { it.type == cueMethod.definingClass }.methods.single {
+            it.name == "morpheVideoAutoplay" && it.returnType == "Z" && it.params() == listOf("Z") && it.isStatic()
+        }
+        assertGatedPath(autoPlayHelper, TURN_OFF_VIDEO_AUTOPLAY.id, "morpheVideoAutoplay(Z)Z", listOf(Opcode.CONST_4, Opcode.RETURN), literal = 0)
+        check(autoPlayHelper.instructions().last().opcode == Opcode.RETURN) { "morpheVideoAutoplay must end by returning its argument" }
         // Slower widget refresh: in the widget scheduler (static (Context)V holding the unique work
         // label and the worker class), the 30-minute interval passes through widgetRefreshInterval
         // before it is stored: const-wide vX, 1800000; invoke-static/range {vX .. vX+1}; move-result-wide vX; iput-wide vX.
