@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "2.2.0",
+  "version": "1.0.0",
   "patches": [
     {
       "name": "Add-on support",
@@ -6195,6 +6195,210 @@
       "options": []
     },
     {
+      "name": "Hide Commentary poll",
+      "description": "Phase 1.1: collapses the poll cards (Who will win ...) in the Commentary tab. The rows are bound with a PollsViewHolder; they are hidden and given zero height instead of being bound, and the paths that would otherwise touch the never-bound poll (live payload updates and the poll's inner list) are guarded.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "in.cricketexchange.app.cricketexchange",
+          "name": "CREX",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#262626",
+          "signatures": [
+            "b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.10.09",
+              "versionCodes": {
+                "ARM64_V8A": 673,
+                "ARMEABI_V7A": 673,
+                "X86_64": 673,
+                "X86": 673
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide For you extras",
+      "description": "Removes the Featured Series, More, Play Games and bottom search sections from the For you tab. The series and match list, the Follow card and the Fixtures button are not touched.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "in.cricketexchange.app.cricketexchange",
+          "name": "CREX",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#262626",
+          "signatures": [
+            "b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.10.09",
+              "versionCodes": {
+                "ARM64_V8A": 673,
+                "ARMEABI_V7A": 673,
+                "X86_64": 673,
+                "X86": 673
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide Info sections",
+      "description": "Phase 1.1: removes the Who will win poll, Series Stats, Team Comparison, Avg Scores on Venue, Recent Matches on Venue and Points Table sections from the match screen's Info tab, using the app's own state for matches that have no data for them. Venue Stats, weather, squads, umpires and the other sections are not touched.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "in.cricketexchange.app.cricketexchange",
+          "name": "CREX",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#262626",
+          "signatures": [
+            "b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.10.09",
+              "versionCodes": {
+                "ARM64_V8A": 673,
+                "ARMEABI_V7A": 673,
+                "X86_64": 673,
+                "X86": 673
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide Live tab poll, weather and head to head",
+      "description": "Phase 1.1: removes the Who will win poll, the Weather Conditions card and the Head to Head row from the match screen's Live tab (the pre-match list). The preview video and Top Headlines are not touched.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "in.cricketexchange.app.cricketexchange",
+          "name": "CREX",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#262626",
+          "signatures": [
+            "b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.10.09",
+              "versionCodes": {
+                "ARM64_V8A": 673,
+                "ARMEABI_V7A": 673,
+                "X86_64": 673,
+                "X86": 673
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide Live tab sections",
+      "description": "Phase 1.1: removes the quiz, Latest Videos and Gaming Zone sections from the match screen's Live tab (LiveMatchFragment). Top Headlines, weather and the other sections are not touched.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "in.cricketexchange.app.cricketexchange",
+          "name": "CREX",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#262626",
+          "signatures": [
+            "b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.10.09",
+              "versionCodes": {
+                "ARM64_V8A": 673,
+                "ARMEABI_V7A": 673,
+                "X86_64": 673,
+                "X86": 673
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide Matches extras",
+      "description": "Phase 1.1: removes the Trending Videos block (and its All Videos button) from the Matches Live tab, and the red NEW label and red dot over the bottom navigation.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "in.cricketexchange.app.cricketexchange",
+          "name": "CREX",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#262626",
+          "signatures": [
+            "b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.10.09",
+              "versionCodes": {
+                "ARM64_V8A": 673,
+                "ARMEABI_V7A": 673,
+                "X86_64": 673,
+                "X86": 673
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide Messages tab",
       "description": "Hides the Messages tab from the bottom navigation bar.",
       "default": false,
@@ -7013,6 +7217,74 @@
       "options": []
     },
     {
+      "name": "Hide match Discussions",
+      "description": "Phase 1.1: removes the Discussions tab and the floating Discuss button from the match screen by switching off the flag the app already uses when discussions are disabled for a match.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "in.cricketexchange.app.cricketexchange",
+          "name": "CREX",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#262626",
+          "signatures": [
+            "b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.10.09",
+              "versionCodes": {
+                "ARM64_V8A": 673,
+                "ARMEABI_V7A": 673,
+                "X86_64": 673,
+                "X86": 673
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide match tabs",
+      "description": "Phase 1.1: match screen keeps Info, Commentary, Scorecard and Points Table. Fantasy and Graphs are removed from the tab list. The Live tab (Match Summary on finished matches) and the Series Stats tab are kept in the pager but made invisible and moved last, because the rest of the screen calls into their fragments without null checks.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "in.cricketexchange.app.cricketexchange",
+          "name": "CREX",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#262626",
+          "signatures": [
+            "b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.10.09",
+              "versionCodes": {
+                "ARM64_V8A": 673,
+                "ARMEABI_V7A": 673,
+                "X86_64": 673,
+                "X86": 673
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide match tabs",
       "description": "Adds switches to hide match page tabs.",
       "default": false,
@@ -7585,6 +7857,40 @@
               "versionCodes": {
                 "X86_64": 2016191886,
                 "ARM64_V8A": 2016191887
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Matches only (hide bottom navigation)",
+      "description": "UI only. Hides the whole bottom navigation bar so the app stays on Matches, with the Live, For you, Upcoming and Finished tabs at the top (swipe or tap). The Menu screen is reached through the top-right three-line button. The bar's items are hidden, not removed, because HomeActivity looks them up by index.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "in.cricketexchange.app.cricketexchange",
+          "name": "CREX",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#262626",
+          "signatures": [
+            "b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.10.09",
+              "versionCodes": {
+                "ARM64_V8A": 673,
+                "ARMEABI_V7A": 673,
+                "X86_64": 673,
+                "X86": 673
               },
               "isExperimental": false,
               "minSdk": null,
