@@ -1307,7 +1307,10 @@ object Constants {
     // AdvertZone.s() hides the view, the InAppStrip parser returns an empty list, the update
     // dialog helper and the rating gate return early, EventListActivity.onResume nulls the
     // dialog model before its null check, HandlerInfo.process checks the switch, App.onCreate
-    // calls AnimationSpeed.init. Runtime not tested.
+    // calls AnimationSpeed.init. Runtime not tested. Known gap (found by a later disassembly check, not
+    // caused by this update): Force edge-to-edge's helper for Android 8.0-8.1 has one branch that jumps
+    // past the inserted transparent-colour instruction, so only one of its two paths is forced; it only
+    // affects the navigation-bar colour on those versions. The other two helpers are fully forced.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",
