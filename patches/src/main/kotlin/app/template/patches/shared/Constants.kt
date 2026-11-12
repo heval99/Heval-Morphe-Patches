@@ -18,7 +18,6 @@ object Constants {
     //     rewritten. Rewrites: FotMob 3; Shazam, Sofascore and Truecaller 1; 365Scores 0 (no client).
     //   - OsmAnd, OneFootball, Pocket Color Wheel and SoundHound: lookups that were optional are
     //     now required (a missing class or getter fails the patch).
-    //   - Unified Remote and WiFi Analyzer: the gate is singleOrNull() (a second match fails).
     //   - FotMob Enable FotMob+: the subscription getter is singleOrNull(), and on 238+ the
     //     app-icon step fails the patch instead of warning (see COMPATIBILITY_FOTMOB).
     //   - 365Scores Disable update prompts: the two update extras are compared as a set of keys,
@@ -2282,7 +2281,7 @@ object Constants {
     //     while "featureFavouriteContacts" was off; the read's result is forced to 0 before its
     //     if-nez. The toggle itself is not overridden, so the Favourites UI is unchanged. The
     //     redesigned (Compose) call log has no row swipe in stock 26.40.5 (its swipe-to-delete is
-    //     coded but switched off), which explains the Reddit report; not runtime-tested.
+    //     coded but switched off), which explains the user report; not runtime-tested.
     //   - Rule 12 (GmsCore support, default on): 5 strings lose their surrounding quotes and
     //     string/Dismiss + string/dismiss come back as string_0x7f14030a / string_0x7f140dc9 (same
     //     IDs, no by-name lookup found); no control characters lost.
@@ -2833,7 +2832,7 @@ object Constants {
         targets = listOf(AppTarget(version = "26.11.01", versionCode = 674))
     )
 
-    // Added 2026-10-14 from the Reddit request queue ("the ads mess with the UI"). Verified
+    // Added 2026-10-14 from the request queue ("the ads mess with the UI"). Verified
     // against cc.dreamspark.intervaltimer 2.3.30 (versionCode 239030, single APK, no native code,
     // signer CN=Su-Au Hwang O=dreamspark.cc). The only entitlement is "ad-free" (adbuster), synced
     // from the server into two R8-renamed JSON models, AppInstallation and User. Disable ads forces
@@ -2861,7 +2860,7 @@ object Constants {
         targets = listOf(AppTarget(version = "2.3.31", versionCode = 239031))
     )
 
-    // Added 2026-10-14 from the Reddit request queue (ads only: premium is an account role from
+    // Added 2026-10-14 from the request queue (ads only: premium is an account role from
     // the server's /api/mv4, so it cannot be unlocked locally). Verified against
     // com.astrapaging.vff 6.7.8 (versionCode 678, APKPure XAPK merged, arm64-v8a only, signer
     // CN=Astra Paging Ltd.). Capacitor/Angular hybrid; PairIP license check only (no VMRunner /
@@ -2885,7 +2884,7 @@ object Constants {
         targets = listOf(AppTarget(version = "6.7.8", versionCode = 678))
     )
 
-    // Added 2026-10-14 from a Reddit request (ads only: subscribers see ads too, and the paywall
+    // Added 2026-10-14 from a user request (ads only: subscribers see ads too, and the paywall
     // is decided server-side, so it is out of scope). Verified against wsj.reader_sp 6.43.0.33886
     // (versionCode 643003886, universal APK, signer CN=Wall Street Journal Digital Network, no
     // packer or PairIP). Disable ads anchors on kept class names and method shape only, never on
@@ -2958,7 +2957,7 @@ object Constants {
         targets = listOf(AppTarget(version = "4.2.31.1", versionCode = 539))
     )
 
-    // Added 2026-10-14 from the Reddit request queue (ads, analytics, upgrade banners); restored
+    // Added 2026-10-14 from the request queue (ads, analytics, upgrade banners); restored
     // 2026-10-19 with a native-encryption bypass. Verified against com.fyxtech.muslim 3.5.4
     // (versionCode 149, apkcube bundle merged, arm64-v8a only, developer signer CN=athan O=yalla,
     // SHA-256 5d8c442d...ee0c; first written for 3.5.0). Premium membership is server-side
@@ -3055,7 +3054,7 @@ object Constants {
         targets = listOf(AppTarget(version = "3.5.5", versionCode = 151))
     )
 
-    // Added 2026-10-14 from the Reddit request queue: ads only. Pro and paywalled content are
+    // Added 2026-10-14 from the request queue: ads only. Pro and paywalled content are
     // server-side (entitlements and isPremium arrive from the server). Verified against
     // com.divum.MoneyControl 14.6.2 (versionCode 637, APKMirror bundle merged, arm64-v8a only,
     // signer CN=Ganapathy, O=Divum Corporate Services). App classes keep their names, members
@@ -4654,7 +4653,8 @@ object Constants {
         targets = listOf(AppTarget(version = "4.5.8", versionCode = 117085))
     )
 
-    // Same binary as Berlingske: 4.5.8 (versionCode 117085), the same dk.berlingske.webwrapper
+    // Added 2026-11-08. Same binary as Berlingske: 4.5.8 (versionCode 117085), the same
+    // dk.berlingske.webwrapper
     // classes, the same 30,851-method dex and the same Berlingske Media AS signer
     // (80d91716...ed92); only the package and launcher label ("B.T.") differ. COMPATIBILITY_BT and
     // COMPATIBILITY_BERLINGSKE therefore share the same patch code. Smoke-tested on both APKs; not

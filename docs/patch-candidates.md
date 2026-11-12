@@ -108,9 +108,9 @@ Tier 1 progress, all checked against the latest APKMirror builds:
 | JuiceSSH | Parked - purchases stored in an ORMLite `purchase` table, premium gate in obfuscated code |
 | Business Calendar 2 | **Patched 2026-10-11** - "Disable ads" (readable app code; `AdsUtil.showAdsForUser(Context)` gates the mediation SDK start and interstitials). Pro untouched |
 
-## Requested on Reddit (v1.14.0-dev.5 release post, 2026-10-14)
+## Requested by users (v1.14.0-dev.5 release, 2026-10-14)
 
-From the comments on [the release post](https://www.reddit.com/r/MorpheApp/comments/1x54qjm/release_heval_morphe_patches_v1140dev5_new_apps/).
+From user comments on the v1.14.0-dev.5 release.
 In queue order. Verdicts are first impressions; nothing has been triaged yet.
 
 **Bug report (fix first)**
