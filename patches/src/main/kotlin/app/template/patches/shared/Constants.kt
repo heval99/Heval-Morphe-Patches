@@ -4239,13 +4239,16 @@ object Constants {
     // badge. The interstitial helpers (p5.m.b, p5.n.b) return before loading when W3.c.d() answers
     // true, so premium also suppresses those ads; the remaining native units are next-gen GMA and
     // are not patched separately.
+    // 2026-11-12: updated to version 9.6 (versionCode 122; Google Play arm64 merged, same signer).
+    // The patch has no Fingerprint objects (shape lookups in execute), so AddMusicSmokeTest and a
+    // CLI patch run (no -f) are the evidence; bytecode only, no runtime check on 9.6.
     val COMPATIBILITY_ADDMUSIC = Compatibility(
         name = "Add Music",
         packageName = "kgs.com.addmusictovideos",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xE94122, // The adaptive icon's background colour (ic_launcher_background).
         signatures = setOf("f84527d66a38d0b79dc2a329d9d351bd28fae6efb58d5862a28d08f5c973f3cd"), // CN=Android, O=Google Inc. (Play app-signing key)
-        targets = listOf(AppTarget(version = "9.5", versionCode = 121))
+        targets = listOf(AppTarget(version = "9.6", versionCode = 122))
     )
 
     // Verified 2026-11-05 against com.soosu.notialarm 1.3.29 (versionCode 350103236; Google Play

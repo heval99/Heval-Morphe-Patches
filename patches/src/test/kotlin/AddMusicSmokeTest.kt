@@ -58,7 +58,7 @@ class AddMusicSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "9.5",
+            version = "9.6",
             patchNames = setOf("Enable Premium"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
