@@ -1,3 +1,80 @@
+## 2.3.0-dev.7 (2026-11-12)
+
+### 📱 Digi Sport `1.1.15`
+- Fixed: Disable live stream ads is no longer experimental
+
+### 📱 FotMob `241.18134.20261030`
+- Fixed: AMOLED black no longer empties the league table rows
+- New: AMOLED black also darkens buttons, switches, popups, segmented tabs and predictor sheets
+
+### 📱 Sofascore `26.11.03`
+- New: Turn off video autoplay
+- New: Add a Turn off video autoplay switch
+
+### 📱 WeMuslim `3.5.5`
+- New: Hide shortcut promotions, Hide Ummah tab
+- New: Hide activity banners also hides the home pop-up and floating event icon
+
+### ⬆️ Updated apps
+| App | From | To |
+|---|---|---|
+| 365Scores | `15.0.0` | `15.0.1` |
+| Add Music | `9.5` | `9.6` |
+| BBC News | `2026.9.1` | `2026.10.0` |
+| BlueMail | `2.2.424` | `2.2.426` |
+| Brave Browser | `1.99.55` | `1.99.56` |
+| Business Calendar 2 | `2.55.8` | `2.56.0` |
+| Eurosport | `8.34.1` | `8.35.0` |
+| Fishing Points | `4.8.0` | `4.8.1` |
+| Flashscore | `26.11.4` | `26.11.6` |
+| Futbin | `27.11` | `27.13` |
+| GPS Map Camera Editor | `1.0.31` | `1.0.32` |
+| Hevy | `3.2.5` | `3.2.6` |
+| Interval Timer | `2.3.30` | `2.3.31` |
+| Jyllands Posten | `2026.09.24` | `2026.10.15` |
+| L'Ã‰quipe | `10.70.0` | `10.71.1` |
+| Librera | `10.0.22` | `10.0.31` |
+| Mango Launcher | `1.64` | `1.67` |
+| MyFitnessPal | `26.44.0` | `26.45.0` |
+| Niagara Launcher | `1.16.35` | `1.16.36` |
+| NotiAlarm | `1.3.29` | `1.3.31` |
+| OneFootball | `15.148.0` | `15.150.0` |
+| Pi Music Player | `3.2.1.0_release_1` | `3.2.3.0_release_1` |
+| Politiken | `4.1.4` | `4.1.5` |
+| Shazam | `16.66.0-261029` | `16.67.0-261105` |
+| Simple Radio | `6.3.0` | `6.3.1` |
+| Sofascore | `26.10.26` | `26.11.03` |
+| The Wall Street Journal | `15.12.0.42675` | `15.13.0.44249` |
+| Truecaller | `26.43.5` | `26.44.6` |
+| Viaplay | `26.42.1` | `26.44.0` |
+| Yahoo Sports | `12.27.0` | `12.28.1` |
+| YouSee Play | `13.11.0 (build 21977)` | `13.12.0 (build 22025)` |
+
+### 🗑️ Removed apps
+- Bluecoins
+- Duplila
+- Herning Folkeblad
+- Information
+- LuckyClick
+- RareCam
+- Textra
+- Tipsbladet
+- Unified Remote
+- Weekendavisen
+- WiFi Analyzer
+
+### 🔧 Other
+- Fixed: Drop the WiFi Analyzer, Unified Remote and LuckyClick patches
+- Fixed: Drop RareCam, Duplila and four small Danish telemetry-only apps
+- Fixed: Drop the Textra and Bluecoins patches
+- Fixed: Keep the app's own WebViewClient when blocking ads
+- New: Make Patch settings easier to read and regroup the Sofascore sections
+- Fixed: Stop pinning Taskito's renamed class and make three optional anchors mandatory
+- Fixed: Use the checked smali helpers in Brave, Sofascore, Truecaller and WeMuslim
+- Fixed: Tighten the Truecaller tab-list guard and the WSJ section-ads match
+
+**Download:** [patches-2.3.0-dev.7.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.3.0-dev.7/patches-2.3.0-dev.7.mpp)
+
 ## 2.3.0-dev.6 (2026-11-09)
 
 ### 📱 FotMob `241.18134.20261030`
