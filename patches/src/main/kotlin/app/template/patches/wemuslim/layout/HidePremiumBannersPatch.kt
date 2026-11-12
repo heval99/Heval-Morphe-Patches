@@ -1,6 +1,5 @@
 package app.template.patches.wemuslim.layout
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
@@ -13,6 +12,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
+import app.template.patches.shared.addInstructionsChecked
 
 private const val INFO_STREAM_UNIT = "Lcom/fyxtech/muslim/protobuf/InfoStreamProto\$InfoStreamUnit;"
 private const val VIP_CARD_VIEW = "Lcom/fyxtech/muslim/about/module/main/VipCardView;"
@@ -44,7 +44,7 @@ val hidePremiumBannersPatch = bytecodePatch(
                 it.implementation != null
         } ?: throw PatchException("Hide premium banners: no $DISCOUNT_POPUP_RES->getInfosList()")
         // The getter is `iget-object p0, p0, ...; return-object p0`: p0 is free to carry the list.
-        infos.addInstructions(
+        infos.addInstructionsChecked(
             0,
             """
                 invoke-static {}, Ljava/util/Collections;->emptyList()Ljava/util/List;
@@ -78,7 +78,7 @@ val hidePremiumBannersPatch = bytecodePatch(
                 it.implementation != null
         }
         if (existing != null) {
-            existing.addInstructions(0, "const/16 p1, 0x8")
+            existing.addInstructionsChecked(0, "const/16 p1, 0x8")
         } else {
             vipCard.methods.add(
                 ImmutableMethod(
@@ -91,7 +91,7 @@ val hidePremiumBannersPatch = bytecodePatch(
                     null,
                     MutableMethodImplementation(2),
                 ).toMutable().apply {
-                    addInstructions(
+                    addInstructionsChecked(
                         0,
                         """
                             const/16 p1, 0x8
@@ -123,7 +123,7 @@ val hidePremiumBannersPatch = bytecodePatch(
             if (returns.isEmpty()) throw PatchException("Hide premium banners: VipCardView constructor has no return-void")
             // Descending, so an insert never shifts an index still to be visited.
             for (index in returns.reversed()) {
-                constructor.addInstructions(
+                constructor.addInstructionsChecked(
                     index,
                     """
                         const/16 p1, 0x8

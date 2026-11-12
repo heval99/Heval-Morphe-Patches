@@ -1,7 +1,6 @@
 package app.template.patches.sofascore.sports
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
@@ -213,7 +212,7 @@ val hideSportsPatch = bytecodePatch(
                 ret,
                 "invoke-static/range { v$register .. v$register }, $SOFASCORE_CONTROLS->visibleSport(Ljava/lang/String;)Ljava/lang/String;",
             )
-            homeSport.addInstructions(ret + 1, "move-result-object v$register\nreturn-object v$register")
+            homeSport.addInstructionsChecked(ret + 1, "move-result-object v$register\nreturn-object v$register")
         }
 
         features.forEach { (_, feature) -> sofascoreControls.register(feature) }

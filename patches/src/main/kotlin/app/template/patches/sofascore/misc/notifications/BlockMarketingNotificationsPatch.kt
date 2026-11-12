@@ -1,6 +1,5 @@
 package app.template.patches.sofascore.misc.notifications
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -18,6 +17,7 @@ import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
+import app.template.patches.shared.addInstructionsChecked
 
 internal val BLOCK_MARKETING_NOTIFICATIONS = HevalFeature(
     id = FEATURE,
@@ -88,7 +88,7 @@ private fun BytecodePatchContext.keepGone(type: String): () -> Unit {
             null,
             MutableMethodImplementation(3),
         ).toMutable().apply {
-            addInstructions(
+            addInstructionsChecked(
                 0,
                 """
                     invoke-super {p0, p1}, $superclass->setVisibility(I)V
