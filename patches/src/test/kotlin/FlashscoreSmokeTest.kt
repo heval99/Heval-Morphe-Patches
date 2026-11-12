@@ -211,7 +211,7 @@ class FlashscoreSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.11.4",
+            version = "26.11.6",
             patchNames = FLASHSCORE_PATCHES,
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )

@@ -1298,6 +1298,16 @@ object Constants {
     // colour, read from the rendered bar on each layout. Emulator (API 35, gesture nav): strip and
     // tab bar both #00141e, bold text still bold; while the loading overlay dims the screen the strip
     // stays undimmed.
+    // 2026-11-12: target moved to 26.11.6 (versionCode 527, Play arm64 split merge, same signer
+    // 2c8830db...). No anchor needed changing: the real matcher (FingerprintProbe) finds all 15
+    // Flashscore fingerprints OK-unique on the new APK, the R8 names the notes above mention
+    // (neb, lb6, u0q, zk3, t5l) are unchanged, FlashscoreSmokeTest passes on it, and the CLI applies
+    // all 12 patches without -f. Disassembled: interstitial manager ()String getter returns "",
+    // the remote-config value class carries the morpheAdsGet/morpheBettingGet helpers,
+    // AdvertZone.s() hides the view, the InAppStrip parser returns an empty list, the update
+    // dialog helper and the rating gate return early, EventListActivity.onResume nulls the
+    // dialog model before its null check, HandlerInfo.process checks the switch, App.onCreate
+    // calls AnimationSpeed.init. Runtime not tested.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",
@@ -1308,7 +1318,7 @@ object Constants {
         appIconColor = 0x1E88E5,
         signatures = setOf("2c8830db33069e1beb410e5f37ea0949b4c5852fde108c6e3895738e07226550"), // CN=Pavel Cvetler, O=LiveSport s.r.o.
         targets = listOf(
-            AppTarget(version = "26.11.4", versionCode = 525, description = FLASHSCORE_SOURCE_NOTE),
+            AppTarget(version = "26.11.6", versionCode = 527, description = FLASHSCORE_SOURCE_NOTE),
         )
     )
 
