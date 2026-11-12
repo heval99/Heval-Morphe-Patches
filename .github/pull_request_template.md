@@ -12,7 +12,7 @@
 - [ ] Anchors do not rely on obfuscated names; mandatory anchors use `.method`; smali goes through the checked helpers.
 - [ ] Descriptions are one short plain sentence; names match the existing ones; optional features default to off.
 - [ ] I added or updated `<App>SmokeTest.kt` and it passes with the real APK.
-- [ ] I did not edit generated files (`patches-list.json`, the README patch list, `CHANGELOG.md`, `gradle.properties`).
+- [ ] I did not edit generated files (`patches-list.json`, `patches-bundle.json`, the README patch list, `CHANGELOG.md`, `gradle.properties`), and my branch has no release commits from my fork.
 - [ ] No APKs, keystores, tokens or local paths are included.
 - [ ] I did not change build files, workflows or tooling (or I explained why below).
 

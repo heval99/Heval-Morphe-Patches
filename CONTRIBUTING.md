@@ -23,6 +23,10 @@ Open your pull request against **`dev`**, not `main`. Releases are cut from `dev
 receives the stable release. GitHub shows `main` as the default branch, so change the base branch
 in the pull request form.
 
+Work on a **topic branch created from `dev`** in your fork, not on your fork's `main`. If your
+fork's own release workflow runs, it commits release files (a version, a changelog, a download link
+to your fork) to the branch it runs on, and those commits must never end up in a pull request.
+
 ## How the repo is laid out
 
 | What | Where |
@@ -34,8 +38,10 @@ in the pull request form.
 | Smoke tests | `patches/src/test/kotlin/<App>SmokeTest.kt` |
 | Runtime code a patch needs | `extensions/<module>/` (only when inline smali is not maintainable; copy `extensions/shazam`) |
 
-**Do not edit generated files:** `patches-list.json`, the patch list in `README.md`,
-`CHANGELOG.md` and the version in `gradle.properties` are written by the release workflow.
+**Do not edit generated files:** `patches-list.json`, `patches-bundle.json`, the patch list in
+`README.md`, `CHANGELOG.md` and the version in `gradle.properties` are written by the release
+workflow. `patches-bundle.json` is the file Morphe Manager reads to find the download, so a change
+to it would send every user to a different bundle: a pull request that touches it will not be merged.
 
 ## Rules for a patch
 
@@ -52,6 +58,10 @@ in the pull request form.
 - **Inline smali:** use the checked helpers in `shared/CheckedInstructions.kt`
   (`addInstructionsChecked` and friends). The inline compiler silently drops an instruction it
   rejects, such as a register above v15 in a 4-bit operand.
+- **Do not hard-code resource ids** (`0x7f0a...`) or assume what a register holds (for example "v0 is
+  the tab list at this return"). Ids shift between releases and registers are reassigned, so a patch
+  that worked once can hide the wrong view or make the method fail verification and crash the app at
+  start. Look resources up by name and pick registers from the code you are patching.
 - `returnEarly()` only works on void methods; use `returnEarly(value)` for booleans and ints, and skip
   abstract methods (`implementation == null`).
 - If a patch stops `MobileAds.initialize`, also stop every other concrete static on `MobileAds`, or the
