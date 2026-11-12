@@ -47,12 +47,16 @@ internal object ReferralContextGateFingerprint : Fingerprint(
     ),
 )
 
-// The bottom bar builder (xm6.g(SparseIntArray) in 26.39.6, cp6.g in 26.40.5): reads the CALLS /
-// MESSAGES / SCAM_FEED badge counts, fills an array with one tab item per slot (null when a slot
-// has no tab), then filterNotNull(array).take(n) and hands the list to BottomBarView (inlined in
-// 26.40.5), which ignores lists with fewer than two tabs. The tab items share an obfuscated base
-// class whose only no-argument getter returning BottomBarButtonType (kept enum) gives each tab's
-// type.
+internal const val FAMILY_MEMBER_ROLE = "Lcom/truecaller/familyprotect/api/model/Family\$MemberRole;"
+
+// The bottom bar builder (xm6.g(SparseIntArray) in 26.39.6, cp6.g in 26.40.5, mr6.i in 26.44.6):
+// reads the CALLS / MESSAGES / SCAM_FEED badge counts, asks the tab assembler for the tab list and
+// hands it to BottomBarView (inlined since 26.40.5), which ignores lists with fewer than two tabs.
+// Up to 26.43.5 the builder filled an array itself (null for a slot without a tab) and called
+// filterNotNull(array).take(n); since 26.44.6 a separate assembler class (ir6) returns the finished
+// List from (isFamilyAdmin, MemberRole, three badge counts, flag). The tab items share an
+// obfuscated base class whose only no-argument getter returning BottomBarButtonType (kept enum)
+// gives each tab's type.
 internal object BottomBarTabsFingerprint : Fingerprint(
     returnType = "V",
     parameters = listOf("Landroid/util/SparseIntArray;"),
@@ -60,13 +64,7 @@ internal object BottomBarTabsFingerprint : Fingerprint(
         fieldAccess(opcode = Opcode.SGET_OBJECT, definingClass = BOTTOM_BAR_BUTTON_TYPE, name = "CALLS"),
         fieldAccess(opcode = Opcode.SGET_OBJECT, definingClass = BOTTOM_BAR_BUTTON_TYPE, name = "MESSAGES"),
         methodCall(
-            opcode = Opcode.INVOKE_STATIC,
-            parameters = listOf("[Ljava/lang/Object;"),
-            returnType = "Ljava/util/List;",
-        ),
-        methodCall(
-            definingClass = "Lkotlin/collections/CollectionsKt;",
-            parameters = listOf("Ljava/lang/Iterable;", "I"),
+            parameters = listOf("Z", FAMILY_MEMBER_ROLE, "I", "I", "I", "Z"),
             returnType = "Ljava/util/List;",
         ),
     ),

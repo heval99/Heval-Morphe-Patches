@@ -56,6 +56,7 @@ private const val ADS_CONTAINER_LIGHT = "Lcom/truecaller/ads/ui/AdsContainerLigh
 private const val ADS_SWITCH_VIEW = "Lcom/truecaller/ads/ui/AdsSwitchView;"
 private const val AD_LAYOUT_TYPE = "Lcom/truecaller/ads/AdLayoutTypeX;"
 private const val BOTTOM_BAR_BUTTON_TYPE = "Lcom/truecaller/bottombar/BottomBarButtonType;"
+private const val FAMILY_MEMBER_ROLE = "Lcom/truecaller/familyprotect/api/model/Family\$MemberRole;"
 private const val BOTTOM_BAR_VIEW = "Lcom/truecaller/bottombar/BottomBarView;"
 private const val RECYCLER_VIEW = "Landroidx/recyclerview/widget/RecyclerView;"
 private const val AD_PLACEMENT = "Lcom/truecaller/ads/api/model/ad/AdPlacement;"
@@ -358,7 +359,7 @@ class TruecallerSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.43.5",
+            version = "26.44.6",
             patchNames = setOf(
                 "Enable Premium",
                 "Disable ads",
@@ -1008,40 +1009,44 @@ class TruecallerSmokeTest {
     }
 
     private fun assertHiddenTabs(classes: List<ClassDef>) {
-        // The bottom bar builder calls one helper per tab patch on the tab array right before
-        // filterNotNull; together they null PREMIUM, BLOCKING, FAMILY_PROTECTION_CONFIG and MESSAGES.
+        // The bottom bar builder passes the finished tab list (from the tab assembler call) through
+        // one helper per tab patch; together they drop PREMIUM, BLOCKING, FAMILY_PROTECTION_CONFIG and MESSAGES.
         val (builderClass, builder) = classes.singleMethod("bottom bar builder") { _, m ->
             m.returnType == "V" && m.params() == listOf("Landroid/util/SparseIntArray;") &&
                 m.instructions().any { it.opcode == Opcode.SGET_OBJECT && it.field()?.definingClass == BOTTOM_BAR_BUTTON_TYPE && it.field()?.name == "CALLS" }
         }
         val label = "${builderClass.type}.${builder.name}(SparseIntArray)"
         val insns = builder.instructions()
-        val filter = insns.indexOfFirst {
-            it.opcode == Opcode.INVOKE_STATIC && it.call()?.returnType == "Ljava/util/List;" &&
-                it.call()?.parameterTypes?.map(CharSequence::toString) == listOf("[Ljava/lang/Object;")
+        val assemble = insns.indexOfFirst {
+            it.opcode == Opcode.INVOKE_VIRTUAL_RANGE && it.call()?.returnType == "Ljava/util/List;" &&
+                it.call()?.parameterTypes?.map(CharSequence::toString) == listOf("Z", FAMILY_MEMBER_ROLE, "I", "I", "I", "Z")
         }
-        check(filter >= 3) { "$label has no filterNotNull call after the helpers" }
-        val array = (insns[filter] as FiveRegisterInstruction).registerC
-        val arrayType = insns.take(filter).last { it.opcode == Opcode.NEW_ARRAY && (it as TwoRegisterInstruction).registerA == array }
-            .let { ((it as ReferenceInstruction).reference as TypeReference).type }
+        check(assemble >= 0 && insns[assemble + 1].opcode == Opcode.MOVE_RESULT_OBJECT) { "$label has no tab assembler call" }
+        val list = (insns[assemble + 1] as OneRegisterInstruction).registerA
+        val itemType = insns.mapNotNull { it.call() }.first { it.returnType == BOTTOM_BAR_BUTTON_TYPE && it.parameterTypes.isEmpty() }.definingClass
         val hidden = mutableSetOf<String>()
-        for (call in insns.subList(filter - 3, filter)) {
+        for (n in 0 until 3) {
+            val call = insns[assemble + 2 + n * 2]
             val ref = call.call()
-            check(call.opcode == Opcode.INVOKE_STATIC_RANGE && ref?.definingClass == builderClass.type &&
-                ref.parameterTypes.map(CharSequence::toString) == listOf(arrayType) &&
-                (call as RegisterRangeInstruction).startRegister == array && call.registerCount == 1
-            ) { "$label does not pass the tab array v$array to a helper before filterNotNull; got ${call.opcode} $ref" }
-            val helper = builderClass.method(ref.name, listOf(arrayType))
+            check(call.opcode == Opcode.INVOKE_STATIC && ref?.definingClass == builderClass.type &&
+                ref.returnType == "Ljava/util/List;" && ref.parameterTypes.map(CharSequence::toString) == listOf("Ljava/util/List;") &&
+                (call as FiveRegisterInstruction).registerC == list &&
+                insns[assemble + 3 + n * 2].opcode == Opcode.MOVE_RESULT_OBJECT &&
+                (insns[assemble + 3 + n * 2] as OneRegisterInstruction).registerA == list
+            ) { "$label does not pass the tab list v$list through a helper after the assembler; got ${call.opcode} $ref" }
+            val helper = builderClass.method(ref.name, listOf("Ljava/util/List;"))
             val helperInsns = helper.instructions()
-            check(helperInsns.any { it.opcode == Opcode.APUT_OBJECT }) { "${builderClass.type}.${helper.name} does not null array entries" }
-            check(helperInsns.any { it.call()?.returnType == BOTTOM_BAR_BUTTON_TYPE && it.call()?.definingClass == arrayType.removePrefix("[") }) {
+            check(helperInsns.any { it.call()?.name == "add" && it.call()?.definingClass == "Ljava/util/ArrayList;" }) {
+                "${builderClass.type}.${helper.name} does not build a filtered list"
+            }
+            check(helperInsns.any { it.call()?.returnType == BOTTOM_BAR_BUTTON_TYPE && it.call()?.definingClass == itemType }) {
                 "${builderClass.type}.${helper.name} does not read the tab type"
             }
             val types = helperInsns.filter { it.opcode == Opcode.SGET_OBJECT && it.field()?.definingClass == BOTTOM_BAR_BUTTON_TYPE }
                 .map { it.field()!!.name }
             hidden += types
             // Each helper is gated by its own patch's Heval Controls feature: while it is off the
-            // helper returns at once, so the other tab patches are not switched with it.
+            // helper returns the list at once, so the other tab patches are not switched with it.
             val helperLabel = "${builderClass.type}.${helper.name}"
             val feature = when {
                 "BLOCKING" in types -> HIDE_BLOCKING_TAB
@@ -1050,8 +1055,8 @@ class TruecallerSmokeTest {
                 else -> error("$helperLabel hides $types")
             }
             val stock = assertGate(helper, feature, helperLabel, branch = Opcode.IF_NEZ)
-            check(stock == 5 && helperInsns[4].opcode == Opcode.RETURN_VOID && helperInsns[5].opcode == Opcode.ARRAY_LENGTH) {
-                "$helperLabel does not return at once while $feature is off"
+            check(stock == 5 && helperInsns[4].opcode == Opcode.RETURN_OBJECT && helperInsns[5].opcode == Opcode.NEW_INSTANCE) {
+                "$helperLabel does not return the list at once while $feature is off"
             }
         }
         check(hidden == setOf("PREMIUM", "BLOCKING", "FAMILY_PROTECTION_CONFIG", "MESSAGES")) { "$label hides $hidden" }
@@ -1100,15 +1105,15 @@ class TruecallerSmokeTest {
         // helper that keeps the bar visible (it pads for the navigation bar, issue #61) and, with
         // fewer than two tabs, hides its tab menu and drops its minimum height (saved in a new field).
         val insns = builder.instructions()
-        val take = insns.indexOfFirst {
-            it.call()?.definingClass == "Lkotlin/collections/CollectionsKt;" &&
-                it.call()?.parameterTypes?.map(CharSequence::toString) == listOf("Ljava/lang/Iterable;", "I")
+        val assemble = insns.indexOfFirst {
+            it.opcode == Opcode.INVOKE_VIRTUAL_RANGE && it.call()?.returnType == "Ljava/util/List;" &&
+                it.call()?.parameterTypes?.map(CharSequence::toString) == listOf("Z", FAMILY_MEMBER_ROLE, "I", "I", "I", "Z")
         }
         val cast = insns.indexOfFirst {
             it.opcode == Opcode.CHECK_CAST && ((it as ReferenceInstruction).reference as TypeReference).type == BOTTOM_BAR_VIEW
         }
-        check(take >= 0 && cast > take) { "bottom bar builder has no take() before its BottomBarView cast" }
-        val list = (insns[take + 1] as OneRegisterInstruction).registerA
+        check(assemble >= 0 && cast > assemble) { "bottom bar builder has no tab assembler call before its BottomBarView cast" }
+        val list = (insns[assemble + 1] as OneRegisterInstruction).registerA
         val call = insns[cast + 1]
         val ref = call.call()
         check(call.opcode == Opcode.INVOKE_STATIC && ref?.definingClass == builderClass.type &&

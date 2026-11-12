@@ -2674,13 +2674,19 @@ object Constants {
     // (anchored on "featureReferralNavigationDrawer" + "featureGoPro" + getBoolean), Disable nags adds
     // featureInvalidProfileNotification, new opt-in "Disable Who viewed me" (featureWhoViewedMe), and
     // Disable telemetry reads four first-party reporting toggles as off. Smoke test only; not run on a device.
+    // 2026-11-12: updated to 26.44.6 (versionCode 2644006, Google Play arm64 merged, same signer). Probe:
+    // every fingerprint unique as before except the bottom bar builder, which no longer builds a tab
+    // array: the tab list now comes from a new assembler call (isFamilyAdmin, MemberRole, three badge
+    // counts, flag -> List), already cut to five tabs. The builder is matched by that call shape; the
+    // Hide Premium / Blocking / Messages tab helpers now filter the finished list (a hidden tab no
+    // longer lets a sixth one move up). Smoke test + CLI without -f; not run on a device.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0087FF,
         signatures = setOf("7712b5f255f2c85b8b164519116ac4381bb9a3582dcdd2b73ac06ee7464913ae"), // CN=truecaller
-        targets = listOf(AppTarget(version = "26.43.5", versionCode = 2643005))
+        targets = listOf(AppTarget(version = "26.44.6", versionCode = 2644006))
     )
 
     // Verified 2026-10-13 against com.hevy 3.1.16 (versionCode 3325935, XAPK base + arm64 + en +
