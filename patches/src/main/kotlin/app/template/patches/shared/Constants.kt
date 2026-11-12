@@ -4365,13 +4365,17 @@ object Constants {
     // MobileAds.initialize alone, because the React Native module awaits it and the next-gen
     // statics throw without it. The JS side already handles a failed (no-fill) load. Bytecode-only
     // verification: the APKPure bundle is armeabi-v7a and the x86_64 AVD cannot install it.
+    // 2026-11-12: updated to version 2026.10.0 (versionCode 10007113; Google Play arm64 merged
+    // bundle, same signer). Disable ads uses only the Google Mobile Ads library hooks (no
+    // fingerprints); the smoke test and a CLI patch run (no -f) confirm all eight load entry points
+    // are neutered. Bytecode only, no runtime check.
     val COMPATIBILITY_BBCNEWS = Compatibility(
         name = "BBC News",
         packageName = "bbc.mobile.news.ww",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xBB1919, // BBC News red.
         signatures = setOf("fd76b3b8df5fe8fd590957eb0f78a996967dd3c8bd87aff41f47e7799d065dc7"), // O=BBC Worldwide Limited
-        targets = listOf(AppTarget(version = "2026.9.1", versionCode = 10007111))
+        targets = listOf(AppTarget(version = "2026.10.0", versionCode = 10007113))
     )
 
     // Verified 2026-10-29 against dk.dr.webplayer 4.39.0 (versionCode 439000, APKMirror bundle
