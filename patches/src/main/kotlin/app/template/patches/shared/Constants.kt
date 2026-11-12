@@ -4320,6 +4320,8 @@ object Constants {
     // Unplanned/More/Premium and the patched build (same data) the first four, all tabs open.
     // 2026-11-07: updated to 1.3.4 (Play build via gplaydl, versionCode 1340, same CN=Jay Rambhia
     // signer), all patches apply unchanged; smoke + CLI without -f.
+    // 2026-11-12: Enable Premium no longer pins the R8 class name purchase.d; the anchor is now the
+    // no-argument Boolean method reading both the "premium" and "sku_" keys (OK-unique on 1.3.4).
     // Runtime not run yet; smoke test and CLI run only.
     val COMPATIBILITY_TASKITO = Compatibility(
         name = "Taskito",
