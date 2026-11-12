@@ -782,8 +782,10 @@ object Constants {
         // 2026-11-09: added "AMOLED black" (opt-in resource patch: five dark_theme_* colors in values/colors.xml,
         // each checked against its stock value; the dark background was already #000000). A CLI run without
         // -f changed exactly those five values in the resource table (aapt2 diff); not run on a device.
+        // 2026-11-12: updated to 15.0.1 (versionCode 1501, Play arm64 merged, same signer). Probe: all nine
+        // fingerprints OK-unique, all patches apply unchanged; smoke + CLI without -f; not run on a device.
         targets = listOf(
-            AppTarget(version = "15.0.0", versionCode = 1500)
+            AppTarget(version = "15.0.1", versionCode = 1501)
         )
     )
 

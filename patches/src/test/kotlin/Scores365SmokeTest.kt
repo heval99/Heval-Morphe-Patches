@@ -30,7 +30,7 @@ private const val SPLASH = "Lcom/scores365/ui/Splash;"
 private const val SIGNATURE_SHA1 = "47f994bd2eac89f4aeea0aa1d95cb3ba3ec3f1a1"
 
 private const val ADS_REMOVED = "isUserAdsRemoved="
-private const val FORCE_SHOW_ADS = "forceShowAds"
+private val FORCE_SHOW_ADS = setOf("forceShowAds", "force_show_ads") // renamed in 15.0.1
 private const val PURCHASE_FLAG = "IsUserRemovedAdsPackageBuying"
 private val UPDATE_EXTRAS = setOf("ForceUpdateDialog", "NewVersionPopup")
 
@@ -52,7 +52,7 @@ class Scores365SmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "15.0.0",
+            version = "15.0.1",
             patchNames = setOf(
                 "Disable ads", "Enable Premium", "Disable update prompts", "GmsCore support", "Spoof signature",
                 "Spoiler-free mode", "Patch settings", "Hide competitions", "Hide countries", "AMOLED black",
@@ -306,7 +306,7 @@ class Scores365SmokeTest {
             method !== removed &&
                 method.returnType == "Z" && method.parameterTypes.isEmpty() && method.implementation != null &&
                 !method.strings().contains(ADS_REMOVED) &&
-                method.strings().containsAll(listOf(FORCE_SHOW_ADS, PURCHASE_FLAG))
+                PURCHASE_FLAG in method.strings() && method.strings().any { it in FORCE_SHOW_ADS }
         } ?: error("no sibling gate reading $FORCE_SHOW_ADS + $PURCHASE_FLAG in ${owner.type}")
         assertForcedBoolean(sibling, expected = true, label = "${owner.type}.${sibling.name}()")
 
