@@ -3405,6 +3405,15 @@ object Constants {
     // manifest" and Performance off. Not seen on the emulator: betting odds (none shown by stock
     // either), a "Reclama" pre-roll (no ad fill), sponsored / cross-promo cards, the Home
     // "Exclusive online" bar and a Play update prompt.
+    // Disable live stream ads (2026-10-16, same target): UiLiveDai.getEnable answers false, so
+    // live channels are built from the plain stream (UiLiveStream.getMUrl) instead of the IMA DAI
+    // ssai:// item, and ExtensionServiceKt.updateAdViewForDai returns at once. The plain stream is
+    // only fetched when the channel config carries a livestream URL, so a DAI-only channel would
+    // not play (the patch description says to turn it off then). Smoke- and decompile-verified; the
+    // emulator run passed (no crash) but live playback could not be checked there: LiveTv is
+    // geo-blocked to the DIGI network ("LIVE stream-ul este disponibil doar din reteaua DIGI") for
+    // the stock app too. 2026-11-12: no longer experimental on the owner's word that DIGI-network
+    // users report it works; not confirmed by us, so there is no live-playback run on record.
     val COMPATIBILITY_DIGISPORT = Compatibility(
         name = "Digi Sport",
         packageName = "ro.rcsrds.digisport",
@@ -3412,23 +3421,6 @@ object Constants {
         appIconColor = 0x1D56A8, // The icon's blue gradient (mid-tone).
         signatures = setOf("014322fe24ad21500ec22894f597be2f29904fe0762f7a27b887762de80c2853"), // CN=DigiSport, O=RCS&RDS
         targets = listOf(AppTarget(version = "1.1.15", versionCode = 75))
-    )
-
-    // Same app, used only by "Disable live stream ads", so Morphe Manager flags it as experimental
-    // (2026-10-16, 1.1.15 / versionCode 75). UiLiveDai.getEnable answers false, so live channels
-    // are built from the plain stream (UiLiveStream.getMUrl) instead of the IMA DAI ssai:// item,
-    // and ExtensionServiceKt.updateAdViewForDai returns at once. The plain stream is only fetched
-    // when the channel config carries a livestream URL, so a DAI-only channel would not play.
-    // Smoke- and decompile-verified; the emulator run passed (no crash) but live playback could not
-    // be checked: LiveTv is geo-blocked to the DIGI network ("LIVE stream-ul este disponibil doar
-    // din reteaua DIGI") for the stock app too. Stays experimental until a DIGI-network user confirms.
-    val COMPATIBILITY_DIGISPORT_EXPERIMENTAL = Compatibility(
-        name = "Digi Sport",
-        packageName = "ro.rcsrds.digisport",
-        apkFileType = ApkFileType.APK,
-        appIconColor = 0x1D56A8,
-        signatures = setOf("014322fe24ad21500ec22894f597be2f29904fe0762f7a27b887762de80c2853"), // CN=DigiSport, O=RCS&RDS
-        targets = listOf(AppTarget(version = "1.1.15", versionCode = 75, isExperimental = true))
     )
 
     // Smoke-tested 2026-10-17 against com.football433 2.3.548 (versionCode 868, APKPure XAPK
