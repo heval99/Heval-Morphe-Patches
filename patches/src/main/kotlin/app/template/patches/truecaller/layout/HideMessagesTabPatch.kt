@@ -17,6 +17,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
@@ -93,8 +94,13 @@ val hideMessagesTabPatch = truecallerControls.featurePatch(
             ((instructions[index] as ReferenceInstruction).reference as TypeReference).type == BOTTOM_BAR_VIEW
     } ?: throw PatchException("${builderClass.type}->${builder.name} does not cast to $BOTTOM_BAR_VIEW")
     val barRegister = (instructions[cast] as OneRegisterInstruction).registerA
+    // Only the move-result right after one of our own morpheHideTabs_* helper calls puts the (filtered) list
+    // back into this register; any other write to it means the builder no longer holds the tab list.
     val listOverwritten = (listCall.resultIndex + 1 until cast).any { index ->
-        instructions[index].opcode.setsRegister() && instructions[index].opcode != Opcode.MOVE_RESULT_OBJECT &&
+        val ownHelperResult = instructions[index].opcode == Opcode.MOVE_RESULT_OBJECT && index > 0 &&
+            ((instructions[index - 1] as? ReferenceInstruction)?.reference as? MethodReference)
+                ?.name?.startsWith("morpheHideTabs_") == true
+        instructions[index].opcode.setsRegister() && !ownHelperResult &&
             (instructions[index] as? OneRegisterInstruction)?.registerA == listRegister
     }
     if (listOverwritten || barRegister == listRegister) {
