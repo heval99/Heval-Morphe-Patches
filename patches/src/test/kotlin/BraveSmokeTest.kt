@@ -401,7 +401,7 @@ class BraveSmokeTest {
         // Default options: secure mode with the default resolver; then automatic (fallback)
         // mode with another resolver.
         assertDohPoliciesInjected(classes, "secure", DEFAULT_DOH_URL)
-        assertDohPoliciesInjected(applyDnsFilterFallback(apk, workDir, PKG, "1.98.63"), "automatic", OTHER_DOH_URL)
+        assertDohPoliciesInjected(applyDnsFilterFallback(apk, workDir, PKG, "1.99.55"), "automatic", OTHER_DOH_URL)
     }
 
     /**

@@ -47,7 +47,7 @@ jobs:
         run: npm ci --allow-git=root
 
       # Run the tests that need no APK before anything is released: the helper, registry and
-      # bundle-selection tests, the extension unit tests and the release-script tests. The
+      # bundle-selection tests, the webviewads extension unit tests and the release-script tests. The
       # per-app smoke tests skip here (their APKs are gitignored), so they stay a local check.
       # A cold compile runs out of memory at Gradle's default heap, hence the explicit sizes.
       - name: Test

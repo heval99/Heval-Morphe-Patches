@@ -23,8 +23,9 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
-// Added 2026-11-08 for the Danish news apps (Nordjyske/Fyens/Stiften/JydskeVestkysten, Herning,
-// Information/Weekendavisen, YouSee, Jyllands-Posten), whose "Disable telemetry" used to set these
+// Added 2026-11-08 for the Danish news apps (Nordjyske/Fyens/Stiften/JydskeVestkysten, YouSee,
+// Jyllands-Posten; Herning, Information and Weekendavisen were dropped 2026-11-12), whose "Disable
+// telemetry" used to set these
 // switches with a private AndroidManifest.xml patch. A manifest edit re-encodes the whole resource
 // table and renamed case-clashing or duplicated resources to type_0x... names in seven of those
 // apps (AGENTS.md rule 12), so the same values are now forced where the SDKs read them.
