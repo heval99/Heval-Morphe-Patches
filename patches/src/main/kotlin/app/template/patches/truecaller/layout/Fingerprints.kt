@@ -271,6 +271,26 @@ internal object BusinessHomeScreenStateToStringFingerprint : Fingerprint(
     strings = listOf(string(", importantSenders=", StringComparisonType.CONTAINS)),
 )
 
+internal const val BANNER_ITEM = "Lcom/truecaller/messaging/messaginglist/v2/model/BannerItem;"
+
+// The Messages inbox's LazyColumn builder (an R8-merged Function1 lambda, e7d.invoke in 26.44.6;
+// another lambda in the same packed switch also holds "filteringMessagesBanner", so the banner
+// filter is part of the match): the fraud onboarding, override category and filtering messages
+// banners, then the card carousel, whose guard filters the banner list by the current filter type
+// and isCleared() into an ArrayList and checks isEmpty() (the last filter, matched at the call),
+// then the sync state and mark-all-as-read banners and the conversations.
+internal object InboxCardCarouselFingerprint : Fingerprint(
+    name = "invoke",
+    returnType = "Ljava/lang/Object;",
+    parameters = listOf("Ljava/lang/Object;"),
+    filters = listOf(
+        string("filteringMessagesBanner"),
+        methodCall(definingClass = BANNER_ITEM, name = "getFilterType"),
+        methodCall(definingClass = BANNER_ITEM, name = "isCleared", parameters = listOf(), returnType = "Z"),
+        methodCall(definingClass = "Ljava/util/ArrayList;", name = "isEmpty", parameters = listOf(), returnType = "Z"),
+    ),
+)
+
 internal const val PROFILE_MENU_ITEM = "Lcom/truecaller/usershome/presentaion/ui/components/menuitems/MenuItem;"
 
 // toString() of a profile menu row's state (MenuItemUiState, zrr in 26.42.5), a Kotlin data class

@@ -101,6 +101,8 @@ private const val HIDE_POOR_NETWORK_WARNING = "truecaller.hide_poor_network_warn
 private const val SWAP_CALL_BUTTONS = "truecaller.swap_call_buttons"
 private const val SWAP_CALL_LAYOUTS = "Lapp/template/extension/truecaller/SwapCallButtons;"
 private const val DISABLE_WHO_VIEWED_ME = "truecaller.disable_who_viewed_me"
+private const val HIDE_INBOX_CARDS = "truecaller.hide_inbox_cards"
+private const val BANNER_ITEM = "Lcom/truecaller/messaging/messaginglist/v2/model/BannerItem;"
 
 // Disable telemetry step 8: first-party reporting toggles, off in every resolver.
 private val TELEMETRY_TOGGLE_KEYS = listOf(
@@ -140,6 +142,7 @@ private val HEVAL_FEATURES = listOf(
 // false).
 private val OPT_IN_FEATURES = listOf(
     Triple("Disable Who viewed me", DISABLE_WHO_VIEWED_ME, "Privacy"),
+    Triple("Hide inbox cards", HIDE_INBOX_CARDS, "Promotions & nags"),
 )
 
 // "Hide profile menu items" (#120): five switches in one patch, all off by default, no restart.
@@ -391,6 +394,7 @@ class TruecallerSmokeTest {
                 "Disable call button haptics",
                 "Hide poor network warning",
                 "Disable Who viewed me",
+                "Hide inbox cards",
                 PROFILE_MENU_PATCH,
                 "GmsCore support",
                 "Spoof signature",
@@ -421,6 +425,7 @@ class TruecallerSmokeTest {
         assertShowCallerNumber(classes, byType, apk)
         assertHideCallLogFilters(classes, byType)
         assertHideListItems(classes)
+        assertHideInboxCards(classes, allPatches)
         assertSwapCallButtons(classes, byType)
         assertDisableCallButtonHaptics(classes, byType)
         assertHidePoorNetworkWarning(classes, apk)
@@ -2022,6 +2027,75 @@ class TruecallerSmokeTest {
                 } == true) { "$label: the guard does not compare a List.size() result" }
             }
         }
+    }
+
+    private fun assertHideInboxCards(classes: List<ClassDef>, allPatches: Set<Patch<*>>) {
+        // "Hide inbox cards": the Messages inbox builder (found by its banner keys and the BannerItem
+        // filter calls, as the patch does) checks ArrayList.isEmpty() on the filtered banner list
+        // right before the card carousel (spacer, item keyed 1111111, spacer). The skip gate sits
+        // right before that if-nez and jumps to its target, past the carousel; the other banners'
+        // keys are all outside the skipped range, and the gate id occurs nowhere else.
+        val (cls, builder) = classes.singleMethod("inbox list builder") { _, m ->
+            val strings = m.strings()
+            m.name == "invoke" && m.returnType == "Ljava/lang/Object;" && m.params() == listOf("Ljava/lang/Object;") &&
+                "filteringMessagesBanner" in strings && m.instructions().any { it.call()?.definingClass == BANNER_ITEM }
+        }
+        val label = "${cls.type}.${builder.name} (inbox cards)"
+        for (name in listOf("Hide inbox cards", "Disable Who viewed me")) {
+            val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
+            check(!patch.default) { "$name is selected by default" }
+        }
+        val insns = builder.instructions()
+        val isEmpty = insns.indices.filter {
+            insns[it].call()?.let { c -> c.definingClass == "Ljava/util/ArrayList;" && c.name == "isEmpty" } == true
+        }.singleOrNull() ?: error("$label does not call ArrayList.isEmpty() exactly once")
+        check(insns[isEmpty + 1].opcode == Opcode.MOVE_RESULT) { "$label: isEmpty() result is not moved" }
+        val resultRegister = (insns[isEmpty + 1] as OneRegisterInstruction).registerA
+        // The gate: const-string, isEnabled, move-result, if-nez (4 instructions), then the stock if-nez.
+        val guard = isEmpty + 6
+        check(insns[guard].opcode == Opcode.IF_NEZ && (insns[guard] as OneRegisterInstruction).registerA == resultRegister) {
+            "$label: the carousel guard is not an if-nez on the isEmpty() result right after the gate; got ${insns[guard].opcode}"
+        }
+        val target = insns.branchTarget(guard)
+        assertSkipGate(builder, HIDE_INBOX_CARDS, guard, target, label)
+        val gateRegister = (insns[isEmpty + 2] as OneRegisterInstruction).registerA
+        check(gateRegister != resultRegister) { "$label: the gate overwrites the isEmpty() result register v$resultRegister" }
+
+        // The skipped range is the carousel only: its Integer key and a static void item call, none
+        // of the other banner keys or the conversations' items.
+        val skipped = guard + 1 until target
+        check(skipped.any { (insns[it] as? NarrowLiteralInstruction)?.narrowLiteral == 1111111 }) { "$label: the carousel key 1111111 is not skipped" }
+        check(skipped.any { insns[it].call()?.let { c -> c.definingClass == "Ljava/lang/Integer;" && c.name == "valueOf" } == true }) {
+            "$label: the carousel key is not boxed inside the skipped range"
+        }
+        val boxedAt = skipped.first { insns[it].call()?.let { c -> c.definingClass == "Ljava/lang/Integer;" && c.name == "valueOf" } == true }
+        check(insns[boxedAt + 1].opcode == Opcode.MOVE_RESULT_OBJECT) { "$label: the boxed key is not moved to a register" }
+        val keyRegister = (insns[boxedAt + 1] as OneRegisterInstruction).registerA
+        val itemCall = skipped.first { it > boxedAt + 1 && insns[it].opcode == Opcode.INVOKE_STATIC && insns[it].call()?.returnType == "V" }
+        check(insns[itemCall].arguments()?.contains(keyRegister) == true) { "$label: the item call does not take the boxed key in v$keyRegister" }
+        // Exactly one item helper call (the keyed item); the two spacers are another static void helper.
+        val itemHelper = insns[itemCall].call()
+        check(skipped.count { insns[it].opcode == Opcode.INVOKE_STATIC && insns[it].call() == itemHelper } == 1) {
+            "$label: the skipped range does not hold exactly one item helper call"
+        }
+        check(skipped.count { insns[it].opcode == Opcode.INVOKE_STATIC && insns[it].call()?.returnType == "V" } == 3) {
+            "$label: the skipped range is not spacer + item + spacer (3 static void calls)"
+        }
+        check(skipped.none { insns[it].stringOrNull() != null }) { "$label: the skipped range holds a keyed item" }
+        for (key in listOf("FraudModelUserOnboardBanner", "OverrideCategoryBanner", "filteringMessagesBanner")) {
+            val at = insns.indexOfFirst { it.stringOrNull() == key }
+            check(at in 0 until guard - 5) { "$label: \"$key\" is not an untouched item before the carousel gate" }
+        }
+        for (key in listOf("messageSyncStateBanner", "markAllAsReadUndoBanner", "markAllAsReadBanner")) {
+            val at = insns.indexOfFirst { it.stringOrNull() == key }
+            check(at >= target) { "$label: \"$key\" is not an item after the carousel" }
+        }
+        // Only one gate on this feature, in this one method.
+        val gates = classes.flatMap { c ->
+            c.methods.filter { m -> m.instructions().any { it.stringOrNull() == HIDE_INBOX_CARDS } }.map { c.type to it.name }
+        }
+        check(gates.size == 1 && gates.single().first == cls.type) { "The $HIDE_INBOX_CARDS gate is in $gates, expected only $label" }
+        check(builder.instructions().count { it.stringOrNull() == HIDE_INBOX_CARDS } == 1) { "$label has more than one inbox cards gate" }
     }
 
     private fun assertHideProfileMenuItems(classes: List<ClassDef>, byType: Map<String, ClassDef>, allPatches: Set<Patch<*>>) {

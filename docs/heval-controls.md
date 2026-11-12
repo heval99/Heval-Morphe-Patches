@@ -278,7 +278,7 @@ The usual rules still apply (AGENTS.md):
 ## Truecaller features
 
 Truecaller 26.42.5 (2026-11-03). Every converted switch defaults on; its Manager patch keeps its
-name, description and default. The profile menu switches (marked "off") start off. A shipped id is
+name, description and default. The switches marked "off" (the profile menu rows, Hide inbox cards) start off. A shipped id is
 never renamed.
 
 | Feature id | Patch | Restart | Gated sites |
@@ -302,6 +302,7 @@ never renamed.
 | `truecaller.hide_call_log_filters` | Hide call log filters | yes | filter row composable and filter setter (index 0) |
 | `truecaller.hide_frequent_contacts` | Hide frequently called contacts | no | LazyColumn item skip |
 | `truecaller.hide_important_senders` | Hide important senders | no | LazyColumn item skip |
+| `truecaller.hide_inbox_cards` | Hide inbox cards (off) | no | carousel skip in the Messages inbox builder |
 | `truecaller.disable_call_button_haptics` | Disable call button haptics | no | haptic dispatch skips, drag progress (value helper) |
 | `truecaller.swap_call_buttons` | Swap call answer and decline buttons | no | offsets and call style check (value helpers), notification layouts |
 | `truecaller.hide_profile_premium_banner` | Hide profile menu items (off) | no | row state renderers (Enabled -> Disabled helper) |
@@ -324,6 +325,22 @@ server-written SharedPreferences, which toggle overrides cannot reach). Disable 
 invalid-profile reminder ("featureInvalidProfileNotification"). Disable Who viewed me is opt-in and
 starts off: it reads "featureWhoViewedMe" as off, which stops the app reporting your views of other
 profiles and removes the feature; "No profile view notifications" only silences the notification.
+
+Hide inbox cards (#150, 2026-11-12, Truecaller 26.44.6, smoke test and CLI only) is opt-in and
+starts off, category Promotions & nags, no restart. The Messages inbox is a Compose list whose
+builder emits the fraud onboarding, override category and "filtering messages" banners, then one
+card carousel (BannerItem objects of 11 types), then the sync state and mark-all-as-read banners
+and the conversations. The carousel sits behind an `ArrayList.isEmpty()` check on the banner list
+filtered by the current filter and `isCleared()`; `addHevalSkip` before that `if-nez` jumps over
+the carousel (spacer, item keyed 1111111, spacer) while the switch is on, so nothing else in the
+inbox changes. The patch pins exactly one item helper call inside the skipped block and checks
+that it takes the boxed key, so a build that adds another item to the carousel fails the patch.
+Every card type goes with it: the notification-permission, passcode-lock, urgent-message,
+update-app and advanced-block cards, the Inbox cleaner cards (OTP, offer, spam, fraud) and the
+low-spam-protection warnings. None of the 11 types is a default-SMS-app or core-permission
+prompt, but the notification-permission card and the spam protection warnings are hidden too.
+The switch is read each time the list rebuilds. `skipLazyListItem` is not used because the item
+key is an Integer.
 
 Hide call log filters is marked restart because its row is a composable: an open call log screen
 keeps the row it composed until the screen composes it again. Swap call answer and decline buttons

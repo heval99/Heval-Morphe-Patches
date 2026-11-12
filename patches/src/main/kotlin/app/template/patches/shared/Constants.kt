@@ -2699,6 +2699,13 @@ object Constants {
     // counts, flag -> List), already cut to five tabs. The builder is matched by that call shape; the
     // Hide Premium / Blocking / Messages tab helpers now filter the finished list (a hidden tab no
     // longer lets a sixth one move up). Smoke test + CLI without -f; not run on a device.
+    // 2026-11-12 (#150): "Hide inbox cards" (opt-in Patch settings switch truecaller.hide_inbox_cards,
+    //   no restart). The Messages inbox's LazyColumn builder (26.44.6 Le7d.invoke; matched by the
+    //   "filteringMessagesBanner" key plus the BannerItem getFilterType / isCleared and ArrayList.isEmpty
+    //   calls, OK-unique in the probe) checks isEmpty() on the banner list filtered by the current
+    //   filter and isCleared() before the card carousel (item key 1111111); the skip gate sits right
+    //   before that if-nez and jumps to its target. The other inbox banners are untouched. Smoke test +
+    //   CLI without -f + apkanalyzer verified; not run on a device.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
