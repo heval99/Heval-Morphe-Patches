@@ -76,6 +76,17 @@ object Constants {
     // surface_P in values-night/colors.xml, each checked against its stock value; surface_0 was
     // already #000000). A CLI run without -f changed exactly those two values in the resource table
     // (aapt2 diff, plus the usual case-twin id renames); not run on a device.
+    // 2026-11-12 comfort batch on 26.11.03 (versionCode 261103003), no runtime claims. "Compact match
+    // lists" (opt-in resource patch): checks, then shrinks the dp values of res/layout/list_event_row.xml
+    // (root minHeight/paddingVertical, the team name margins, the action_layout height). "Keep screen on"
+    // (runtime switch, off): EventActivity.onResume/onPause by class, name and descriptor. "Clean shared
+    // links" (on): the image share helper found by its three intent strings and (Context, Bitmap,
+    // String, ?) shape, and the highlight link builder found by "utm_source" + "app referrals". "Disable
+    // screenshot prompt" (on): every SharedPreferences.getBoolean read of PREF_SCREENSHOT_DO_NOT_SHOW_AGAIN
+    // (EventActivity/LeagueActivity onStart and the capture callback's two reads). Cleaned share links
+    // point to the plain Sofascore homepage and no longer carry the match target the tracking link had;
+    // Compact match lists shrinks the bell button to 40 dp, below the usual 48 dp touch target. All four fingerprints
+    // OK-unique in FingerprintProbe; smoke test and a CLI run without -f pass.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",

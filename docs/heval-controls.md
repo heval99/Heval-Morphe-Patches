@@ -363,6 +363,30 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.spoiler_widget` | Spoiler-free mode | on | no | the widget row builder's return (`maskWidgetRow`) |
 | `sofascore.spoiler_events` (list) | Spoiler-free mode | off | no | read by every spoiler hook; filled by the match page item |
 | `sofascore.spoiler_competitions` (list) | Spoiler-free mode | off | no | read by every spoiler hook; filled by the competition page item |
+| `sofascore.keep_screen_on` | Keep screen on | off | no | EventActivity `onResume()V` and `onPause()V` (index 0, `ScreenCalm.keepScreenOn` / `releaseScreen`) |
+| `sofascore.clean_share_links` | Clean shared links | on | no | the image share helper's text argument (`ShareLinks.cleanShareText`), the four `appendQueryParameter` calls of the highlight link builder (`ShareLinks.appendQueryParameter`) |
+| `sofascore.disable_screenshot_prompt` | Disable screenshot prompt | on | no | every `SharedPreferences.getBoolean` read of `PREF_SCREENSHOT_DO_NOT_SHOW_AGAIN` (`ScreenCalm.screenshotPromptHidden`) |
+| `sofascore.compact_match_lists` | Compact match lists | off | build-time only | `res/layout/list_event_row.xml` (read-only "Applied at patch time" row) |
+
+Comfort batch (2026-11-12, Sofascore 26.11.03, smoke test and CLI run only, not run on a device).
+Keep screen on adds `FLAG_KEEP_SCREEN_ON` to the match page's window in `onResume` while the switch is
+on and always clears it in `onPause`, so a change applies the next time the page resumes. Clean shared
+links rewrites the tracking short links the app adds to shared images (`https://app.sofascore.com/nixz/<id>`,
+with or without a leading space) to `https://www.sofascore.com`, and skips the four `utm_*` parameters the
+app appends to highlight links; every other text and link, the fantasy invite link included, is returned
+untouched (`ShareLinkCleaner`, pure Java, covered by `ShareLinkCleanerTest`; the link must not follow a word
+character or one of `/.:?&=#%+-`, and the id is letters, digits, `_` and `-` only, so punctuation after the
+link stays). A cleaned link points to the plain Sofascore homepage and no longer carries the match target the
+tracking link had. Disable screenshot prompt
+answers true to the app's "do not show again" preference at all its reads (the match page and league
+page `onStart`, which then never register the screenshot callback, and the callback itself), so the
+button's own write is untouched and the switch can turn the prompt back on; the registration happens in
+`onStart`, so a change applies the next time a page starts. Compact match lists is an opt-in resource
+patch: it checks, then lowers the dp values of the one match row layout (root `minHeight` 56 to 44 and
+`paddingVertical` 4 to 2, the first team name's top margin 6 to 3, the second team name's top margin 4 to 2
+and bottom margins 6 to 3, the action area height 48 to 40, which shrinks the bell button's touch area to
+40 dp, below the usual 48 dp target) and fails if any stock value differs; the time
+column, the 72 dp guideline and the action area width are checked and left alone.
 
 AMOLED black (2026-11-09, `sofascore.amoled_black`, build-time only) is an opt-in resource patch (the night values of
 `surface_1` and `surface_P`); the Patch settings screen shows it as a read-only "Applied at patch time" row
