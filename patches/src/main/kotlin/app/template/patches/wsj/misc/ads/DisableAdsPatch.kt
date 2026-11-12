@@ -318,8 +318,9 @@ private fun Instruction.writesField(field: FieldReference): Boolean {
     return ref.definingClass == field.definingClass && ref.name == field.name && ref.type == field.type
 }
 
+// 15.13 prepended a String sectionId, so match the (I, Z, model) tail whatever comes before it.
 private fun Method.isSectionAdSlots() = implementation != null &&
-    returnType == "Ljava/util/List;" && params() == listOf("I", "Z", SECTION_PLACEMENT_MODEL)
+    returnType == "Ljava/util/List;" && params().takeLast(3) == listOf("I", "Z", SECTION_PLACEMENT_MODEL)
 
 private fun Method.isAdTagRequest() = returnType == "Lkotlinx/coroutines/Deferred;" &&
     params() == listOf("Lcom/dowjones/query/fragment/VideoData;", "Z", "Z")

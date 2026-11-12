@@ -2943,7 +2943,11 @@ object Constants {
         signatures = setOf("23bb0cd3b5fbc3fdd4f869b2c423ef79ea25ff7c54b06ea29ccd49472f66451f"), // CN=Wall Street Journal Digital Network, O=The Wall Street Journal
         // 2026-10-29: updated to 15.12.0.42675 (versionCode 700042675, arm64-v8a, same signer).
         // Disable ads applies unchanged: smoke test green and CLI without -f applied it.
-        targets = listOf(AppTarget(version = "15.12.0.42675", versionCode = 700042675))
+        // 2026-11-12: updated to 15.13.0.44249 (versionCode 710044249, arm64, same signer). The
+        // patch has no Fingerprint objects, so WsjSmokeTest and a CLI run (no -f) are the evidence;
+        // bytecode only. Step 1 needed a fix: SectionAdPlacementStrategyContract.getAdSlotConfigList
+        // gained a leading String sectionId, so it is now matched by its (I, Z, model) tail.
+        targets = listOf(AppTarget(version = "15.13.0.44249", versionCode = 710044249))
     )
 
     // Verified 2026-10-14 against me.piebridge.brevent 4.2.31.1 (versionCode 539, APKPure).
