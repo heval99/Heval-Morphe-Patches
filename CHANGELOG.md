@@ -1,3 +1,10 @@
+## 2.3.0-dev.8 (2026-11-12)
+
+### 🔧 Other
+- Fixed: Correct the garbled app names L'Équipe and RTÉ News
+
+**Download:** [patches-2.3.0-dev.8.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.3.0-dev.8/patches-2.3.0-dev.8.mpp)
+
 ## 2.3.0-dev.7 (2026-11-12)
 
 ### 📱 Digi Sport `1.1.15`

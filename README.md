@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.3.0-dev.7](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.3.0-dev.7)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**100** apps&nbsp;&nbsp;•&nbsp;&nbsp;**297** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-12
+> **[v2.3.0-dev.8](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.3.0-dev.8)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**100** apps&nbsp;&nbsp;•&nbsp;&nbsp;**297** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-12
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -63,7 +63,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/se.footballaddicts.livescore.png" width="20" height="20" alt=""> | **Forza Football** | 🚫 🛡️ 💎 🧩 5 | `6.15.10` | APKM | [Play](https://play.google.com/store/apps/details?id=se.footballaddicts.livescore) |
 | <img src="assets/icons/com.mobilefootie.wc2010.png" width="20" height="20" alt=""> | **FotMob** | 🚫 🛡️ 💎 🔕 🧩 18 | `241.18134.20261030` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mobilefootie.wc2010) |
 | <img src="assets/icons/com.futbin.png" width="20" height="20" alt=""> | **Futbin** | 🚫 1 | `27.13` | APK | [Play](https://play.google.com/store/apps/details?id=com.futbin) |
-| <img src="assets/icons/lequipe.fr.png" width="20" height="20" alt=""> | **L'Ã‰quipe** | 🚫 🧪 1 | `10.71.1` | APKM | [Play](https://play.google.com/store/apps/details?id=lequipe.fr) |
+| <img src="assets/icons/lequipe.fr.png" width="20" height="20" alt=""> | **L'Équipe** | 🚫 🧪 1 | `10.71.1` | APKM | [Play](https://play.google.com/store/apps/details?id=lequipe.fr) |
 | <img src="assets/icons/com.livescore.png" width="20" height="20" alt=""> | **Livescore** | 🚫 1 | `10.4.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
 | <img src="assets/icons/one.cricket.app.png" width="20" height="20" alt=""> | **OneCricket** | 🚫 1 | `26.10.01` | APKM | [Play](https://play.google.com/store/apps/details?id=one.cricket.app) |
 | <img src="assets/icons/de.motain.iliga.png" width="20" height="20" alt=""> | **OneFootball** | 🚫 1 | `15.150.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
@@ -89,7 +89,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-0B1F3A?style=flat-square" height="14" alt=""> | **Nordisk Film+** | 🛡️ 1 | `1.5.4` | APKM | [Play](https://play.google.com/store/apps/details?id=com.nordiskfilmplus.android) |
 | <img src="https://img.shields.io/badge/-%20-E20110?style=flat-square" height="14" alt=""> | **Nordjyske** | 🚫 🛡️ 🧩 3 | `8.0.17` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.nordjyske.reader) |
 | <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **Politiken** | 🚫 🛡️ 2 | `4.1.5` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.pol.news) |
-| <img src="assets/icons/ie.rte.news.png" width="20" height="20" alt=""> | **RTÃ‰ News** | 🚫 1 | `10.0.2` | APKM | [Play](https://play.google.com/store/apps/details?id=ie.rte.news) |
+| <img src="assets/icons/ie.rte.news.png" width="20" height="20" alt=""> | **RTÉ News** | 🚫 1 | `10.0.2` | APKM | [Play](https://play.google.com/store/apps/details?id=ie.rte.news) |
 | <img src="assets/icons/com.guardian.png" width="20" height="20" alt=""> | **The Guardian** | 🚫 🛡️ 🧩 3 | `6.241.23504` | APKM | [Play](https://play.google.com/store/apps/details?id=com.guardian) |
 | <img src="assets/icons/wsj.reader_sp.png" width="20" height="20" alt=""> | **The Wall Street Journal** | 🚫 1 | `15.13.0.44249` | APK | [Play](https://play.google.com/store/apps/details?id=wsj.reader_sp) |
 | <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **TV 2 Nyheder** | 🚫 🛡️ 2 | `2026.10-10188:RELEASE` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tv2.nyhedscenter) |
@@ -399,7 +399,7 @@ Verified on: `27.13`
 
 </details>
 <details>
-<summary><img src="assets/icons/lequipe.fr.png" width="16" height="16" alt=""> <b>L'Ã‰quipe</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>lequipe.fr</code></summary>
+<summary><img src="assets/icons/lequipe.fr.png" width="16" height="16" alt=""> <b>L'Équipe</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>lequipe.fr</code></summary>
 
 Verified on: `10.71.1`
 
@@ -649,7 +649,7 @@ Verified on: `4.1.5`
 
 </details>
 <details>
-<summary><img src="assets/icons/ie.rte.news.png" width="16" height="16" alt=""> <b>RTÃ‰ News</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>ie.rte.news</code></summary>
+<summary><img src="assets/icons/ie.rte.news.png" width="16" height="16" alt=""> <b>RTÉ News</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>ie.rte.news</code></summary>
 
 Verified on: `10.0.2`
 
