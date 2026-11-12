@@ -928,7 +928,10 @@ object Constants {
             // restriction getters are untouched (no managed first run). Strict means nothing
             // resolves while the resolver is unreachable. Verified on 1.98.63 by BraveSmokeTest
             // (default and fallback options); not runtime-tested.
-            AppTarget(version = "1.99.55"),
+            // 2026-11-12: updated to 1.99.56 (versionCode 429905604, Google Play arm64 merged, same signer). Probe:
+            // every Origin, DNS filter, Disable ads and Disable telemetry fingerprint OK-unique, all patches apply
+            // unchanged; smoke + CLI without -f; not run on a device.
+            AppTarget(version = "1.99.56"),
         )
     )
 
@@ -940,6 +943,7 @@ object Constants {
     // are unobfuscated (JNI/manifest-kept) class names, pref keys and method shape. Not yet
     // field-tested by users.
     // 2026-11-07: updated to 1.99.55 together with the stable entry; all patches apply unchanged; smoke + CLI without -f.
+    // 2026-11-12: updated to 1.99.56 together with the stable entry; all patches apply unchanged; smoke + CLI without -f.
     val COMPATIBILITY_BRAVE_EXPERIMENTAL = Compatibility(
         name = "Brave Browser",
         packageName = "com.brave.browser",
@@ -974,8 +978,10 @@ object Constants {
             // 2026-11-03: updated to 1.98.63 (versionCode 429806304, GitHub "Latest" release
             // Bravearm64Universal.apk), all three experimental patches apply unchanged; smoke +
             // CLI without -f.
+            // 2026-11-12: updated to 1.99.56 (versionCode 429905604); all three experimental patches apply
+            // unchanged; smoke + CLI without -f.
             AppTarget(
-                version = "1.99.55",
+                version = "1.99.56",
                 isExperimental = true,
             ),
         )
