@@ -1637,13 +1637,15 @@ object Constants {
     // 2026-10-25: updated to version 2.55.8 (versionCode 255800; APKPure XAPK merged, same signer);
     // BusinessCalendarSmokeTest passes on patcher 2.0.0; anchors unchanged. The emulator and rule 12
     // checks above were run on 2.55.7 only.
+    // 2026-11-12: updated to version 2.56.0 (versionCode 256001; same signer). All 13 fingerprints
+    // are OK-unique on the real matcher and BusinessCalendarSmokeTest passes; bytecode only.
     val COMPATIBILITY_BUSINESSCALENDAR = Compatibility(
         name = "Business Calendar 2",
         packageName = "com.appgenix.bizcal",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x009688,
         signatures = setOf("53d3dc3f50ea8256ea27768bc0c6c24d44c1dcf8b478fa08496a721658a21a8f"), // CN=Michael Kopplin, O=Mikado Software
-        targets = listOf(AppTarget(version = "2.55.8", versionCode = 255800))
+        targets = listOf(AppTarget(version = "2.56.0", versionCode = 256001))
     )
 
     // Verified 2026-10-11 against app.expert.player 11.2.0 (versionCode 306) from APKPure's XAPK
