@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.3.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.3.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;**100** apps&nbsp;&nbsp;•&nbsp;&nbsp;**297** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-12
+> **[v2.4.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.4.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**100** apps&nbsp;&nbsp;•&nbsp;&nbsp;**302** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-12
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -67,7 +67,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/com.livescore.png" width="20" height="20" alt=""> | **Livescore** | 🚫 1 | `10.4.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
 | <img src="assets/icons/one.cricket.app.png" width="20" height="20" alt=""> | **OneCricket** | 🚫 1 | `26.10.01` | APKM | [Play](https://play.google.com/store/apps/details?id=one.cricket.app) |
 | <img src="assets/icons/de.motain.iliga.png" width="20" height="20" alt=""> | **OneFootball** | 🚫 1 | `15.150.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
-| <img src="assets/icons/com.sofascore.results.png" width="20" height="20" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 26 | `26.11.03` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
+| <img src="assets/icons/com.sofascore.results.png" width="20" height="20" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 30 | `26.11.03` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
 | <img src="assets/icons/de.transfermarkt.v2.png" width="20" height="20" alt=""> | **Transfermarkt** | 🚫 🛡️ 2 | `4.3.3` | APKM | [Play](https://play.google.com/store/apps/details?id=de.transfermarkt.v2) |
 | <img src="assets/icons/com.yahoo.mobile.client.android.sportacular.png" width="20" height="20" alt=""> | **Yahoo Sports** | 🚫 🧩 2 | `12.28.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.sportacular) |
 
@@ -104,7 +104,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/me.bluemail.mail.png" width="20" height="20" alt=""> | **BlueMail** | 🚫 1 | `2.2.426` | APKM | [Play](https://play.google.com/store/apps/details?id=me.bluemail.mail) |
 | <img src="assets/icons/eu.faircode.email.png" width="20" height="20" alt=""> | **FairEmail** | 💎 1 | `1.2339` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
 | <img src="assets/icons/com.mail.mobile.android.mail.png" width="20" height="20" alt=""> | **mail.com** | 🚫 🛡️ 🔕 🧩 4 | `9.20.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mail.mobile.android.mail) |
-| <img src="assets/icons/com.truecaller.png" width="20" height="20" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 34 | `26.44.6` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
+| <img src="assets/icons/com.truecaller.png" width="20" height="20" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 35 | `26.44.6` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
 
 #### 🎵 Music, podcasts & radio <sub>7 apps</sub>
 
@@ -439,7 +439,7 @@ Verified on: `15.150.0`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.sofascore.results.png" width="16" height="16" alt=""> <b>Sofascore</b> &nbsp;·&nbsp; 26 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
+<summary><img src="assets/icons/com.sofascore.results.png" width="16" height="16" alt=""> <b>Sofascore</b> &nbsp;·&nbsp; 30 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
 
 Verified on: `26.11.03`
 
@@ -448,9 +448,12 @@ Verified on: `26.11.03`
 | 🧩 **AMOLED black** | Makes the dark theme pure black on OLED screens. | ➖ |
 | 🧩 **Animation speed** | Adds switches to turn off or speed up animations. | ➖ |
 | 🔕 **Block marketing notifications** | Blocks promo popups and banners. | ✅ |
+| 🧩 **Clean shared links** | Removes tracking codes from shared links. | ✅ |
+| 🧩 **Compact match lists** | Makes the match rows in lists shorter so more fit on screen. | ➖ |
 | 🛡️ **Disable Facebook SDK** | Disables Facebook ads and tracking. Facebook login keeps working. | ✅ |
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
 | 🔕 **Disable rating prompts** | Disables the rating prompt. | ✅ |
+| 🔕 **Disable screenshot prompt** | Hides the prompt to share a screenshot. | ✅ |
 | 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
 | 🔕 **Disable update prompts** | Disables the update prompts. | ✅ |
 | 💎 **Enable Premium** | Unlocks premium features. AI insights stay locked. | ✅ |
@@ -465,6 +468,7 @@ Verified on: `26.11.03`
 | 🧩 **Hide promo pop-ups** | Stops promotional pop-ups. | ✅ |
 | 🧩 **Hide promo sections** | Adds switches to hide promotional sections. | ➖ |
 | 🧩 **Hide sports** | Adds switches to hide sports you don't follow. | ➖ |
+| 🧩 **Keep screen on** | Keeps the screen on while a match page is open. | ➖ |
 | 🧩 **Patch settings** | Adds a screen to turn supported features on or off. | ✅ |
 | 🧩 **Slower widget refresh** | Refreshes home screen widgets every hour instead of every 30 minutes. | ➖ |
 | 🧩 **Spoiler-free mode** | Lets you hide scores for matches and competitions you mark, and goal alerts for matches you mark. | ✅ |
@@ -760,7 +764,7 @@ Verified on: `9.20.2`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.truecaller.png" width="16" height="16" alt=""> <b>Truecaller</b> &nbsp;·&nbsp; 34 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
+<summary><img src="assets/icons/com.truecaller.png" width="16" height="16" alt=""> <b>Truecaller</b> &nbsp;·&nbsp; 35 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
 
 Verified on: `26.44.6`
 
@@ -789,6 +793,7 @@ Verified on: `26.44.6`
 | 🧩 **Hide family button** | Turns off Family Protection and hides its button. | ➖ |
 | 🧩 **Hide frequently called contacts** | Hides the row of frequently called contacts above the call log. | ➖ |
 | 🧩 **Hide important senders** | Hides the Important senders section in the Messages tab. | ➖ |
+| 🧩 **Hide inbox cards** | Hides the info and promo cards above the Messages inbox. | ➖ |
 | 🧩 **Hide poor network warning** | Hides the "Your network is poor" tooltip on the in-call screen. | ➖ |
 | 🧩 **Hide profile menu items** | Adds switches to hide items in the profile menu. | ➖ |
 | 🧩 **Hide promotions** | Hides promo banners, referral offers and Who viewed me promos. | ✅ |

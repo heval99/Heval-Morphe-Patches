@@ -1,3 +1,15 @@
+## 2.4.0-dev.1 (2026-11-12)
+
+### 📱 Sofascore `26.11.03`
+- New: Clean shared links, Compact match lists, Disable screenshot prompt, Keep screen on
+- New: Add compact match lists, keep screen on, clean shared links and a screenshot prompt switch
+
+### 📱 Truecaller `26.44.6`
+- New: Hide inbox cards
+- New: Add a switch to hide the cards above the Messages inbox
+
+**Download:** [patches-2.4.0-dev.1.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.4.0-dev.1/patches-2.4.0-dev.1.mpp)
+
 ## 2.3.0 (2026-11-12)
 
 ### 🆕 New apps
