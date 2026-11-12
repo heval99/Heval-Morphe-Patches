@@ -4869,13 +4869,15 @@ object Constants {
     //     MAIN/LAUNCHER class). The Maps module then loads from MicroG RE, which draws its own map
     //     without Google's key check. No clone option (the Places key is tied to the package).
     // GpsMapCameraSmokeTest asserts every hook.
+    // 2026-11-12: updated to version 1.0.32 (versionCode 90; same signer). All four fingerprints are
+    // OK-unique on the real matcher; bytecode only, the emulator checks above were run on 1.0.31.
     val COMPATIBILITY_GPSMAPCAMERA = Compatibility(
         name = "GPS Map Camera Editor",
         packageName = "com.gkfriend.gpsmapcameraeditor",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3FA9E0,
         signatures = setOf("ad0e198835238d37a5519b4cc50173c2a28a556b8806c3ab963fcbd516238d37"),
-        targets = listOf(AppTarget(version = "1.0.31", versionCode = 89))
+        targets = listOf(AppTarget(version = "1.0.32", versionCode = 90))
     )
 }
 
