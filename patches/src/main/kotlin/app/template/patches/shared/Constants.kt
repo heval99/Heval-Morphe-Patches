@@ -3726,13 +3726,20 @@ object Constants {
     // plays without pre-roll (stock showed none at that moment either); no
     // Comscore/NewRelic/Teads/Permutive/Chartbeat/Mux log lines. Not seen on either build:
     // Storyteller stories (the carousel didn't render) and the discovery+/HBO Max watch banner.
+    // 2026-11-12: updated to version 8.35.0 (versionCode 114066; same signer). The five
+    // fingerprints are each unique on the real matcher. The SdkConfig enum lost MUX (the Mux SDK is
+    // gone), so the enum-name guard now tolerates a missing MUX; the block still compares it. New
+    // Relic is also gone (its start step now only runs when the class exists), and
+    // StorytellerEventTrackingOptions gained a seventh flag after the list (the constructor is now
+    // found as ZZZZZZList plus any tail, minus the DefaultConstructorMarker one). The decompile
+    // and emulator checks above were run on 8.33.0 only.
     val COMPATIBILITY_EUROSPORT = Compatibility(
         name = "Eurosport",
         packageName = "com.eurosport",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x000000, // The adaptive icon's black background.
         signatures = setOf("cabdcdfd15a3395a9cbcd9a073784338383f4260adf2f9b1125a512ca3fb09a1"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "8.34.1", versionCode = 113929))
+        targets = listOf(AppTarget(version = "8.35.0", versionCode = 114066))
     )
 
     // Verified 2026-10-17 against lequipe.fr 10.69.1 (versionCode 1616) in bytecode only (smoke
