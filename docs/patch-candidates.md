@@ -99,7 +99,7 @@ Tier 1 progress, all checked against the latest APKMirror builds:
 
 | App | Status |
 |---|---|
-| Textra SMS | **Shipped** - "Enable Pro" (license pref class located structurally; l() -> true, k() -> false) |
+| Textra SMS | **Dropped by the owner 2026-11-12 (quality focus)** (shipped; last verified 4.87) - "Enable Pro" (license pref class located structurally; l() -> true, k() -> false); see blocklist |
 | jetAudio | **Shipped** - "Enable Pro" (purchase info class located by its inline literal; leaf getters -> true) |
 | Unified Remote | **Dropped by the owner 2026-11-12 (quality focus)** (shipped; last verified 3.25.1) - "Enable Pro" (forced the local `License.Status` check; RevenueCat only feeds the paywall UI) |
 | AZ Screen Recorder | **Blocked** - full PairIP (`SignatureCheck`, `VMRunner`, `VmDecryptor`); see patch-blocklist |

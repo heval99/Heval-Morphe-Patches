@@ -30,8 +30,8 @@ object Constants {
     // certificate of its verified target APK (apksigner on the APK, or the original base split
     // recorded when a bundle was merged; Firefox from Mozilla's own 158.0 build). Morphe Manager
     // 2.x warns, with an option to go on, when a picked APK is signed by none of them; on
-    // Android 10 and older it skips the check. Textra has none: its Play-signed cert came from
-    // one mirror only. On an app update, check the signer and keep or replace the hash.
+    // Android 10 and older it skips the check. On an app update, check the signer and keep or
+    // replace the hash.
 
     // 2026-10-12 APK-finder audit: only distributed as a split bundle (APKMirror BUNDLE /
     // APKPure-Uptodown XAPK), so apkFileType is APKM; any "universal APK" note below is outdated.
@@ -1119,35 +1119,6 @@ object Constants {
         targets = listOf(AppTarget(version = "1.22.11", versionCode = 2229))
     )
 
-    // Verified 2026-09-18 against com.rammigsoftware.bluecoins 13.1.79 (versionCode 33145)
-    // from APKMirror. The app is not obfuscated: every premium check collects
-    // BillingDomain.isPremiumVersionFlow(), whose only implementation is BillingDomainManager.
-    // The manager delegates to an encrypted "premiumKey" preference; the patch returns a
-    // constant flow of true instead, so all screens see premium without touching the
-    // encrypted storage or the billing client.
-    // Re-anchored 2026-10-07 for 13.1.149 (versionCode 33215): this release is fully
-    // R8-obfuscated - BillingDomainManager and every kotlinx.coroutines.flow name are gone, so
-    // the flowOf(TRUE) replacement no longer applies. The patch now forces the value inside
-    // the premium pipeline instead, anchored only on Timber log prefixes + method shape:
-    // (1) the salted "premiumKey" verifier's downstream emit (log "Startup: Encryption:
-    // Premium is ") is fed Boolean.TRUE - this is the final stage in 13.1.79; (2) in 13.1.149
-    // the use case (strings "premiumKey" + "versionOverride") combines that with a Google Play
-    // version override that wins when set, so the combine lambda (log "Startup: Encryption:
-    // Google Play premium override") returns TRUE; step 2 is mandatory whenever that use case
-    // exists. BluecoinsSmokeTest passes on both 13.1.79 and 13.1.149.
-    // 2026-10-19: older target 13.1.79 dropped (latest version only, owner); BluecoinsSmokeTest
-    // runs against 13.1.149.
-    val COMPATIBILITY_BLUECOINS = Compatibility(
-        name = "Bluecoins",
-        packageName = "com.rammigsoftware.bluecoins",
-        apkFileType = ApkFileType.APK,
-        appIconColor = 0x2979FF,
-        signatures = setOf("669491c227af63912876c38b286d782a3f7f7e382c7941b820fe48137d1f8c64"), // CN=ANTONIO BARRIA, O=RAMMIG SOFTWARE
-        targets = listOf(
-            AppTarget(version = "13.1.149", versionCode = 33215),
-        )
-    )
-
     // Verified 2026-09-18 against Flashscore 26.9.2 (versionCode 517) supplied from
     // apks/flashscore. The app is obfuscated, but ads all go through Google's next-generation
     // Mobile Ads SDK (com.google.android.libraries.ads.mobile.sdk), whose class and method
@@ -1394,45 +1365,6 @@ object Constants {
         signatures = setOf("d192f4fffff2fae37f2821e4ca44f4cbe2483e7ffa24a8472043f685dd5bed27"), // CN=Victor Shcherb, OU=OsmAnd
         targets = listOf(
             AppTarget(version = "5.4.11", versionCode = 5411)
-        )
-    )
-
-    // Verified 2026-09-19 against com.textra 4.85 (versionCode 48561) from APKMirror.
-    // Textra app code is R8-obfuscated. Purchase state is a single integer preference
-    // (key "lc": -1 unknown, 0 free, 1 licensed) owned by a dedicated obfuscated class.
-    // Until 2026-10-19 the patch found that class as the only one declaring the four methods
-    // g()Ljava/lang/Integer;, i(Ljava/lang/Integer;)V, k()Z and l()Z. Those are R8 names, so it
-    // did NOT survive name rotation, despite the earlier "no obfuscated names" note. It forces
-    // the licensed getter true and the free getter false (state 1). Every gate reads those: ad
-    // placement, settings visibility and upgrade prompts.
-    // Verified 2026-10-07 against 4.87 (versionCode 48761, APKPure XAPK merged): all patches
-    // apply unchanged; TextraSmokeTest passes.
-    // Re-anchored 2026-10-19 on 4.87 (TextraSmokeTest + CLI disassembly): the license class is
-    // the one the preference registry instantiates for the "lc" key (new-instance before
-    // const-string "lc", ctor (String, int, SharedPreferences); sq.q in 4.87). Its ()Z getters
-    // are told apart by the state they test: intValue()==1 is forced true (licensed),
-    // intValue()==0 is forced false. No method names are used.
-    // 2026-10-19: older target 4.85 dropped (latest version only, owner).
-    // 2026-11-02 (GitHub #108, "4.87 crash on start"): the current Play build of 4.87
-    // (versionCode 48767, arm64) is now wrapped by the full PairIP native VM:
-    // com.pairip.application.Application.attachBaseContext runs VMRunner.setContext +
-    // SignatureCheck.verifyIntegrity, StartupLauncher.launch() runs in App.<clinit>, and
-    // libpairipcore.so ships for arm64-v8a. Emulator differential control: the Play-signed
-    // splits reach InitialSyncActivity, but any re-signed build (unpatched STOCK control AND
-    // the Enable Pro build) SIGSEGVs in libpairipcore.so ~2 s after start, before onCreate.
-    // That is Morphe's re-signing tripping the native tamper check, NOT this patch - the
-    // Enable Pro bytecode still applies and the smoke test passes. Same native-VM blocker as
-    // Zedge/Backdrops/HabitNow; the Java SignatureCheck.verifySignatureMatches force does not
-    // help there. Enable Pro should be withdrawn for the PairIP-wrapped Play build (see
-    // docs/patch-blocklist.md). Play app-signing cert (verified 2026-11-02):
-    // a93dd7bddbe5d1539d0450fda15dbcd28c793c390d5fcf04169a4f385c8aff82 (CN=Android, O=Google Inc.).
-    val COMPATIBILITY_TEXTRA = Compatibility(
-        name = "Textra",
-        packageName = "com.textra",
-        apkFileType = ApkFileType.APKM, // bundle-only on APKMirror and APKPure (checked 2026-10-07)
-        appIconColor = 0x5C6BC0,
-        targets = listOf(
-            AppTarget(version = "4.87", versionCode = 48761)
         )
     )
 
