@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.2.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.2.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**244** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-04
+> **[v1.0.0](https://github.com/Abilash-22/Xerc/releases/tag/v1.0.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;**89** apps&nbsp;&nbsp;•&nbsp;&nbsp;**253** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-12
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -56,7 +56,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/com.resultadosfutbol.mobile.png" width="20" height="20" alt=""> | **BeSoccer** | 🚫 🔑 2 | `6.7.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.resultadosfutbol.mobile) |
 | <img src="assets/icons/com.bleacherreport.android.teamstream.png" width="20" height="20" alt=""> | **Bleacher Report** | 🚫 🛡️ 🧩 3 | `11.13.0.39` | APKM | [Play](https://play.google.com/store/apps/details?id=com.bleacherreport.android.teamstream) |
 | <img src="assets/icons/club.boxbox.android.png" width="20" height="20" alt=""> | **BoxBox** | 🚫 🛡️ 💎 3 | `5.4.18` | APKM | [Play](https://play.google.com/store/apps/details?id=club.boxbox.android) |
-| <img src="assets/icons/in.cricketexchange.app.cricketexchange.png" width="20" height="20" alt=""> | **CREX** | 🚫 💎 2 | `26.10.09` | APKM | [Play](https://play.google.com/store/apps/details?id=in.cricketexchange.app.cricketexchange) |
+| <img src="assets/icons/in.cricketexchange.app.cricketexchange.png" width="20" height="20" alt=""> | **CREX** | 🚫 💎 🧩 11 | `26.10.09` | APKM | [Play](https://play.google.com/store/apps/details?id=in.cricketexchange.app.cricketexchange) |
 | <img src="assets/icons/ro.rcsrds.digisport.png" width="20" height="20" alt=""> | **Digi Sport** | 🚫 🛡️ 🔕 🧩 🧪 8 | `1.1.15` | APK | [Play](https://play.google.com/store/apps/details?id=ro.rcsrds.digisport) |
 | <img src="assets/icons/com.eurosport.png" width="20" height="20" alt=""> | **Eurosport** | 🚫 🛡️ 🧩 3 | `8.34.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.eurosport) |
 | <img src="assets/icons/eu.livesport.FlashScore_com.png" width="20" height="20" alt=""> | **Flashscore** | 🚫 🛡️ 🔕 🧩 6 | `26.11.4` | APKS | [Play](https://play.google.com/store/apps/details?id=eu.livesport.FlashScore_com) |
@@ -271,7 +271,7 @@ Verified on: `5.4.18`
 
 </details>
 <details>
-<summary><img src="assets/icons/in.cricketexchange.app.cricketexchange.png" width="16" height="16" alt=""> <b>CREX</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>in.cricketexchange.app.cricketexchange</code></summary>
+<summary><img src="assets/icons/in.cricketexchange.app.cricketexchange.png" width="16" height="16" alt=""> <b>CREX</b> &nbsp;·&nbsp; 11 patches &nbsp;·&nbsp; <code>in.cricketexchange.app.cricketexchange</code></summary>
 
 Verified on: `26.10.09`
 
@@ -279,6 +279,15 @@ Verified on: `26.10.09`
 |---|---|:-:|
 | 🚫 **Disable ads** | Removes all ads. Rewarded videos no longer give rewards. | ✅ |
 | 💎 **Enable Premium** | Unlocks Premium and removes ads. FanCode streams stay locked. | ✅ |
+| 🧩 **Hide Commentary poll** | Phase 1.1: collapses the poll cards (Who will win ...) in the Commentary tab. The rows are bound with a PollsViewHolder; they are hidden and given zero height instead of being bound, and the paths that would otherwise touch the never-bound poll (live payload updates and the poll's inner list) are guarded. | ✅ |
+| 🧩 **Hide For you extras** | Removes the Featured Series, More, Play Games and bottom search sections from the For you tab. The series and match list, the Follow card and the Fixtures button are not touched. | ✅ |
+| 🧩 **Hide Info sections** | Phase 1.1: removes the Who will win poll, Series Stats, Team Comparison, Avg Scores on Venue, Recent Matches on Venue and Points Table sections from the match screen's Info tab, using the app's own state for matches that have no data for them. Venue Stats, weather, squads, umpires and the other sections are not touched. | ✅ |
+| 🧩 **Hide Live tab poll, weather and head to head** | Phase 1.1: removes the Who will win poll, the Weather Conditions card and the Head to Head row from the match screen's Live tab (the pre-match list). The preview video and Top Headlines are not touched. | ✅ |
+| 🧩 **Hide Live tab sections** | Phase 1.1: removes the quiz, Latest Videos and Gaming Zone sections from the match screen's Live tab (LiveMatchFragment). Top Headlines, weather and the other sections are not touched. | ✅ |
+| 🧩 **Hide Matches extras** | Phase 1.1: removes the Trending Videos block (and its All Videos button) from the Matches Live tab, and the red NEW label and red dot over the bottom navigation. | ✅ |
+| 🧩 **Hide match Discussions** | Phase 1.1: removes the Discussions tab and the floating Discuss button from the match screen by switching off the flag the app already uses when discussions are disabled for a match. | ✅ |
+| 🧩 **Hide match tabs** | Phase 1.1: match screen keeps Info, Commentary, Scorecard and Points Table. Fantasy and Graphs are removed from the tab list. The Live tab (Match Summary on finished matches) and the Series Stats tab are kept in the pager but made invisible and moved last, because the rest of the screen calls into their fragments without null checks. | ✅ |
+| 🧩 **Matches only (hide bottom navigation)** | UI only. Hides the whole bottom navigation bar so the app stays on Matches, with the Live, For you, Upcoming and Finished tabs at the top (swipe or tap). The Menu screen is reached through the top-right three-line button. The bar's items are hidden, not removed, because HomeActivity looks them up by index. | ✅ |
 
 </details>
 <details>

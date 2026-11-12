@@ -1,3 +1,202 @@
+## 1.0.0 (2026-11-12)
+
+### Changes
+- New: Add Sofascore disable ads patch
+- New: Add Brave Origin patch and curate patch set to 7 apps
+- New: Add 365Scores, Livescore, IPTV, and FishBuddy patches
+- New: Add EasyNotes and LibrePods patches with smoke tests
+- New: **sofascore:** Re-anchor patches for 26.09.07
+- New: Add FairEmail, Tasker, Swift Backup, Aqua Mail and Weather Underground patches
+- New: **monefy:** Add Enable Premium patch and bump supported versions
+- Fixed: Resolve the Sofascore telemetry crash and FotMob+ fingerprint drift
+- Fixed: Make Aqua Mail premium apply and drop the unusable Swift Backup patch
+- New: Add Bluecoins, Flashscore, OneFootball and OsmAnd patches
+- Fixed: **fotmob:** Support 237.17536.20260911 by anchoring the getter on shape
+- Fixed: Re-verify every app against the latest builds and re-anchor four broken patches
+- New: Add Textra, jetAudio and Unified Remote patches
+- Fixed: **unifiedremote:** Force the local License.Status gate instead of RevenueCat
+- New: Add Futbin Disable ads patch
+- New: Add Pocket Color Wheel Disable ads patch
+- Fixed: Verify Sofascore, MyFitnessPal and 365Scores patches on their latest builds
+- Fixed: **anydesk:** Also force the license name and banner type (issue [#21](https://github.com/Abilash-22/Xerc/issues/21))
+- New: Add YouCut Enable Pro patch
+- New: Add Simple Radio and WiFi Analyzer patches
+- New: Add Pi Music Player patches
+- Fixed: **sofascore:** Keep Facebook SDK initialized so login works (issue [#24](https://github.com/Abilash-22/Xerc/issues/24))
+- New: Add Zedge Disable ads patch
+- Fixed: **anydesk:** Remove Enable Premium patch (issue [#23](https://github.com/Abilash-22/Xerc/issues/23))
+- Fixed: **sofascore:** Remove Block marketing notifications patch (issue [#25](https://github.com/Abilash-22/Xerc/issues/25))
+- Fixed: **zedge:** Remove Disable ads patch, PairIP shield (issue [#29](https://github.com/Abilash-22/Xerc/issues/29))
+- New: **sofascore:** Restore Block marketing notifications with push-delivery note (issue [#25](https://github.com/Abilash-22/Xerc/issues/25))
+- New: Add Shazam Disable telemetry patch
+- New: Add Podcast Republic Disable ads patch
+- New: Add Castbox Disable ads patch
+- New: Add Moon+ Reader Disable ads patch
+- Fixed: **aquamail:** Return a licensed snapshot from getLicenseData (issue [#16](https://github.com/Abilash-22/Xerc/issues/16))
+- New: Add SoundHound Disable ads patch
+- Fixed: Fail loudly when required patch anchors stop matching
+- Fixed: **iptv:** Switch ads to the built-in no-ads provider and unlock access control (issue [#35](https://github.com/Abilash-22/Xerc/issues/35))
+- Fixed: **iptv:** Enforce the playlist-settings lock
+- New: Add OneCricket, Fishing Points, AiScore and BeSoccer patches
+- New: Add Native Camera Enable Premium and license check patches
+- Fixed: **sofascore:** Support 26.09.28 and hide promotion banners
+- New: Add #Notepad Enable Premium and Disable ads patches
+- Fixed: **brave:** Support Brave 1.96.61
+- New: **brave:** Add experimental Disable telemetry, Disable ads and Hide promotional prompts patches
+- Fixed: Support latest app versions, re-anchor YouCut, Bluecoins and BoxBox, remove Saphe Link
+- Fixed: **iptv:** Stop Disable ads crashing on launch (issue [#35](https://github.com/Abilash-22/Xerc/issues/35))
+- Fixed: **youcut:** Drop patch — native integrity kill-gate is unpatchable (issue [#44](https://github.com/Abilash-22/Xerc/issues/44))
+- Fixed: **wunderground:** Stop ads returning after a few launches (issue [#45](https://github.com/Abilash-22/Xerc/issues/45))
+- New: **librera:** Add Disable ads patch
+- New: **alarmclock:** Add Disable ads patch for Alarm Clock Xtreme
+- New: **bizcal:** Add Disable ads patch for Business Calendar 2
+- New: **expertplayer:** Add Disable ads patch for TV Smarters Player Expert
+- New: **expertplayer:** Add experimental Enable Premium patch
+- New: **shazam:** Add Open in Morphe YouTube apps patch ([#48](https://github.com/Abilash-22/Xerc/issues/48))
+- Fixed: Correct APK file types and version strings for Morphe's APK finder
+- New: **smartwod:** Add Disable ads and Enable Premium patches for SmartWOD Timer
+- New: **bluemail:** Add Disable ads patch for BlueMail
+- New: **shared:** Add GmsCore support and Spoof signature builders
+- New: **365scores:** Add Enable Premium, Disable update prompts, GmsCore support and Spoof signature
+- Fixed: **shared:** Anchor GmsCore availability check on its signature warning and route Google ID requests to BeginSignIn
+- New: **sofascore:** Add GmsCore support and Spoof signature, block Firebase In-App Messaging
+- Fixed: **shared:** Clear stale GmsCore library fingerprint matches between patcher runs
+- New: **truecaller:** Add Truecaller 26.39.6 patches
+- New: **kakaotalk:** Add KakaoTalk 26.8.3 patches
+- Fixed: **flashscore:** Support 26.10.2 and point downloads to apkcube
+- Fixed: Support new versions of MyFitnessPal, Livescore, OsmAnd, Simple Radio, Shazam and Native Camera
+- New: **flashscore:** Add telemetry, rating, marketing-popup and update-prompt patches; extend Disable ads
+- New: **easylauncher:** Add Easy Homescreen 1.10.28 patches
+- New: **hevy:** Add Hevy 3.1.16 patches
+- New: **fotmob:** Unlock the exclusive app icons; updated to version 238.17794
+- Fixed: **boxbox:** Make Disable ads and Enable Premium work; updated to version 5.4.17
+- New: **crex:** Add CREX 26.10.06 patches
+- Fixed: **futbin:** Remove the 27.5 target, which was a malicious repack
+- New: **line:** Add LINE 26.15.1 patches
+- New: **flashscore:** Add Hide betting content patch
+- Fixed: **simpleradio:** Stop the crash on first launch; updated to version 6.2.4
+- Fixed: **kakaotalk:** Warn that Kakao Pay and certificates may not work
+- Fixed: **aiscore:** Restore goal alerts on patched builds
+- New: Add universal Remove screenshot restriction patch
+- Fixed: **futbin:** Block Nimbus and Anzu ads and remove empty ad slots; updated to version 27.06
+- Fixed: **truecaller:** Stop "premium expired" notices and Max resets; add tab hiding
+- New: **intervaltimer:** Add Interval Timer 2.3.30 patches
+- New: **duplila:** Add Duplila - Mirror Screen 5.1 patches
+- Fixed: Harden Disable ads against ad SDK crashes in 11 apps
+- New: **luckyclick:** Add LuckyClick 3.28 patches
+- New: **myfitnesspal:** Block Datadog telemetry; updated to version 26.41.0
+- New: **bizcal:** Add Unlock Pro and Disable telemetry; updated to version 2.55.7
+- New: **vesselfinder:** Add VesselFinder 6.7.8 ad removal
+- New: **wsj:** Add The Wall Street Journal ad removal
+- New: **truecaller:** Remove the call-list Premium promo row; add Hide Messages tab
+- New: Add the Heval Controls in-app settings framework
+- New: Add Brevent Enable Premium patch
+- New: **linkedin:** Add Heval Controls with a nav panel entry and Hide Puzzle Games
+- New: **moneycontrol:** Add Moneycontrol 14.6.2 ad removal (experimental)
+- New: **truecaller:** Add Fix T9 contact search and Hide Wear OS settings, hide the Settings Premium row
+- Fixed: **linkedin:** Remove LinkedIn support
+- New: **truecaller:** Disable ads also hides the contacts Premium row and stops ad syncs
+- New: **hyperion:** Add Hyperion Launcher 2.2.7 Enable Premium
+- New: **yahoosports:** Add Yahoo Sports 12.10.3 Disable ads and Hide betting promotions
+- New: **bluetoothfinder:** Add Bluetooth Scanner 1.9.3 Disable ads
+- New: **blescanner:** Add BLE Scanner 4.8 Disable ads
+- New: **ircodefinder:** Add IrCode Finder 14.17.0 (build 206) Disable ads
+- New: **prolauncher:** Add Pro Launcher 2.4.2 Enable Premium
+- New: **via:** Add Via 7.3.3 Disable telemetry
+- New: **digisport:** Add Digi Sport 1.1.15 patches
+- New: **guardian:** Add The Guardian 6.238.23405 patches
+- Fixed: **truecaller:** Keep the navigation bar space when only Calls is left
+- Fixed: Refuse injected smali that the patcher silently drops
+- New: **433:** Add 433 2.3.548 patches
+- New: **mailcom:** Add mail.com 9.18.3 patches
+- New: **eurosport:** Add Eurosport 8.33.0 patches
+- New: **lequipe:** Add L'Équipe 10.69.1 Disable ads (experimental)
+- New: **transfermarkt:** Add Transfermarkt 4.3.2 Disable ads and Disable telemetry
+- New: **bleacherreport:** Add Bleacher Report 11.12.0.33 Disable ads, Disable telemetry and Hide betting content
+- New: **firefoxfocus:** Add Firefox Focus 158.0 Add-on support, Enable about:config, Disable telemetry, Disable rating prompts and Hide promotional prompts
+- New: **firefox:** Add Firefox 158.0 Disable telemetry, Hide sponsored content, Enable about:config, Unlock secret settings, Hide promotional prompts and Keep background tabs loaded
+- Fixed: **gmscore:** Open the MicroG RE download page only once
+- New: **truecaller:** Add Hide business media, block the Offer Hub and more trackers, enable GmsCore support by default
+- Fixed: **truecaller:** Keep the classic call log swipe actions in Restore classic call log
+- New: **fotmob:** Add GmsCore support and Spoof signature for Sign in with Google
+- New: **shazam:** Add Spoof signature with a Spotify connection fix, and GmsCore support
+- Fixed: **kakaotalk, line:** Remove KakaoTalk and LINE support
+- Fixed: **sofascore, shazam, brave, truecaller:** Complete the telemetry, Web Discovery and server-backed premium gates
+- Fixed: **ads:** Make Disable ads block what it promises in Castbox, Podcast Republic, Pi Music Player, BeSoccer, Expert Player and Moneycontrol
+- Fixed: Fail loudly on drift and harden GmsCore support
+- Fixed: Keep only the latest verified version per app and correct the patch notes
+- New: **truecaller:** Add Disable contact upload
+- New: **wemuslim:** Add WeMuslim 3.5.4 support
+- Fixed: **shazam:** Open the Spotify login in a browser tab
+- Fixed: Shorten patch descriptions
+- New: **truecaller:** Add Show caller number in call log
+- Fixed: Match partial fingerprint strings by prefix or substring
+- Fixed: **iptv:** Remove IPTV support
+- Fixed: **truecaller:** Stop Enable Premium from crashing the Premium tab ([#77](https://github.com/Abilash-22/Xerc/issues/77))
+- Fixed: **onefootball:** Remove more in-feed ads
+- New: Upgrade to Morphe patcher 2.0.0
+- New: **truecaller:** Add Hide call log filters
+- New: Declare the original signing certificate for each supported app
+- New: **firefoxfocus:** Add Dark Reader to the Extensions manager
+- New: **truecaller:** Add Hide frequently called contacts and Hide important senders
+- New: **niagara:** Add Disable telemetry
+- New: **forzafootball:** Add Forza Football with Disable ads, Disable telemetry and Hide betting content
+- New: **niagara:** Add Enable Premium
+- New: **forzafootball:** Add Enable Premium and Spoof signature
+- New: **rarecam:** Add Enable Premium and Disable license check
+- New: **rtenews:** Add Disable ads
+- New: **upnote:** Add Enable Premium
+- New: **structured:** Add Enable Premium and Disable license check
+- New: **bookly:** Add Enable Premium
+- New: **minimalist:** Add Enable Premium
+- New: **droidcam:** Add Disable ads
+- New: **mango:** Add Enable Premium and Disable license check
+- New: **wemuslim:** Add Hide feed clutter
+- New: **taskito:** Add Enable Premium
+- New: **timetune:** Add Enable Premium
+- New: **bbcnews:** Add Disable ads
+- New: **drtv:** Add DRTV with Disable telemetry, Auto skip intro and Allow free rotation
+- New: **viaplay:** Add Viaplay with Disable telemetry and Skip ads
+- New: **bold:** Add Disable ads
+- New: **taskito:** Add Hide Premium tab
+- New: **fotmob:** Add Use system font
+- Fixed: **fotmob:** Correct the 240.17974 versionCode
+- New: **truecaller:** Add Swap call answer and decline buttons, updated to version 26.42.5
+- New: **truecaller:** Add Disable call button haptics
+- Fixed: **truecaller:** Guard the toggle override and button swap inserts
+- Fixed: **fotmob:** Use the device font in Use system font
+- New: **truecaller:** Swap the buttons in the incoming call notification too
+- Fixed: **fotmob:** Resolve the device font once and record the font hooks
+- New: **truecaller:** Add Heval Controls
+- Fixed: **truecaller:** Keep Heval Controls patches on Root Mount installs
+- New: **truecaller:** Add tab, call log and call screen switches to Heval Controls
+- New: **sofascore:** Add Heval Controls with sport, match tab and promo switches
+- New: **tasker:** Add GmsCore support for Google sign-in
+- Fixed: **librepods:** Remove LibrePods support
+- New: **gpsmapcamera:** Add GPS Map Camera Editor support
+- New: Rename Heval Controls to Patch settings
+- New: **gpsmapcamera:** Add GmsCore support so the map shows
+- Fixed: **truecaller:** Stop the swapped call notification cutting off its buttons
+- New: **fotmob:** Add Patch settings, animation and refresh switches, and lighter startup
+- New: **sofascore:** Add animation and widget refresh switches, and lighter startup
+- New: Add list pickers to Patch settings
+- New: **fotmob:** Add Hide countries
+- New: **truecaller:** Add Hide profile menu items ([#120](https://github.com/Abilash-22/Xerc/issues/120))
+- New: **sofascore:** Add Hide countries
+- Fixed: **truecaller:** Make the profile Premium banner helper callable from its renderers
+- Fixed: **sofascore:** Hide teams and players of hidden countries in search
+- Fixed: **sofascore:** Hide players of hidden countries and keep country names in the picker
+- New: Show country flags in the Hidden countries pickers
+- New: Load real flag images in the country pickers
+- New: **sofascore:** Add Hide competitions
+- New: **fotmob:** Add Hide competitions
+- New: Add DNS filter for Brave, Firefox and Firefox Focus ([#121](https://github.com/Abilash-22/Xerc/issues/121))
+- Fixed: **fotmob:** Mark bundled leagues loaded only after parsing
+- Fixed: **firefoxfocus:** Publish the add-on menu bridge safely across threads
+- Fixed: Necessary files
+
+**Download:** [patches-1.0.0.mpp](https://github.com/Abilash-22/Xerc/releases/download/v1.0.0/patches-1.0.0.mpp)
+
 ## 2.2.0 (2026-11-04)
 
 ### 🆕 New apps
