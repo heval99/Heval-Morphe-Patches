@@ -3528,7 +3528,8 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0xFFB700, // The icon's largest stroke (amber; with red and blue, on white).
         signatures = setOf("3df7f89d3b8d1315f05710c914fccbcf3a4e24980afddccb8dcebde90836a390"), // CN=Various Tu
-        targets = listOf(AppTarget(version = "7.3.3", versionCode = 20260823))
+        // 2026-11-13: updated to 7.4.1 (versionCode 20261113); signer unchanged; smoke test passed.
+        targets = listOf(AppTarget(version = "7.4.1", versionCode = 20261113))
     )
 
     // Added 2026-10-16 against ro.rcsrds.digisport 1.1.15 (versionCode 75, single universal APK;
