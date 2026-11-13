@@ -4911,7 +4911,41 @@ object Constants {
         signatures = setOf("ad0e198835238d37a5519b4cc50173c2a28a556b8806c3ab963fcbd516238d37"),
         targets = listOf(AppTarget(version = "1.0.32", versionCode = 90))
     )
+
+    // 2026-11-13: new app, ported from bearinmindcat/morphe-patches (GPL-3.0) commit 5f79152
+    // (v2.9.6), the ten Samsung Keyboard patches plus their dependency patches (system access,
+    // Android 13 Java calls, language downloads, SPR icons, One UI member shims). Verified here on
+    // 5.9.40.75 (versionCode 594075300, APKMirror arm64-v8a nodpi build; signer CN=Samsung Cert,
+    // O=Samsung Corporation, cert SHA-256 34df0e7a...900a42, accepted by the owner 2026-11-13):
+    // every patch applies on the real matcher and SamsungKeyboardSmokeTest asserts the emitted
+    // bytecode. Anchors are Android/Samsung framework calls (Settings, Context, sem* members,
+    // SemCscFeature), the kept HoneyBoardService and ScpmReceiver classes, and log/error strings
+    // the keyboard prints (e.g. "Tracker is not initialized, status : ", "getGifCp ",
+    // "certification failed"), never R8 names. Runtime NOT_RUN. Risk: the extension's 47 stand-ins
+    // for One UI classes and the sem* shims are version-specific (names and signatures this build
+    // uses), so a newer keyboard can pass the patcher and still fail only at runtime on a non-One UI ROM.
+    // 2026-11-13: five feature patches added on 5.9.40.75 (Bigger clipboard history, Clipboard columns,
+    // Swipe cursor control, One-handed keyboard, Restore key vibration). Anchors: the Clip entity
+    // getters + ArrayList.get in the clipboard enforcer (cap = the int static it reads from another
+    // class, set in that class's <clinit>), ClipboardViewModel.getColCount, the floating-feature keys
+    // SEC_FLOATING_FEATURE_SIP_SUPPORT_CURSOR_CONTROL / ..._COMMON_CONFIG_ONEHAND_MODE_POLICY in one
+    // <clinit> (first boolean store after each key forced true) and the "vib is off" gate (its flag
+    // field's store in the same <clinit>). All FingerprintProbe OK-unique; SamsungKeyboardSmokeTest
+    // asserts the emitted bytecode. Runtime NOT_RUN.
+    // 2026-11-13: two opt-in patches added on 5.9.40.75 (Toolbar item count, Autofill in any field).
+    // Anchors: the toolbar cap is the public final ()I with a packed-switch and the literals 8/4/7,
+    // cross-checked against the saved-toolbar loader ("loadUserSet" + "edit_toolbar": it holds a field
+    // typed as the cap's class and calls the cap by name through an interface); every 7/8 constant in it
+    // becomes the chosen count. The sibling ()I that also answers 8 is the page size of the hidden-items
+    // grid (used as an index divisor with 4/8 columns), so it is left alone. Autofill: the
+    // InlineSuggestionsResponse callback with the "Cursor is not at first position, skipping suggestions"
+    // log; the CharSequence.length() result is zeroed before its if-lez. FingerprintProbe OK-unique.
+    val COMPATIBILITY_SAMSUNG_KEYBOARD = Compatibility(
+        name = "Samsung Keyboard",
+        packageName = "com.samsung.android.honeyboard",
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x3E91FF,
+        signatures = setOf("34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"), // CN=Samsung Cert, O=Samsung Corporation
+        targets = listOf(AppTarget(version = "5.9.40.75", versionCode = 594075300))
+    )
 }
-
-
-
