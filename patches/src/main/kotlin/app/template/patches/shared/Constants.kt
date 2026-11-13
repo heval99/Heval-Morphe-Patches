@@ -5038,4 +5038,22 @@ object Constants {
         signatures = setOf("a6b7f6a15459bd7570c1dcfcd74fee577b113ea7b1610169c01de0aa3a6a814a"),
         targets = listOf(AppTarget(version = "26.16.1", versionCode = 800011534))
     )
+
+    // Checked 2026-11-13 against nextapp.fx 9.1.0.8 (versionCode 9108, APKPure bundle merged;
+    // signer CN=Tod Liebeck, OU=android.nextapp.com, O=NextApp Inc., cert SHA-256
+    // 02f79730...c677). The Play account has not acquired it (paid/region), so the APKPure build is
+    // the source; the signer matches the developer's.
+    //   - Enable Premium: Plus is a client-side licence check. One (Context) -> boolean method
+    //     reads "plus_json" + "plus_signature" from <package>_license SharedPreferences and verifies
+    //     the signed payload, with the separate nextapp.fx.rk licence app (signature match) as the
+    //     second source; it is forced to true. Play Billing and purchases are untouched.
+    // Smoke-tested and bytecode-verified; NOT run on a device.
+    val COMPATIBILITY_FXEXPLORER = Compatibility(
+        name = "FX File Explorer",
+        packageName = "nextapp.fx",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x2E7D32,
+        signatures = setOf("02f79730223f454ccd108414ec063618b762a4768aedfb64462d8416f417c677"), // O=NextApp, Inc.
+        targets = listOf(AppTarget(version = "9.1.0.8", versionCode = 9108))
+    )
 }
