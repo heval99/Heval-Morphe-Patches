@@ -5046,6 +5046,12 @@ object Constants {
     // () -> boolean answers whether it equals the Plus code 0x10382 (31 feature call sites:
     // Quickbar, Shutters, covers, extra grids, onboarding and settings). "Enable Premium" forces
     // that method true. Billing and the purchase flow are untouched.
+    //   - Disable ads: the native ad loads through AdMobAdHandle.d(), the only concrete AdHandle
+    //     and the only caller of MobileAds in the app; it returns at once, so nothing requests an
+    //     ad and no other MobileAds static can throw (rule 9).
+    //   - Disable telemetry: Crashlytics is the only telemetry SDK (the app's logger calls log() and
+    //     recordException(), both no-oped) and the manifest switches stop automatic crash/session
+    //     collection. The aapt2 string diff against stock is empty (33585 string lines, 0 changed).
     // Smoke-tested and bytecode-verified; NOT run on a device.
     val COMPATIBILITY_ACTIONLAUNCHER = Compatibility(
         name = "Action Launcher",
@@ -5064,6 +5070,8 @@ object Constants {
     //     reads "plus_json" + "plus_signature" from <package>_license SharedPreferences and verifies
     //     the signed payload, with the separate nextapp.fx.rk licence app (signature match) as the
     //     second source; it is forced to true. Play Billing and purchases are untouched.
+    //   - No ad SDK and no telemetry SDK: the only billing is Play Billing for Plus, so there is
+    //     nothing for Disable ads or Disable telemetry to hook.
     // Smoke-tested and bytecode-verified; NOT run on a device.
     val COMPATIBILITY_FXEXPLORER = Compatibility(
         name = "FX File Explorer",
