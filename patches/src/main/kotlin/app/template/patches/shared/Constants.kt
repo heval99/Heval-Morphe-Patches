@@ -5039,6 +5039,23 @@ object Constants {
         targets = listOf(AppTarget(version = "26.16.1", versionCode = 800011534))
     )
 
+    // Checked 2026-11-13 against com.actionlauncher.playstore 53.0 (versionCode 53000001, Google
+    // Play splits merged; signer cert SHA-256 5f8dbfbe...41a2; Play download). Plus is bought with
+    // Play Billing and decided on-device: the purchase mapping (al3_plus, al_plus_ex,
+    // al3_plus_and_donate_1, the supporter packs) stores one integer purchase code, and a single
+    // () -> boolean answers whether it equals the Plus code 0x10382 (31 feature call sites:
+    // Quickbar, Shutters, covers, extra grids, onboarding and settings). "Enable Premium" forces
+    // that method true. Billing and the purchase flow are untouched.
+    // Smoke-tested and bytecode-verified; NOT run on a device.
+    val COMPATIBILITY_ACTIONLAUNCHER = Compatibility(
+        name = "Action Launcher",
+        packageName = "com.actionlauncher.playstore",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x009688,
+        signatures = setOf("5f8dbfbee8b6372d3a515ab6f748fa894325ea40568ed6036a55f77cbcab41a2"),
+        targets = listOf(AppTarget(version = "53.0", versionCode = 53000001))
+    )
+
     // Checked 2026-11-13 against nextapp.fx 9.1.0.8 (versionCode 9108, APKPure bundle merged;
     // signer CN=Tod Liebeck, OU=android.nextapp.com, O=NextApp Inc., cert SHA-256
     // 02f79730...c677). The Play account has not acquired it (paid/region), so the APKPure build is
