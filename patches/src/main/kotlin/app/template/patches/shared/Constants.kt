@@ -2846,7 +2846,11 @@ object Constants {
         // was removed from the app (no com.amplitude classes, no AmplitudeAnalyticsService), so the
         // telemetry patch no longer hooks it; the other five patches apply unchanged. Smoke test
         // green and CLI without -f applied all six.
-        targets = listOf(AppTarget(version = "1.10.31", versionCode = 11031))
+        // 2026-11-13: updated to 1.10.33 (versionCode 11033, same Play signer). No re-anchor needed:
+        // EasyLauncherSmokeTest green on the new APK and the CLI without -f applied all six patches
+        // (28 changed classes). Spot-disassembled: ads gate returns false, rating prompt gates
+        // return false, promo configs and sponsored getters forced. Runtime not run.
+        targets = listOf(AppTarget(version = "1.10.33", versionCode = 11033))
     )
 
     // Verified 2026-10-13 against in.cricketexchange.app.cricketexchange 26.10.06 (versionCode
