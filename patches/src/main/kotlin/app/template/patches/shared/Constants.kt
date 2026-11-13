@@ -3959,13 +3959,18 @@ object Constants {
     // engine view's topMargin). A code half now makes enableDynamicBehavior call showAsFixed, and
     // showAsFixed and the fullscreen handler (FullScreenIntegration$feature$2) write bottomMargin
     // instead. Hide on scroll is off while the bar is at the bottom.
+    // 2026-11-13: updated to version 160.0 (versionCode 403082131, Play arm64, same Mozilla signer).
+    // 160 wraps the Compose menu item title: StandardMenuItem now takes MenuItemTitle(Text) instead
+    // of the Text, so the Add-on support extension (AddonsMenu) wraps the title when MenuItemTitle
+    // exists and still passes the bare Text on 159 and older. The other patches apply unchanged.
+    // Both FirefoxFocus smoke tests and the CLI without -f pass; not runtime-tested.
     val COMPATIBILITY_FIREFOX_FOCUS = Compatibility(
         name = "Firefox Focus",
         packageName = "org.mozilla.focus",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x7542E5, // The icon's purple.
         signatures = setOf("6203a473be36d64ee37f87fa500edbc79eab930610ab9b9fa4ca7d5c1f1b4ffc"), // CN=Release Engineering, O=Mozilla Corporation
-        targets = listOf(AppTarget(version = "159.0.1", versionCode = 403061757))
+        targets = listOf(AppTarget(version = "160.0", versionCode = 403082131))
     )
 
     // Written 2026-10-18 against org.mozilla.firefox 158.0 (versionCode 2016189054 for x86_64 and
