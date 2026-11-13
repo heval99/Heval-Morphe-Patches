@@ -1603,7 +1603,8 @@ object Constants {
         appIconColor = 0x1E88E5,
         signatures = setOf("cdf4e1c31c41a55ed72896bf443ce56d50fb34bb933e3189b3ddc2609c90d8f9"), // CN=Ivan Ivanenko
         // 2026-11-11: updated to 10.0.31 (versionCode 7572): all fingerprints unique on the real matcher; smoke test passed.
-        targets = listOf(AppTarget(version = "10.0.31", versionCode = 7572))
+        // 2026-11-13: updated to 10.0.35 (versionCode 7588): signer unchanged (CN=Ivan Ivanenko); smoke test and CLI patch verified.
+        targets = listOf(AppTarget(version = "10.0.35", versionCode = 7588))
     )
 
     // Verified 2026-10-10 against com.alarmclock.xtreme.free 26.06.0 (versionCode 70004221) from
