@@ -5081,4 +5081,25 @@ object Constants {
         signatures = setOf("02f79730223f454ccd108414ec063618b762a4768aedfb64462d8416f417c677"), // O=NextApp, Inc.
         targets = listOf(AppTarget(version = "9.1.0.8", versionCode = 9108))
     )
+
+    // Checked 2026-11-13 against com.beeper.android 4.64.0 (versionCode 1744163566, Google Play
+    // arm64-v8a split set merged with APKEditor; signer CN=Eric Migicovsky, O=Beeper, cert SHA-256
+    // 786f42f5...31f8; Play download). Native Kotlin/Compose app on the Beeper SDK.
+    //   - Enable Premium: the plan is described by the backend (ChatAccountsRepo maps the server's
+    //     "max-accounts" value onto BeeperPlan), so the client-side caps are forced to -1
+    //     (unlimited) on every concrete BeeperPlan subclass, and the single freebie consumer
+    //     (incognito / remind-later / scheduled-message / voice-transcription / labels / blasts)
+    //     returns at once, so its local counter never advances: the app does not pre-block a
+    //     free-tier feature and sends no consume request.
+    //   Server-side caveat: the backend still owns the plan and the per-feature allowances, so
+    //     operations it validates itself (bridge provisioning, AI transcription) may still be
+    //     refused. Smoke-tested and bytecode-verified; NOT run on a device.
+    val COMPATIBILITY_BEEPER = Compatibility(
+        name = "Beeper",
+        packageName = "com.beeper.android",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x1F6FEB,
+        signatures = setOf("786f42f5e93e8a7c111fde4eab018ab490666deddca7cce4bc7006f52a6f31f8"), // O=Beeper
+        targets = listOf(AppTarget(version = "4.64.0", versionCode = 1744163566))
+    )
 }
