@@ -2775,7 +2775,17 @@ object Constants {
         appIconColor = 0x101012,
         signatures = setOf("add9aa0d804a1a14a04119d44fa7cb4cc229c86322991eda526f5455d11580ef"), // Google Play app signing key
         // 2026-11-11: updated to 3.2.6 (versionCode 3440487): all fingerprints unique on the real matcher; smoke test passed.
-        targets = listOf(AppTarget(version = "3.2.6", versionCode = 3440487))
+        // 2026-11-13: updated to 3.2.7.1 (versionCode 3449157, same signer). The old 3.2.2 anchors
+        // (Mg.e.r0, a$a.t / a$a.s) were replaced by two re-anchors in "Block telemetry & trackers":
+        // Amplitude CachedInfo <init> (strings getAdvertisingIdInfo / limit_ad_tracking, both ad-ID
+        // readers inlined) has its trackAdid flag (first Z iget of the outer provider class tested by
+        // the next branch) forced to 0; Branch has no isTrackingDisabled any more, so the tracking
+        // field (stored from "bnc_tracking_state" in the Branch constructor) is read directly and
+        // every iget-boolean of it (10 reads in 10 methods, incl. the RN bridge isTrackingDisabled)
+        // is forced to true, so the reload that R8 inlined into onActivityStopped (a store) can no
+        // longer turn tracking back on after the app goes to the background. Verified: FingerprintProbe on
+        // the real matcher, smoke test, CLI without -f, apkanalyzer disassembly.
+        targets = listOf(AppTarget(version = "3.2.7.1", versionCode = 3449157))
     )
 
     // Verified 2026-10-13 against easy.launcher 1.10.28 (versionCode 11028, the owner's APKMirror
