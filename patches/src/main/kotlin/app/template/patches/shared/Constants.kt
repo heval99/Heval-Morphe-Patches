@@ -5094,6 +5094,10 @@ object Constants {
     //   - Disable telemetry: Sentry's internals are R8-renamed but SentryInitProvider keeps its
     //     class name and holds the same init call the app's own crash logging uses; that shared
     //     init returns at once. The stock manifest already sets io.sentry.auto-init=false.
+    //   - Ads/telemetry scan (2026-11-13): no ad SDK at all, and the bundled Firebase is
+    //     Messaging + Installations only (push) - no Analytics, Crashlytics, Sessions or
+    //     measurement - so Sentry is the whole telemetry surface and there is nothing for a
+    //     Disable ads patch to hook.
     //   - GmsCore support (opt-in, added 2026-11-13): the shared builder with the MicroG RE check
     //     at the start of MainActivity.onCreate, so push (FCM, BooperFirebaseMessagingService) can
     //     register through MicroG RE on a re-signed build. The aapt2 string diff against stock is
