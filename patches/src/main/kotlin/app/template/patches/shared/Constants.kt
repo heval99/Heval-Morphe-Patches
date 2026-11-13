@@ -4940,6 +4940,10 @@ object Constants {
     // grid (used as an index divisor with 4/8 columns), so it is left alone. Autofill: the
     // InlineSuggestionsResponse callback with the "Cursor is not at first position, skipping suggestions"
     // log; the CharSequence.length() result is zeroed before its if-lez. FingerprintProbe OK-unique.
+    // 2026-11-13: crash guard in "Enable non-One UI ROM support" (5.9.40.75): the sticker panel's "download more"
+    // click (onClick(View) with the "samsungapps://CategoryList/0000005276" string, FingerprintProbe OK-unique) and any
+    // other method building a samsungapps:// link get their try-less Context.startActivity moved to
+    // SystemAccess.startActivitySafely (no Galaxy Store -> nothing opens instead of ActivityNotFoundException).
     val COMPATIBILITY_SAMSUNG_KEYBOARD = Compatibility(
         name = "Samsung Keyboard",
         packageName = "com.samsung.android.honeyboard",

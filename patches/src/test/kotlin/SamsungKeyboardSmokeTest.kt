@@ -144,6 +144,17 @@ class SamsungKeyboardSmokeTest {
             "HoneyBoardService.onCreate does not call OneUi.keyboardCreated first: $first",
         )
 
+        // --- Galaxy Store sticker link: the click handler found by its URL and shape goes through the safe starter ---
+        val stickerClicks = app.methodsWhere { m ->
+            m.name == "onClick" && m.params() == listOf("Landroid/view/View;") &&
+                "samsungapps://CategoryList/0000005276" in m.strings()
+        }
+        assertEquals(1, stickerClicks.size, "expected one sticker store click handler, got ${stickerClicks.size}")
+        val stickerCalls = stickerClicks.single().instructions().mapNotNull { it.call() }
+        assertTrue(stickerCalls.any { it.definingClass == "${EXT}SystemAccess;" && it.name == "startActivitySafely" },
+            "the sticker store click does not call SystemAccess.startActivitySafely")
+        assertTrue(stickerCalls.none { it.name == "startActivity" }, "the sticker store click still calls startActivity directly")
+
         // --- Clipboard caller check and provider signature checks return early for the keyboard itself ---
         fun assertEarlySelfCheck(method: Method, helper: String, label: String) {
             val code = method.instructions()

@@ -5,6 +5,7 @@ package app.template.extension.samsungkeyboard;
 
 import android.app.Application;
 import android.content.ContentResolver;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -433,6 +434,15 @@ public final class SystemAccess {
         } catch (SecurityException e) {
             refused(intent.getAction(), e);
             c.sendBroadcast(intent);
+        }
+    }
+
+    /** A Galaxy Store link (the sticker panel's "download more") on a phone without Galaxy Store: nothing opens. */
+    public static void startActivitySafely(Context c, Intent intent) {
+        try {
+            c.startActivity(intent);
+        } catch (ActivityNotFoundException | SecurityException e) {
+            refused(String.valueOf(intent.getData()), e);
         }
     }
 
