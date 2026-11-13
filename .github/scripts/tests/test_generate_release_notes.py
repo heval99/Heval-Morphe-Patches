@@ -89,6 +89,15 @@ class RenderNotesTest(unittest.TestCase):
         self.assertNotIn("Add GPS Map Camera Editor", text)
         self.assertNotIn("### 🔧 Other", text)
 
+    def test_credits_come_last_before_the_download_link(self):
+        credit = "Samsung Keyboard base from https://github.com/someone/patches (GPL-3.0)"
+        text = notes.render_notes(OLD, NEW, [], REPO, "1.1.0", DATE, {}, [credit])
+        self.assertIn(f"### 🙏 Credits\n- {credit}\n\n**Download:**", text)
+
+    def test_no_credits_section_without_credits(self):
+        self.assertNotIn("Credits", render([]))
+        self.assertNotIn("Credits", notes.render_fallback([], REPO, "1.1.0", DATE))
+
     def test_removed_app(self):
         text = render(["fix(librepods): remove LibrePods support"])
         self.assertIn("### 🗑️ Removed apps\n- LibrePods", text)
@@ -242,6 +251,22 @@ class GitIntegrationTest(unittest.TestCase):
         self.assertIn("- New: Add Heval Controls ([#7](https://github.com/owner/repo/issues/7))", text)
         self.assertIn("| 365Scores | `14.9.8` | `15.0.0` |", text)
         self.assertIn("### 🗑️ Removed apps\n- LibrePods", text)
+
+    def test_ported_from_trailers_become_credits(self):
+        self.commit("feat(samsungkeyboard): add Samsung Keyboard\n\n"
+                    "Ported-from: Samsung Keyboard base from someone/patches (GPL-3.0)")
+        self.commit("fix(samsungkeyboard): tidy\n\n"
+                    "Ported-from: Samsung Keyboard base from someone/patches (GPL-3.0)")
+        new_list = self.root / "new.json"
+        new_list.write_text(json.dumps(NEW), encoding="utf-8")
+        text = self.run_main("--previous-tag", self.first, "--new-list", str(new_list))
+        self.assertIn(
+            "### 🙏 Credits\n- Samsung Keyboard base from someone/patches (GPL-3.0)\n\n**Download:**",
+            text,
+        )
+        self.assertEqual(text.count("someone/patches"), 1)
+        fallback = self.run_main()
+        self.assertIn("### 🙏 Credits\n- Samsung Keyboard base from someone/patches", fallback)
 
     def test_first_release_falls_back_to_the_commit_list(self):
         text = self.run_main()
