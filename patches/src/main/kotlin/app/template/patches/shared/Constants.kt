@@ -4155,20 +4155,29 @@ object Constants {
         targets = listOf(AppTarget(version = "1.22.8v236", versionCode = 236))
     )
 
-    // Verified 2026-10-27 against com.dev47apps.obsdroidcam 8.2 (versionCode 575, APKPure single APK;
-    // signer O=DEV47APPS, C=CA, cert SHA-256 c7190a0f...27f3). App classes are R8-mangled with random
-    // unicode names, so the anchors are the ad SDK library APIs. Ads run through AppLovin MAX
-    // (MaxAdView, MaxInterstitialAd, MaxRewardedAd, MaxAppOpenAd, MaxNativeAdLoader) and Google Mobile
-    // Ads, with InMobi as a MAX adapter; the Meta/Unity/Vungle/Pangle/IronSource entry classes are not
-    // in the APK. Disable ads neuters AppLovinSdk.initialize and InMobiSdk.init, neutralises every
-    // MobileAds static (rule 9), returns from every GMA/MAX load/show, and keeps MaxAdView GONE.
+    // Updated 2026-11-13 to 10.0 (versionCode 83; the old 575 was a typo, 8.2 was really 75). Signer
+    // unchanged. The developer ships armeabi-v7a only (8.2 too), so the owner's arm64-v8a rule cannot
+    // apply to this app. Re-anchored for 10.0: the GMA public method names are unicode-obfuscated
+    // (class names intact), so MobileAds is neutralised without a required name (every concrete static
+    // void, rule 9; initialize(Context, OnInitializationCompleteListener) is also required by shape) and
+    // the GMA loads are found by shape (concrete void taking AdRequest / AdManagerAdRequest on
+    // BaseAdView, AppOpenAd and RewardedAd required, others optional). The rewarded flow may show a
+    // waiting UI because the init callback never fires (same as 8.2; not runtime-tested).
+    // Earlier verification 2026-10-27 against 8.2 (APKPure single APK; signer O=DEV47APPS, C=CA, cert
+    // SHA-256 c7190a0f...27f3). App classes are R8-mangled with random unicode names, so the anchors
+    // are the ad SDK library APIs. DroidCam calls Google Mobile Ads directly (initialize after UMP
+    // consent, BaseAdView.loadAd, AppOpenAd, RewardedAd); AppLovin, InMobi and Vungle
+    // (com.vungle.ads.VungleAds and the GMA Vungle adapter are present in 10.0) are GMA mediation
+    // adapters, and the only MAX caller is GMA's AppLovinWaterfallAppOpenAd. The Meta/Unity/Pangle/
+    // IronSource entry classes are not in the APK. Disable ads neuters AppLovinSdk.initialize and
+    // InMobiSdk.init, returns from every MAX load/show, and keeps MaxAdView GONE.
     val COMPATIBILITY_DROIDCAM = Compatibility(
         name = "DroidCam",
         packageName = "com.dev47apps.obsdroidcam",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1F8B4C,
         signatures = setOf("c7190a0fe7b87e46212ae3ddf26dd31435c5aa9558bfeb442f2f64386fff27f3"),
-        targets = listOf(AppTarget(version = "8.2", versionCode = 575))
+        targets = listOf(AppTarget(version = "10.0", versionCode = 83))
     )
 
     // Verified 2026-10-27 against app.pinya.mango 1.64 (versionCode 64, APKPure XAPK merged with
