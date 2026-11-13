@@ -5094,6 +5094,10 @@ object Constants {
     //   - Disable telemetry: Sentry's internals are R8-renamed but SentryInitProvider keeps its
     //     class name and holds the same init call the app's own crash logging uses; that shared
     //     init returns at once. The stock manifest already sets io.sentry.auto-init=false.
+    //   - GmsCore support (opt-in, added 2026-11-13): the shared builder with the MicroG RE check
+    //     at the start of MainActivity.onCreate, so push (FCM, BooperFirebaseMessagingService) can
+    //     register through MicroG RE on a re-signed build. The aapt2 string diff against stock is
+    //     empty (4832 string lines, 0 changed).
     //   Server-side caveat: the backend still owns the plan and the per-feature allowances, so
     //     operations it validates itself (bridge provisioning, AI transcription) may still be
     //     refused. Smoke-tested and bytecode-verified; NOT run on a device.

@@ -13,6 +13,8 @@ private const val VERSION = "4.64.0"
 private const val PLAN_PREFIX = "Lcom/beeper/chat/booper/connect/viewmodel/BeeperPlan$"
 private const val PLANS = 5
 private const val SENTRY_INIT_PROVIDER = "Lio/sentry/android/core/SentryInitProvider;"
+private const val MAIN_ACTIVITY = "Lcom/beeper/chat/booper/MainActivity;"
+private const val SIGNATURE_SHA1 = "d6ef1da902f51ff60deb84e4bf80ef71cc00c090"
 
 class BeeperSmokeTest {
 
@@ -33,7 +35,7 @@ class BeeperSmokeTest {
             workDir = workDir,
             pkg = PKG,
             version = VERSION,
-            patchNames = setOf("Enable Premium", "Disable telemetry"),
+            patchNames = setOf("Enable Premium", "Disable telemetry", "GmsCore support"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
 
@@ -100,5 +102,12 @@ class BeeperSmokeTest {
         check(initMethod.instructions().firstOrNull()?.opcode == Opcode.RETURN_VOID) {
             "${init.definingClass}->${init.name} does not return at once"
         }
+
+        // 4. GmsCore support: the spoofing metadata and the MicroG RE check are in place.
+        assertGmsCoreSupport(
+            classes, workDir, PKG, MAIN_ACTIVITY, SIGNATURE_SHA1,
+            expectAdsClasses = false,
+            expectServiceCheck = false,
+        )
     }
 }
