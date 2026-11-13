@@ -4789,6 +4789,8 @@ object Constants {
     //     statics keep working.
     //   - Disable telemetry: Chartbeat Tracker.setupTracker (both overloads) is no-oped, and the
     //     Bugsnag start call inside BugsnagContentProvider.onCreate is replaced with nop.
+    // Updated 2026-11-13 to 2026.11-10189:RELEASE (versionCode 10189), same signer; the patches
+    // applied unchanged (smoke test + CLI patch without -f).
     // Smoke-tested; not run on a device.
     val COMPATIBILITY_TV2NYHEDER = Compatibility(
         name = "TV 2 Nyheder",
@@ -4796,7 +4798,7 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xE30613, // TV 2 red.
         signatures = setOf("ed472cfc59a2e354adafd9198e72ab1ada44ce088d77c5d0b58fbe8c233ee819"), // O=TV 2
-        targets = listOf(AppTarget(version = "2026.10-10188:RELEASE", versionCode = 10188))
+        targets = listOf(AppTarget(version = "2026.11-10189:RELEASE", versionCode = 10189))
     )
 
     // Verified 2026-11-08 against dk.tv2.tv2play 2026.10-1 (versionCode 90851, Google Play
