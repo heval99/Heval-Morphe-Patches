@@ -3339,7 +3339,11 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1084F7, // The icon's Bluetooth blue (on black).
         signatures = setOf("62799dcaf6986c6c512397a1d0bcb7f2f212685f3f97f8c5f3f5084f8df0e380"), // CN=Zoltan Pallagi
-        targets = listOf(AppTarget(version = "1.9.3", versionCode = 93))
+        // 2026-11-13: updated to 1.9.4 (versionCode 94, same signer). No re-anchor needed:
+        // BluetoothFinderSmokeTest green on the new APK, the CLI without -f applied Disable ads and
+        // changed 1 class, and the disassembled listener (still ib0.a(q40)) starts with return-void.
+        // Runtime not run on 1.9.4.
+        targets = listOf(AppTarget(version = "1.9.4", versionCode = 94))
     )
 
     // Smoke-tested 2026-10-15 against com.macdom.ble.blescanner 4.8 (versionCode 74, single APK,
