@@ -4072,13 +4072,32 @@ object Constants {
     // patched none; no Datadog / comScore / Branch / DoubleClick traffic; Braze push token
     // registered on the patched build. Betting removal not seen on screen: no game tested showed
     // odds in stock either. ANRs on both builds came from the emulator's software video decode.
+    // Updated 2026-11-13 to 11.14.0.35 (versionCode 54488, APKMirror bundle merged; signer
+    // unchanged, cert 60baa405...a4f0). Work started 2026-11-13. Re-anchored for this build:
+    //   - Disable ads steps 1 and 3: R8 inlined Result.failure(Throwable) into a new kotlin
+    //     Result.Failure(Throwable) (Lkotlin/t$a;), so the failure Result is copied from whichever
+    //     shape the method uses (static call or inlined constructor).
+    //   - Disable ads step 2: the feed ad inserter lost its "content"/"ads"/"channelAdUnit"
+    //     null-check strings (now getClass() calls); found by AdContentInserterImpl.kt plus shape.
+    //   - Launch tasks: the LaunchTask base lost its "...launchtaskmanager.LaunchTask" cast message;
+    //     found as the abstract LaunchTask.kt class whose equals reads its own config field.
+    //   - Hide betting content step 1: the Stats item mapper moved from a static ChannelItemsMapper.kt
+    //     method a(Stats, model) to an instance GamecastItemMapperImpl.kt method a(model, Stats); the
+    //     Stats register (p2, above v15) is now computed from the parameter index.
+    // Verified: BleacherReportSmokeTest passes (1 run, 0 skipped) for all three patches; morphe-cli
+    // 1.19.0 without -f applied Disable ads, Disable telemetry and Hide betting content; every step
+    // was disassembled in the patched APK with apkanalyzer (ad config failure, feed inserter, loadAd /
+    // loadSplashAd / Amazon init, AdSetup and SplashAd launch tasks, MobileAds statics, MParticle,
+    // Datadog and comScore launch tasks, comScore statics, Crashlytics, 3 Branch reads, Beam queue
+    // add and monitor, Braze forwarding, Stats mapper, Odds and TrendingBets mappers, Scores
+    // betting fields). Runtime not run.
     val COMPATIBILITY_BLEACHER_REPORT = Compatibility(
         name = "Bleacher Report",
         packageName = "com.bleacherreport.android.teamstream",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x1A1A1A, // The adaptive icon's background colour.
         signatures = setOf("60baa40540f4950406f327d85761d6e4c533a169d7129e20dfac56fb3124a4f0"), // CN=Sam Parnell, O=Bleacher Report
-        targets = listOf(AppTarget(version = "11.13.0.39", versionCode = 54189))
+        targets = listOf(AppTarget(version = "11.14.0.35", versionCode = 54488))
     )
 
     // Verified 2026-10-27 against com.getupnote.android 9.22.8 (versionCode 360, APKPure XAPK merged
