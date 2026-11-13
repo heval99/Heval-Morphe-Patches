@@ -4980,4 +4980,32 @@ object Constants {
         signatures = setOf("34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"), // CN=Samsung Cert, O=Samsung Corporation
         targets = listOf(AppTarget(version = "5.9.40.75", versionCode = 594075300))
     )
+
+    // Checked 2026-11-13 against com.piriform.ccleaner 26.16.1 (versionCode 800011534, Google Play
+    // arm64-v8a split set merged; signer CN=Piriform Ltd, cert SHA-256 a6b7f6a1...814a). Avast
+    // Cleaner codebase, 361k methods; app-owned classes keep readable package names while members
+    // use private-use Unicode glyphs, so every hook is anchored on shape and callee.
+    //   - Enable Premium: the single no-arg boolean on PremiumServiceImpl that reads the active
+    //     flag of AclLicenseInfo in the billing license flow, with 75 call sites (feature gates,
+    //     dashboard cards, adviser, the ad service). It returns true now. Play Billing and the
+    //     Avast account are untouched; the product type getter only feeds two adviser cards.
+    //   - Disable ads: GMA only. BaseAdService and the home feed's AdMobDataSource initialize GMA
+    //     and load every format; the MAX/Meta/IronSource/Unity/Vungle/Mintegral/Pangle/InMobi
+    //     classes are mediation adapters with no app call sites. areAdsAllowed() is forced false,
+    //     MobileAds.initialize and the other MobileAds statics are no-oped (the app calls
+    //     setAppVolume, rule 9), and every GMA load entry point returns at once.
+    //   - Disable telemetry: Avast tracking2 maps domain events to Firebase events and sends them
+    //     through FirebaseTracker, with FirebaseTrackerProxy in front; both plus FirebaseManager
+    //     (user properties, Crashlytics keys) are no-oped, every public void FirebaseCrashlytics
+    //     method returns at once, and the manifest collection switches are forced off. Burger and
+    //     local logging are untouched.
+    // Smoke-tested and bytecode-verified; NOT run on a device.
+    val COMPATIBILITY_CCLEANER = Compatibility(
+        name = "CCleaner",
+        packageName = "com.piriform.ccleaner",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x2E7D32,
+        signatures = setOf("a6b7f6a15459bd7570c1dcfcd74fee577b113ea7b1610169c01de0aa3a6a814a"),
+        targets = listOf(AppTarget(version = "26.16.1", versionCode = 800011534))
+    )
 }

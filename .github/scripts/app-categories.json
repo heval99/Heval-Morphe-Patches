@@ -161,6 +161,7 @@
       "emoji": "🛠️",
       "packages": [
         "me.piebridge.brevent",
+        "com.piriform.ccleaner",
         "com.macdom.ble.blescanner",
         "com.pzolee.bluetoothscanner",
         "ru.wasiliysoft.ircodefindernec",
