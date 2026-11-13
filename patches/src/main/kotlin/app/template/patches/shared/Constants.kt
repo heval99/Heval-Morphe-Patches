@@ -4192,7 +4192,14 @@ object Constants {
         appIconColor = 0xF5A524,
         signatures = setOf("7959db394ab099fd6827d09ecc2ae865b1e5952f0bdf4e273aa37004a668e98d"),
         // 2026-11-11: updated to 1.67 (versionCode 67): all fingerprints unique on the real matcher; smoke test passed.
-        targets = listOf(AppTarget(version = "1.67", versionCode = 67))
+        // 2026-11-13: updated to 1.68 (versionCode 68, same signer). Re-anchored Enable Premium
+        // step 1: 1.68 inserts an unrelated iput-boolean between the Set.contains result and the Pro
+        // StateFlow store in the billing client constructor, so the flow field is now found from the
+        // Boolean.valueOf(Z) call that consumes the contains result (not a fixed distance). Smoke
+        // test green, CLI without -f applied both patches (2 changed classes), disassembly shows
+        // the const/4 1 after the contains result, 5 Boolean.TRUE flow writes and checkLicense
+        // starting with return-void. Runtime not run on 1.68.
+        targets = listOf(AppTarget(version = "1.68", versionCode = 68))
     )
 
     // Verified 2026-10-27 against ie.rte.news 10.0.2 (versionCode 440, APKPure XAPK merged with
