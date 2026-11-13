@@ -1511,11 +1511,41 @@ object Constants {
         targets = listOf(AppTarget(version = "3.26", versionCode = 57))
     )
 
-    // YouCut (com.camerasideas.trimmer) removed 2026-10-09 (issue #44): see
-    // docs/patch-blocklist.md. The Pro gate is client-side and forceable, but every
-    // re-signed build self-kills via a native signing-cert + anti-debug SIGKILL gate in
-    // libisvideoengine.so JNI_OnLoad, which a bytecode/resource patch cannot neutralise.
-    // Revisit only if the engine gains native-lib patching.
+    // Checked 2026-11-13 against com.camerasideas.trimmer 1.722.1225 (versionCode 1225, Google
+    // Play arm64-v8a split set merged; signer CN=CameraIdeas, cert SHA-256 0920a104...8d74).
+    // The app was dropped on 2026-10-09 (issue #44) because every re-signed build was SIGKILLed
+    // by a native signature/anti-debug gate. morphe-patcher's rawResourcePatch can rewrite a
+    // native library, so that blocker is now handled in-patch.
+    //   - Disable native signature check (rawResourcePatch): libisvideoengine.so verifies the
+    //     signing certificate and checks for a debugger at load time and calls
+    //     kill(getpid(), SIGKILL) when either fails. The single "mov w1, #9; bl kill@plt" call
+    //     (unique in the library) is replaced with a NOP, so the gate returns 1 instead of
+    //     killing the process. arm64 only; an APK carrying armeabi-v7a is rejected.
+    //   - Enable Premium: client-side. store/billing/d.d(Context)Z reads the "SubscribePro" /
+    //     "com.camerasideas.trimmer.vip" preferences, User.expireType and the fup/redeem package
+    //     flags; 82 call sites use it (editor gates, export watermark, template locks, ads). It
+    //     returns true now. Server-side Pro services (cloud/AI) can still be refused by InShot.
+    //   - Disable ads: the app mediates through AppLovin MAX (all formats; the Unity/IronSource/
+    //     Vungle/Mintegral/Pangle/InMobi classes are MAX adapters) and also loads Google Mobile
+    //     Ads directly through its own banner/interstitial/rewarded wrappers. The app's placement
+    //     switch (mobileads/a, boolean(String), the path a Pro user takes) is forced false, and
+    //     the GMA + MAX load/show entry points are neutered with MAX views kept GONE.
+    //   - Disable telemetry: Firebase Analytics (two app emitters reach the Analytics collector)
+    //     and Crashlytics (59 recordException call sites plus automatic capture); both emitters
+    //     return at once, every public void FirebaseCrashlytics method is a no-op, and the
+    //     manifest collection switches are forced off. Firebase Messaging is not used. Tencent
+    //     xlog is local logging (no upload path), and the bundled libapminsighta/b.so are not
+    //     referenced by any dex class.
+    // Smoke-tested and bytecode-verified; the native kill site is asserted in the emitted APK.
+    // NOT run on a device.
+    val COMPATIBILITY_YOUCUT = Compatibility(
+        name = "YouCut",
+        packageName = "com.camerasideas.trimmer",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE91E63,
+        signatures = setOf("0920a10484a7528eb20e8662b91c01f7263cbf725a06dc507c99e3267eb38d74"),
+        targets = listOf(AppTarget(version = "1.722.1225", versionCode = 1225))
+    )
 
     // Verified 2026-10-06 against com.flyersoft.moonreader 10.7 (versionCode 1007000,
     // universal APK from APKPure). All ads run through the app's own unobfuscated ad
