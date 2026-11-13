@@ -5091,6 +5091,9 @@ object Constants {
     //     (incognito / remind-later / scheduled-message / voice-transcription / labels / blasts)
     //     returns at once, so its local counter never advances: the app does not pre-block a
     //     free-tier feature and sends no consume request.
+    //   - Disable telemetry: Sentry's internals are R8-renamed but SentryInitProvider keeps its
+    //     class name and holds the same init call the app's own crash logging uses; that shared
+    //     init returns at once. The stock manifest already sets io.sentry.auto-init=false.
     //   Server-side caveat: the backend still owns the plan and the per-feature allowances, so
     //     operations it validates itself (bridge provisioning, AI transcription) may still be
     //     refused. Smoke-tested and bytecode-verified; NOT run on a device.

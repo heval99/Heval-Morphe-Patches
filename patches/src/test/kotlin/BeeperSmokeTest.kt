@@ -1,6 +1,8 @@
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -10,6 +12,7 @@ private const val PKG = "com.beeper.android"
 private const val VERSION = "4.64.0"
 private const val PLAN_PREFIX = "Lcom/beeper/chat/booper/connect/viewmodel/BeeperPlan$"
 private const val PLANS = 5
+private const val SENTRY_INIT_PROVIDER = "Lio/sentry/android/core/SentryInitProvider;"
 
 class BeeperSmokeTest {
 
@@ -17,7 +20,7 @@ class BeeperSmokeTest {
     lateinit var workDir: File
 
     @Test
-    fun `Enable Premium lifts the plan and freebie limits`() {
+    fun `Enable Premium lifts the plan and freebie limits and telemetry is off`() {
         val root = repoRoot()
         val apk = File(root, "apks/beeper/base.apk")
 
@@ -30,12 +33,15 @@ class BeeperSmokeTest {
             workDir = workDir,
             pkg = PKG,
             version = VERSION,
-            patchNames = setOf("Enable Premium"),
+            patchNames = setOf("Enable Premium", "Disable telemetry"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
 
         // 1. Every concrete plan answers -1 for both account caps.
-        val plans = classes.filter { it.type.startsWith(PLAN_PREFIX) && it.superclass == "Lcom/beeper/chat/booper/connect/viewmodel/BeeperPlan;" }
+        val plans = classes.filter {
+            it.type.startsWith(PLAN_PREFIX) &&
+                it.superclass == "Lcom/beeper/chat/booper/connect/viewmodel/BeeperPlan;"
+        }
         check(plans.size == PLANS) { "plan subclasses: ${plans.map { it.type }}" }
         for (plan in plans) {
             for (name in listOf("getMaxAccounts", "getMaxAccountsPerBridge")) {
@@ -65,10 +71,34 @@ class BeeperSmokeTest {
                 )
         }
         check(consumers.size == 1) { "freebie consumers: ${consumers.map { "${it.definingClass}->${it.name}" }}" }
-        val insns = consumers.single().instructions().toList()
+        val freebieInsns = consumers.single().instructions().toList()
         check(
-            insns.getOrNull(0)?.opcode == Opcode.SGET_OBJECT &&
-                insns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT,
-        ) { "the freebie consumer does not return at once; got ${insns.take(3).map { it.opcode }}" }
+            freebieInsns.getOrNull(0)?.opcode == Opcode.SGET_OBJECT &&
+                freebieInsns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT,
+        ) { "the freebie consumer does not return at once; got ${freebieInsns.take(3).map { it.opcode }}" }
+
+        // 3. The Sentry init both start paths share returns at once.
+        val provider = classes.singleOrNull { it.type == SENTRY_INIT_PROVIDER }
+            ?: error("$SENTRY_INIT_PROVIDER not found in the emitted dexes")
+        val onCreate = provider.methods.single {
+            it.name == "onCreate" && it.returnType == "Z" && it.parameterTypes.isEmpty()
+        }
+        val init = onCreate.instructions()
+            .filterIsInstance<ReferenceInstruction>()
+            .mapNotNull { it.reference as? MethodReference }
+            .singleOrNull { ref ->
+                ref.returnType == "V" &&
+                    ref.parameterTypes.firstOrNull()?.toString() == "Landroid/content/Context;" &&
+                    ref.parameterTypes.drop(1).all { it.toString().startsWith("Lio/sentry/") }
+            } ?: error("no Sentry init call in $SENTRY_INIT_PROVIDER->onCreate")
+        val target = classes.singleOrNull { it.type == init.definingClass }
+            ?: error("${init.definingClass} not found in the emitted dexes")
+        val initMethod = target.methods.single {
+            it.name == init.name && it.returnType == "V" &&
+                it.parameterTypes.map(CharSequence::toString) == init.parameterTypes.map(CharSequence::toString)
+        }
+        check(initMethod.instructions().firstOrNull()?.opcode == Opcode.RETURN_VOID) {
+            "${init.definingClass}->${init.name} does not return at once"
+        }
     }
 }
