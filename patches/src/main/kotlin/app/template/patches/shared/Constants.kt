@@ -4023,6 +4023,12 @@ object Constants {
     // 2016193998 read from Mozilla's archive x86_64 build, same Mozilla signer), all patches apply unchanged; smoke + CLI without -f.
     // Real-device check (Android 15, arm64), patched build: cold start to the welcome screen, no
     // crash log.
+    // 2026-11-13: updated to 160.0 (Play arm64 build, versionCode 2016194415; x86_64 2016194414
+    // read from Mozilla's archive x86_64 build, same Mozilla signer). 160 dropped the notification,
+    // widget and toolbar onboarding cards, so the card filter lambda now captures only the default
+    // browser flag: Hide promotional prompts finds it as the Function1 whose <init> takes only
+    // booleans, and the patch-time proof accepts the single if-ne case branch. Smoke + CLI without
+    // -f; not runtime-tested.
     val COMPATIBILITY_FIREFOX = Compatibility(
         name = "Firefox",
         packageName = "org.mozilla.firefox",
@@ -4031,8 +4037,8 @@ object Constants {
         signatures = setOf("a78b62a5165b4494b2fead9e76a280d22d937fee6251aece599446b2ea319b04"), // O=Mozilla Corporation
         targets = listOf(
             AppTarget(
-                version = "159.0.1",
-                versionCodes = mapOf(SupportedAbi.X86_64 to 2016193998, SupportedAbi.ARM64_V8A to 2016193999),
+                version = "160.0",
+                versionCodes = mapOf(SupportedAbi.X86_64 to 2016194414, SupportedAbi.ARM64_V8A to 2016194415),
             )
         )
     )
