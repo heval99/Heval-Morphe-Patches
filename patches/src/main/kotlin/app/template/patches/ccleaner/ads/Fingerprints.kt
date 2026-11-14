@@ -5,11 +5,12 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 // BaseAdService.areAdsAllowed() is the app's own ad switch: it asks the premium boolean first and
-// otherwise the remote advertising setting. The method name and the premium method name are
-// Avast's private-use glyphs, so the call to the no-arg premium boolean is the anchor.
+// otherwise the remote advertising setting. Method names are obfuscated glyphs, so the anchor is
+// the stable log string plus the no-arg boolean call on the PremiumService interface.
 internal object AdsAllowedFingerprint : Fingerprint(
     returnType = "Z",
     parameters = emptyList(),
+    strings = listOf(".areAdsAllowed() - result: false"),
     custom = { method, classDef ->
         classDef.type == "Lcom/avast/android/cleaner/advertisement/BaseAdService;" &&
             method.implementation != null &&
@@ -17,7 +18,6 @@ internal object AdsAllowedFingerprint : Fingerprint(
                 val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
                 ref?.definingClass ==
                     "Lcom/avast/android/cleaner/subscription/premiumService/PremiumService;" &&
-                    ref.name == "\u02cd" &&
                     ref.returnType == "Z" &&
                     ref.parameterTypes.isEmpty()
             }

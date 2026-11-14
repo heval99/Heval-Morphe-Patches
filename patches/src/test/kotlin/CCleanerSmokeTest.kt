@@ -3,6 +3,7 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
@@ -84,8 +85,12 @@ class CCleanerSmokeTest {
             m.returnType == "Z" && m.parameterTypes.isEmpty() && m.implementation != null &&
                 m.implementation!!.instructions.any { insn ->
                     val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
-                    ref?.definingClass == PREMIUM_SERVICE && ref.name == "\u02cd" &&
+                    ref?.definingClass == PREMIUM_SERVICE &&
                         ref.returnType == "Z" && ref.parameterTypes.isEmpty()
+                } &&
+                m.implementation!!.instructions.any { insn ->
+                    ((insn as? ReferenceInstruction)?.reference as? StringReference)?.string ==
+                        ".areAdsAllowed() - result: false"
                 }
         }
         assertForcedBoolean(adsAllowed, expected = false, label = "CCleaner areAdsAllowed", diagnostics = diagnostics)
