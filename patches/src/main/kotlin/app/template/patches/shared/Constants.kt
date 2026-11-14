@@ -2094,6 +2094,18 @@ object Constants {
     // API_KEY_ANDROID_APP_BLOCKED, PersistedInstallation Status 4, no FCM token; with Spoof
     // signature -> Status 3 with an auth token, "Token successfully retrieved", an FCM token in
     // appid.xml and AppFcmTokenWorker SUCCEEDED. VIP badge unlocked in both; no crashes.
+    // 2026-11-14, 4.3.2: added "Disable ads" and "Disable telemetry" (bytecode and manifest checked
+    // with the real matcher and the smoke test; runtime NOT_RUN). Ads: the ad manager class is the
+    // one holding the "mDisplayAds" string; its only ()Z method with the 86400000L literal is the
+    // ads-allowed gate (returns false) and its only (J, object, Boolean, I) -> object method is the
+    // house-ad factory (returns null), plus the AppLovin MAX load/show hooks and a GONE MaxAdView.
+    // The VIP gate that Enable Premium forces is untouched; GMA classic is obfuscated and
+    // MobileAds.initialize is never called, so no GMA hooks. Telemetry: the one method holding the
+    // "FirebaseLogEvent" string (static void (Bundle, String), the Firebase/Facebook/TikTok event
+    // funnel) returns early; TikTokBusinessSdk.initializeSdk(TTConfig, TTInitCallback) fails its
+    // callback (-1, "disabled") and returns, so the app's init coroutine still completes; the
+    // manifest meta-data switches turn off Analytics, ad ID, Crashlytics, Performance and the
+    // Facebook auto-logging. FCM, Installations, Auth and Remote Config are left alone.
     val COMPATIBILITY_AISCORE = Compatibility(
         name = "AiScore",
         packageName = "com.onesports.score",
