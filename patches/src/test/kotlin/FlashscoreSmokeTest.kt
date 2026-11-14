@@ -3,6 +3,7 @@ import app.template.patches.flashscore.misc.betting.HIDE_BETTING
 import app.template.patches.flashscore.misc.news.HIDE_NEWS
 import app.template.patches.flashscore.misc.notifications.BLOCK_MARKETING_NOTIFICATIONS
 import app.template.patches.flashscore.misc.polls.HIDE_MATCH_POLLS
+import app.template.patches.flashscore.misc.theme.AMOLED_BLACK
 import app.template.patches.flashscore.shared.findEnumConstantField
 import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -86,6 +87,7 @@ private val FLASHSCORE_PATCHES = setOf(
     "Animation speed",
     "Force edge-to-edge",
     "Block marketing notifications",
+    "AMOLED black",
 )
 
 // SHA-1 of the original signing certificate (CN=Pavel Cvetler, O=LiveSport s.r.o.).
@@ -1086,7 +1088,7 @@ class FlashscoreSmokeTest {
         // the betting, polls and news switches among them with their category and restart flag.
         val wantedRegistry = HevalRegistryCodec.encode(
             ANIMATION_FEATURES + listOf(
-                BLOCK_MARKETING_NOTIFICATIONS, HIDE_BETTING, HIDE_MATCH_POLLS, HIDE_NEWS,
+                BLOCK_MARKETING_NOTIFICATIONS, HIDE_BETTING, HIDE_MATCH_POLLS, HIDE_NEWS, AMOLED_BLACK,
             ),
         ).split('\n')
         val gotRegistry = encoded.split('\n')
@@ -1099,6 +1101,32 @@ class FlashscoreSmokeTest {
             assertTrue(feature.restartRequired && feature.default, "${feature.id} must be a restart-required switch that starts on")
         }
         assertEquals("Betting and promotions", HIDE_BETTING.category)
+
+        // AMOLED black (2026-11-14): the night entries of the decoded values-night/colors.xml are
+        // pure black (build-time only, a read-only row in Patch settings); the elevated fills and
+        // the borders keep their stock values. The light values are compared with aapt2 (CLI check).
+        assertTrue(AMOLED_BLACK.buildTimeOnly, "flashscore.amoled_black must be a build-time-only row")
+        val nightColors = workDir.walkTopDown().singleOrNull { it.name == "colors.xml" && it.parentFile.name == "values-night" }
+            ?: error("res/values-night/colors.xml was not decoded under $workDir")
+        val nightDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(nightColors)
+        val nightValues = nightDoc.getElementsByTagName("color").let { nodes ->
+            (0 until nodes.length).associate { index ->
+                val node = nodes.item(index) as Element
+                node.getAttribute("name") to node.textContent.trim().lowercase()
+                    .let { if (it.length == 9 && it.startsWith("#ff")) "#" + it.substring(3) else it }
+            }
+        }
+        for (name in listOf(
+            "background_primary", "background_dualTone", "background_secondary", "background_dialog",
+            "background_highlight", "background_input", "background_base", "navigationHeader_primary",
+            "modalContent_primary", "tab_bg", "event_info_background_non_live",
+        )) {
+            assertEquals("#000000", nightValues[name], "AMOLED black: $name")
+        }
+        assertEquals("#213d46", nightValues["background_baseAlt"], "background_baseAlt stays elevated")
+        // Borders, dividers and tints that follow the recolored colors keep their stock shade at night.
+        assertEquals("#0f2d37", nightValues["participant_logo_border"], "participant_logo_border")
+        assertEquals("#001e28", nightValues["fs_support_1"], "fs_support_1")
 
         // Force edge-to-edge: every navigation-bar colour write is preceded by a zero constant in
         // the register the call passes, so the bar is transparent (the status bar is untouched).

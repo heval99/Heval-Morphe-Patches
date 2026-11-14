@@ -584,10 +584,19 @@ once its patch is selected unless the table says off; the Manager names and desc
 | `flashscore.hide_betting` | Hide betting content | Betting and promotions | on | yes | remote-config odds and GAMBLE_RESPONSIBLY keys, the ODDS tab filter, the isAgeVerified stores, the sponsored and bonus strip constructors |
 | `flashscore.hide_match_polls` | Hide match polls | Match page | on | yes | remote-config MATCH_POLL_ENABLED (the MATCH_POLL zone of the match page) |
 | `flashscore.hide_news` | Hide news | News | on | yes | remote-config MATCH_LIST_FS_NEWS, FLASHSCORE_NEWS_ENABLED (news in league match lists) and NEWS_ENABLED (NEWS tab on team pages) |
+| `flashscore.amoled_black` | AMOLED black | Display | off (Manager patch, default off) | n/a | build-time only: a read-only "Applied at patch time" row, no switch |
 
 The three remote-config switches (betting, polls, news) share one gated helper chain on the config value
 class: with the switch off the helper takes the stock path, so the app sees the server value. Only the
 keys traced to a visible element are gated; BREAKING_NEWS, NEWS_INFO_BOX_ENABLED and PREMIUM_OFFERS are not.
+
+AMOLED black (2026-11-14, `flashscore.amoled_black`, build-time only) is an opt-in resource patch like Sofascore's and
+365Scores': it rewrites eleven night values of `res/values-night/colors.xml` to `#000000` (background_primary,
+_dualTone, _secondary, _dialog, _highlight, _input, _base, navigationHeader_primary, modalContent_primary, and the
+tab_bg and event_info_background_non_live night entries, which referenced background_supportBlack). Light values,
+borders_*, dividers_*, highlights_* and the elevated `#0f2d37`/`#213d46` fills are untouched. Two colors that followed the recolored ones are a border and a divider and get a night entry with the stock shade: `participant_logo_border` (`#0f2d37`) and `fs_support_1` (`#001e28`). It is not a runtime switch
+because the Compose screens resolve colors through R8-renamed token classes; the Patch settings screen shows a
+read-only row. Run on a device: NOT_RUN.
 
 ## 365Scores features
 

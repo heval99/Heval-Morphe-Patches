@@ -1318,6 +1318,15 @@ object Constants {
     // setCustomTag return false) and forces CLARITY_ENABLED=false and CLARITY_PROJECT_ID="". Skipped on
     // purpose: ONBOARDING_* (first run only; ONBOARDING_CAMPAIGN is read through an inlined holder get),
     // AUDIO_COMMENT_* (never read) and WWW_MODAL.
+    // 2026-11-14 (26.11.6, smoke test, CLI and aapt2 dump; not run on a device): new opt-in "AMOLED black"
+    // (build-time resource edit, read-only row in Patch settings). The dark theme is night-qualified named
+    // colors (View and Compose read the same resources; Compose goes through R8-named token classes, so no
+    // runtime switch). Eleven night values in res/values-night/colors.xml become #000000: background_primary,
+    // _dualTone, _secondary, _dialog, _highlight, _input, _base, navigationHeader_primary, modalContent_primary
+    // and the tab_bg / event_info_background_non_live night entries (they pointed at background_supportBlack,
+    // which has no night value and is also a text/stroke color, so it is not edited). Light values untouched.
+    // participant_logo_border and fs_support_1 (a border and a divider that followed the
+    // recolored ones) get a night entry with the stock shade.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",
