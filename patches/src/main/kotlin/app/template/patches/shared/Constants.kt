@@ -823,6 +823,27 @@ object Constants {
     // 2026-11-07: updated to 10.4.1 (Play build via gplaydl, versionCode 2260, same signer), all patches apply unchanged; smoke + CLI without -f.
     // Real-device check (Android 15, arm64), patched build: cold start, onboarding and the
     // favourites screen respond, no crash log.
+    // 2026-11-14 (10.4.1): added "Hide betting content" (off by default), "Disable telemetry" and a Disable ads
+    // backstop; smoke + CLI without -f, runtime NOT_RUN (owner declined emulator run 2026-11-14). Anchors:
+    // - Betting: UserSelfRestrictedHelperImpl (unobfuscated; pinned by class, name and descriptor, because a
+    //   name-only match also hits the interface and UserSelfRestrictedHelperEmpty). The per-feature gate
+    //   isUserBettingSelfRestrictionPassed(String) answers false for every key except the exempt non-betting
+    //   ones (lsm_vote_widget, global_navigation, global_shocks, event_shocks, live_section_shocks,
+    //   shocks_notifications, ls6); isAdultAndNotSelfRestricted() reads false (side effect: surveys hide too)
+    //   and getBettingAdsHidden() reads true (no gambling ad targeting), so the app's own "betting ads" setting
+    //   stays on even if switched off. OddsStateController, the odds toggles and getEnabledOverride are
+    //   untouched. Known gaps: the ls6 key also covers the bet-builder game (its welcome-offer card stays), and
+    //   global_navigation lets any betting tab in the nav bar through.
+    // - Telemetry: UniversalAnalyticsImpl funnel (track, fireScreenViewEvent-*, updateIdentify-*, trackDeeplink,
+    //   trackMSClarityEvent, trackScreen) returns early; FirebaseAnalyticsImpl.enable(Z), SegmentAnalytics.enable(ZZ),
+    //   AmplitudeAnalytics.enableAnalytics(ZZ) and PermutiveAnalytics.enable(Z) get false arguments (enableAnalytics
+    //   is left alone, it hands the Segment anonymous id to push); Firebase manifest switches via
+    //   forceFirebaseManifestSwitches (analytics, Crashlytics, Sessions, Performance); AppsFlyerLib subclass
+    //   start/logEvent/logSession/sendAdRevenue/sendAdImpression; com.microsoft.clarity.Clarity statics. FCM, Firebase
+    //   Installations, XtremePush and AppsFlyer's updateServerUninstallToken stay.
+    // - Ads: GMA_LOAD_HOOKS backstop (MobileAds.initialize untouched, no MAX in this APK) and every concrete
+    //   BlazeIMA.enableAds / BlazeGAM.enableCustomNativeAds overload. Possible further step: BannerManagerImpl
+    //   init/warmUp (left alone).
     val COMPATIBILITY_LIVESCORE = Compatibility(
         name = "Livescore",
         packageName = "com.livescore",
