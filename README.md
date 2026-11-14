@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.4.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.4.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**105** apps&nbsp;&nbsp;•&nbsp;&nbsp;**334** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-14
+> **[v3.0.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v3.0.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**105** apps&nbsp;&nbsp;•&nbsp;&nbsp;**345** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-14
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -52,21 +52,21 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 |:-:|---|---|---|:-:|:-:|
 | <img src="assets/icons/com.scores365.png" width="20" height="20" alt=""> | **365Scores** | 🚫 💎 🔕 🧩 10 | `15.0.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.scores365) |
 | <img src="assets/icons/com.football433.png" width="20" height="20" alt=""> | **433** | 🚫 🛡️ 🧪 2 | `2.3.608` | APKM | [Play](https://play.google.com/store/apps/details?id=com.football433) |
-| <img src="assets/icons/com.onesports.score.png" width="20" height="20" alt=""> | **AiScore** | 💎 🧩 2 | `4.3.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.onesports.score) |
+| <img src="assets/icons/com.onesports.score.png" width="20" height="20" alt=""> | **AiScore** | 🚫 🛡️ 💎 🧩 4 | `4.3.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.onesports.score) |
 | <img src="assets/icons/com.resultadosfutbol.mobile.png" width="20" height="20" alt=""> | **BeSoccer** | 🚫 🔑 2 | `6.7.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.resultadosfutbol.mobile) |
 | <img src="assets/icons/com.bleacherreport.android.teamstream.png" width="20" height="20" alt=""> | **Bleacher Report** | 🚫 🛡️ 🧩 3 | `11.14.0.35` | APKM | [Play](https://play.google.com/store/apps/details?id=com.bleacherreport.android.teamstream) |
 | <img src="assets/icons/club.boxbox.android.png" width="20" height="20" alt=""> | **BoxBox** | 🚫 🛡️ 💎 3 | `5.4.18` | APKM | [Play](https://play.google.com/store/apps/details?id=club.boxbox.android) |
 | <img src="assets/icons/in.cricketexchange.app.cricketexchange.png" width="20" height="20" alt=""> | **CREX** | 🚫 💎 2 | `26.11.01` | APKM | [Play](https://play.google.com/store/apps/details?id=in.cricketexchange.app.cricketexchange) |
 | <img src="assets/icons/ro.rcsrds.digisport.png" width="20" height="20" alt=""> | **Digi Sport** | 🚫 🛡️ 🔕 🧩 8 | `1.1.15` | APK | [Play](https://play.google.com/store/apps/details?id=ro.rcsrds.digisport) |
 | <img src="assets/icons/com.eurosport.png" width="20" height="20" alt=""> | **Eurosport** | 🚫 🛡️ 🧩 3 | `8.35.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.eurosport) |
-| <img src="assets/icons/eu.livesport.FlashScore_com.png" width="20" height="20" alt=""> | **Flashscore** | 🚫 🛡️ 🔕 🧩 12 | `26.11.6` | APKS | [Play](https://play.google.com/store/apps/details?id=eu.livesport.FlashScore_com) |
+| <img src="assets/icons/eu.livesport.FlashScore_com.png" width="20" height="20" alt=""> | **Flashscore** | 🚫 🛡️ 🔕 🧩 17 | `26.11.6` | APKS | [Play](https://play.google.com/store/apps/details?id=eu.livesport.FlashScore_com) |
 | <img src="assets/icons/se.footballaddicts.livescore.png" width="20" height="20" alt=""> | **Forza Football** | 🚫 🛡️ 💎 🧩 5 | `6.15.10` | APKM | [Play](https://play.google.com/store/apps/details?id=se.footballaddicts.livescore) |
 | <img src="assets/icons/com.mobilefootie.wc2010.png" width="20" height="20" alt=""> | **FotMob** | 🚫 🛡️ 💎 🔕 🧩 18 | `241.18134.20261030` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mobilefootie.wc2010) |
 | <img src="assets/icons/com.futbin.png" width="20" height="20" alt=""> | **Futbin** | 🚫 1 | `27.13` | APK | [Play](https://play.google.com/store/apps/details?id=com.futbin) |
 | <img src="assets/icons/lequipe.fr.png" width="20" height="20" alt=""> | **L'Équipe** | 🚫 🧪 1 | `10.71.1` | APKM | [Play](https://play.google.com/store/apps/details?id=lequipe.fr) |
-| <img src="assets/icons/com.livescore.png" width="20" height="20" alt=""> | **Livescore** | 🚫 1 | `10.4.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
+| <img src="assets/icons/com.livescore.png" width="20" height="20" alt=""> | **Livescore** | 🚫 🛡️ 🧩 3 | `10.4.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
 | <img src="assets/icons/one.cricket.app.png" width="20" height="20" alt=""> | **OneCricket** | 🚫 1 | `26.10.01` | APKM | [Play](https://play.google.com/store/apps/details?id=one.cricket.app) |
-| <img src="assets/icons/de.motain.iliga.png" width="20" height="20" alt=""> | **OneFootball** | 🚫 1 | `15.150.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
+| <img src="assets/icons/de.motain.iliga.png" width="20" height="20" alt=""> | **OneFootball** | 🚫 🛡️ 🧩 3 | `15.150.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
 | <img src="assets/icons/com.sofascore.results.png" width="20" height="20" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 30 | `26.11.03` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
 | <img src="assets/icons/de.transfermarkt.v2.png" width="20" height="20" alt=""> | **Transfermarkt** | 🚫 🛡️ 2 | `4.3.3` | APKM | [Play](https://play.google.com/store/apps/details?id=de.transfermarkt.v2) |
 | <img src="assets/icons/com.yahoo.mobile.client.android.sportacular.png" width="20" height="20" alt=""> | **Yahoo Sports** | 🚫 🧩 2 | `12.28.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.sportacular) |
@@ -246,12 +246,14 @@ Verified on: `2.3.608`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.onesports.score.png" width="16" height="16" alt=""> <b>AiScore</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.onesports.score</code></summary>
+<summary><img src="assets/icons/com.onesports.score.png" width="16" height="16" alt=""> <b>AiScore</b> &nbsp;·&nbsp; 4 patches &nbsp;·&nbsp; <code>com.onesports.score</code></summary>
 
 Verified on: `4.3.2`
 
 | Patch | What it does | Default |
 |---|---|:-:|
+| 🚫 **Disable ads** | Removes ads. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics and ad tracking. | ✅ |
 | 💎 **Enable Premium** | Unlocks VIP features and removes ads. Server data like predictions stays locked. | ✅ |
 | 🧩 **Spoof signature** | Fixes push notifications (goal alerts). | ✅ |
 
@@ -332,12 +334,13 @@ Verified on: `8.35.0`
 
 </details>
 <details>
-<summary><img src="assets/icons/eu.livesport.FlashScore_com.png" width="16" height="16" alt=""> <b>Flashscore</b> &nbsp;·&nbsp; 12 patches &nbsp;·&nbsp; <code>eu.livesport.FlashScore_com</code></summary>
+<summary><img src="assets/icons/eu.livesport.FlashScore_com.png" width="16" height="16" alt=""> <b>Flashscore</b> &nbsp;·&nbsp; 17 patches &nbsp;·&nbsp; <code>eu.livesport.FlashScore_com</code></summary>
 
 Verified on: `26.11.6`
 
 | Patch | What it does | Default |
 |---|---|:-:|
+| 🧩 **AMOLED black** | Makes the dark theme pure black on OLED screens. | ➖ |
 | 🧩 **Animation speed** | Adds switches to turn off or speed up animations. | ➖ |
 | 🔕 **Block marketing notifications** | Drops promotional push notifications. | ➖ |
 | 🧩 **Block marketing popups** | Blocks promo popups. | ✅ |
@@ -347,7 +350,11 @@ Verified on: `26.11.6`
 | 🔕 **Disable update prompts** | Disables the update prompts. | ✅ |
 | 🧩 **Force edge-to-edge** | Blends the navigation bar area into the bottom tab bar. | ➖ |
 | 🧩 **Hide betting content** | Hides odds and betting content. | ➖ |
+| 🧩 **Hide competitions** | Hides matches of the competitions you pick. | ➖ |
+| 🧩 **Hide match polls** | Hides the polls on match pages. | ✅ |
+| 🧩 **Hide news** | Hides news in match lists and on team pages. | ➖ |
 | 🧩 **Patch settings** | Adds a screen to turn supported features on or off. | ✅ |
+| 🧩 **Spoiler-free mode** | Lets you hide scores and alerts for matches you mark. | ✅ |
 | 🧩 **Spoof signature** | Fixes Google features that check the app's original signature. | ➖ |
 | 🧩 **Use system font** | Uses the device's system font instead of Flashscore's custom font. | ➖ |
 
@@ -414,13 +421,15 @@ Verified on: `10.71.1`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.livescore.png" width="16" height="16" alt=""> <b>Livescore</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.livescore</code></summary>
+<summary><img src="assets/icons/com.livescore.png" width="16" height="16" alt=""> <b>Livescore</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>com.livescore</code></summary>
 
 Verified on: `10.4.1`
 
 | Patch | What it does | Default |
 |---|---|:-:|
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics, tracking and crash reporting. | ✅ |
+| 🧩 **Hide betting content** | Hides odds and betting content. | ➖ |
 
 </details>
 <details>
@@ -434,13 +443,15 @@ Verified on: `26.10.01`
 
 </details>
 <details>
-<summary><img src="assets/icons/de.motain.iliga.png" width="16" height="16" alt=""> <b>OneFootball</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>de.motain.iliga</code></summary>
+<summary><img src="assets/icons/de.motain.iliga.png" width="16" height="16" alt=""> <b>OneFootball</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>de.motain.iliga</code></summary>
 
 Verified on: `15.150.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics, attribution and crash reporting. | ✅ |
+| 🧩 **Hide betting content** | Hides the betting cards. | ➖ |
 
 </details>
 <details>

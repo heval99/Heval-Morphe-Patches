@@ -1,3 +1,27 @@
+## 3.0.0-dev.1 (2026-11-14)
+
+### 📱 AiScore `4.3.2`
+- New: Disable ads, Disable telemetry
+
+### 📱 Flashscore `26.11.6`
+- New: AMOLED black, Hide competitions, Hide match polls, Hide news, Spoiler-free mode
+- New: Add switches to hide betting, match polls and news, and stop Microsoft Clarity
+- New: Add an opt-in AMOLED black theme
+- New: Add a spoiler-free mode that hides scores and alerts for marked matches
+- New: Add a switch to hide competitions from match lists
+
+### 📱 Livescore `10.4.1`
+- New: Disable telemetry, Hide betting content
+- New: Add Hide betting content and Disable telemetry, extend Disable ads
+
+### 📱 OneFootball `15.150.0`
+- New: Disable telemetry, Hide betting content
+
+### 🔧 Other
+- New: Upgrade to Morphe patcher 2.3.0
+
+**Download:** [patches-3.0.0-dev.1.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v3.0.0-dev.1/patches-3.0.0-dev.1.mpp)
+
 ## 2.4.0-dev.3 (2026-11-14)
 
 ### 🆕 New apps
