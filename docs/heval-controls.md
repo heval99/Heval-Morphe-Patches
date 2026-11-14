@@ -278,7 +278,7 @@ The usual rules still apply (AGENTS.md):
 ## Truecaller features
 
 Truecaller 26.42.5 (2026-11-03). Every converted switch defaults on; its Manager patch keeps its
-name, description and default. The switches marked "off" (the profile menu rows, Hide inbox cards) start off. A shipped id is
+name, description and default. The switches marked "off" (the profile menu rows, Hide inbox cards, Tap call history to call) start off. A shipped id is
 never renamed.
 
 | Feature id | Patch | Restart | Gated sites |
@@ -303,6 +303,7 @@ never renamed.
 | `truecaller.hide_frequent_contacts` | Hide frequently called contacts | no | LazyColumn item skip |
 | `truecaller.hide_important_senders` | Hide important senders | no | LazyColumn item skip |
 | `truecaller.hide_inbox_cards` | Hide inbox cards (off) | no | carousel skip in the Messages inbox builder |
+| `truecaller.tap_call_history_to_call` | Tap call history to call (off) | no | ItemClick case of the call log event dispatcher (gate before the selection branch) |
 | `truecaller.disable_call_button_haptics` | Disable call button haptics | no | haptic dispatch skips, drag progress (value helper) |
 | `truecaller.swap_call_buttons` | Swap call answer and decline buttons | no | offsets and call style check (value helpers), notification layouts |
 | `truecaller.hide_profile_premium_banner` | Hide profile menu items (off) | no | row state renderers (Enabled -> Disabled helper) |
@@ -341,6 +342,16 @@ low-spam-protection warnings. None of the 11 types is a default-SMS-app or core-
 prompt, but the notification-permission card and the spam protection warnings are hidden too.
 The switch is read each time the list rebuilds. `skipLazyListItem` is not used because the item
 key is an Integer.
+
+Tap call history to call (#158, 2026-11-14, Truecaller 26.44.6, smoke test and CLI only) is opt-in
+and starts off, category Call log & search, no restart. The revamped call log sends every row event
+(ItemClick, LongClick, DeleteClick, PrimaryActionClick, AvatarClick) to one R8-merged Function1
+dispatcher. In its ItemClick case the view model's selection check (true ends the case) runs
+before the profile is opened by building ViewProfile. Before the `if-eqz` on that result, the patch
+adds: stay on the stock branch when selecting; otherwise, while the switch is on, call the view
+model's `(String id, boolean video)` call method with `(id, false)` (the one the call button
+uses, so the SIM choice and the voicemail callback report are the same) and jump to the branch's
+selection path, so ViewProfile is not built. A row without an entry or number does nothing, as in stock.
 
 Hide call log filters is marked restart because its row is a composable: an open call log screen
 keeps the row it composed until the screen composes it again. Swap call answer and decline buttons

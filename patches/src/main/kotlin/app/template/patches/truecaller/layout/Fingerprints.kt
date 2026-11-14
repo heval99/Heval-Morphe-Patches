@@ -239,6 +239,29 @@ internal object CallLogRowMapperFingerprint : Fingerprint(
     ),
 )
 
+// toString() of the revamped call log's row tap event (ItemClick, czm in 26.44.6), a Kotlin data class
+// (id). Its sibling events (LongClick, DeleteClick, PrimaryActionClick, AvatarClick) go through the
+// same R8-merged Function1 dispatcher; the patch finds that dispatcher by the instance-of of this type.
+internal object CallLogItemClickToStringFingerprint : Fingerprint(
+    name = "toString",
+    returnType = "Ljava/lang/String;",
+    parameters = listOf(),
+    filters = listOf(string("ItemClick(id=", StringComparisonType.STARTS_WITH)),
+)
+
+internal const val CALL_LOG_ACTION = "Lcom/truecaller/calllog/api/internal/analytics/model/CallLogAction;"
+
+// The call log view model's call method (um8.D(String id, boolean video) in 26.44.6): looks the row up
+// by id, reports the CALLBACK analytics action for voicemail rows and starts the call through
+// InitiateCallHelper (no fixed SIM, so the SIM choice is the same as the call button's). The only
+// (String, Z)V method that reads CallLogAction.CALLBACK; the enum's own <clinit> and $values have other
+// signatures.
+internal object CallLogCallMethodFingerprint : Fingerprint(
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "Z"),
+    filters = listOf(fieldAccess(opcode = Opcode.SGET_OBJECT, definingClass = CALL_LOG_ACTION, name = "CALLBACK")),
+)
+
 // The revamped call log's LazyColumn builder (an R8-merged Function1 lambda, qh8.invoke in 26.41.5):
 // banners, the header ad, then the frequently called contacts row as the item "frequent_contacts_id"
 // (only when its show flag is set), the "call_log_filters" item, the history rows and the footers.

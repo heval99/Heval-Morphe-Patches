@@ -102,6 +102,7 @@ private const val SWAP_CALL_BUTTONS = "truecaller.swap_call_buttons"
 private const val SWAP_CALL_LAYOUTS = "Lapp/template/extension/truecaller/SwapCallButtons;"
 private const val DISABLE_WHO_VIEWED_ME = "truecaller.disable_who_viewed_me"
 private const val HIDE_INBOX_CARDS = "truecaller.hide_inbox_cards"
+private const val TAP_CALL_HISTORY = "truecaller.tap_call_history_to_call"
 private const val BANNER_ITEM = "Lcom/truecaller/messaging/messaginglist/v2/model/BannerItem;"
 
 // Disable telemetry step 8: first-party reporting toggles, off in every resolver.
@@ -143,6 +144,7 @@ private val HEVAL_FEATURES = listOf(
 private val OPT_IN_FEATURES = listOf(
     Triple("Disable Who viewed me", DISABLE_WHO_VIEWED_ME, "Privacy"),
     Triple("Hide inbox cards", HIDE_INBOX_CARDS, "Promotions & nags"),
+    Triple("Tap call history to call", TAP_CALL_HISTORY, "Call log & search"),
 )
 
 // "Hide profile menu items" (#120): five switches in one patch, all off by default, no restart.
@@ -178,6 +180,8 @@ class TruecallerSmokeTest {
     private fun Method.strings() = instructions().mapNotNull { it.stringOrNull() }
 
     private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
+
+    private fun Instruction.typeOrNull(): String? = ((this as? ReferenceInstruction)?.reference as? TypeReference)?.type
 
     private fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
 
@@ -395,6 +399,7 @@ class TruecallerSmokeTest {
                 "Hide poor network warning",
                 "Disable Who viewed me",
                 "Hide inbox cards",
+                "Tap call history to call",
                 PROFILE_MENU_PATCH,
                 "GmsCore support",
                 "Spoof signature",
@@ -426,6 +431,7 @@ class TruecallerSmokeTest {
         assertHideCallLogFilters(classes, byType)
         assertHideListItems(classes)
         assertHideInboxCards(classes, allPatches)
+        assertTapCallHistoryToCall(classes)
         assertSwapCallButtons(classes, byType)
         assertDisableCallButtonHaptics(classes, byType)
         assertHidePoorNetworkWarning(classes, apk)
@@ -433,6 +439,76 @@ class TruecallerSmokeTest {
         // onGetCredential tests isAvailableOnDevice(int) in this build, so the routing applies.
         assertGmsCoreSupport(classes, workDir, PKG, TRUECALLER_INIT, SIGNATURE_SHA1, expectCredentialRouting = true)
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
+    }
+
+    /**
+     * Tap call history to call: in the revamped call log's event dispatcher (found by its instance-of
+     * ItemClick plus a ViewProfile construction), the ItemClick case's `if-eqz selection` is preceded
+     * by the gate and a (id, false) call of the view model's call method, which then jumps to the
+     * instruction after the branch (the selection-mode path), so ViewProfile is skipped.
+     */
+    private fun assertTapCallHistoryToCall(classes: List<ClassDef>) {
+        val label = "Tap call history to call"
+        val string = "Ljava/lang/String;"
+        val itemClick = classes.singleMethod("ItemClick toString") { _, m ->
+            m.name == "toString" && m.strings().any { it.startsWith("ItemClick(id=") }
+        }.first.type
+        val viewProfiles = classes.filter { cls ->
+            cls.methods.any { m -> m.name == "toString" && m.strings().any { it.startsWith("ViewProfile(normalisedNumber=") } }
+        }.map { it.type }.toSet()
+        check(viewProfiles.isNotEmpty()) { "no ViewProfile class" }
+        val (viewModel, callMethod) = classes.singleMethod("call log call method") { _, m ->
+            m.returnType == "V" && m.params() == listOf(string, "Z") &&
+                m.instructions().any { it.opcode == Opcode.SGET_OBJECT && it.field()?.name == "CALLBACK" }
+        }
+        val (dispatcherClass, dispatcher) = classes.singleMethod("call log event dispatcher") { _, m ->
+            m.name == "invoke" && m.returnType == "Ljava/lang/Object;" && m.params() == listOf("Ljava/lang/Object;") &&
+                m.instructions().let { insns ->
+                    insns.any { it.opcode == Opcode.INSTANCE_OF && it.typeOrNull() == itemClick } &&
+                        insns.any { it.opcode == Opcode.NEW_INSTANCE && it.typeOrNull() in viewProfiles }
+                }
+        }
+        val where = "${dispatcherClass.type}.${dispatcher.name}"
+        val insns = dispatcher.instructions()
+        val test = insns.indexOfFirst { it.opcode == Opcode.INSTANCE_OF && it.typeOrNull() == itemClick }
+        val caseEnd = (test + 1 until insns.size).first { insns[it].opcode == Opcode.INSTANCE_OF }
+        val selectionCall = (test + 1 until caseEnd).first { index ->
+            val call = insns[index].call()
+            insns[index].opcode == Opcode.INVOKE_VIRTUAL && call?.definingClass == viewModel.type &&
+                call.returnType == "Z" && call.params() == listOf(string)
+        }
+        val selection = (insns[selectionCall + 1] as OneRegisterInstruction).registerA
+        val invoke = insns[selectionCall] as FiveRegisterInstruction
+        check(insns[selectionCall + 1].opcode == Opcode.MOVE_RESULT) { "$where: the selection result is not kept" }
+
+        // if-nez selection -> the original if-eqz (selection mode keeps the stock branch).
+        val original = selectionCall + 10
+        check(insns[selectionCall + 2].opcode == Opcode.IF_NEZ && (insns[selectionCall + 2] as OneRegisterInstruction).registerA == selection &&
+            insns.branchTarget(selectionCall + 2) == original
+        ) { "$where: the selection result is not tested for the stock path before the gate" }
+        // The gate: isEnabled(feature) on the same register, if-eqz -> the original if-eqz.
+        check(assertGate(dispatcher, TAP_CALL_HISTORY, where, at = selectionCall + 3) == original) { "$where: the feature gate does not fall back to the stock branch" }
+        check((insns[selectionCall + 3] as OneRegisterInstruction).registerA == selection) { "$where: the gate uses another register than the selection result" }
+        // const/4 selection, 0; view model.call(id, selection) with the selection check's receiver and id.
+        check(insns[selectionCall + 7].opcode == Opcode.CONST_4 && (insns[selectionCall + 7] as OneRegisterInstruction).registerA == selection &&
+            (insns[selectionCall + 7] as NarrowLiteralInstruction).narrowLiteral == 0
+        ) { "$where: the call does not pass false" }
+        val invokeD = insns[selectionCall + 8]
+        check(invokeD.opcode == Opcode.INVOKE_VIRTUAL && invokeD.call()?.definingClass == viewModel.type && invokeD.call()?.name == callMethod.name &&
+            invokeD.call()?.params() == listOf(string, "Z") &&
+            (invokeD as FiveRegisterInstruction).let { it.registerC == invoke.registerC && it.registerD == invoke.registerD && it.registerE == selection }
+        ) { "$where: the gate does not call ${callMethod.name}(id, false) on the call log view model" }
+        // Then it jumps past the original branch, to where the stock case goes when selecting.
+        check(insns[selectionCall + 9].opcode == Opcode.GOTO_16 && insns.branchTarget(selectionCall + 9) == selectionCall + 11) {
+            "$where: the call does not jump to the instruction after the stock branch"
+        }
+        val stock = insns[original]
+        check(stock.opcode == Opcode.IF_EQZ && (stock as OneRegisterInstruction).registerA == selection) { "$where: the stock branch on the selection result is gone" }
+        // The stock path still builds ViewProfile in this case (after the branch's target, before the next event type).
+        val profile = (original + 1 until insns.size).firstOrNull { insns[it].opcode == Opcode.INSTANCE_OF || (insns[it].opcode == Opcode.NEW_INSTANCE && insns[it].typeOrNull() in viewProfiles) }
+        check(profile != null && insns[profile].opcode == Opcode.NEW_INSTANCE) { "$where: the ItemClick case no longer builds ViewProfile for the stock path" }
+        // The call method is untouched.
+        check(callMethod.instructions().none { it.call()?.definingClass == HEVAL_SETTINGS_CLASS }) { "${callMethod.name} was changed" }
     }
 
     private fun assertEnablePremium(classes: List<ClassDef>, byType: Map<String, ClassDef>) {

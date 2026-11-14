@@ -2703,6 +2703,16 @@ object Constants {
     //   filter and isCleared() before the card carousel (item key 1111111); the skip gate sits right
     //   before that if-nez and jumps to its target. The other inbox banners are untouched. Smoke test +
     //   CLI without -f + apkanalyzer verified; not run on a device.
+    // 2026-11-14 (#158, 26.44.6): "Tap call history to call" (opt-in switch truecaller.tap_call_history_to_call,
+    //   no restart). The revamped call log sends row events to one R8-merged Function1 dispatcher
+    //   (Lpc6;->invoke). Its ItemClick case (type from the unique "ItemClick(id=" toString; the dispatcher
+    //   is the invoke(Object)Object that does instance-of ItemClick and new-instance of a class printing
+    //   "ViewProfile(normalisedNumber=", two classes print it) calls the view model's (String)Z selection
+    //   check, then builds ViewProfile. The gate sits before the if-eqz on that result: while on and not
+    //   selecting, it calls the view model's (String, Z)V call method (the call button's, matched by that
+    //   shape plus the CallLogAction.CALLBACK read, unique) with (id, false) and jumps to the branch's
+    //   selection path. Other events and selection mode stay stock. Smoke test + CLI without -f verified;
+    //   not run on a device.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
