@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "2.4.0-dev.2",
+  "version": "2.4.0-dev.3",
   "patches": [
     {
       "name": "AMOLED black",
@@ -186,7 +186,9 @@
       "name": "Always incognito",
       "description": "Never learns from what you type.",
       "default": false,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.samsung.android.honeyboard",
@@ -220,7 +222,9 @@
       "name": "Always use GIPHY",
       "description": "Shows GIPHY GIFs in every language.",
       "default": true,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.samsung.android.honeyboard",
@@ -360,7 +364,9 @@
       "name": "Autofill in any field",
       "description": "Shows password and autofill suggestions even when the field already has text.",
       "default": false,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.samsung.android.honeyboard",
@@ -394,7 +400,9 @@
       "name": "Bigger clipboard history",
       "description": "Keeps more items in the clipboard history.",
       "default": true,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.samsung.android.honeyboard",
@@ -744,7 +752,9 @@
       "name": "Clipboard columns",
       "description": "Sets how many columns the clipboard panel has, and how many recent items its top row shows.",
       "default": false,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.samsung.android.honeyboard",
@@ -1163,6 +1173,40 @@
                 "ARMEABI_V7A": 2644006,
                 "X86_64": 2644006,
                 "X86": 2644006
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
+      "description": "Removes the native ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.actionlauncher.playstore",
+          "name": "Action Launcher",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#009688",
+          "signatures": [
+            "5f8dbfbee8b6372d3a515ab6f748fa894325ea40568ed6036a55f77cbcab41a2"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "53.0",
+              "versionCodes": {
+                "ARM64_V8A": 53000001,
+                "ARMEABI_V7A": 53000001,
+                "X86_64": 53000001,
+                "X86": 53000001
               },
               "isExperimental": false,
               "minSdk": null,
@@ -1627,6 +1671,40 @@
                 "ARMEABI_V7A": 261014339,
                 "X86_64": 261014339,
                 "X86": 261014339
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
+      "description": "Disables ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.piriform.ccleaner",
+          "name": "CCleaner",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#2E7D32",
+          "signatures": [
+            "a6b7f6a15459bd7570c1dcfcd74fee577b113ea7b1610169c01de0aa3a6a814a"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.16.1",
+              "versionCodes": {
+                "ARM64_V8A": 800011534,
+                "ARMEABI_V7A": 800011534,
+                "X86_64": 800011534,
+                "X86": 800011534
               },
               "isExperimental": false,
               "minSdk": null,
@@ -3217,6 +3295,40 @@
     },
     {
       "name": "Disable ads",
+      "description": "Disables ads.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.camerasideas.trimmer",
+          "name": "YouCut",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#E91E63",
+          "signatures": [
+            "0920a10484a7528eb20e8662b91c01f7263cbf725a06dc507c99e3267eb38d74"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "1.722.1225",
+              "versionCodes": {
+                "ARM64_V8A": 1225,
+                "ARMEABI_V7A": 1225,
+                "X86_64": 1225,
+                "X86": 1225
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ads",
       "description": "Removes all ads.",
       "default": true,
       "dependencies": [],
@@ -3732,6 +3844,40 @@
       "options": []
     },
     {
+      "name": "Disable native signature check",
+      "description": "Skips the native check that kills the app when it is re-signed.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.camerasideas.trimmer",
+          "name": "YouCut",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#E91E63",
+          "signatures": [
+            "0920a10484a7528eb20e8662b91c01f7263cbf725a06dc507c99e3267eb38d74"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "1.722.1225",
+              "versionCodes": {
+                "ARM64_V8A": 1225,
+                "ARMEABI_V7A": 1225,
+                "X86_64": 1225,
+                "X86": 1225
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Disable promotions",
       "description": "Hides partner promotions and app offers.",
       "default": true,
@@ -4012,6 +4158,42 @@
     },
     {
       "name": "Disable telemetry",
+      "description": "Disables crash reporting.",
+      "default": true,
+      "dependencies": [
+        "ResourcePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.actionlauncher.playstore",
+          "name": "Action Launcher",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#009688",
+          "signatures": [
+            "5f8dbfbee8b6372d3a515ab6f748fa894325ea40568ed6036a55f77cbcab41a2"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "53.0",
+              "versionCodes": {
+                "ARM64_V8A": 53000001,
+                "ARMEABI_V7A": 53000001,
+                "X86_64": 53000001,
+                "X86": 53000001
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable telemetry",
       "description": "Disables analytics.",
       "default": true,
       "dependencies": [
@@ -4036,6 +4218,40 @@
                 "ARMEABI_V7A": 1000006031,
                 "X86_64": 1000006031,
                 "X86": 1000006031
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable telemetry",
+      "description": "Disables crash reporting.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.beeper.android",
+          "name": "Beeper",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#1F6FEB",
+          "signatures": [
+            "786f42f5e93e8a7c111fde4eab018ab490666dedcda7cce4bc7006f52a6f31f8"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "4.64.0",
+              "versionCodes": {
+                "ARM64_V8A": 1744163566,
+                "ARMEABI_V7A": 1744163566,
+                "X86_64": 1744163566,
+                "X86": 1744163566
               },
               "isExperimental": false,
               "minSdk": null,
@@ -4268,6 +4484,42 @@
               "version": "1.99.56",
               "versionCodes": null,
               "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable telemetry",
+      "description": "Disables analytics and crash reporting.",
+      "default": true,
+      "dependencies": [
+        "ResourcePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.piriform.ccleaner",
+          "name": "CCleaner",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#2E7D32",
+          "signatures": [
+            "a6b7f6a15459bd7570c1dcfcd74fee577b113ea7b1610169c01de0aa3a6a814a"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.16.1",
+              "versionCodes": {
+                "ARM64_V8A": 800011534,
+                "ARMEABI_V7A": 800011534,
+                "X86_64": 800011534,
+                "X86": 800011534
+              },
+              "isExperimental": false,
               "minSdk": null,
               "description": null
             }
@@ -5400,6 +5652,42 @@
       "name": "Disable telemetry",
       "description": "Disables analytics and crash reporting.",
       "default": true,
+      "dependencies": [
+        "ResourcePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.camerasideas.trimmer",
+          "name": "YouCut",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#E91E63",
+          "signatures": [
+            "0920a10484a7528eb20e8662b91c01f7263cbf725a06dc507c99e3267eb38d74"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "1.722.1225",
+              "versionCodes": {
+                "ARM64_V8A": 1225,
+                "ARMEABI_V7A": 1225,
+                "X86_64": 1225,
+                "X86": 1225
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable telemetry",
+      "description": "Disables analytics and crash reporting.",
+      "default": true,
       "dependencies": [],
       "compatiblePackages": [
         {
@@ -5638,6 +5926,40 @@
     },
     {
       "name": "Enable Premium",
+      "description": "Unlocks the Plus features.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.actionlauncher.playstore",
+          "name": "Action Launcher",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#009688",
+          "signatures": [
+            "5f8dbfbee8b6372d3a515ab6f748fa894325ea40568ed6036a55f77cbcab41a2"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "53.0",
+              "versionCodes": {
+                "ARM64_V8A": 53000001,
+                "ARMEABI_V7A": 53000001,
+                "X86_64": 53000001,
+                "X86": 53000001
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Premium",
       "description": "Unlocks the premium features.",
       "default": true,
       "dependencies": [],
@@ -5740,6 +6062,40 @@
     },
     {
       "name": "Enable Premium",
+      "description": "Lifts the account limits and the free-tier usage limits.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.beeper.android",
+          "name": "Beeper",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#1F6FEB",
+          "signatures": [
+            "786f42f5e93e8a7c111fde4eab018ab490666dedcda7cce4bc7006f52a6f31f8"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "4.64.0",
+              "versionCodes": {
+                "ARM64_V8A": 1744163566,
+                "ARMEABI_V7A": 1744163566,
+                "X86_64": 1744163566,
+                "X86": 1744163566
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Premium",
       "description": "Unlocks Bookly Pro.",
       "default": true,
       "dependencies": [],
@@ -5830,6 +6186,40 @@
                 "ARMEABI_V7A": 539,
                 "X86_64": 539,
                 "X86": 539
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Premium",
+      "description": "Unlocks the premium features.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.piriform.ccleaner",
+          "name": "CCleaner",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#2E7D32",
+          "signatures": [
+            "a6b7f6a15459bd7570c1dcfcd74fee577b113ea7b1610169c01de0aa3a6a814a"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.16.1",
+              "versionCodes": {
+                "ARM64_V8A": 800011534,
+                "ARMEABI_V7A": 800011534,
+                "X86_64": 800011534,
+                "X86": 800011534
               },
               "isExperimental": false,
               "minSdk": null,
@@ -6068,6 +6458,40 @@
                 "ARMEABI_V7A": 731,
                 "X86_64": 731,
                 "X86": 731
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Premium",
+      "description": "Unlocks the Plus features.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "nextapp.fx",
+          "name": "FX File Explorer",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#2E7D32",
+          "signatures": [
+            "02f79730223f454ccd108414ec063618b762a4768aedfb64462d8416f417c677"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "9.1.0.8",
+              "versionCodes": {
+                "ARM64_V8A": 9108,
+                "ARMEABI_V7A": 9108,
+                "X86_64": 9108,
+                "X86": 9108
               },
               "isExperimental": false,
               "minSdk": null,
@@ -6762,6 +7186,40 @@
     },
     {
       "name": "Enable Premium",
+      "description": "Unlocks the Pro features.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.camerasideas.trimmer",
+          "name": "YouCut",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#E91E63",
+          "signatures": [
+            "0920a10484a7528eb20e8662b91c01f7263cbf725a06dc507c99e3267eb38d74"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "1.722.1225",
+              "versionCodes": {
+                "ARM64_V8A": 1225,
+                "ARMEABI_V7A": 1225,
+                "X86_64": 1225,
+                "X86": 1225
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Premium",
       "description": "Unlocks premium features.",
       "default": true,
       "dependencies": [],
@@ -7178,6 +7636,55 @@
         }
       ],
       "options": []
+    },
+    {
+      "name": "GmsCore support",
+      "description": "Makes Google sign-in and Google services work. Requires MicroG RE. Needed for push notifications through MicroG RE.",
+      "default": false,
+      "dependencies": [
+        "ResourcePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.beeper.android",
+          "name": "Beeper",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#1F6FEB",
+          "signatures": [
+            "786f42f5e93e8a7c111fde4eab018ab490666dedcda7cce4bc7006f52a6f31f8"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "4.64.0",
+              "versionCodes": {
+                "ARM64_V8A": 1744163566,
+                "ARMEABI_V7A": 1744163566,
+                "X86_64": 1744163566,
+                "X86": 1744163566
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "packageName",
+          "title": "Package name",
+          "description": "Package name of the patched app. Keep the original to install over the existing app. A different name installs next to it, but can break features that are tied to the original package name.",
+          "required": true,
+          "type": "kotlin.String",
+          "default": "com.beeper.android",
+          "values": {
+            "Original (recommended)": "com.beeper.android",
+            "Clone": "com.beeper.android.morphe"
+          }
+        }
+      ]
     },
     {
       "name": "GmsCore support",
@@ -9339,7 +9846,9 @@
       "name": "No GIF tracking",
       "description": "Stops GIPHY and Tenor view and share pings.",
       "default": true,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.samsung.android.honeyboard",
@@ -9373,7 +9882,9 @@
       "name": "One-handed keyboard",
       "description": "Offers the one-handed keyboard, for non-Samsung phones.",
       "default": true,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.samsung.android.honeyboard",
@@ -9527,6 +10038,43 @@
                 "ARMEABI_V7A": 18134,
                 "X86_64": 18134,
                 "X86": 18134
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Patch settings",
+      "description": "Adds a screen to turn supported features on or off.",
+      "default": true,
+      "dependencies": [
+        "ResourcePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
               },
               "isExperimental": false,
               "minSdk": null,
@@ -9800,7 +10348,9 @@
       "name": "Restore key vibration",
       "description": "Brings back the vibration on key taps, for non-Samsung phones.",
       "default": true,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.samsung.android.honeyboard",
@@ -9868,7 +10418,9 @@
       "name": "Show GIFs in every region",
       "description": "Shows the GIF board where the phone's region turns it off.",
       "default": false,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.samsung.android.honeyboard",
@@ -10565,7 +11117,9 @@
       "name": "Swipe cursor control",
       "description": "Offers moving the cursor by swiping on the space bar, for non-Samsung phones.",
       "default": true,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.samsung.android.honeyboard",
@@ -10596,10 +11150,84 @@
       "options": []
     },
     {
+      "name": "Swipe down to dismiss",
+      "description": "Swipe down on the suggestion strip or toolbar to hide the keyboard.",
+      "default": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Tap call history to call",
+      "description": "Tapping a call in the new call log calls the number instead of opening the profile.",
+      "default": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.truecaller",
+          "name": "Truecaller",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#0087FF",
+          "signatures": [
+            "7712b5f255f2c85b8b164519116ac4381bb9a3582dcdd2b73ac06ee7464913ae"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "26.44.6",
+              "versionCodes": {
+                "ARM64_V8A": 2644006,
+                "ARMEABI_V7A": 2644006,
+                "X86_64": 2644006,
+                "X86": 2644006
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Toolbar item count",
       "description": "Lets you place more items in the toolbar's top row; rearrange them in the toolbar editor.",
       "default": false,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.samsung.android.honeyboard",
@@ -10637,7 +11265,9 @@
           "default": 8,
           "values": {
             "8": 8,
+            "9": 9,
             "10": 10,
+            "11": 11,
             "12": 12
           }
         }

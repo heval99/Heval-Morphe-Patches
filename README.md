@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.4.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.4.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**100** apps&nbsp;&nbsp;•&nbsp;&nbsp;**317** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-14
+> **[v2.4.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.4.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**105** apps&nbsp;&nbsp;•&nbsp;&nbsp;**334** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-14
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -96,15 +96,16 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **TV 2 Play** | 🛡️ 1 | `2026.10-1` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tv2.tv2play) |
 | <img src="https://img.shields.io/badge/-%20-00539B?style=flat-square" height="14" alt=""> | **Århus Stiftstidende** | 🚫 🛡️ 🧩 3 | `15.32` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.aasmain.areader) |
 
-#### 💬 Messaging, email & calls <sub>5 apps</sub>
+#### 💬 Messaging, email & calls <sub>6 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="assets/icons/org.kman.AquaMail.png" width="20" height="20" alt=""> | **Aqua Mail** | 💎 1 | `2.8.1` | APKM | [Play](https://play.google.com/store/apps/details?id=org.kman.AquaMail) |
+| <img src="https://img.shields.io/badge/-%20-1F6FEB?style=flat-square" height="14" alt=""> | **Beeper** | 🛡️ 💎 🧩 3 | `4.64.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.beeper.android) |
 | <img src="assets/icons/me.bluemail.mail.png" width="20" height="20" alt=""> | **BlueMail** | 🚫 1 | `2.2.426` | APKM | [Play](https://play.google.com/store/apps/details?id=me.bluemail.mail) |
 | <img src="assets/icons/eu.faircode.email.png" width="20" height="20" alt=""> | **FairEmail** | 💎 1 | `1.2341` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
 | <img src="assets/icons/com.mail.mobile.android.mail.png" width="20" height="20" alt=""> | **mail.com** | 🚫 🛡️ 🔕 🧩 4 | `9.20.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mail.mobile.android.mail) |
-| <img src="assets/icons/com.truecaller.png" width="20" height="20" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 35 | `26.44.6` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
+| <img src="assets/icons/com.truecaller.png" width="20" height="20" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 36 | `26.44.6` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
 
 #### 🎵 Music, podcasts & radio <sub>7 apps</sub>
 
@@ -118,7 +119,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/com.streema.simpleradio.png" width="20" height="20" alt=""> | **Simple Radio** | 🚫 💎 2 | `6.3.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.streema.simpleradio) |
 | <img src="assets/icons/com.melodis.midomiMusicIdentifier.freemium.png" width="20" height="20" alt=""> | **SoundHound** | 🚫 1 | `10.5.8` | APK | [Play](https://play.google.com/store/apps/details?id=com.melodis.midomiMusicIdentifier.freemium) |
 
-#### 📺 Video & TV <sub>5 apps</sub>
+#### 📺 Video & TV <sub>6 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
@@ -126,6 +127,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/dk.dr.webplayer.png" width="20" height="20" alt=""> | **DRTV** | 🛡️ 🧩 3 | `4.40.4` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.dr.webplayer) |
 | <img src="assets/icons/app.expert.player.png" width="20" height="20" alt=""> | **TV Smarters Player Expert** | 🚫 💎 2 | `11.6.1` | APKM | [Play](https://play.google.com/store/apps/details?id=app.expert.player) |
 | <img src="assets/icons/com.viaplay.android.png" width="20" height="20" alt=""> | **Viaplay** | 🚫 🛡️ 🧪 2 | `26.45.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.viaplay.android) |
+| <img src="https://img.shields.io/badge/-%20-E91E63?style=flat-square" height="14" alt=""> | **YouCut** | 🚫 🛡️ 💎 🧩 4 | `1.722.1225` | APKM | [Play](https://play.google.com/store/apps/details?id=com.camerasideas.trimmer) |
 | <img src="https://img.shields.io/badge/-%20-00DC00?style=flat-square" height="14" alt=""> | **YouSee Play** | 🛡️ 1 | `13.12.0 (build 22025)` | APKS | [Play](https://play.google.com/store/apps/details?id=yiuo.mobile.tv) |
 
 #### 📚 Books & reading <sub>2 apps</sub>
@@ -178,10 +180,11 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/org.mozilla.focus.png" width="20" height="20" alt=""> | **Firefox Focus** | 🛡️ 🔕 🧩 7 | `160.0` | APKM | [Play](https://play.google.com/store/apps/details?id=org.mozilla.focus) |
 | <img src="assets/icons/mark.via.gp.png" width="20" height="20" alt=""> | **Via** | 🛡️ 1 | `7.4.1` | APK | [Play](https://play.google.com/store/apps/details?id=mark.via.gp) |
 
-#### 🏠 Launchers <sub>6 apps</sub>
+#### 🏠 Launchers <sub>7 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
+| <img src="https://img.shields.io/badge/-%20-009688?style=flat-square" height="14" alt=""> | **Action Launcher** | 🚫 🛡️ 💎 3 | `53.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.actionlauncher.playstore) |
 | <img src="assets/icons/easy.launcher.png" width="20" height="20" alt=""> | **Easy Homescreen** | 🚫 🛡️ 🔕 🧩 6 | `1.10.33` | APKM | [Play](https://play.google.com/store/apps/details?id=easy.launcher) |
 | <img src="assets/icons/projekt.launcher.png" width="20" height="20" alt=""> | **Hyperion Launcher** | 💎 1 | `2.2.16` | APKM | [Play](https://play.google.com/store/apps/details?id=projekt.launcher) |
 | <img src="assets/icons/app.pinya.mango.png" width="20" height="20" alt=""> | **Mango Launcher** | 💎 🔑 2 | `1.68` | APKM | [Play](https://play.google.com/store/apps/details?id=app.pinya.mango) |
@@ -189,21 +192,23 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/bitpit.launcher.png" width="20" height="20" alt=""> | **Niagara Launcher** | 🛡️ 💎 🧩 3 | `1.16.36` | APK | [Play](https://play.google.com/store/apps/details?id=bitpit.launcher) |
 | <img src="assets/icons/app.prolauncher.png" width="20" height="20" alt=""> | **Pro Launcher** | 💎 1 | `v2.4.3` | APKM | [Play](https://play.google.com/store/apps/details?id=app.prolauncher) |
 
-#### 🛠️ Tools & utilities <sub>12 apps</sub>
+#### 🛠️ Tools & utilities <sub>14 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="assets/icons/com.macdom.ble.blescanner.png" width="20" height="20" alt=""> | **BLE Scanner** | 🚫 1 | `4.8` | APK | [Play](https://play.google.com/store/apps/details?id=com.macdom.ble.blescanner) |
 | <img src="assets/icons/com.pzolee.bluetoothscanner.png" width="20" height="20" alt=""> | **Bluetooth Scanner** | 🚫 1 | `1.9.4` | APK | [Play](https://play.google.com/store/apps/details?id=com.pzolee.bluetoothscanner) |
 | <img src="assets/icons/me.piebridge.brevent.png" width="20" height="20" alt=""> | **Brevent** | 💎 1 | `4.2.31.1` | APK | [Play](https://play.google.com/store/apps/details?id=me.piebridge.brevent) |
+| <img src="https://img.shields.io/badge/-%20-2E7D32?style=flat-square" height="14" alt=""> | **CCleaner** | 🚫 🛡️ 💎 3 | `26.16.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.piriform.ccleaner) |
 | <img src="assets/icons/com.dev47apps.obsdroidcam.png" width="20" height="20" alt=""> | **DroidCam** | 🚫 1 | `10.0` | APK | [Play](https://play.google.com/store/apps/details?id=com.dev47apps.obsdroidcam) |
 | <img src="https://img.shields.io/badge/-%20-1F6AFF?style=flat-square" height="14" alt=""> | **EX File Manager** | 🚫 🛡️ 💎 3 | `1.6.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.ace.ex.file.manager) |
+| <img src="https://img.shields.io/badge/-%20-2E7D32?style=flat-square" height="14" alt=""> | **FX File Explorer** | 💎 1 | `9.1.0.8` | APK | [Play](https://play.google.com/store/apps/details?id=nextapp.fx) |
 | <img src="assets/icons/com.gkfriend.gpsmapcameraeditor.png" width="20" height="20" alt=""> | **GPS Map Camera Editor** | 🚫 💎 🔑 🧩 5 | `1.0.32` | APKM | [Play](https://play.google.com/store/apps/details?id=com.gkfriend.gpsmapcameraeditor) |
 | <img src="assets/icons/ru.wasiliysoft.ircodefindernec.png" width="20" height="20" alt=""> | **IrCode Finder** | 🚫 1 | `14.17.0 build 206 InAPP` | APKM | [Play](https://play.google.com/store/apps/details?id=ru.wasiliysoft.ircodefindernec) |
 | <img src="assets/icons/com.rawcam.app.png" width="20" height="20" alt=""> | **Native Camera** | 💎 🔑 2 | `1.4.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.rawcam.app) |
 | <img src="https://img.shields.io/badge/-%20-FAF5FF?style=flat-square" height="14" alt=""> | **NotiAlarm** | 💎 🔑 2 | `1.3.31` | APKM | [Play](https://play.google.com/store/apps/details?id=com.soosu.notialarm) |
 | <img src="assets/icons/com.pocketcolorwheel.PCW.png" width="20" height="20" alt=""> | **Pocket Color Wheel** | 🚫 1 | `3.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.pocketcolorwheel.PCW) |
-| <img src="https://img.shields.io/badge/-%20-3E91FF?style=flat-square" height="14" alt=""> | **Samsung Keyboard** | 🛡️ 🧩 17 | `5.9.40.75` | APK | [Play](https://play.google.com/store/apps/details?id=com.samsung.android.honeyboard) |
+| <img src="https://img.shields.io/badge/-%20-3E91FF?style=flat-square" height="14" alt=""> | **Samsung Keyboard** | 🛡️ 🧩 19 | `5.9.40.75` | APK | [Play](https://play.google.com/store/apps/details?id=com.samsung.android.honeyboard) |
 | <img src="assets/icons/com.fyxtech.muslim.png" width="20" height="20" alt=""> | **WeMuslim** | 🚫 🛡️ 💎 🧩 8 | `3.5.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.fyxtech.muslim) |
 
 ### 🔍 Patch details
@@ -731,6 +736,18 @@ Verified on: `2.8.1`
 
 </details>
 <details>
+<summary><b>Beeper</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>com.beeper.android</code></summary>
+
+Verified on: `4.64.0`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🛡️ **Disable telemetry** | Disables crash reporting. | ✅ |
+| 💎 **Enable Premium** | Lifts the account limits and the free-tier usage limits. | ✅ |
+| 🧩 **GmsCore support** | Makes Google sign-in and Google services work. Requires MicroG RE. Needed for push notifications through MicroG RE. | ➖ |
+
+</details>
+<details>
 <summary><img src="assets/icons/me.bluemail.mail.png" width="16" height="16" alt=""> <b>BlueMail</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>me.bluemail.mail</code></summary>
 
 Verified on: `2.2.426`
@@ -764,7 +781,7 @@ Verified on: `9.20.2`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.truecaller.png" width="16" height="16" alt=""> <b>Truecaller</b> &nbsp;·&nbsp; 35 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
+<summary><img src="assets/icons/com.truecaller.png" width="16" height="16" alt=""> <b>Truecaller</b> &nbsp;·&nbsp; 36 patches &nbsp;·&nbsp; <code>com.truecaller</code></summary>
 
 Verified on: `26.44.6`
 
@@ -803,6 +820,7 @@ Verified on: `26.44.6`
 | 🧩 **Show caller number in call log** | Shows the caller's number in the new call log for callers who aren't in your contacts. | ➖ |
 | 🧩 **Spoof signature** | Fixes Google features that check the app's original signature. | ✅ |
 | 🧩 **Swap call answer and decline buttons** | Puts the answer button on the left and the decline button on the right for incoming calls. | ➖ |
+| 🧩 **Tap call history to call** | Tapping a call in the new call log calls the number instead of opening the profile. | ➖ |
 | 🧩 **Turn off Ad Campaign Analytics** | Turns the "Ad Campaign Analytics" privacy toggle off by default. You can still turn it on in Settings > Privacy Center. | ➖ |
 | 🧩 **Use SMS for verification codes** | Reads the verification code from SMS. Verification can still fail on patched apps. | ➖ |
 
@@ -930,6 +948,19 @@ Verified on: `26.45.0`
 |---|---|:-:|
 | 🛡️ **Disable telemetry** | Disables analytics, tracking and crash reporting. | ✅ |
 | 🚫 **Skip ads** 🧪 | Skips the ad breaks in on-demand videos. | ✅ |
+
+</details>
+<details>
+<summary><b>YouCut</b> &nbsp;·&nbsp; 4 patches &nbsp;·&nbsp; <code>com.camerasideas.trimmer</code></summary>
+
+Verified on: `1.722.1225`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Disables ads. | ✅ |
+| 🧩 **Disable native signature check** | Skips the native check that kills the app when it is re-signed. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
+| 💎 **Enable Premium** | Unlocks the Pro features. | ✅ |
 
 </details>
 <details>
@@ -1238,6 +1269,18 @@ Verified on: `7.4.1`
 #### 🏠 Launchers
 
 <details>
+<summary><b>Action Launcher</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>com.actionlauncher.playstore</code></summary>
+
+Verified on: `53.0`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Removes the native ads. | ✅ |
+| 🛡️ **Disable telemetry** | Disables crash reporting. | ✅ |
+| 💎 **Enable Premium** | Unlocks the Plus features. | ✅ |
+
+</details>
+<details>
 <summary><img src="assets/icons/easy.launcher.png" width="16" height="16" alt=""> <b>Easy Homescreen</b> &nbsp;·&nbsp; 6 patches &nbsp;·&nbsp; <code>easy.launcher</code></summary>
 
 Verified on: `1.10.33`
@@ -1339,6 +1382,18 @@ Verified on: `4.2.31.1`
 
 </details>
 <details>
+<summary><b>CCleaner</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>com.piriform.ccleaner</code></summary>
+
+Verified on: `26.16.1`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Disables ads. | ✅ |
+| 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
+| 💎 **Enable Premium** | Unlocks the premium features. | ✅ |
+
+</details>
+<details>
 <summary><img src="assets/icons/com.dev47apps.obsdroidcam.png" width="16" height="16" alt=""> <b>DroidCam</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.dev47apps.obsdroidcam</code></summary>
 
 Verified on: `10.0`
@@ -1358,6 +1413,16 @@ Verified on: `1.6.2`
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
 | 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
 | 💎 **Enable Premium** | Unlocks the premium features. | ✅ |
+
+</details>
+<details>
+<summary><b>FX File Explorer</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>nextapp.fx</code></summary>
+
+Verified on: `9.1.0.8`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 💎 **Enable Premium** | Unlocks the Plus features. | ✅ |
 
 </details>
 <details>
@@ -1417,7 +1482,7 @@ Verified on: `3.26`
 
 </details>
 <details>
-<summary><b>Samsung Keyboard</b> &nbsp;·&nbsp; 17 patches &nbsp;·&nbsp; <code>com.samsung.android.honeyboard</code></summary>
+<summary><b>Samsung Keyboard</b> &nbsp;·&nbsp; 19 patches &nbsp;·&nbsp; <code>com.samsung.android.honeyboard</code></summary>
 
 Verified on: `5.9.40.75`
 
@@ -1434,11 +1499,13 @@ Verified on: `5.9.40.75`
 | 🧩 **Enable non-One UI ROM support** | Makes Samsung Keyboard usable on non-One UI ROMs. | ✅ |
 | 🧩 **No GIF tracking** | Stops GIPHY and Tenor view and share pings. | ✅ |
 | 🧩 **One-handed keyboard** | Offers the one-handed keyboard, for non-Samsung phones. | ✅ |
+| 🧩 **Patch settings** | Adds a screen to turn supported features on or off. | ✅ |
 | 🧩 **Remove internet permission** | Keeps the keyboard offline. GIFs, stickers, translation, AI tools and language downloads stop working. | ➖ |
 | 🧩 **Restore key vibration** | Brings back the vibration on key taps, for non-Samsung phones. | ✅ |
 | 🧩 **Show GIFs in every region** | Shows the GIF board where the phone's region turns it off. | ➖ |
 | 🧩 **Stop remote updates** | Ignores keyboard policies pushed from Samsung's servers. | ✅ |
 | 🧩 **Swipe cursor control** | Offers moving the cursor by swiping on the space bar, for non-Samsung phones. | ✅ |
+| 🧩 **Swipe down to dismiss** | Swipe down on the suggestion strip or toolbar to hide the keyboard. | ➖ |
 | 🧩 **Toolbar item count** | Lets you place more items in the toolbar's top row; rearrange them in the toolbar editor. | ➖ |
 
 </details>
