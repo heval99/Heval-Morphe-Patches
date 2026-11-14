@@ -1,8 +1,11 @@
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
+import app.template.patches.shared.Constants.COMPATIBILITY_BEEPER
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -10,8 +13,7 @@ import java.io.File
 
 private const val PKG = "com.beeper.android"
 private const val VERSION = "4.64.0"
-private const val PLAN_PREFIX = "Lcom/beeper/chat/booper/connect/viewmodel/BeeperPlan$"
-private const val PLANS = 5
+private const val SIGNER_SHA256 = "786f42f5e93e8a7c111fde4eab018ab490666dedcda7cce4bc7006f52a6f31f8"
 private const val SENTRY_INIT_PROVIDER = "Lio/sentry/android/core/SentryInitProvider;"
 private const val MAIN_ACTIVITY = "Lcom/beeper/chat/booper/MainActivity;"
 private const val SIGNATURE_SHA1 = "d6ef1da902f51ff60deb84e4bf80ef71cc00c090"
@@ -22,7 +24,7 @@ class BeeperSmokeTest {
     lateinit var workDir: File
 
     @Test
-    fun `Enable Premium lifts the plan and freebie limits and telemetry is off`() {
+    fun `Enable Premium lifts the account caps and freebie limits and telemetry is off`() {
         val root = repoRoot()
         val apk = File(root, "apks/beeper/base.apk")
 
@@ -39,29 +41,56 @@ class BeeperSmokeTest {
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
 
-        // 1. Every concrete plan answers -1 for both account caps.
-        val plans = classes.filter {
-            it.type.startsWith(PLAN_PREFIX) &&
-                it.superclass == "Lcom/beeper/chat/booper/connect/viewmodel/BeeperPlan;"
-        }
-        check(plans.size == PLANS) { "plan subclasses: ${plans.map { it.type }}" }
-        for (plan in plans) {
-            for (name in listOf("getMaxAccounts", "getMaxAccountsPerBridge")) {
-                val method = plan.methods.singleOrNull {
-                    it.name == name && it.returnType == "Ljava/lang/Integer;" && it.implementation != null
-                } ?: error("${plan.type}->$name not found")
-                val insns = method.instructions().toList()
-                val first = insns.firstOrNull() as? NarrowLiteralInstruction
-                check(first != null && first.opcode == Opcode.CONST_4 && first.narrowLiteral == -1) {
-                    "${plan.type}->$name does not start with -1; got ${insns.take(2).map { it.opcode }}"
-                }
-                check(insns.any { it.opcode == Opcode.RETURN_OBJECT }) {
-                    "${plan.type}->$name never returns the Integer"
-                }
-            }
+        // 0. The pinned signer is the developer's certificate (apks/beeper/provenance.json).
+        check(COMPATIBILITY_BEEPER.signatures == setOf(SIGNER_SHA256)) {
+            "COMPATIBILITY_BEEPER signatures: ${COMPATIBILITY_BEEPER.signatures}"
         }
 
-        // 2. The single freebie consumer returns the Unit instance immediately.
+        // 1. The server caps are forced to -1: the SDK config's total and per-bridge values just before
+        //    they are boxed into the cap flows (so the built-in defaults are -1 too), and the repo's
+        //    "max-accounts" parse right after it. Methods are found by their JSON keys, like the patch.
+        fun assertCapForced(key: String, method: Method, atBoxing: Boolean) {
+            val insns = method.instructions().toList()
+            val keyIndex = insns.indexOfFirst {
+                it.opcode == Opcode.CONST_STRING && ((it as ReferenceInstruction).reference as StringReference).string == key
+            }
+            check(keyIndex >= 0) { "\"$key\" missing in ${method.definingClass}->${method.name}" }
+            val callIndex = (keyIndex + 1 until insns.size).first { i ->
+                val ref = (insns[i] as? ReferenceInstruction)?.reference as? MethodReference
+                insns[i].opcode == Opcode.INVOKE_STATIC && ref?.returnType == "Ljava/lang/Integer;" && ref.parameterTypes.size == 1
+            }
+            fun isValueOf(i: Int) = (insns[i] as? ReferenceInstruction)?.reference.let {
+                insns[i].opcode == Opcode.INVOKE_STATIC && it is MethodReference && it.name == "valueOf" &&
+                    it.definingClass == "Ljava/lang/Integer;"
+            }
+            val forcedIndex = if (atBoxing) {
+                (callIndex + 2 until insns.size).first { isValueOf(it) } - 1
+            } else {
+                check(insns[callIndex + 1].opcode == Opcode.MOVE_RESULT_OBJECT) { "no move-result-object after the \"$key\" parse" }
+                check(isValueOf(callIndex + 3) && insns[callIndex + 4].opcode == Opcode.MOVE_RESULT_OBJECT) {
+                    "the forced -1 after the \"$key\" parse is not boxed and moved back"
+                }
+                callIndex + 2
+            }
+            val forced = insns[forcedIndex] as? NarrowLiteralInstruction
+            check(forced != null && forced.opcode == Opcode.CONST_4 && forced.narrowLiteral == -1) {
+                "the \"$key\" cap is not forced to -1; got ${insns[forcedIndex].opcode}"
+            }
+        }
+        fun methodsWithString(key: String) = classes.flatMap { it.methods }.filter { m ->
+            m.name != "<clinit>" && m.implementation != null && m.instructions().any {
+                it.opcode == Opcode.CONST_STRING && ((it as ReferenceInstruction).reference as StringReference).string == key
+            }
+        }
+        val sdk = methodsWithString("max-accounts-per-bridge").singleOrNull() ?: error("SDK config method with the per-bridge key not found")
+        assertCapForced("max-accounts-per-bridge", sdk, atBoxing = true)
+        assertCapForced("max-accounts", sdk, atBoxing = true)
+        val maxAccounts = methodsWithString("max-accounts")
+        check(maxAccounts.size == 2) { "methods with \"max-accounts\": ${maxAccounts.map { "${it.definingClass}->${it.name}" }}" }
+        val repo = maxAccounts.single { it !== sdk && it.definingClass == "Lcom/beeper/bridge/ChatAccountsRepo\$chatAccountsState\$1;" }
+        assertCapForced("max-accounts", repo, atBoxing = false)
+
+        // 2. The single freebie consumer returns the Unit instance (its own sget-object/return-object) at once.
         val consumers = classes.flatMap { it.methods }.filter { method ->
             method.returnType == "Ljava/lang/Object;" &&
                 method.implementation != null &&

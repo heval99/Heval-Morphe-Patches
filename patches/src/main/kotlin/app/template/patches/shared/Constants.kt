@@ -5085,13 +5085,16 @@ object Constants {
     // Checked 2026-11-13 against com.beeper.android 4.64.0 (versionCode 1744163566, Google Play
     // arm64-v8a split set merged with APKEditor; signer CN=Eric Migicovsky, O=Beeper, cert SHA-256
     // 786f42f5...31f8; Play download). Native Kotlin/Compose app on the Beeper SDK.
-    //   - Enable Premium: the plan is described by the backend (ChatAccountsRepo maps the server's
-    //     "max-accounts" value onto BeeperPlan), so the client-side caps are forced to -1
-    //     (unlimited) on every concrete BeeperPlan subclass, and the single freebie consumer
+    //   - Enable Premium: the account caps come from the backend. The SDK class holding the
+    //     "max-accounts" / "max-accounts-per-bridge" JSON keys parses them into two Integer flows that
+    //     ChatAccountList turns into ChatAccountListState.canAddAccount and maxAccountsPerBridge, and
+    //     ChatAccountsRepo.chatAccountsState derives the remaining-accounts counters from the same
+    //     "max-accounts" value. Each parsed Integer is replaced by -1, the app's own "unlimited" value
+    //     (anchors: the two JSON keys and the kept coroutine class name). The BeeperPlan getters are
+    //     left alone (they only feed the upgrade-suggestion text). The single freebie consumer
     //     (incognito / remind-later / scheduled-message / voice-transcription / labels / blasts)
     //     returns at once, so its local counter never advances: the app does not pre-block a
-    //     free-tier feature and sends no consume request.
-    //   - Disable telemetry: Sentry's internals are R8-renamed but SentryInitProvider keeps its
+    //     free-tier feature and sends no consume request.    //   - Disable telemetry: Sentry's internals are R8-renamed but SentryInitProvider keeps its
     //     class name and holds the same init call the app's own crash logging uses; that shared
     //     init returns at once. The stock manifest already sets io.sentry.auto-init=false.
     //   - Ads/telemetry scan (2026-11-13): no ad SDK at all, and the bundled Firebase is
@@ -5110,7 +5113,7 @@ object Constants {
         packageName = "com.beeper.android",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x1F6FEB,
-        signatures = setOf("786f42f5e93e8a7c111fde4eab018ab490666deddca7cce4bc7006f52a6f31f8"), // O=Beeper
+        signatures = setOf("786f42f5e93e8a7c111fde4eab018ab490666dedcda7cce4bc7006f52a6f31f8"), // O=Beeper
         targets = listOf(AppTarget(version = "4.64.0", versionCode = 1744163566))
     )
 }
