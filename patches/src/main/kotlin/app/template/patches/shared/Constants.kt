@@ -5152,6 +5152,10 @@ object Constants {
     // option. Not converted, build time only: Disable telemetry, Stop remote updates, Remove internet permission,
     // Change package name, Change app name, Enable non-One UI ROM support.
     // SamsungKeyboardSmokeTest asserts every gate, helper and the registry. Runtime NOT_RUN.
+    // 2026-11-14 rule 12 (patcher 2.0.0 and 2.3.0 alike): Change app name decodes res/values/strings.xml, and the
+    // patcher's decoder writes its 48 format="float" items (the *_fraction, dead_zone_*, grip_zone* values) back as
+    // plain strings. Harmless: the keyboard reads all 48 with getString + parseFloat (or appends them as text), and
+    // the text equals what stock getString returned.
     val COMPATIBILITY_SAMSUNG_KEYBOARD = Compatibility(
         name = "Samsung Keyboard",
         packageName = "com.samsung.android.honeyboard",
