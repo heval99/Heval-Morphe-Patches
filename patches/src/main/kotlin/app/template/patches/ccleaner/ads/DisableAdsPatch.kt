@@ -1,7 +1,7 @@
 package app.template.patches.ccleaner.ads
 
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.util.returnEarly
+import app.morphe.patcher.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_CCLEANER
 import app.template.patches.shared.misc.ads.GMA_LOAD_HOOKS
 import app.template.patches.shared.misc.ads.neuterAdHooks

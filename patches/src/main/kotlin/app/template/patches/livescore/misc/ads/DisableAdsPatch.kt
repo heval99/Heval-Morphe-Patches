@@ -2,7 +2,7 @@ package app.template.patches.livescore.misc.ads
 
 import app.morphe.patcher.patch.bytecodePatch
 import app.template.patches.shared.Constants.COMPATIBILITY_LIVESCORE
-import app.morphe.util.returnEarly
+import app.morphe.patcher.util.returnEarly
 
 @Suppress("unused")
 val disableAdsPatch = bytecodePatch(

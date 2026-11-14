@@ -45,7 +45,7 @@ fun repoRoot(): File {
 fun newestPatchBundle(root: File): File =
     selectPatchBundle(File(root, "patches/build/libs"), requirePatchesVersion())
 
-fun loadAllPatches(bundle: File): Set<Patch<*>> = loadPatchesFromJar(setOf(bundle))
+fun loadAllPatches(bundle: File): Set<Patch> = loadPatchesFromJar(setOf(bundle))
 
 fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 
@@ -257,7 +257,7 @@ private fun assertFixtureMatches(
     pkg: String,
     version: String,
     versionCode: Int?,
-    patches: List<Patch<*>>,
+    patches: List<Patch>,
 ) {
     val where = "fixture ${apk.absolutePath}"
     val actual = metadata.versionName.orEmpty()
@@ -297,7 +297,7 @@ fun applyPatches(
     pkg: String,
     version: String,
     patchNames: Set<String>,
-    allPatches: Set<Patch<*>>,
+    allPatches: Set<Patch>,
     filterByCompatibility: Boolean = true,
     versionCode: Int? = null,
 ): List<ClassDef> {

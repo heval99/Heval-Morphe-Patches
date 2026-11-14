@@ -34,6 +34,7 @@ import com.android.tools.smali.dexlib2.util.ReferenceUtil
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import com.reandroid.arsc.chunk.TableBlock
 import java.io.File
 import java.nio.ByteBuffer
 import java.util.zip.ZipFile
@@ -280,8 +281,8 @@ class TruecallerSmokeTest {
         check(jump == target) { "$label: the $featureId skip gate jumps to $jump, expected $target" }
     }
 
-    private fun assertHevalControls(byType: Map<String, ClassDef>, allPatches: Set<Patch<*>>) {
-        // 1. The extension classes (core, screen, init provider, the Settings row helper) are merged.
+    private fun assertHevalControls(byType: Map<String, ClassDef>, allPatches: Set<Patch>) {
+        //1. The extension classes (core, screen, init provider, the Settings row helper) are merged.
         for (type in listOf(HEVAL_SETTINGS_CLASS, "${HEVAL_EXTENSION}Registry;", "${HEVAL_EXTENSION}InitProvider;",
             "${HEVAL_EXTENSION}ui/HevalControlsActivity;", TRUECALLER_CONTROLS_ENTRY)) {
             check(type in byType) { "$type is not in the patched dex" }
@@ -435,7 +436,7 @@ class TruecallerSmokeTest {
         assertSwapCallButtons(classes, byType)
         assertDisableCallButtonHaptics(classes, byType)
         assertHidePoorNetworkWarning(classes, apk)
-        assertHideProfileMenuItems(classes, byType, allPatches)
+        assertHideProfileMenuItems(classes, byType, allPatches, apk)
         // onGetCredential tests isAvailableOnDevice(int) in this build, so the routing applies.
         assertGmsCoreSupport(classes, workDir, PKG, TRUECALLER_INIT, SIGNATURE_SHA1, expectCredentialRouting = true)
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
@@ -2105,7 +2106,7 @@ class TruecallerSmokeTest {
         }
     }
 
-    private fun assertHideInboxCards(classes: List<ClassDef>, allPatches: Set<Patch<*>>) {
+    private fun assertHideInboxCards(classes: List<ClassDef>, allPatches: Set<Patch>) {
         // "Hide inbox cards": the Messages inbox builder (found by its banner keys and the BannerItem
         // filter calls, as the patch does) checks ArrayList.isEmpty() on the filtered banner list
         // right before the card carousel (spacer, item keyed 1111111, spacer). The skip gate sits
@@ -2174,7 +2175,7 @@ class TruecallerSmokeTest {
         check(builder.instructions().count { it.stringOrNull() == HIDE_INBOX_CARDS } == 1) { "$label has more than one inbox cards gate" }
     }
 
-    private fun assertHideProfileMenuItems(classes: List<ClassDef>, byType: Map<String, ClassDef>, allPatches: Set<Patch<*>>) {
+    private fun assertHideProfileMenuItems(classes: List<ClassDef>, byType: Map<String, ClassDef>, allPatches: Set<Patch>, apk: File) {
         val patch = allPatches.single { p -> p.name == PROFILE_MENU_PATCH && p.compatibility.orEmpty().any { it.packageName == PKG } }
         check(!patch.default) { "$PROFILE_MENU_PATCH is selected by default" }
         fun isEnabledCall(insn: Instruction?, register: Int) = insn?.call()?.let {
@@ -2275,12 +2276,11 @@ class TruecallerSmokeTest {
         }
         val titleRes = stateField(enabledClass, enabledToString, "titleRes", "I")
         val stateType = enabledClass.interfaces.single()
-        val publicXml = workDir.walkTopDown().firstOrNull { it.name == "public.xml" && it.parentFile.name == "values" }
-            ?: error("no decoded res/values/public.xml under $workDir")
-        val publics = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(publicXml).documentElement
-            .getElementsByTagName("public").let { list -> (0 until list.length).map { list.item(it) as Element } }
+        // Patcher 2.3.0 no longer writes a decoded res/values/public.xml, so read the ids from the
+        // stock resources.arsc (the patch resolves them with resourceId the same way).
+        val table = ZipFile(apk).use { zip -> zip.getInputStream(zip.getEntry("resources.arsc")).use { TableBlock.load(it) } }
         val titleIds = listOf("usershome_premium_section_premium_member", "usershome_premium_section_upgrade_to_premium").map { name ->
-            publics.single { it.getAttribute("type") == "string" && it.getAttribute("name") == name }.getAttribute("id").removePrefix("0x").toLong(16).toInt()
+            (table.getLocalResource("string", name) ?: error("string/$name is not in resources.arsc")).resourceId
         }
         val renderers = classes.methodsWhere { _, m ->
             AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && m.params().firstOrNull() == stateType &&
