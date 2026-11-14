@@ -1,5 +1,6 @@
 package app.template.patches.actionlauncher.premium
 
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_ACTIONLAUNCHER
@@ -18,6 +19,15 @@ val enablePremiumPatch = bytecodePatch(
     compatibleWith(COMPATIBILITY_ACTIONLAUNCHER)
 
     execute {
-        PlusStateFingerprint.method.returnEarly(true)
+        // The Plus code must be read by exactly one () -> boolean method.
+        val readers = mutableListOf<Pair<String, String>>()
+        classDefForEach { classDef ->
+            classDef.methods.filter { it.readsPlusPurchaseCode() }.forEach { readers += classDef.type to it.name }
+        }
+        if (readers.size != 1) {
+            throw PatchException("Enable Premium: expected one Plus purchase check, found ${readers.size}: $readers")
+        }
+        val (type, name) = readers.single()
+        mutableClassDefBy(type).methods.single { it.name == name && it.readsPlusPurchaseCode() }.returnEarly(true)
     }
 }
