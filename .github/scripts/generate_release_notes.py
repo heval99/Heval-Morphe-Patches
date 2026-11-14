@@ -8,7 +8,8 @@ commit message and the GitHub release body.
 The notes compare the previous release's patches-list.json with the new one (new, updated and
 removed apps; patches added to or removed from an app) and add one line per user-facing commit
 (feat -> "New:", fix -> "Fixed:", perf -> "Faster:") under the app its scope names. Every
-"Ported-from:" trailer in the range's commit bodies becomes a line under Credits.
+"Ported-from:" trailer in the range's commit bodies becomes a line under Credits. Every
+"BREAKING CHANGE:" footer (or "!" in a subject) becomes a bullet under "Breaking change", first.
 
     generate_release_notes.py --repo OWNER/REPO --version 2.2.0 --previous-tag v2.1.0 --build
     generate_release_notes.py --repo OWNER/REPO --version 2.2.0 --previous-list old.json \
@@ -131,6 +132,53 @@ def git_credits(repo_root, previous_ref, to_ref):
             seen.add(value.lower())
             credits.append(value)
     return credits
+
+
+BREAKING_FOOTER_RE = re.compile(r"^BREAKING[ -]CHANGES?:\s*(.*)$")
+TRAILER_LINE_RE = re.compile(r"^[A-Za-z][A-Za-z-]*(?::\s|\s#)")
+
+
+def breaking_from_messages(messages, repo=""):
+    """Breaking-change texts from full commit messages, in order, without repeats.
+
+    Two sources, as in conventional commits: a "BREAKING CHANGE:" / "BREAKING-CHANGE:" footer in
+    the body (its text runs on until a blank line or the next trailer), and a "!" after the type
+    or scope in the subject (the subject text is used when the commit has no footer).
+    """
+    found, seen = [], set()
+
+    def add(text):
+        text = clean_subject(" ".join(text.split()), repo)
+        if text and text.lower() not in seen:
+            seen.add(text.lower())
+            found.append(text)
+
+    for message in messages:
+        lines = (message or "").splitlines()
+        footers = 0
+        i = 1
+        while i < len(lines):
+            match = BREAKING_FOOTER_RE.match(lines[i].strip())
+            i += 1
+            if not match:
+                continue
+            parts = [match.group(1)]
+            while i < len(lines) and lines[i].strip() and not TRAILER_LINE_RE.match(lines[i].strip()):
+                parts.append(lines[i].strip())
+                i += 1
+            add(" ".join(parts))
+            footers += 1
+        subject = SUBJECT_RE.match(lines[0].strip()) if lines else None
+        if subject and subject.group("bang") and not footers:
+            add(subject.group("subject"))
+    return found
+
+
+def git_breaking(repo_root, previous_ref, to_ref, repo=""):
+    """Breaking changes of the commits in previous_ref..to_ref, oldest first."""
+    revision = f"{previous_ref}..{to_ref}" if previous_ref else to_ref
+    out = git(repo_root, "log", "--no-merges", "--reverse", "--format=%B%x00", revision)
+    return breaking_from_messages([m.strip("\n") for m in out.split("\x00") if m.strip()], repo)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -260,6 +308,38 @@ def covered_by_added_patches(subject, added):
     return found and not re.sub(r"[\s,&]+|\band\b|\bthe\b|\bpatch(?:es)?\b", "", rest)
 
 
+def words(text):
+    return set(re.findall(r"[a-z0-9]+", text.lower()))
+
+
+def mentions_added_patches(subject, added):
+    """Patch names (from `added`) whose every word appears in the commit subject."""
+    subject_words = words(subject)
+    return {name for name in added if words(name) and words(name) <= subject_words}
+
+
+def redundant_new_commits(commits, added):
+    """Indexes of "New" commits that only restate patches the patch-list diff already names.
+
+    A feat subject such as "add a spoiler-free mode that hides scores" does not equal the patch
+    name "Spoiler-free mode", so covered_by_added_patches misses it. Rule: when EVERY patch added
+    to the app is mentioned (all its words) by some New subject of that app, those subjects are
+    the patch announcements and each New subject that mentions an added patch is dropped. If any
+    added patch is not mentioned by a subject, nothing is dropped this way, because then the
+    subjects are not a complete restatement and may carry something the list cannot show.
+    """
+    if not added:
+        return set()
+    mentions = {
+        i: mentions_added_patches(c["subject"], added)
+        for i, c in enumerate(commits) if c["label"] == "New"
+    }
+    covered = set().union(*mentions.values()) if mentions else set()
+    if covered != set(added):
+        return set()
+    return {i for i, m in mentions.items() if m}
+
+
 # ---------------------------------------------------------------------------------------------
 # Rendering
 # ---------------------------------------------------------------------------------------------
@@ -282,6 +362,13 @@ def credits_section(credits):
     return "\n".join(["### 🙏 Credits"] + [f"- {credit}" for credit in credits])
 
 
+def breaking_section(breaking):
+    """The top "Breaking change" section, or None."""
+    if not breaking:
+        return None
+    return "\n".join(["### ⚠️ Breaking change"] + [f"- {text}" for text in breaking])
+
+
 def commit_line(commit, repo, with_scope=False):
     subject = clean_subject(commit["subject"], repo)
     if with_scope and commit["scopes"]:
@@ -289,7 +376,8 @@ def commit_line(commit, repo, with_scope=False):
     return f"- {commit['label']}: {subject}"
 
 
-def render_notes(old_list, new_list, subjects, repo, version, date, dir_index=None, credits=None):
+def render_notes(old_list, new_list, subjects, repo, version, date, dir_index=None, credits=None,
+                 breaking=None):
     """Full notes from both patch lists and the commit subjects of the release range."""
     dir_index = dir_index or {}
     old_apps, new_apps = load_apps(old_list), load_apps(new_list)
@@ -314,6 +402,9 @@ def render_notes(old_list, new_list, subjects, repo, version, date, dir_index=No
                 highlights.setdefault(package, []).append(commit)
 
     sections = []
+    breaking_block = breaking_section(breaking)
+    if breaking_block:
+        sections.append(breaking_block)
     if added_apps:
         lines = ["### 🆕 New apps"]
         for package in added_apps:
@@ -330,7 +421,11 @@ def render_notes(old_list, new_list, subjects, repo, version, date, dir_index=No
         lines = []
         if added:
             lines.append(f"- New: {', '.join(added)}")
-        for commit in highlights.get(package, []):
+        app_commits = highlights.get(package, [])
+        redundant = redundant_new_commits(app_commits, added)
+        for index, commit in enumerate(app_commits):
+            if index in redundant:
+                continue
             if commit["label"] == "New" and covered_by_added_patches(commit["subject"], added):
                 continue
             lines.append(commit_line(commit, repo))
@@ -364,7 +459,7 @@ def render_notes(old_list, new_list, subjects, repo, version, date, dir_index=No
     if other:
         sections.append("\n".join(["### 🔧 Other"] + [commit_line(c, repo) for c in other]))
 
-    if not sections:
+    if not sections or sections == [breaking_block]:
         sections.append("No user-facing changes.")
     credit = credits_section(credits)
     if credit:
@@ -372,14 +467,18 @@ def render_notes(old_list, new_list, subjects, repo, version, date, dir_index=No
     return "\n\n".join([heading(version, date), *sections, download_line(repo, version)]) + "\n"
 
 
-def render_fallback(subjects, repo, version, date, credits=None):
+def render_fallback(subjects, repo, version, date, credits=None, breaking=None):
     """Plain notes: every user-facing commit, used when a patch list is missing."""
     commits = parse_commits(subjects)
     body = (
         "\n".join(["### Changes"] + [commit_line(c, repo, with_scope=True) for c in commits])
         if commits else "No user-facing changes."
     )
-    parts = [heading(version, date), body]
+    parts = [heading(version, date)]
+    breaking_block = breaking_section(breaking)
+    if breaking_block:
+        parts.append(breaking_block)
+    parts.append(body)
     credit = credits_section(credits)
     if credit:
         parts.append(credit)
@@ -475,6 +574,12 @@ def generate(args):
     except (subprocess.CalledProcessError, OSError) as error:
         log(f"reading the {CREDIT_TRAILER} trailers failed: {error}")
 
+    breaking = []
+    try:
+        breaking = git_breaking(repo_root, previous_ref, args.to, args.repo)
+    except (subprocess.CalledProcessError, OSError) as error:
+        log(f"reading the breaking changes failed: {error}")
+
     try:
         if args.new_list:
             new_list = read_json(args.new_list)
@@ -495,12 +600,13 @@ def generate(args):
             except OSError as error:
                 log(f"could not scan the patch directories: {error}")
             return render_notes(
-                old_list, new_list, subjects, args.repo, args.version, date, dir_index, credits
+                old_list, new_list, subjects, args.repo, args.version, date, dir_index, credits,
+                breaking,
             )
         log("a patches list is missing; writing the plain commit list")
     except Exception as error:  # noqa: BLE001 - the release must never fail on its notes
         log(f"full notes failed ({type(error).__name__}: {error}); writing the plain commit list")
-    return render_fallback(subjects, args.repo, args.version, date, credits)
+    return render_fallback(subjects, args.repo, args.version, date, credits, breaking)
 
 
 def parse_args(argv):

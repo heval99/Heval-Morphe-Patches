@@ -139,9 +139,52 @@ class RenderNotesTest(unittest.TestCase):
 
     def test_feat_that_only_adds_listed_patches_is_not_repeated(self):
         text = render(["feat(truecaller): add Swap call answer and decline buttons, updated to version 26.42.5",
-                       "feat(truecaller): add Hide Messages tab and a new settings row"])
+                       "feat(truecaller): add a switch for the Messages tab and a new settings row"])
         self.assertNotIn("Add Swap call answer", text)
-        self.assertIn("- New: Add Hide Messages tab and a new settings row", text)
+        self.assertIn("- New: Add a switch for the Messages tab and a new settings row", text)
+
+    def test_feat_subjects_restating_new_patches_are_dropped(self):
+        old = patch_list("1", app("com.flashscore", "Flashscore", "26.11.5", "Disable ads"))
+        new = patch_list("2", app(
+            "com.flashscore", "Flashscore", "26.11.6", "Disable ads", "AMOLED black",
+            "Hide competitions", "Hide match polls", "Hide news", "Spoiler-free mode"))
+        subjects = [
+            "feat(flashscore): add switches to hide betting, match polls and news, and stop Microsoft Clarity",
+            "feat(flashscore): add an opt-in AMOLED black theme",
+            "feat(flashscore): add a spoiler-free mode that hides scores and alerts for marked matches",
+            "feat(flashscore): add a switch to hide competitions from match lists",
+        ]
+        text = notes.render_notes(old, new, subjects, REPO, "2", DATE, {})
+        self.assertIn("- New: AMOLED black, Hide competitions, Hide match polls, Hide news, "
+                      "Spoiler-free mode", text)
+        self.assertEqual(text.count("- New:"), 1)
+        # One new patch is not restated by any subject: nothing is dropped.
+        partial = notes.render_notes(old, new, subjects[1:2], REPO, "2", DATE, {})
+        self.assertIn("- New: Add an opt-in AMOLED black theme", partial)
+
+    def test_breaking_footer_goes_first(self):
+        text = notes.render_notes(
+            OLD, NEW, [], REPO, "1.1.0", DATE, {}, None, ["The bundle needs Manager 2.5 or newer"])
+        self.assertTrue(text.startswith(
+            "## 1.1.0 (2026-11-03)\n\n### ⚠️ Breaking change\n- The bundle needs Manager 2.5 or newer\n\n"
+            "### 🆕 New apps"))
+        fallback = notes.render_fallback([], REPO, "1.1.0", DATE, None, ["Oops"])
+        self.assertIn("(2026-11-03)\n\n### ⚠️ Breaking change\n- Oops\n\nNo user-facing", fallback)
+
+    def test_breaking_changes_from_messages(self):
+        found = notes.breaking_from_messages([
+            "feat: upgrade\n\nBody text.\n\nBREAKING CHANGE: needs Manager 2.5\nor newer. Older ones fail.\n"
+            "\nSigned-off-by: x",
+            "fix(a)!: drop the old switch",
+            "feat!: needs Manager 2.5 or newer",
+            "fix: other\n\nBREAKING-CHANGE: needs manager 2.5 or newer. older ones fail.\nRefs: #3",
+            "fix: nothing here\n\nPlain body",
+        ])
+        self.assertEqual(found, [
+            "Needs Manager 2.5 or newer. Older ones fail",
+            "Drop the old switch",
+            "Needs Manager 2.5 or newer",
+        ])
 
     def test_unmapped_and_scopeless_commits_go_to_other(self):
         text = render(["fix: keep the bundle loadable on Manager 2.0", "feat(deps): bump the patcher"])
