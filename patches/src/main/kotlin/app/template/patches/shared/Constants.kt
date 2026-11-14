@@ -1327,6 +1327,29 @@ object Constants {
     // which has no night value and is also a text/stroke color, so it is not edited). Light values untouched.
     // participant_logo_border and fs_support_1 (a border and a divider that followed the
     // recolored ones) get a night entry with the stock shade.
+    // 2026-11-14 (26.11.6, stage B1; FlashscoreSmokeTest and CLI patch without -f plus apkanalyzer; not run on a
+    // device): new "Spoiler-free mode" (Manager default on; switches flashscore.spoiler_free, _notifications,
+    // _lists and the list flashscore.spoiler_events, no restart). A long press on a match list row opens a
+    // small dialog that marks the match (where the root has no click listener, a forwarding click listener keeps
+    // the tap opening the match: AbsListView.performItemClick). Anchors, all resolved at patch time: the duel row binder is the only
+    // instance (row, EventListDuelHolder)V method (m30.d, one return-void, p1/p2 never written); it calls
+    // SpoilerFree.unmaskRow(p2) first and maskRow(p1, p2) before the return. The row's EventModel is the row
+    // class's only field of the class whose toString has "EventModel{sportId=" (ig7.a -> jn7); the event id is
+    // the String field its (String, ...) constructor stores p1 in (jn7.c). The highlighter view is the only
+    // View field of getHighlighterHolder()'s type (br6.a). The neutral name style is the last constant of the
+    // static (ZZ)I style picker the binder calls before setTextAppearance (l1m.g -> 0x7f150857). Pushes:
+    // HandlerEventDuel/NoDuel/Report.isValid(NotificationConfig) return false at entry when the event id (the
+    // String field read after ", eventId=" in the toString that has "NotificationConfig(type=", lth.n) is
+    // marked; that field must also be one HandlerEventDuel.isValid reads. The mask covers the score, part,
+    // penalties, sets and stage cells, the winner marks, the extra row (EventExtraRowHolder.getExtraRowLayout:
+    // aggregate or "Penalties 5-4"), the red-card counts (EventListIndicatorsHolder.getRedCardsHome/Away), the
+    // winner name style and the goal highlight; the score cells are masked first and each later step on its own.
+    // Every kept getter/field SpoilerFree reaches by reflection is checked to be public. The stage-time cell
+    // (StageTimeModel: kick-off time or live minute, no result) is left alone. Known leaks (not covered in v1):
+    // the odds row, the live minute, the match page header (DuelViewHolder and its fillers
+    // a33.D/r44.D/h44.D/r7e.D), the match-detail tabs, the Compose FSMatchRow lists on team and competition
+    // pages, score text updates made outside the row binder, and system-tray FCM notification payloads that
+    // never reach onMessageReceived.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",

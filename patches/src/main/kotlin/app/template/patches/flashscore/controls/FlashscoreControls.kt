@@ -29,6 +29,9 @@ internal object FlashscoreControlsCategory {
     const val BETTING = "Betting and promotions"
     const val MATCH_PAGE = "Match page"
     const val NEWS = "News"
+
+    /** The same title as Sofascore's and FotMob's spoiler-free section. */
+    const val SPOILER_FREE = "Scores and spoilers"
 }
 
 /** True for `invoke-virtual setContentView(View)` on the activity. */

@@ -585,6 +585,10 @@ once its patch is selected unless the table says off; the Manager names and desc
 | `flashscore.hide_match_polls` | Hide match polls | Match page | on | yes | remote-config MATCH_POLL_ENABLED (the MATCH_POLL zone of the match page) |
 | `flashscore.hide_news` | Hide news | News | on | yes | remote-config MATCH_LIST_FS_NEWS, FLASHSCORE_NEWS_ENABLED (news in league match lists) and NEWS_ENABLED (NEWS tab on team pages) |
 | `flashscore.amoled_black` | AMOLED black | Display | off (Manager patch, default off) | n/a | build-time only: a read-only "Applied at patch time" row, no switch |
+| `flashscore.spoiler_free` | Spoiler-free mode | Scores and spoilers | on | no | master switch: the long-press dialog on match list rows |
+| `flashscore.spoiler_notifications` | Hide alerts for marked matches | Scores and spoilers | on | no | `isValid` of HandlerEventDuel/NoDuel/Report answers false for a marked event id |
+| `flashscore.spoiler_lists` | Hide scores in match lists | Scores and spoilers | on | no | the duel row binder: `SpoilerFree.unmaskRow` first, `maskRow` before the return |
+| `flashscore.spoiler_events` | Marked matches (list) | Scores and spoilers | empty | no | the marked event ids; remove one or clear the list to show scores again |
 
 The three remote-config switches (betting, polls, news) share one gated helper chain on the config value
 class: with the switch off the helper takes the stock path, so the app sees the server value. Only the
@@ -597,6 +601,31 @@ tab_bg and event_info_background_non_live night entries, which referenced backgr
 borders_*, dividers_*, highlights_* and the elevated `#0f2d37`/`#213d46` fills are untouched. Two colors that followed the recolored ones are a border and a divider and get a night entry with the stock shade: `participant_logo_border` (`#0f2d37`) and `fs_support_1` (`#001e28`). It is not a runtime switch
 because the Compose screens resolve colors through R8-renamed token classes; the Patch settings screen shows a
 read-only row. Run on a device: NOT_RUN.
+
+Spoiler-free mode (2026-11-14, stage B1, `flashscore/spoiler/SpoilerFreeModePatch.kt`, `SpoilerFree` in
+`extensions/flashscore`) follows Sofascore's and FotMob's: the same name, category, master switch with
+per-surface switches that depend on it, and a "Marked matches" list kept on the phone. Flashscore has no
+overflow menu on the list rows, so marking is a long press on a match row (stock sets no long-click
+listener there; the listener is only installed while the master switch is on, and after the switch is
+turned off it is removed on the row's next bind). A long-clickable view takes the whole touch, so where the
+row root has no click listener of its own (the bare binder path; the wrapper path sets one), the patch also
+adds a click listener that hands the tap to the list's item click (`AbsListView.performItemClick`, else the
+parent's click), so a tap still opens the match; it never replaces an existing listener and is taken back
+with the long press. The dialog offers "Hide score and alerts" or "Show score" for that match;
+the action list is built in one place so a later "Hide this competition" entry (stage B2) can be added.
+When the list holds 500 matches, marking another one shows a toast that the list is full and can be
+trimmed or cleared in Patch settings. For a marked match the row first shows a dash in the two score
+cells, empties the penalties, sets, part and stage (FT/AET/Pen) cells and hides the winner indicators and
+the win/lose icon; then, each step on its own so a later failure never leaves the score visible, it hides
+the extra row (aggregate or "Penalties 5-4") and the red-card counts, gives both names the binder's
+no-winner text appearance and puts back the plain row background (no goal highlight). The stage-time
+cell (kick-off time or live minute) is left. The binder calls `unmaskRow` before the stock code, which
+undoes the last mask, so recycled rows stay stock. R8 names (the row's EventModel and its event-id field,
+the highlighter view, the no-winner style) are resolved at patch time and written into stub accessors in
+`SpoilerFree`; the kept getters and fields it calls by reflection are checked to be public. Not covered
+yet: the odds row, the live minute, the match page header and tabs, the Compose match rows on team and
+competition pages, score updates made outside the row binder, and FCM notifications that the system
+shows by itself. Run on a device: NOT_RUN.
 
 ## 365Scores features
 

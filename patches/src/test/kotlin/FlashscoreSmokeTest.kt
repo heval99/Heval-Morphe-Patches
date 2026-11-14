@@ -5,6 +5,14 @@ import app.template.patches.flashscore.misc.notifications.BLOCK_MARKETING_NOTIFI
 import app.template.patches.flashscore.misc.polls.HIDE_MATCH_POLLS
 import app.template.patches.flashscore.misc.theme.AMOLED_BLACK
 import app.template.patches.flashscore.shared.findEnumConstantField
+import app.template.patches.flashscore.spoiler.CONFIG_EVENT_ID
+import app.template.patches.flashscore.spoiler.CONFIG_TO_STRING
+import app.template.patches.flashscore.spoiler.DUEL_HOLDER
+import app.template.patches.flashscore.spoiler.EVENT_MODEL_TO_STRING
+import app.template.patches.flashscore.spoiler.PUSH_HANDLERS
+import app.template.patches.flashscore.spoiler.SPOILER_FEATURES
+import app.template.patches.flashscore.spoiler.SPOILER_FREE
+import app.template.patches.flashscore.spoiler.SPOILER_NOTIFICATIONS
 import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -88,6 +96,7 @@ private val FLASHSCORE_PATCHES = setOf(
     "Force edge-to-edge",
     "Block marketing notifications",
     "AMOLED black",
+    "Spoiler-free mode",
 )
 
 // SHA-1 of the original signing certificate (CN=Pavel Cvetler, O=LiveSport s.r.o.).
@@ -1073,6 +1082,121 @@ class FlashscoreSmokeTest {
         assertTrue(scaleCalls > 0, "no duration-scale read goes through AnimationSpeed")
         assertEquals(0, directReads, "a ValueAnimator.getDurationScale read is left outside the extension")
 
+        // Spoiler-free mode (2026-11-14): the duel row binder (found by the patch's shape) calls
+        // SpoilerFree.unmaskRow(p2) first and SpoilerFree.maskRow(p1, p2) right before its only
+        // return-void; the three push validators return false at entry for a marked event id; the
+        // stub accessors are rewritten with the resolved R8 fields.
+        fun Instruction.callsSpoiler(name: String) =
+            ((this as? ReferenceInstruction)?.reference as? MethodReference)?.let { it.definingClass == SPOILER_FREE && it.name == name } == true
+        fun Instruction.fieldRef() = (this as? ReferenceInstruction)?.reference as? FieldReference
+        val spoiler = klass(SPOILER_FREE)
+        val appClasses = classes.filterNot { it.type.startsWith("Lapp/template/extension/") }
+        val binders = appClasses.flatMap { c -> c.methods.map { c to it } }.filter { (_, m) ->
+            m.returnType == "V" && m.implementation != null && !AccessFlags.STATIC.isSet(m.accessFlags) &&
+                m.params().size == 2 && m.params()[1] == DUEL_HOLDER && !m.params()[0].startsWith("Ljava/")
+        }
+        assertEquals(1, binders.size, "expected one (row, EventListDuelHolder)V binder, found ${binders.map { "${it.first.type}->${it.second.name}" }}")
+        val binder = binders.single().second
+        val binderInsns = binder.instructions()
+        val binderRegs = binder.implementation!!.registerCount
+        assertEquals(Opcode.RETURN_VOID, binderInsns.last().opcode)
+        assertEquals(1, binderInsns.count { it.opcode == Opcode.RETURN_VOID }, "the binder gained a return-void")
+        val maskCall = binderInsns[binderInsns.size - 2]
+        assertTrue(
+            maskCall.opcode == Opcode.INVOKE_STATIC_RANGE && maskCall.callsSpoiler("maskRow") &&
+                (maskCall as RegisterRangeInstruction).startRegister == binderRegs - 2 && maskCall.registerCount == 2,
+            "SpoilerFree.maskRow(p1, p2) is not right before the binder's return-void",
+        )
+        val unmaskCall = binderInsns.first()
+        assertTrue(
+            unmaskCall.opcode == Opcode.INVOKE_STATIC_RANGE && unmaskCall.callsSpoiler("unmaskRow") &&
+                (unmaskCall as RegisterRangeInstruction).startRegister == binderRegs - 1 && unmaskCall.registerCount == 1,
+            "SpoilerFree.unmaskRow(p2) is not the binder's first instruction",
+        )
+        assertEquals(2, binderInsns.count { it.callsSpoiler("maskRow") || it.callsSpoiler("unmaskRow") }, "extra SpoilerFree calls in the binder")
+
+        fun classByToString(prefix: String) = appClasses.filter { c ->
+            c.methods.any { it.name == "toString" && it.implementation != null && it.strings().any { s -> s.startsWith(prefix) } }
+        }.also { assertEquals(1, it.size, "classes with toString \"$prefix\": ${it.map { c -> c.type }}") }.single()
+        val eventModel = classByToString(EVENT_MODEL_TO_STRING)
+        val config = classByToString(CONFIG_TO_STRING)
+        val configToString = config.method("toString", emptyList()).instructions()
+        val eventIdAt = configToString.indexOfFirst { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == CONFIG_EVENT_ID }
+        assertTrue(eventIdAt >= 0, "NotificationConfig.toString has no \"$CONFIG_EVENT_ID\"")
+        val configEventId = configToString.drop(eventIdAt + 1).firstNotNullOf { insn ->
+            ((insn as? ReferenceInstruction)?.reference as? FieldReference)
+                ?.takeIf { insn.opcode == Opcode.IGET_OBJECT && it.definingClass == config.type && it.type == "Ljava/lang/String;" }
+        }
+
+        val eventIdStub = spoiler.method("eventId", listOf("Ljava/lang/Object;")).instructions()
+        assertTrue(
+            eventIdStub.size >= 4 && eventIdStub[0].opcode == Opcode.CHECK_CAST &&
+                eventIdStub[1].fieldRef()?.let { it.definingClass == binder.params()[0] && it.type == eventModel.type } == true &&
+                eventIdStub[2].fieldRef()?.let { it.definingClass == eventModel.type && it.type == "Ljava/lang/String;" } == true &&
+                eventIdStub[3].opcode == Opcode.RETURN_OBJECT,
+            "SpoilerFree.eventId was not rewritten to read the row's EventModel id",
+        )
+        val highlightStub = spoiler.method("highlightView", listOf("Ljava/lang/Object;"))
+        assertTrue(highlightStub.calls(DUEL_HOLDER, "getHighlighterHolder"), "SpoilerFree.highlightView was not rewritten")
+        val styleStub = spoiler.method("neutralNameStyle", emptyList()).instructions()
+        val neutralStyle = (styleStub.first() as? NarrowLiteralInstruction)?.narrowLiteral ?: 0
+        assertTrue(styleStub.first().opcode == Opcode.CONST && neutralStyle != 0, "SpoilerFree.neutralNameStyle was not rewritten")
+
+        for (type in PUSH_HANDLERS) {
+            val isValid = klass(type).method("isValid", listOf(config.type))
+            val gate = isValid.instructions().take(10)
+            assertTrue(
+                ((gate.first() as? ReferenceInstruction)?.reference as? StringReference)?.string == SPOILER_NOTIFICATIONS.id &&
+                    gate.any { it.opcode == Opcode.IGET_OBJECT && it.fieldRef() == configEventId } &&
+                    gate.any { it.callsSpoiler("blocksPush") },
+                "$type.isValid does not start with the spoiler-free push gate on ${configEventId.name}",
+            )
+        }
+
+        // The push id field is also the String field HandlerEventDuel.isValid logs as "eventId:".
+        assertTrue(
+            klass(PUSH_HANDLERS.first()).method("isValid", listOf(config.type)).instructions()
+                .count { it.opcode == Opcode.IGET_OBJECT && it.fieldRef() == configEventId } >= 2,
+            "HandlerEventDuel.isValid does not read ${configEventId.name} in its stock code besides the gate",
+        )
+        // Every kept member SpoilerFree reaches by reflection is public (getMethod/getField see only those).
+        fun assertPublicGetter(type: String, name: String): String {
+            val m = klass(type).methods.singleOrNull { it.name == name && it.parameterTypes.isEmpty() }
+            assertTrue(m != null && AccessFlags.PUBLIC.isSet(m.accessFlags), "$type.$name() is missing or not public")
+            return m!!.returnType
+        }
+        assertPublicGetter(DUEL_HOLDER, "getRoot")
+        val eventViewType = assertPublicGetter(DUEL_HOLDER, "getEventViewHolder")
+        for (name in listOf("homeName", "awayName")) {
+            val field = klass(eventViewType).fields.singleOrNull { it.name == name }
+            assertTrue(field != null && AccessFlags.PUBLIC.isSet(field.accessFlags), "$eventViewType.$name is missing or not public")
+        }
+        assertPublicGetter(assertPublicGetter(DUEL_HOLDER, "getEventExtraRowHolder"), "getExtraRowLayout")
+        val indicatorsType = assertPublicGetter(DUEL_HOLDER, "getEventListIndicatorsHolder")
+        assertPublicGetter(indicatorsType, "getRedCardsHome")
+        assertPublicGetter(indicatorsType, "getRedCardsAway")
+        // The mask reaches the extra row and the red cards through those getters.
+        val spoilerStrings = spoiler.methods.filter { it.implementation != null }.flatMap { it.strings() }
+        for (name in listOf("getEventExtraRowHolder", "getExtraRowLayout", "getEventListIndicatorsHolder", "getRedCardsHome", "getRedCardsAway")) {
+            assertTrue(name in spoilerStrings, "SpoilerFree no longer names $name")
+        }
+        // Row taps keep working (2026-11-14 emulator regression): rows made long-clickable without a
+        // click listener of their own get one that forwards the tap to the list's item click, and the
+        // install checks for an existing listener first.
+        val spoilerNested = classes.filter { it.type.startsWith(SPOILER_FREE.removeSuffix(";") + "$") }
+        assertTrue(
+            spoilerNested.any { c ->
+                c.interfaces.contains("Landroid/view/View\$OnClickListener;") &&
+                    c.methods.any { it.implementation != null && it.calls("Landroid/widget/AbsListView;", "performItemClick") }
+            },
+            "SpoilerFree has no OnClickListener that forwards the tap to AbsListView.performItemClick",
+        )
+        val install = spoiler.method("installListeners", listOf("Landroid/view/View;", SPOILER_FREE.removeSuffix(";") + "\$Row;"))
+        assertTrue(
+            install.calls("Landroid/view/View;", "hasOnClickListeners") && install.calls("Landroid/view/View;", "setOnLongClickListener"),
+            "SpoilerFree.installListeners no longer checks for an existing click listener",
+        )
+
         val registry = classes.singleOrNull { it.type == "Lapp/template/extension/hevalcontrols/Registry;" }
             ?: error("Registry class not merged")
         val encoded = registry.method("encoded", emptyList()).instructions()
@@ -1089,7 +1213,7 @@ class FlashscoreSmokeTest {
         val wantedRegistry = HevalRegistryCodec.encode(
             ANIMATION_FEATURES + listOf(
                 BLOCK_MARKETING_NOTIFICATIONS, HIDE_BETTING, HIDE_MATCH_POLLS, HIDE_NEWS, AMOLED_BLACK,
-            ),
+            ) + SPOILER_FEATURES,
         ).split('\n')
         val gotRegistry = encoded.split('\n')
         assertTrue(
