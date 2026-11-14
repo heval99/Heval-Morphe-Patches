@@ -1350,6 +1350,23 @@ object Constants {
     // a33.D/r44.D/h44.D/r7e.D), the match-detail tabs, the Compose FSMatchRow lists on team and competition
     // pages, score text updates made outside the row binder, and system-tray FCM notification payloads that
     // never reach onMessageReceived.
+    // 2026-11-14 (26.11.6, stage B2; FlashscoreSmokeTest and CLI patch without -f plus apkanalyzer; not run on a
+    // device): new "Hide competitions" (Manager default off; switch flashscore.hide_competitions and the list
+    // flashscore.hidden_competitions, no restart). The row binder hook and the long press moved into the unnamed
+    // flashscoreMatchRowPatch shared with Spoiler-free mode; its dialog adds "Hide this competition" / "Show this
+    // competition". Anchors, all resolved at patch time: the event filter is the only method with the string
+    // "FILTER_EVENTS: " (nz4.s()); its returned register (v3) is written once by new-instance ArrayList, and
+    // CompetitionFilter.filterEvents(p0, v3) goes right after `iget-object p0, p0, nz4.a:Object; check-cast p0, gg7`
+    // (every return-object follows, no earlier branch skips it). Favourites stay: gg7's only field of the enum
+    // with "FILTER_MYFS" (gg7.q: ex8) is compared by enum name. Elements: "EventEntity{model=" class (na7) -> its
+    // only EventModel field (na7.b: jn7) -> the jn7 field whose class holds one LeagueModel (jn7.e: o9c) -> o9c.c
+    // (mhc, "LeagueModel{name='"). Key: the String field mhc's only ()Z method passes to a static (I, String)Z
+    // (mhc.f, the pinned-league template id); fallback the id after "', id='" (mhc.a = "<sportId>;<header>",
+    // built in di7.H). mhc.f is what the app's LeagueRowModel calls tournamentTemplateId (mhc.l = tournamentId,
+    // mhc.e = tournamentStageId), so a hidden competition covers all its seasons and stages. Label, fixed after the
+    // 2026-11-14 emulator run (it saved "1_8bP2bXmH" as its own label because the feed's NAME, mhc.b, is empty for
+    // list leagues): NAME_PART_1 · NAME_PART_2 (mhc.h · mhc.j, the header's prefix and name), resolved via the
+    // feed-key enum's constant ordinals (ohc) and the holder's key switch (o9c.a); the toast shows NAME_PART_2.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",

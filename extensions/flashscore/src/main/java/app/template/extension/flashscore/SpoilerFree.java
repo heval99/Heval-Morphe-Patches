@@ -86,6 +86,11 @@ public final class SpoilerFree {
         return null;
     }
 
+    /** Patched: the event model of the match row {@code row} (used by "Hide competitions"). */
+    public static Object eventModel(Object row) {
+        return null;
+    }
+
     /** Patched: the view whose background the goal highlight sets ({@code holder}'s highlighter). */
     public static View highlightView(Object holder) {
         return null;
@@ -144,8 +149,10 @@ public final class SpoilerFree {
     private static final int TEXT_SIZE = 5;
 
     /** A bound row: its current event and the holder (weak, the map keys must stay collectable). */
-    private static final class Row {
+    static final class Row {
         String eventId;
+        /** The row model of the last bind (data only, it never references the row's views). */
+        Object model;
         WeakReference<Object> holder;
         List<Undo> undo;
         boolean listening;
@@ -232,19 +239,33 @@ public final class SpoilerFree {
             Row row = rows.get(root);
             if (row != null) undo(row);
         } catch (Throwable failure) {
-            HevalSettings.reportFailure(LISTS, failure);
+            HevalSettings.reportFailure(rowFeature(), failure);
         }
+    }
+
+    /** Whether a long press on a row offers anything: spoiler-free mode or "Hide competitions" is on. */
+    private static boolean longPressWanted() {
+        return HevalSettings.isEnabled(FEATURE_ID) || HevalSettings.isEnabled(CompetitionFilter.FEATURE_ID);
+    }
+
+    /**
+     * The feature a row hook failure is reported under: spoiler-free mode's list surface when its
+     * master switch is on, else "Hide competitions" (the only other feature that hooks the rows).
+     */
+    private static String rowFeature() {
+        return HevalSettings.isEnabled(FEATURE_ID) ? LISTS : CompetitionFilter.FEATURE_ID;
     }
 
     /**
      * Patched before the match row binder returns: masks the row when its match is marked and
-     * {@value #LISTS} is on, and (while the master switch is on) lets a long press mark it.
+     * {@value #LISTS} is on, and (while the master switch or "Hide competitions" is on) installs the
+     * long press.
      */
     public static void maskRow(Object rowModel, Object holder) {
         try {
             View root = root(holder);
             if (root == null) return;
-            boolean master = HevalSettings.isEnabled(FEATURE_ID);
+            boolean master = longPressWanted();
             Row row = rows.get(root);
             if (!master) {
                 if (row != null) {
@@ -259,11 +280,14 @@ public final class SpoilerFree {
                 rows.put(root, row);
             }
             row.eventId = eventId(rowModel);
+            row.model = rowModel;
             row.holder = new WeakReference<>(holder);
             if (!row.listening) installListeners(root, row);
-            if (HevalSettings.isEnabled(LISTS) && isMarked(row.eventId)) mask(root, row, holder);
+            if (HevalSettings.isEnabled(FEATURE_ID) && HevalSettings.isEnabled(LISTS) && isMarked(row.eventId)) {
+                mask(root, row, holder);
+            }
         } catch (Throwable failure) {
-            HevalSettings.reportFailure(LISTS, failure);
+            HevalSettings.reportFailure(rowFeature(), failure);
         }
     }
 
@@ -473,17 +497,17 @@ public final class SpoilerFree {
     // Marking (long press on a row)
     // ---------------------------------------------------------------------------------------
 
-    /** One entry of the long-press dialog. Stage B2 adds "Hide this competition" here. */
-    private interface Action {
-        String title();
+    /** One entry of the long-press dialog (spoiler-free mode's and "Hide competitions"'). */
+    interface Action {
+        String title(Row row, String eventId);
 
         void run(Context context, View root, Row row, String eventId);
     }
 
     private static final Action TOGGLE_MATCH = new Action() {
         @Override
-        public String title() {
-            return "";
+        public String title(Row row, String eventId) {
+            return isMarked(eventId) ? "Show score" : "Hide score and alerts";
         }
 
         @Override
@@ -516,14 +540,11 @@ public final class SpoilerFree {
         }
     };
 
-    private static String toggleTitle(String eventId) {
-        return isMarked(eventId) ? "Show score" : "Hide score and alerts";
-    }
-
-    /** The dialog's entries for this row, in order. */
+    /** The dialog's entries for this row, in order: only those whose switch is on. */
     private static List<Action> actions() {
-        List<Action> actions = new ArrayList<>(1);
-        actions.add(TOGGLE_MATCH);
+        List<Action> actions = new ArrayList<>(2);
+        if (HevalSettings.isEnabled(FEATURE_ID)) actions.add(TOGGLE_MATCH);
+        if (HevalSettings.isEnabled(CompetitionFilter.FEATURE_ID)) actions.add(CompetitionFilter.TOGGLE);
         return actions;
     }
 
@@ -531,7 +552,7 @@ public final class SpoilerFree {
         @Override
         public boolean onLongClick(View root) {
             try {
-                if (!HevalSettings.isEnabled(FEATURE_ID)) return false;
+                if (!longPressWanted()) return false;
                 final Row row = rows.get(root);
                 final String eventId = row == null ? null : row.eventId;
                 if (eventId == null || eventId.isEmpty()) return false;
@@ -547,10 +568,10 @@ public final class SpoilerFree {
     private static void showDialog(final View root, final Row row, final String eventId) {
         final Context context = root.getContext();
         final List<Action> actions = actions();
+        if (actions.isEmpty()) return;
         String[] titles = new String[actions.size()];
         for (int i = 0; i < titles.length; i++) {
-            Action action = actions.get(i);
-            titles[i] = action == TOGGLE_MATCH ? toggleTitle(eventId) : action.title();
+            titles[i] = actions.get(i).title(row, eventId);
         }
         new AlertDialog.Builder(context)
             .setTitle(matchLabel(row, eventId))
@@ -584,7 +605,7 @@ public final class SpoilerFree {
         return "Match " + eventId;
     }
 
-    private static void toast(Context context, String text) {
+    static void toast(Context context, String text) {
         try {
             Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
         } catch (Throwable ignored) {

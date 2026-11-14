@@ -589,6 +589,8 @@ once its patch is selected unless the table says off; the Manager names and desc
 | `flashscore.spoiler_notifications` | Hide alerts for marked matches | Scores and spoilers | on | no | `isValid` of HandlerEventDuel/NoDuel/Report answers false for a marked event id |
 | `flashscore.spoiler_lists` | Hide scores in match lists | Scores and spoilers | on | no | the duel row binder: `SpoilerFree.unmaskRow` first, `maskRow` before the return |
 | `flashscore.spoiler_events` | Marked matches (list) | Scores and spoilers | empty | no | the marked event ids; remove one or clear the list to show scores again |
+| `flashscore.hide_competitions` | Hide competitions | Leagues and countries | on (Manager patch, default off) | no | the "Hide this competition" row-dialog entry and `CompetitionFilter.filterEvents` in the event filter (`"FILTER_EVENTS: "` method) |
+| `flashscore.hidden_competitions` | Hidden competitions (list) | Leagues and countries | empty | no | competition template ids labelled "prefix · league name"; remove one or clear the list to show its matches again |
 
 The three remote-config switches (betting, polls, news) share one gated helper chain on the config value
 class: with the switch off the helper takes the stock path, so the app sees the server value. Only the
@@ -626,6 +628,37 @@ the highlighter view, the no-winner style) are resolved at patch time and writte
 yet: the odds row, the live minute, the match page header and tabs, the Compose match rows on team and
 competition pages, score updates made outside the row binder, and FCM notifications that the system
 shows by itself. Run on a device: NOT_RUN.
+
+Hide competitions (2026-11-14, stage B2, `flashscore/competitions/HideCompetitionsPatch.kt`,
+`CompetitionFilter` in `extensions/flashscore`) follows Sofascore's and FotMob's: the same Manager name
+and default (off), the same category, and a list the user edits or clears in Patch settings. Unlike
+those, the user picks a competition from a match row: the long-press dialog (now the unnamed
+`flashscoreMatchRowPatch` in `spoiler/MatchRowHooks.kt`, shared by both patches, so either works
+alone) offers "Hide this competition" or "Show this competition" while the switch is on, next to the
+spoiler-free entry when that switch is on too. The filter is the app's event filter (the only method
+with the string "FILTER_EVENTS: ", 26.11.6 `nz4.s()`), which every match list (Today/Live, Favourites,
+sports, custom) reads its events through; right after it casts its list filter out of a field, before
+it sorts, `CompetitionFilter.filterEvents(filter, list)` removes the events of hidden competitions from
+the fresh list, so a league's header goes with them. The hook is not placed before each return because
+the method overwrites p0 (the filter) on one path; the cast point is the one site where the list and
+the filter are both live and that every return passes. The Favourites list (filter type named
+`FILTER_MYFS`) is never filtered, so starred matches stay there; FotMob keeps favourites too, Sofascore
+does not. The key is the league's template id (the id Flashscore keeps pinned leagues under, e.g.
+`1_8bP2bXmH`; the app's own LeagueRowModel calls it tournamentTemplateId, next to the season's
+tournamentId and the stage's tournamentStageId), which stays the same across seasons and stages, so
+another "Africa Cup of Nations" header that stays visible should be a different competition
+template (for example the finals rather than the qualification; not checked on a device). The picker label is the header's
+prefix and name ("AFRICA · Africa Cup of Nations - Qualification", feed keys NAME_PART_1 and
+NAME_PART_2; the feed's NAME is empty for list leagues, which is why the first emulator run saved the
+key as its label; a hidden league's label is re-reported once per process when its matches are
+filtered, which corrects such entries). The league id (`<sportId>;<header>`,
+whose header can name a stage) is only the fallback when an event has no template id, and both forms are
+checked and removed. The list is read on every list rebuild, so no restart is needed, but the lists cache
+their filtered events until they reload and no safe refresh trigger was found, so the dialog says the
+change applies when the list reloads. R8 names (event entity, event model, league holder, league and its
+id/template/name fields, the filter's type field) are resolved at patch time into stub accessors. Not
+covered: team and competition pages, the Compose lists, search, the widget and notifications. Run on a
+device: NOT_RUN.
 
 ## 365Scores features
 

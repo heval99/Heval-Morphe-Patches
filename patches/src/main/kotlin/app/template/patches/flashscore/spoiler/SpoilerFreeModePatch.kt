@@ -132,40 +132,10 @@ internal fun Method.stringFieldAfter(marker: String, owner: String): FieldRefere
     } ?: throw PatchException("$definingClass->$name reads no $owner String field after \"$marker\"")
 }
 
-/**
- * EventModel's event id: the String field its (String, ...) constructor stores its first parameter
- * in (26.11.6: jn7.<init>(String, na7, o9c) -> jn7.c), before p1 is reused. Exactly one field.
- */
-private fun eventIdField(model: ClassDef): FieldReference {
-    val fields = model.methods.filter {
-        it.name == "<init>" && it.params().firstOrNull() == STRING && it.implementation != null
-    }.mapNotNull { ctor ->
-        val code = ctor.implementation!!
-        val p1 = code.registerCount - ctor.params().sumOf { if (it == "J" || it == "D") 2 else 1 }
-        code.instructions.takeWhile { insn ->
-            !(insn.opcode.setsRegister() && (insn as? OneRegisterInstruction)?.registerA == p1)
-        }.firstNotNullOfOrNull { insn ->
-            val field = insn.fieldRef()
-            field?.takeIf {
-                insn.opcode == Opcode.IPUT_OBJECT && (insn as TwoRegisterInstruction).registerA == p1 &&
-                    it.definingClass == model.type && it.type == STRING
-            }
-        }
-    }.distinctBy { it.name }
-    return fields.singleOrNull()
-        ?: throw PatchException("${model.type}: ${fields.size} String fields take the constructors' first parameter, expected one (the event id)")
-}
-
 /** The one concrete method of [type] matching; throws on any other count. */
 private fun BytecodePatchContext.single(type: String, what: String, filter: (Method) -> Boolean): MutableMethod {
     val found = mutableClassDefBy(type).methods.filter { it.implementation != null && filter(it) }
     return found.singleOrNull() ?: throw PatchException("$type: ${found.size} $what methods, expected one")
-}
-
-/** Rewrites the body of a SpoilerFree stub (it answers stock until patched). */
-private fun MutableMethod.rewriteStub(smali: String) {
-    if ((implementation?.registerCount ?: 0) < 1) throw PatchException("$SPOILER_FREE->$name has no register")
-    addInstructionsChecked(0, smali)
 }
 
 // Spoiler-free mode (2026-11-14, stage B1, owner request), like Sofascore's and FotMob's. The user marks a
@@ -193,6 +163,9 @@ private fun MutableMethod.rewriteStub(smali: String) {
 // The R8 names (the row's EventModel field, its event-id field, the highlighter's view field, the neutral name
 // style) are resolved here and written into SpoilerFree's stub accessors; the kept getters and fields SpoilerFree
 // calls by reflection must be public.
+// Since stage B2 (2026-11-14) the binder hook, the eventId stub and the long press are flashscoreMatchRowPatch
+// (MatchRowHooks.kt), shared with "Hide competitions": the long press is installed while either switch is on and
+// the dialog lists the entries of the switches that are on; the row mask still needs this patch's switches.
 // Not covered in v1: the odds row, the live minute, the match page header and tabs, the Compose match rows (team
 // and competition pages), the widget, score updates made outside the row binder, and FCM pushes with a
 // notification payload that the system shows itself (they never reach the app).
@@ -201,47 +174,19 @@ val spoilerFreeModePatch = flashscoreControls.featurePatch(
     SPOILER_FREE_MODE,
     description = "Lets you hide scores and alerts for matches you mark.",
     default = true,
+    dependencies = setOf(flashscoreMatchRowPatch),
 ) {
     // The Flashscore extension comes with the Patch settings host (its Settings row lives there).
     classDefBy(SPOILER_FREE)
 
-    // Find every site before the first edit.
-    // 1. The row binder, by shape: instance V method, (row, EventListDuelHolder).
-    val binders = mutableListOf<Pair<String, Method>>()
-    classDefForEach { classDef ->
-        classDef.methods.forEach {
-            if (it.returnType == "V" && !it.isStatic() && it.implementation != null &&
-                it.parameterTypes.size == 2 && it.params()[1] == DUEL_HOLDER && !it.params()[0].startsWith("Ljava/")
-            ) binders += classDef.type to it
-        }
-    }
-    val (binderType, binderFound) = binders.singleOrNull()
-        ?: throw PatchException("${binders.size} (row, EventListDuelHolder)V row binders, expected one")
-    val binder = single(binderType, "row binder") { it.name == binderFound.name && it.params() == binderFound.params() && it.returnType == "V" }
-    val rowType = binder.params()[0]
-    val registers = binder.implementation!!.registerCount
-    val p1 = registers - 2
-    val p2 = registers - 1
-    val insns = binder.instructions.toList()
-    val returns = insns.indices.filter { insns[it].opcode == Opcode.RETURN_VOID }
-    val ret = returns.singleOrNull() ?: throw PatchException("$binderType->${binder.name} has ${returns.size} return-voids, expected one")
-    if (insns.any { insn ->
-            insn.opcode.setsRegister() && (insn as? OneRegisterInstruction)?.registerA.let { it == p1 || it == p2 } ||
-                insn.opcode.setsWideRegister() && (insn as? OneRegisterInstruction)?.registerA.let { it == p1 - 1 || it == p2 - 1 }
-        }
-    ) throw PatchException("$binderType->${binder.name} writes p1 or p2")
-    binder.requireNoBranchTargetAt(0, "Spoiler-free unmask hook")
-    binder.requireNoBranchTargetAt(ret, "Spoiler-free mask hook")
+    // Find every site before the first edit. The row binder hook, the eventId stub and the long press
+    // are flashscoreMatchRowPatch's (shared with "Hide competitions"); this patch reads the binder only.
+    val binderFound = findRowBinder()
+    val binderType = binderFound.type
+    val binder = binderFound.method
+    val insns = binder.implementation!!.instructions.toList()
 
-    // 2. The row's EventModel and its event id.
-    val model = classByToString(EVENT_MODEL_TO_STRING)
-    val modelFields = classDefBy(rowType).fields.filter { it.type == model.type && !AccessFlags.STATIC.isSet(it.accessFlags) }
-    val modelField = modelFields.singleOrNull()
-        ?: throw PatchException("$rowType has ${modelFields.size} ${model.type} fields, expected one (the event)")
-    val idField = eventIdField(model)
-
-    // 3. The holder's kept getters and EventViewHolder's name fields. SpoilerFree reaches them by
-    //    reflection (Class.getMethod / getField), which only sees public members: each must be public.
+    // 3. The holder's kept getters SpoilerFree calls by reflection (public, see publicGetter).
     val holder = classDefBy(DUEL_HOLDER)
     fun BytecodePatchContext.publicGetter(type: String, name: String, returns: String? = null): Method {
         val method = classDefBy(type).methods.singleOrNull { it.name == name && it.parameterTypes.isEmpty() && !it.isStatic() }
@@ -251,13 +196,6 @@ val spoilerFreeModePatch = flashscoreControls.featurePatch(
         return method
     }
     fun getter(name: String) = publicGetter(DUEL_HOLDER, name)
-    publicGetter(DUEL_HOLDER, "getRoot", VIEW)
-    val eventView = getter("getEventViewHolder").returnType
-    listOf("homeName", "awayName").forEach { name ->
-        val field = classDefBy(eventView).fields.singleOrNull { it.name == name && it.type == TEXT_VIEW }
-            ?: throw PatchException("$eventView no longer has the TextView field $name")
-        if (!AccessFlags.PUBLIC.isSet(field.accessFlags)) throw PatchException("$eventView.$name is not public (SpoilerFree reads it by reflection)")
-    }
     // The extra row (aggregate, "Penalties 5-4") and the red-card counts.
     val extraRow = getter("getEventExtraRowHolder").returnType
     publicGetter(extraRow, "getExtraRowLayout", VIEW)
@@ -316,19 +254,10 @@ val spoilerFreeModePatch = flashscoreControls.featurePatch(
     val extension = mutableClassDefBy(SPOILER_FREE).methods
     fun stub(name: String) = extension.singleOrNull { it.name == name && it.isStatic() }
         ?: throw PatchException("$SPOILER_FREE has no static $name")
-    val eventIdStub = stub("eventId")
     val highlightStub = stub("highlightView")
     val styleStub = stub("neutralNameStyle")
 
     // Edits.
-    eventIdStub.rewriteStub(
-        """
-            check-cast p0, $rowType
-            iget-object p0, p0, $rowType->${modelField.name}:${model.type}
-            iget-object p0, p0, ${model.type}->${idField.name}:$STRING
-            return-object p0
-        """,
-    )
     highlightStub.rewriteStub(
         """
             check-cast p0, $DUEL_HOLDER
@@ -344,10 +273,6 @@ val spoilerFreeModePatch = flashscoreControls.featurePatch(
             return v0
         """,
     )
-
-    // Later index first, so index 0 stays valid.
-    binder.addInstructionsChecked(ret, "invoke-static/range { p1 .. p2 }, $SPOILER_FREE->maskRow(Ljava/lang/Object;Ljava/lang/Object;)V")
-    binder.addInstructionsChecked(0, "invoke-static/range { p2 .. p2 }, $SPOILER_FREE->unmaskRow(Ljava/lang/Object;)V")
 
     validators.forEach { isValid ->
         isValid.addHevalGate(SPOILER_NOTIFICATIONS.id) { v ->

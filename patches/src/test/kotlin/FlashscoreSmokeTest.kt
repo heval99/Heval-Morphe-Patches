@@ -1,3 +1,8 @@
+import app.template.patches.flashscore.competitions.COMPETITION_FEATURES
+import app.template.patches.flashscore.competitions.COMPETITION_FILTER
+import app.template.patches.flashscore.competitions.EVENT_ENTITY_TO_STRING
+import app.template.patches.flashscore.competitions.FILTER_EVENTS_LOG
+import app.template.patches.flashscore.competitions.LEAGUE_MODEL_TO_STRING
 import app.template.patches.flashscore.misc.animations.ANIMATION_FEATURES
 import app.template.patches.flashscore.misc.betting.HIDE_BETTING
 import app.template.patches.flashscore.misc.news.HIDE_NEWS
@@ -97,6 +102,7 @@ private val FLASHSCORE_PATCHES = setOf(
     "Block marketing notifications",
     "AMOLED black",
     "Spoiler-free mode",
+    "Hide competitions",
 )
 
 // SHA-1 of the original signing certificate (CN=Pavel Cvetler, O=LiveSport s.r.o.).
@@ -1197,6 +1203,93 @@ class FlashscoreSmokeTest {
             "SpoilerFree.installListeners no longer checks for an existing click listener",
         )
 
+        // Hide competitions (2026-11-14, stage B2): the event filter (the only method with "FILTER_EVENTS: ")
+        // calls CompetitionFilter.filterEvents(filter, list) right after it casts its list filter out of p0's
+        // field; the returned list (one new ArrayList) is the call's second argument and every return-object
+        // comes after it. The stubs read the resolved R8 fields; the row dialog offers the competition entry.
+        fun Instruction.callsCompetition(name: String) =
+            ((this as? ReferenceInstruction)?.reference as? MethodReference)?.let { it.definingClass == COMPETITION_FILTER && it.name == name } == true
+        val filterMethods = appClasses.flatMap { c -> c.methods.filter { m -> m.implementation != null && FILTER_EVENTS_LOG in m.strings() } }
+        assertEquals(1, filterMethods.size, "methods with \"$FILTER_EVENTS_LOG\": ${filterMethods.map { "${it.definingClass}->${it.name}" }}")
+        val eventFilter = filterMethods.single()
+        val filterInsns = eventFilter.instructions()
+        val filterP0 = eventFilter.implementation!!.registerCount - 1
+        val hookAt = filterInsns.indexOfFirst { it.callsCompetition("filterEvents") }
+        assertEquals(1, filterInsns.count { it.callsCompetition("filterEvents") }, "expected one CompetitionFilter.filterEvents call")
+        val hook = filterInsns[hookAt] as FiveRegisterInstruction
+        val returnsAt = filterInsns.indices.filter { filterInsns[it].opcode == Opcode.RETURN_OBJECT }
+        assertEquals(2, returnsAt.size, "the event filter's return-objects changed")
+        val returned = returnsAt.map { (filterInsns[it] as OneRegisterInstruction).registerA }.toSet().single()
+        val castBefore = filterInsns[hookAt - 1]
+        assertTrue(
+            hook.registerCount == 2 && hook.registerC == filterP0 && hook.registerD == returned &&
+                castBefore.opcode == Opcode.CHECK_CAST && (castBefore as OneRegisterInstruction).registerA == filterP0 &&
+                returnsAt.all { it > hookAt },
+            "CompetitionFilter.filterEvents(p0, v$returned) is not right after the filter cast, before every return-object",
+        )
+        assertTrue(
+            filterInsns.take(hookAt).any { it.opcode == Opcode.NEW_INSTANCE && ((it as ReferenceInstruction).reference as TypeReference).type == "Ljava/util/ArrayList;" &&
+                (it as OneRegisterInstruction).registerA == returned },
+            "the returned list is not a new ArrayList made before the hook",
+        )
+        val filterType = ((castBefore as ReferenceInstruction).reference as TypeReference).type
+        val competition = klass(COMPETITION_FILTER)
+        val entityType = classByToString(EVENT_ENTITY_TO_STRING).type
+        val leagueType = classByToString(LEAGUE_MODEL_TO_STRING).type
+        val isEventStub = competition.method("isEvent", listOf("Ljava/lang/Object;")).instructions()
+        assertTrue(
+            isEventStub[0].opcode == Opcode.INSTANCE_OF && ((isEventStub[0] as ReferenceInstruction).reference as TypeReference).type == entityType &&
+                isEventStub[1].opcode == Opcode.RETURN,
+            "CompetitionFilter.isEvent was not rewritten",
+        )
+        fun assertReadStub(name: String, owner: String, fieldType: String? = null): FieldReference {
+            val body = competition.method(name, listOf("Ljava/lang/Object;")).instructions()
+            val field = body.getOrNull(1)?.fieldRef()
+            assertTrue(
+                body[0].opcode == Opcode.CHECK_CAST && body[1].opcode == Opcode.IGET_OBJECT && field?.definingClass == owner &&
+                    (fieldType == null || field.type == fieldType) && body[2].opcode == Opcode.RETURN_OBJECT,
+                "CompetitionFilter.$name was not rewritten to read a $owner field",
+            )
+            return field!!
+        }
+        assertReadStub("eventModel", entityType, eventModel.type)
+        val holderType = assertReadStub("leagueHolder", eventModel.type).type
+        assertReadStub("league", holderType, leagueType)
+        val leagueFields = listOf("leagueId", "leagueTemplateId", "leagueName", "leaguePrefix", "leagueTitle")
+            .map { assertReadStub(it, leagueType, "Ljava/lang/String;").name }
+        assertEquals(5, leagueFields.toSet().size, "the league id, template id and name stubs read the same field: $leagueFields")
+        // The header name parts are the fields the league holder's key switch stores NAME_PART_1/NAME_PART_2 in
+        // (they are what the app passes to LeagueRowModel as prefix and leagueName).
+        val holderSwitch = klass(holderType).methods.single { m ->
+            m.implementation != null && m.instructions().any { it.opcode == Opcode.PACKED_SWITCH } &&
+                m.instructions().any { it.opcode == Opcode.CHECK_CAST }
+        }
+        val storedFields = holderSwitch.instructions().mapNotNull { it.fieldRef()?.takeIf { f -> it.opcode == Opcode.IPUT_OBJECT && f.definingClass == leagueType }?.name }.toSet()
+        assertTrue(storedFields.containsAll(leagueFields.drop(1)), "the name/template stubs read fields the key switch never stores: $leagueFields vs $storedFields")
+        val typeField = assertReadStub("filterType", filterType)
+        assertTrue(
+            klass(typeField.type).methods.any { m -> m.name == "<clinit>" && "FILTER_MYFS" in m.strings() },
+            "the filter's type field ${typeField.type} is not the enum with FILTER_MYFS",
+        )
+        val rowModelStub = spoiler.method("eventModel", listOf("Ljava/lang/Object;")).instructions()
+        assertTrue(
+            rowModelStub[0].opcode == Opcode.CHECK_CAST && rowModelStub[1].fieldRef()?.type == eventModel.type &&
+                rowModelStub[2].opcode == Opcode.RETURN_OBJECT,
+            "SpoilerFree.eventModel was not rewritten",
+        )
+        // The dialog entry: the shared action list adds CompetitionFilter's toggle when its switch is on.
+        assertTrue(
+            spoiler.method("actions", emptyList()).instructions().any { insn ->
+                ((insn as? ReferenceInstruction)?.reference as? FieldReference)?.let { it.definingClass == COMPETITION_FILTER && it.name == "TOGGLE" } == true
+            },
+            "SpoilerFree.actions() does not offer the competition entry",
+        )
+        val competitionStrings = classes.filter { it.type.startsWith(COMPETITION_FILTER.removeSuffix(";")) }
+            .flatMap { c -> c.methods.filter { it.implementation != null }.flatMap { it.strings() } }
+        for (text in listOf("Hide this competition", "Show this competition", "flashscore.hidden_competitions", "FILTER_MYFS")) {
+            assertTrue(text in competitionStrings, "CompetitionFilter no longer has \"$text\"")
+        }
+
         val registry = classes.singleOrNull { it.type == "Lapp/template/extension/hevalcontrols/Registry;" }
             ?: error("Registry class not merged")
         val encoded = registry.method("encoded", emptyList()).instructions()
@@ -1213,7 +1306,7 @@ class FlashscoreSmokeTest {
         val wantedRegistry = HevalRegistryCodec.encode(
             ANIMATION_FEATURES + listOf(
                 BLOCK_MARKETING_NOTIFICATIONS, HIDE_BETTING, HIDE_MATCH_POLLS, HIDE_NEWS, AMOLED_BLACK,
-            ) + SPOILER_FEATURES,
+            ) + SPOILER_FEATURES + COMPETITION_FEATURES,
         ).split('\n')
         val gotRegistry = encoded.split('\n')
         assertTrue(
