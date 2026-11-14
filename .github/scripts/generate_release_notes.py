@@ -7,7 +7,8 @@ commit message and the GitHub release body.
 
 The notes compare the previous release's patches-list.json with the new one (new, updated and
 removed apps; patches added to or removed from an app) and add one line per user-facing commit
-(feat -> "New:", fix -> "Fixed:", perf -> "Faster:") under the app its scope names.
+(feat -> "New:", fix -> "Fixed:", perf -> "Faster:") under the app its scope names. Every
+"Ported-from:" trailer in the range's commit bodies becomes a line under Credits.
 
     generate_release_notes.py --repo OWNER/REPO --version 2.2.0 --previous-tag v2.1.0 --build
     generate_release_notes.py --repo OWNER/REPO --version 2.2.0 --previous-list old.json \
@@ -43,6 +44,7 @@ COMPAT_VAL_RE = re.compile(r"\bval\s+(COMPATIBILITY_\w+)\s*=\s*Compatibility\(")
 PACKAGE_NAME_RE = re.compile(r'\bpackageName\s*=\s*"([^"]+)"')
 COMPAT_REF_RE = re.compile(r"\bCOMPATIBILITY_[A-Z0-9_]+\b")
 
+CREDIT_TRAILER = "Ported-from"
 UNIVERSAL = "*"
 PATCHES_DIR = Path("patches/src/main/kotlin/app/template/patches")
 CONSTANTS = PATCHES_DIR / "shared" / "Constants.kt"
@@ -108,6 +110,27 @@ def git_subjects(repo_root, previous_ref, to_ref):
     revision = f"{previous_ref}..{to_ref}" if previous_ref else to_ref
     out = git(repo_root, "log", "--no-merges", "--reverse", "--format=%s", revision)
     return [line for line in out.splitlines() if line.strip()]
+
+
+def git_credits(repo_root, previous_ref, to_ref):
+    """Values of the "Ported-from:" commit trailers in the range, oldest first, without repeats.
+
+    A commit that ports or adapts patches from another project names it in this trailer, e.g.
+    "Ported-from: Samsung Keyboard base from https://github.com/owner/repo (GPL-3.0)". The notes
+    list these under Credits, because new-app commits are not shown as lines of their own.
+    """
+    revision = f"{previous_ref}..{to_ref}" if previous_ref else to_ref
+    out = git(
+        repo_root, "log", "--no-merges", "--reverse",
+        f"--format=%(trailers:key={CREDIT_TRAILER},valueonly)", revision,
+    )
+    credits, seen = [], set()
+    for line in out.splitlines():
+        value = line.strip()
+        if value and value.lower() not in seen:
+            seen.add(value.lower())
+            credits.append(value)
+    return credits
 
 
 # ---------------------------------------------------------------------------------------------
@@ -252,6 +275,13 @@ def download_line(repo, version):
     )
 
 
+def credits_section(credits):
+    """The Credits section for the ported work named in "Ported-from:" trailers, or None."""
+    if not credits:
+        return None
+    return "\n".join(["### 🙏 Credits"] + [f"- {credit}" for credit in credits])
+
+
 def commit_line(commit, repo, with_scope=False):
     subject = clean_subject(commit["subject"], repo)
     if with_scope and commit["scopes"]:
@@ -259,7 +289,7 @@ def commit_line(commit, repo, with_scope=False):
     return f"- {commit['label']}: {subject}"
 
 
-def render_notes(old_list, new_list, subjects, repo, version, date, dir_index=None):
+def render_notes(old_list, new_list, subjects, repo, version, date, dir_index=None, credits=None):
     """Full notes from both patch lists and the commit subjects of the release range."""
     dir_index = dir_index or {}
     old_apps, new_apps = load_apps(old_list), load_apps(new_list)
@@ -336,17 +366,24 @@ def render_notes(old_list, new_list, subjects, repo, version, date, dir_index=No
 
     if not sections:
         sections.append("No user-facing changes.")
+    credit = credits_section(credits)
+    if credit:
+        sections.append(credit)
     return "\n\n".join([heading(version, date), *sections, download_line(repo, version)]) + "\n"
 
 
-def render_fallback(subjects, repo, version, date):
+def render_fallback(subjects, repo, version, date, credits=None):
     """Plain notes: every user-facing commit, used when a patch list is missing."""
     commits = parse_commits(subjects)
     body = (
         "\n".join(["### Changes"] + [commit_line(c, repo, with_scope=True) for c in commits])
         if commits else "No user-facing changes."
     )
-    return "\n\n".join([heading(version, date), body, download_line(repo, version)]) + "\n"
+    parts = [heading(version, date), body]
+    credit = credits_section(credits)
+    if credit:
+        parts.append(credit)
+    return "\n\n".join([*parts, download_line(repo, version)]) + "\n"
 
 
 # ---------------------------------------------------------------------------------------------
@@ -432,6 +469,12 @@ def generate(args):
     except (subprocess.CalledProcessError, OSError) as error:
         log(f"git log failed: {error}")
 
+    credits = []
+    try:
+        credits = git_credits(repo_root, previous_ref, args.to)
+    except (subprocess.CalledProcessError, OSError) as error:
+        log(f"reading the {CREDIT_TRAILER} trailers failed: {error}")
+
     try:
         if args.new_list:
             new_list = read_json(args.new_list)
@@ -451,11 +494,13 @@ def generate(args):
                 dir_index = scan_patch_dirs(repo_root)
             except OSError as error:
                 log(f"could not scan the patch directories: {error}")
-            return render_notes(old_list, new_list, subjects, args.repo, args.version, date, dir_index)
+            return render_notes(
+                old_list, new_list, subjects, args.repo, args.version, date, dir_index, credits
+            )
         log("a patches list is missing; writing the plain commit list")
     except Exception as error:  # noqa: BLE001 - the release must never fail on its notes
         log(f"full notes failed ({type(error).__name__}: {error}); writing the plain commit list")
-    return render_fallback(subjects, args.repo, args.version, date)
+    return render_fallback(subjects, args.repo, args.version, date, credits)
 
 
 def parse_args(argv):
