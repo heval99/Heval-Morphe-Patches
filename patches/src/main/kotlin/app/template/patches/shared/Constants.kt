@@ -1290,6 +1290,12 @@ object Constants {
     // caused by this update): Force edge-to-edge's helper for Android 8.0-8.1 has one branch that jumps
     // past the inserted transparent-colour instruction, so only one of its two paths is forced; it only
     // affects the navigation-bar colour on those versions. The other two helpers are fully forced.
+    // 2026-11-14 (#128): the app has a static (Activity)V helper (re.a in 26.11.6) that, on SDK 31+,
+    // reads Configuration.fontWeightAdjustment and writes 1 into the shared live Configuration when
+    // it is above 1; it runs from the base activities' onCreate and onConfigurationChanged. Each
+    // font consumer then saw 300 or 1 depending on timing, so with Bold text on the weight and width
+    // changed between launches. "Use system font" now returns early from it (found by shape: the
+    // only method with an iput of that field; the patch fails if there is more than one).
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",

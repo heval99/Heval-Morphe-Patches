@@ -788,6 +788,30 @@ class FlashscoreSmokeTest {
         )
         assertTrue(classes.any { it.type == "Lapp/template/extension/flashscore/SystemFonts;" }, "SystemFonts is not merged")
 
+        // Use system font (#128): the app's Bold-text override (the static (Activity)V that reads
+        // Configuration.fontWeightAdjustment and writes 1 back) returns at once, and it was the only
+        // method in the stock APK that writes the field; nothing writes it any more.
+        fun Method.writesFontWeightAdjustment() = instructions().any {
+            it.opcode == Opcode.IPUT && ((it as ReferenceInstruction).reference as FieldReference).let { f ->
+                f.definingClass == "Landroid/content/res/Configuration;" && f.name == "fontWeightAdjustment"
+            }
+        }
+        val stockWriters = originalClasses(apk).flatMap { it.methods }.filter { it.implementation != null && it.writesFontWeightAdjustment() }
+        assertEquals(1, stockWriters.size, "stock fontWeightAdjustment writers: ${stockWriters.map { "${it.definingClass}->${it.name}" }}")
+        val stockWriter = stockWriters.single()
+        assertTrue(
+            AccessFlags.STATIC.isSet(stockWriter.accessFlags) && stockWriter.returnType == "V" && stockWriter.parameterTypes.size == 1,
+            "the fontWeightAdjustment writer is no longer a static one-parameter void method",
+        )
+        val patchedWriter = classes.single { it.type == stockWriter.definingClass }
+            .methods.single { it.name == stockWriter.name && it.params() == stockWriter.params() }
+        assertReturnsEarlyVoid(patchedWriter, label = "fontWeightAdjustment override ${stockWriter.definingClass}->${stockWriter.name}", diagnostics)
+        val leftWriters = classes.flatMap { it.methods }.filter { it.implementation != null && it.writesFontWeightAdjustment() }
+        assertTrue(
+            leftWriters.all { it.definingClass == stockWriter.definingClass && it.name == stockWriter.name },
+            "other methods write fontWeightAdjustment: ${leftWriters.map { "${it.definingClass}->${it.name}" }}",
+        )
+
         // Use system font (styles): the decoded text appearances and layouts no longer name the
         // custom families, and the weight mapping uses the system families.
         val styles = workDir.walkTopDown()
