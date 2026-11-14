@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "2.4.0-dev.1",
+  "version": "2.4.0-dev.2",
   "patches": [
     {
       "name": "AMOLED black",
@@ -132,12 +132,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "ARM64_V8A": 403061757,
-                "ARMEABI_V7A": 403061757,
-                "X86_64": 403061757,
-                "X86": 403061757
+                "ARM64_V8A": 403082131,
+                "ARMEABI_V7A": 403082131,
+                "X86_64": 403082131,
+                "X86": 403082131
               },
               "isExperimental": false,
               "minSdk": null,
@@ -172,6 +172,74 @@
                 "ARMEABI_V7A": 440400,
                 "X86_64": 440400,
                 "X86": 440400
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Always incognito",
+      "description": "Never learns from what you type.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Always use GIPHY",
+      "description": "Shows GIPHY GIFs in every language.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
               },
               "isExperimental": false,
               "minSdk": null,
@@ -287,6 +355,89 @@
         }
       ],
       "options": []
+    },
+    {
+      "name": "Autofill in any field",
+      "description": "Shows password and autofill suggestions even when the field already has text.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Bigger clipboard history",
+      "description": "Keeps more items in the clipboard history.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "clipboardHistorySize",
+          "title": "Clipboard history size",
+          "description": "How many items the clipboard history keeps.",
+          "required": true,
+          "type": "kotlin.Int",
+          "default": 200,
+          "values": {
+            "100": 100,
+            "200": 200,
+            "500": 500,
+            "1000": 1000
+          }
+        }
+      ]
     },
     {
       "name": "Block marketing notifications",
@@ -414,12 +565,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "3.2.6",
+              "version": "3.2.7.1",
               "versionCodes": {
-                "ARM64_V8A": 3440487,
-                "ARMEABI_V7A": 3440487,
-                "X86_64": 3440487,
-                "X86": 3440487
+                "ARM64_V8A": 3449157,
+                "ARMEABI_V7A": 3449157,
+                "X86_64": 3449157,
+                "X86": 3449157
               },
               "isExperimental": false,
               "minSdk": null,
@@ -462,6 +613,98 @@
       "options": []
     },
     {
+      "name": "Change app name",
+      "description": "Renames Samsung Keyboard, so the two keyboards can be told apart.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "appName",
+          "title": "App name",
+          "description": "Shown in the keyboard list and App info.",
+          "required": true,
+          "type": "kotlin.String",
+          "default": "Samsung Keyboard (Heval)",
+          "values": null
+        }
+      ]
+    },
+    {
+      "name": "Change package name",
+      "description": "Installs next to the system Samsung Keyboard under its own package name.",
+      "default": true,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch",
+        "ResourcePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "packageName",
+          "title": "Package name",
+          "description": "Must be a valid Android package name.",
+          "required": true,
+          "type": "kotlin.String",
+          "default": "app.heval.honeyboard",
+          "values": null
+        }
+      ]
+    },
+    {
       "name": "Clean shared links",
       "description": "Removes tracking codes from shared links.",
       "default": true,
@@ -496,6 +739,57 @@
         }
       ],
       "options": []
+    },
+    {
+      "name": "Clipboard columns",
+      "description": "Sets how many columns the clipboard panel has, and how many recent items its top row shows.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "clipboardColumns",
+          "title": "Columns",
+          "description": "How many columns the clipboard panel has (1 to 6).",
+          "required": true,
+          "type": "kotlin.Int",
+          "default": 3,
+          "values": {
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5,
+            "6": 6
+          }
+        }
+      ]
     },
     {
       "name": "Compact match lists",
@@ -617,10 +911,10 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "X86_64": 2016193998,
-                "ARM64_V8A": 2016193999
+                "X86_64": 2016194414,
+                "ARM64_V8A": 2016194415
               },
               "isExperimental": false,
               "minSdk": null,
@@ -685,12 +979,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "ARM64_V8A": 403061757,
-                "ARMEABI_V7A": 403061757,
-                "X86_64": 403061757,
-                "X86": 403061757
+                "ARM64_V8A": 403082131,
+                "ARMEABI_V7A": 403082131,
+                "X86_64": 403082131,
+                "X86": 403082131
               },
               "isExperimental": false,
               "minSdk": null,
@@ -1094,12 +1388,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "11.13.0.39",
+              "version": "11.14.0.35",
               "versionCodes": {
-                "ARM64_V8A": 54189,
-                "ARMEABI_V7A": 54189,
-                "X86_64": 54189,
-                "X86": 54189
+                "ARM64_V8A": 54488,
+                "ARMEABI_V7A": 54488,
+                "X86_64": 54488,
+                "X86": 54488
               },
               "isExperimental": false,
               "minSdk": null,
@@ -1196,12 +1490,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "1.9.3",
+              "version": "1.9.4",
               "versionCodes": {
-                "ARM64_V8A": 93,
-                "ARMEABI_V7A": 93,
-                "X86_64": 93,
-                "X86": 93
+                "ARM64_V8A": 94,
+                "ARMEABI_V7A": 94,
+                "X86_64": 94,
+                "X86": 94
               },
               "isExperimental": false,
               "minSdk": null,
@@ -1429,12 +1723,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "8.2",
+              "version": "10.0",
               "versionCodes": {
-                "ARM64_V8A": 575,
-                "ARMEABI_V7A": 575,
-                "X86_64": 575,
-                "X86": 575
+                "ARM64_V8A": 83,
+                "ARMEABI_V7A": 83,
+                "X86_64": 83,
+                "X86": 83
               },
               "isExperimental": false,
               "minSdk": null,
@@ -1463,12 +1757,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "1.10.31",
+              "version": "1.10.33",
               "versionCodes": {
-                "ARM64_V8A": 11031,
-                "ARMEABI_V7A": 11031,
-                "X86_64": 11031,
-                "X86": 11031
+                "ARM64_V8A": 11033,
+                "ARMEABI_V7A": 11033,
+                "X86_64": 11033,
+                "X86": 11033
               },
               "isExperimental": false,
               "minSdk": null,
@@ -2007,12 +2301,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "10.0.31",
+              "version": "10.0.35",
               "versionCodes": {
-                "ARM64_V8A": 7572,
-                "ARMEABI_V7A": 7572,
-                "X86_64": 7572,
-                "X86": 7572
+                "ARM64_V8A": 7588,
+                "ARMEABI_V7A": 7588,
+                "X86_64": 7588,
+                "X86": 7588
               },
               "isExperimental": false,
               "minSdk": null,
@@ -2765,12 +3059,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "2026.10-10188:RELEASE",
+              "version": "2026.11-10189:RELEASE",
               "versionCodes": {
-                "ARM64_V8A": 10188,
-                "ARMEABI_V7A": 10188,
-                "X86_64": 10188,
-                "X86": 10188
+                "ARM64_V8A": 10189,
+                "ARMEABI_V7A": 10189,
+                "X86_64": 10189,
+                "X86": 10189
               },
               "isExperimental": false,
               "minSdk": null,
@@ -3113,12 +3407,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "1.10.31",
+              "version": "1.10.33",
               "versionCodes": {
-                "ARM64_V8A": 11031,
-                "ARMEABI_V7A": 11031,
-                "X86_64": 11031,
-                "X86": 11031
+                "ARM64_V8A": 11033,
+                "ARMEABI_V7A": 11033,
+                "X86_64": 11033,
+                "X86": 11033
               },
               "isExperimental": false,
               "minSdk": null,
@@ -3215,12 +3509,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "1.67",
+              "version": "1.68",
               "versionCodes": {
-                "ARM64_V8A": 67,
-                "ARMEABI_V7A": 67,
-                "X86_64": 67,
-                "X86": 67
+                "ARM64_V8A": 68,
+                "ARMEABI_V7A": 68,
+                "X86_64": 68,
+                "X86": 68
               },
               "isExperimental": false,
               "minSdk": null,
@@ -3455,12 +3749,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "1.10.31",
+              "version": "1.10.33",
               "versionCodes": {
-                "ARM64_V8A": 11031,
-                "ARMEABI_V7A": 11031,
-                "X86_64": 11031,
-                "X86": 11031
+                "ARM64_V8A": 11033,
+                "ARMEABI_V7A": 11033,
+                "X86_64": 11033,
+                "X86": 11033
               },
               "isExperimental": false,
               "minSdk": null,
@@ -3489,12 +3783,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "1.10.31",
+              "version": "1.10.33",
               "versionCodes": {
-                "ARM64_V8A": 11031,
-                "ARMEABI_V7A": 11031,
-                "X86_64": 11031,
-                "X86": 11031
+                "ARM64_V8A": 11033,
+                "ARMEABI_V7A": 11033,
+                "X86_64": 11033,
+                "X86": 11033
               },
               "isExperimental": false,
               "minSdk": null,
@@ -3523,12 +3817,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "ARM64_V8A": 403061757,
-                "ARMEABI_V7A": 403061757,
-                "X86_64": 403061757,
-                "X86": 403061757
+                "ARM64_V8A": 403082131,
+                "ARMEABI_V7A": 403082131,
+                "X86_64": 403082131,
+                "X86": 403082131
               },
               "isExperimental": false,
               "minSdk": null,
@@ -3867,12 +4161,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "11.13.0.39",
+              "version": "11.14.0.35",
               "versionCodes": {
-                "ARM64_V8A": 54189,
-                "ARMEABI_V7A": 54189,
-                "X86_64": 54189,
-                "X86": 54189
+                "ARM64_V8A": 54488,
+                "ARMEABI_V7A": 54488,
+                "X86_64": 54488,
+                "X86": 54488
               },
               "isExperimental": false,
               "minSdk": null,
@@ -4072,12 +4366,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "1.10.31",
+              "version": "1.10.33",
               "versionCodes": {
-                "ARM64_V8A": 11031,
-                "ARMEABI_V7A": 11031,
-                "X86_64": 11031,
-                "X86": 11031
+                "ARM64_V8A": 11033,
+                "ARMEABI_V7A": 11033,
+                "X86_64": 11033,
+                "X86": 11033
               },
               "isExperimental": false,
               "minSdk": null,
@@ -4212,10 +4506,10 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "X86_64": 2016193998,
-                "ARM64_V8A": 2016193999
+                "X86_64": 2016194414,
+                "ARM64_V8A": 2016194415
               },
               "isExperimental": false,
               "minSdk": null,
@@ -4244,12 +4538,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "ARM64_V8A": 403061757,
-                "ARMEABI_V7A": 403061757,
-                "X86_64": 403061757,
-                "X86": 403061757
+                "ARM64_V8A": 403082131,
+                "ARMEABI_V7A": 403082131,
+                "X86_64": 403082131,
+                "X86": 403082131
               },
               "isExperimental": false,
               "minSdk": null,
@@ -4755,6 +5049,40 @@
     },
     {
       "name": "Disable telemetry",
+      "description": "Turns off Samsung Analytics, crash reports and typed-text collection.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable telemetry",
       "description": "Disables analytics and crash reporting.",
       "default": true,
       "dependencies": [],
@@ -4909,12 +5237,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "2026.10-10188:RELEASE",
+              "version": "2026.11-10189:RELEASE",
               "versionCodes": {
-                "ARM64_V8A": 10188,
-                "ARMEABI_V7A": 10188,
-                "X86_64": 10188,
-                "X86": 10188
+                "ARM64_V8A": 10189,
+                "ARMEABI_V7A": 10189,
+                "X86_64": 10189,
+                "X86": 10189
               },
               "isExperimental": false,
               "minSdk": null,
@@ -4981,12 +5309,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "7.3.3",
+              "version": "7.4.1",
               "versionCodes": {
-                "ARM64_V8A": 20260823,
-                "ARMEABI_V7A": 20260823,
-                "X86_64": 20260823,
-                "X86": 20260823
+                "ARM64_V8A": 20261113,
+                "ARMEABI_V7A": 20261113,
+                "X86_64": 20261113,
+                "X86": 20261113
               },
               "isExperimental": false,
               "minSdk": null,
@@ -5015,12 +5343,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "26.44.0",
+              "version": "26.45.0",
               "versionCodes": {
-                "ARM64_V8A": 2644000,
-                "ARMEABI_V7A": 2644000,
-                "X86_64": 2644000,
-                "X86": 2644000
+                "ARM64_V8A": 2645000,
+                "ARMEABI_V7A": 2645000,
+                "X86_64": 2645000,
+                "X86": 2645000
               },
               "isExperimental": false,
               "minSdk": null,
@@ -5298,40 +5626,6 @@
                 "ARMEABI_V7A": 18134,
                 "X86_64": 18134,
                 "X86": 18134
-              },
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Enable Full Version",
-      "description": "Unlocks the full version.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "net.dinglisch.android.taskerm",
-          "name": "Tasker",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#4CAF50",
-          "signatures": [
-            "973fe25b9be28fb7436d49582b04277767c852539be31783d134a55621b6636d"
-          ],
-          "formFactor": "MOBILE",
-          "targets": [
-            {
-              "version": "6.7.8",
-              "versionCodes": {
-                "ARM64_V8A": 5454,
-                "ARMEABI_V7A": 5454,
-                "X86_64": 5454,
-                "X86": 5454
               },
               "isExperimental": false,
               "minSdk": null,
@@ -5870,12 +6164,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "1.67",
+              "version": "1.68",
               "versionCodes": {
-                "ARM64_V8A": 67,
-                "ARMEABI_V7A": 67,
-                "X86_64": 67,
-                "X86": 67
+                "ARM64_V8A": 68,
+                "ARMEABI_V7A": 68,
+                "X86_64": 68,
+                "X86": 68
               },
               "isExperimental": false,
               "minSdk": null,
@@ -6552,12 +6846,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "1.2339",
+              "version": "1.2341",
               "versionCodes": {
-                "ARM64_V8A": 2339,
-                "ARMEABI_V7A": 2339,
-                "X86_64": 2339,
-                "X86": 2339
+                "ARM64_V8A": 2341,
+                "ARMEABI_V7A": 2341,
+                "X86_64": 2341,
+                "X86": 2341
               },
               "isExperimental": false,
               "minSdk": null,
@@ -6620,10 +6914,10 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "X86_64": 2016193998,
-                "ARM64_V8A": 2016193999
+                "X86_64": 2016194414,
+                "ARM64_V8A": 2016194415
               },
               "isExperimental": false,
               "minSdk": null,
@@ -6652,12 +6946,54 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "ARM64_V8A": 403061757,
-                "ARMEABI_V7A": 403061757,
-                "X86_64": 403061757,
-                "X86": 403061757
+                "ARM64_V8A": 403082131,
+                "ARMEABI_V7A": 403082131,
+                "X86_64": 403082131,
+                "X86": 403082131
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable non-One UI ROM support",
+      "description": "Makes Samsung Keyboard usable on non-One UI ROMs.",
+      "default": true,
+      "dependencies": [
+        "ResourcePatch",
+        "ResourcePatch",
+        "BytecodePatch",
+        "BytecodePatch",
+        "BytecodePatch",
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
               },
               "isExperimental": false,
               "minSdk": null,
@@ -7053,42 +7389,6 @@
           }
         }
       ]
-    },
-    {
-      "name": "GmsCore support",
-      "description": "Lets you sign in with Google through MicroG RE.",
-      "default": false,
-      "dependencies": [
-        "ResourcePatch"
-      ],
-      "compatiblePackages": [
-        {
-          "packageName": "net.dinglisch.android.taskerm",
-          "name": "Tasker",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#4CAF50",
-          "signatures": [
-            "973fe25b9be28fb7436d49582b04277767c852539be31783d134a55621b6636d"
-          ],
-          "formFactor": "MOBILE",
-          "targets": [
-            {
-              "version": "6.7.8",
-              "versionCodes": {
-                "ARM64_V8A": 5454,
-                "ARMEABI_V7A": 5454,
-                "X86_64": 5454,
-                "X86": 5454
-              },
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
     },
     {
       "name": "GmsCore support",
@@ -7538,12 +7838,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "11.13.0.39",
+              "version": "11.14.0.35",
               "versionCodes": {
-                "ARM64_V8A": 54189,
-                "ARMEABI_V7A": 54189,
-                "X86_64": 54189,
-                "X86": 54189
+                "ARM64_V8A": 54488,
+                "ARMEABI_V7A": 54488,
+                "X86_64": 54488,
+                "X86": 54488
               },
               "isExperimental": false,
               "minSdk": null,
@@ -8607,10 +8907,10 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "X86_64": 2016193998,
-                "ARM64_V8A": 2016193999
+                "X86_64": 2016194414,
+                "ARM64_V8A": 2016194415
               },
               "isExperimental": false,
               "minSdk": null,
@@ -8639,12 +8939,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "ARM64_V8A": 403061757,
-                "ARMEABI_V7A": 403061757,
-                "X86_64": 403061757,
-                "X86": 403061757
+                "ARM64_V8A": 403082131,
+                "ARMEABI_V7A": 403082131,
+                "X86_64": 403082131,
+                "X86": 403082131
               },
               "isExperimental": false,
               "minSdk": null,
@@ -8813,12 +9113,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "1.10.31",
+              "version": "1.10.33",
               "versionCodes": {
-                "ARM64_V8A": 11031,
-                "ARMEABI_V7A": 11031,
-                "X86_64": 11031,
-                "X86": 11031
+                "ARM64_V8A": 11033,
+                "ARMEABI_V7A": 11033,
+                "X86_64": 11033,
+                "X86": 11033
               },
               "isExperimental": false,
               "minSdk": null,
@@ -8847,10 +9147,10 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "X86_64": 2016193998,
-                "ARM64_V8A": 2016193999
+                "X86_64": 2016194414,
+                "ARM64_V8A": 2016194415
               },
               "isExperimental": false,
               "minSdk": null,
@@ -8949,10 +9249,10 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "X86_64": 2016193998,
-                "ARM64_V8A": 2016193999
+                "X86_64": 2016194414,
+                "ARM64_V8A": 2016194415
               },
               "isExperimental": false,
               "minSdk": null,
@@ -9019,12 +9319,80 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "ARM64_V8A": 403061757,
-                "ARMEABI_V7A": 403061757,
-                "X86_64": 403061757,
-                "X86": 403061757
+                "ARM64_V8A": 403082131,
+                "ARMEABI_V7A": 403082131,
+                "X86_64": 403082131,
+                "X86": 403082131
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "No GIF tracking",
+      "description": "Stops GIPHY and Tenor view and share pings.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "One-handed keyboard",
+      "description": "Offers the one-handed keyboard, for non-Samsung phones.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
               },
               "isExperimental": false,
               "minSdk": null,
@@ -9351,6 +9719,40 @@
       "options": []
     },
     {
+      "name": "Remove internet permission",
+      "description": "Keeps the keyboard offline. GIFs, stickers, translation, AI tools and language downloads stop working.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Remove screenshot restriction",
       "description": "Allows screenshots and screen recording in apps that block them.",
       "default": false,
@@ -9395,6 +9797,40 @@
       "options": []
     },
     {
+      "name": "Restore key vibration",
+      "description": "Brings back the vibration on key taps, for non-Samsung phones.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Show FotMob+ logo",
       "description": "Shows the FotMob+ wordmark in the home header.",
       "default": true,
@@ -9418,6 +9854,40 @@
                 "ARMEABI_V7A": 18134,
                 "X86_64": 18134,
                 "X86": 18134
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Show GIFs in every region",
+      "description": "Shows the GIF board where the phone's region turns it off.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
               },
               "isExperimental": false,
               "minSdk": null,
@@ -9516,12 +9986,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "26.44.0",
+              "version": "26.45.0",
               "versionCodes": {
-                "ARM64_V8A": 2644000,
-                "ARMEABI_V7A": 2644000,
-                "X86_64": 2644000,
-                "X86": 2644000
+                "ARM64_V8A": 2645000,
+                "ARMEABI_V7A": 2645000,
+                "X86_64": 2645000,
+                "X86": 2645000
               },
               "isExperimental": true,
               "minSdk": null,
@@ -10021,6 +10491,40 @@
       "options": []
     },
     {
+      "name": "Stop remote updates",
+      "description": "Ignores keyboard policies pushed from Samsung's servers.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Swap call answer and decline buttons",
       "description": "Puts the answer button on the left and the decline button on the right for incoming calls.",
       "default": false,
@@ -10056,6 +10560,88 @@
         }
       ],
       "options": []
+    },
+    {
+      "name": "Swipe cursor control",
+      "description": "Offers moving the cursor by swiping on the space bar, for non-Samsung phones.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Toolbar item count",
+      "description": "Lets you place more items in the toolbar's top row; rearrange them in the toolbar editor.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.samsung.android.honeyboard",
+          "name": "Samsung Keyboard",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#3E91FF",
+          "signatures": [
+            "34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42"
+          ],
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "5.9.40.75",
+              "versionCodes": {
+                "ARM64_V8A": 594075300,
+                "ARMEABI_V7A": 594075300,
+                "X86_64": 594075300,
+                "X86": 594075300
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "toolbarItems",
+          "title": "Items",
+          "description": "How many items the toolbar's top row holds (8 to 12).",
+          "required": true,
+          "type": "kotlin.Int",
+          "default": 8,
+          "values": {
+            "8": 8,
+            "10": 10,
+            "12": 12
+          }
+        }
+      ]
     },
     {
       "name": "Turn off Ad Campaign Analytics",
@@ -10216,12 +10802,12 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "3.2.6",
+              "version": "3.2.7.1",
               "versionCodes": {
-                "ARM64_V8A": 3440487,
-                "ARMEABI_V7A": 3440487,
-                "X86_64": 3440487,
-                "X86": 3440487
+                "ARM64_V8A": 3449157,
+                "ARMEABI_V7A": 3449157,
+                "X86_64": 3449157,
+                "X86": 3449157
               },
               "isExperimental": false,
               "minSdk": null,
@@ -10393,10 +10979,10 @@
           "formFactor": "MOBILE",
           "targets": [
             {
-              "version": "159.0.1",
+              "version": "160.0",
               "versionCodes": {
-                "X86_64": 2016193998,
-                "ARM64_V8A": 2016193999
+                "X86_64": 2016194414,
+                "ARM64_V8A": 2016194415
               },
               "isExperimental": false,
               "minSdk": null,

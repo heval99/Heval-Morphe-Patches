@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v2.4.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.4.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**100** apps&nbsp;&nbsp;•&nbsp;&nbsp;**302** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-12
+> **[v2.4.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v2.4.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**100** apps&nbsp;&nbsp;•&nbsp;&nbsp;**317** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-14
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -54,7 +54,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/com.football433.png" width="20" height="20" alt=""> | **433** | 🚫 🛡️ 🧪 2 | `2.3.608` | APKM | [Play](https://play.google.com/store/apps/details?id=com.football433) |
 | <img src="assets/icons/com.onesports.score.png" width="20" height="20" alt=""> | **AiScore** | 💎 🧩 2 | `4.3.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.onesports.score) |
 | <img src="assets/icons/com.resultadosfutbol.mobile.png" width="20" height="20" alt=""> | **BeSoccer** | 🚫 🔑 2 | `6.7.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.resultadosfutbol.mobile) |
-| <img src="assets/icons/com.bleacherreport.android.teamstream.png" width="20" height="20" alt=""> | **Bleacher Report** | 🚫 🛡️ 🧩 3 | `11.13.0.39` | APKM | [Play](https://play.google.com/store/apps/details?id=com.bleacherreport.android.teamstream) |
+| <img src="assets/icons/com.bleacherreport.android.teamstream.png" width="20" height="20" alt=""> | **Bleacher Report** | 🚫 🛡️ 🧩 3 | `11.14.0.35` | APKM | [Play](https://play.google.com/store/apps/details?id=com.bleacherreport.android.teamstream) |
 | <img src="assets/icons/club.boxbox.android.png" width="20" height="20" alt=""> | **BoxBox** | 🚫 🛡️ 💎 3 | `5.4.18` | APKM | [Play](https://play.google.com/store/apps/details?id=club.boxbox.android) |
 | <img src="assets/icons/in.cricketexchange.app.cricketexchange.png" width="20" height="20" alt=""> | **CREX** | 🚫 💎 2 | `26.11.01` | APKM | [Play](https://play.google.com/store/apps/details?id=in.cricketexchange.app.cricketexchange) |
 | <img src="assets/icons/ro.rcsrds.digisport.png" width="20" height="20" alt=""> | **Digi Sport** | 🚫 🛡️ 🔕 🧩 8 | `1.1.15` | APK | [Play](https://play.google.com/store/apps/details?id=ro.rcsrds.digisport) |
@@ -92,7 +92,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/ie.rte.news.png" width="20" height="20" alt=""> | **RTÉ News** | 🚫 1 | `10.0.2` | APKM | [Play](https://play.google.com/store/apps/details?id=ie.rte.news) |
 | <img src="assets/icons/com.guardian.png" width="20" height="20" alt=""> | **The Guardian** | 🚫 🛡️ 🧩 3 | `6.241.23504` | APKM | [Play](https://play.google.com/store/apps/details?id=com.guardian) |
 | <img src="assets/icons/wsj.reader_sp.png" width="20" height="20" alt=""> | **The Wall Street Journal** | 🚫 1 | `15.13.0.44249` | APK | [Play](https://play.google.com/store/apps/details?id=wsj.reader_sp) |
-| <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **TV 2 Nyheder** | 🚫 🛡️ 2 | `2026.10-10188:RELEASE` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tv2.nyhedscenter) |
+| <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **TV 2 Nyheder** | 🚫 🛡️ 2 | `2026.11-10189:RELEASE` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tv2.nyhedscenter) |
 | <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **TV 2 Play** | 🛡️ 1 | `2026.10-1` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tv2.tv2play) |
 | <img src="https://img.shields.io/badge/-%20-00539B?style=flat-square" height="14" alt=""> | **Århus Stiftstidende** | 🚫 🛡️ 🧩 3 | `15.32` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.aasmain.areader) |
 
@@ -102,7 +102,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 |:-:|---|---|---|:-:|:-:|
 | <img src="assets/icons/org.kman.AquaMail.png" width="20" height="20" alt=""> | **Aqua Mail** | 💎 1 | `2.8.1` | APKM | [Play](https://play.google.com/store/apps/details?id=org.kman.AquaMail) |
 | <img src="assets/icons/me.bluemail.mail.png" width="20" height="20" alt=""> | **BlueMail** | 🚫 1 | `2.2.426` | APKM | [Play](https://play.google.com/store/apps/details?id=me.bluemail.mail) |
-| <img src="assets/icons/eu.faircode.email.png" width="20" height="20" alt=""> | **FairEmail** | 💎 1 | `1.2339` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
+| <img src="assets/icons/eu.faircode.email.png" width="20" height="20" alt=""> | **FairEmail** | 💎 1 | `1.2341` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
 | <img src="assets/icons/com.mail.mobile.android.mail.png" width="20" height="20" alt=""> | **mail.com** | 🚫 🛡️ 🔕 🧩 4 | `9.20.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mail.mobile.android.mail) |
 | <img src="assets/icons/com.truecaller.png" width="20" height="20" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 35 | `26.44.6` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
 
@@ -125,14 +125,14 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-E94122?style=flat-square" height="14" alt=""> | **Add Music** | 💎 1 | `9.6` | APKM | [Play](https://play.google.com/store/apps/details?id=kgs.com.addmusictovideos) |
 | <img src="assets/icons/dk.dr.webplayer.png" width="20" height="20" alt=""> | **DRTV** | 🛡️ 🧩 3 | `4.40.4` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.dr.webplayer) |
 | <img src="assets/icons/app.expert.player.png" width="20" height="20" alt=""> | **TV Smarters Player Expert** | 🚫 💎 2 | `11.6.1` | APKM | [Play](https://play.google.com/store/apps/details?id=app.expert.player) |
-| <img src="assets/icons/com.viaplay.android.png" width="20" height="20" alt=""> | **Viaplay** | 🚫 🛡️ 🧪 2 | `26.44.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.viaplay.android) |
+| <img src="assets/icons/com.viaplay.android.png" width="20" height="20" alt=""> | **Viaplay** | 🚫 🛡️ 🧪 2 | `26.45.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.viaplay.android) |
 | <img src="https://img.shields.io/badge/-%20-00DC00?style=flat-square" height="14" alt=""> | **YouSee Play** | 🛡️ 1 | `13.12.0 (build 22025)` | APKS | [Play](https://play.google.com/store/apps/details?id=yiuo.mobile.tv) |
 
 #### 📚 Books & reading <sub>2 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
-| <img src="assets/icons/com.foobnix.pdf.reader.png" width="20" height="20" alt=""> | **Librera** | 🚫 1 | `10.0.31` | APK | [Play](https://play.google.com/store/apps/details?id=com.foobnix.pdf.reader) |
+| <img src="assets/icons/com.foobnix.pdf.reader.png" width="20" height="20" alt=""> | **Librera** | 🚫 1 | `10.0.35` | APK | [Play](https://play.google.com/store/apps/details?id=com.foobnix.pdf.reader) |
 | <img src="assets/icons/com.flyersoft.moonreader.png" width="20" height="20" alt=""> | **Moon+ Reader** | 🚫 1 | `10.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.flyersoft.moonreader) |
 
 #### 🏋️ Health & fitness <sub>5 apps</sub>
@@ -140,7 +140,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="assets/icons/dk.bold.png" width="20" height="20" alt=""> | **Bold** | 🚫 1 | `6.5.2` | APKS | [Play](https://play.google.com/store/apps/details?id=dk.bold) |
-| <img src="assets/icons/com.hevy.png" width="20" height="20" alt=""> | **Hevy** | 🛡️ 💎 2 | `3.2.6` | APKM | [Play](https://play.google.com/store/apps/details?id=com.hevy) |
+| <img src="assets/icons/com.hevy.png" width="20" height="20" alt=""> | **Hevy** | 🛡️ 💎 2 | `3.2.7.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.hevy) |
 | <img src="assets/icons/cc.dreamspark.intervaltimer.png" width="20" height="20" alt=""> | **Interval Timer** | 🚫 🛡️ 2 | `2.3.31` | APK | [Play](https://play.google.com/store/apps/details?id=cc.dreamspark.intervaltimer) |
 | <img src="assets/icons/com.myfitnesspal.android.png" width="20" height="20" alt=""> | **MyFitnessPal** | 🛡️ 💎 2 | `26.45.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.myfitnesspal.android) |
 | <img src="assets/icons/net.smartwod.timer.png" width="20" height="20" alt=""> | **SmartWOD Timer** | 🚫 💎 2 | `1.47.1` | APKM | [Play](https://play.google.com/store/apps/details?id=net.smartwod.timer) |
@@ -155,7 +155,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/com.astrapaging.vff.png" width="20" height="20" alt=""> | **VesselFinder** | 🚫 🔑 2 | `6.7.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.astrapaging.vff) |
 | <img src="assets/icons/com.wunderground.android.weather.png" width="20" height="20" alt=""> | **Weather Underground** | 🚫 1 | `6.20.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.wunderground.android.weather) |
 
-#### 📝 Productivity & notes <sub>10 apps</sub>
+#### 📝 Productivity & notes <sub>9 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
@@ -165,7 +165,6 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/easynotes.notes.notepad.notebook.privatenotes.note.png" width="20" height="20" alt=""> | **EasyNotes** | 🚫 💎 2 | `1.3.65.1019` | APKM | [Play](https://play.google.com/store/apps/details?id=easynotes.notes.notepad.notebook.privatenotes.note) |
 | <img src="assets/icons/com.ztnstudio.notepad.png" width="20" height="20" alt=""> | **#Notepad** | 🚫 💎 2 | `5.4.4.19080` | APKM | [Play](https://play.google.com/store/apps/details?id=com.ztnstudio.notepad) |
 | <img src="assets/icons/io.unorderly.structured.png" width="20" height="20" alt=""> | **Structured** | 💎 🔑 2 | `3.9.6` | APKM | [Play](https://play.google.com/store/apps/details?id=io.unorderly.structured) |
-| <img src="assets/icons/net.dinglisch.android.taskerm.png" width="20" height="20" alt=""> | **Tasker** | 💎 🧩 2 | `6.7.8` | APK | [Play](https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm) |
 | <img src="assets/icons/com.fenchtose.reflog.png" width="20" height="20" alt=""> | **Taskito** | 💎 🧩 2 | `1.3.4` | APK | [Play](https://play.google.com/store/apps/details?id=com.fenchtose.reflog) |
 | <img src="assets/icons/com.gmail.jmartindev.timetune.png" width="20" height="20" alt=""> | **TimeTune** | 💎 1 | `5.6.3` | APK | [Play](https://play.google.com/store/apps/details?id=com.gmail.jmartindev.timetune) |
 | <img src="assets/icons/com.getupnote.android.png" width="20" height="20" alt=""> | **UpNote** | 💎 1 | `9.22.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.getupnote.android) |
@@ -175,35 +174,36 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="assets/icons/com.brave.browser.png" width="20" height="20" alt=""> | **Brave Browser** | 🚫 🛡️ 💎 🔕 🧩 🧪 5 | `1.99.56` | APKM | [Play](https://play.google.com/store/apps/details?id=com.brave.browser) |
-| <img src="assets/icons/org.mozilla.firefox.png" width="20" height="20" alt=""> | **Firefox** | 🛡️ 🔕 🧩 7 | `159.0.1` | APK | [Play](https://play.google.com/store/apps/details?id=org.mozilla.firefox) |
-| <img src="assets/icons/org.mozilla.focus.png" width="20" height="20" alt=""> | **Firefox Focus** | 🛡️ 🔕 🧩 7 | `159.0.1` | APKM | [Play](https://play.google.com/store/apps/details?id=org.mozilla.focus) |
-| <img src="assets/icons/mark.via.gp.png" width="20" height="20" alt=""> | **Via** | 🛡️ 1 | `7.3.3` | APK | [Play](https://play.google.com/store/apps/details?id=mark.via.gp) |
+| <img src="assets/icons/org.mozilla.firefox.png" width="20" height="20" alt=""> | **Firefox** | 🛡️ 🔕 🧩 7 | `160.0` | APK | [Play](https://play.google.com/store/apps/details?id=org.mozilla.firefox) |
+| <img src="assets/icons/org.mozilla.focus.png" width="20" height="20" alt=""> | **Firefox Focus** | 🛡️ 🔕 🧩 7 | `160.0` | APKM | [Play](https://play.google.com/store/apps/details?id=org.mozilla.focus) |
+| <img src="assets/icons/mark.via.gp.png" width="20" height="20" alt=""> | **Via** | 🛡️ 1 | `7.4.1` | APK | [Play](https://play.google.com/store/apps/details?id=mark.via.gp) |
 
 #### 🏠 Launchers <sub>6 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
-| <img src="assets/icons/easy.launcher.png" width="20" height="20" alt=""> | **Easy Homescreen** | 🚫 🛡️ 🔕 🧩 6 | `1.10.31` | APKM | [Play](https://play.google.com/store/apps/details?id=easy.launcher) |
+| <img src="assets/icons/easy.launcher.png" width="20" height="20" alt=""> | **Easy Homescreen** | 🚫 🛡️ 🔕 🧩 6 | `1.10.33` | APKM | [Play](https://play.google.com/store/apps/details?id=easy.launcher) |
 | <img src="assets/icons/projekt.launcher.png" width="20" height="20" alt=""> | **Hyperion Launcher** | 💎 1 | `2.2.16` | APKM | [Play](https://play.google.com/store/apps/details?id=projekt.launcher) |
-| <img src="assets/icons/app.pinya.mango.png" width="20" height="20" alt=""> | **Mango Launcher** | 💎 🔑 2 | `1.67` | APKM | [Play](https://play.google.com/store/apps/details?id=app.pinya.mango) |
+| <img src="assets/icons/app.pinya.mango.png" width="20" height="20" alt=""> | **Mango Launcher** | 💎 🔑 2 | `1.68` | APKM | [Play](https://play.google.com/store/apps/details?id=app.pinya.mango) |
 | <img src="assets/icons/com.qqlabs.minimalistlauncher.png" width="20" height="20" alt=""> | **Minimalist Launcher** | 💎 1 | `1.22.8v236` | APKM | [Play](https://play.google.com/store/apps/details?id=com.qqlabs.minimalistlauncher) |
 | <img src="assets/icons/bitpit.launcher.png" width="20" height="20" alt=""> | **Niagara Launcher** | 🛡️ 💎 🧩 3 | `1.16.36` | APK | [Play](https://play.google.com/store/apps/details?id=bitpit.launcher) |
 | <img src="assets/icons/app.prolauncher.png" width="20" height="20" alt=""> | **Pro Launcher** | 💎 1 | `v2.4.3` | APKM | [Play](https://play.google.com/store/apps/details?id=app.prolauncher) |
 
-#### 🛠️ Tools & utilities <sub>11 apps</sub>
+#### 🛠️ Tools & utilities <sub>12 apps</sub>
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="assets/icons/com.macdom.ble.blescanner.png" width="20" height="20" alt=""> | **BLE Scanner** | 🚫 1 | `4.8` | APK | [Play](https://play.google.com/store/apps/details?id=com.macdom.ble.blescanner) |
-| <img src="assets/icons/com.pzolee.bluetoothscanner.png" width="20" height="20" alt=""> | **Bluetooth Scanner** | 🚫 1 | `1.9.3` | APK | [Play](https://play.google.com/store/apps/details?id=com.pzolee.bluetoothscanner) |
+| <img src="assets/icons/com.pzolee.bluetoothscanner.png" width="20" height="20" alt=""> | **Bluetooth Scanner** | 🚫 1 | `1.9.4` | APK | [Play](https://play.google.com/store/apps/details?id=com.pzolee.bluetoothscanner) |
 | <img src="assets/icons/me.piebridge.brevent.png" width="20" height="20" alt=""> | **Brevent** | 💎 1 | `4.2.31.1` | APK | [Play](https://play.google.com/store/apps/details?id=me.piebridge.brevent) |
-| <img src="assets/icons/com.dev47apps.obsdroidcam.png" width="20" height="20" alt=""> | **DroidCam** | 🚫 1 | `8.2` | APK | [Play](https://play.google.com/store/apps/details?id=com.dev47apps.obsdroidcam) |
+| <img src="assets/icons/com.dev47apps.obsdroidcam.png" width="20" height="20" alt=""> | **DroidCam** | 🚫 1 | `10.0` | APK | [Play](https://play.google.com/store/apps/details?id=com.dev47apps.obsdroidcam) |
 | <img src="https://img.shields.io/badge/-%20-1F6AFF?style=flat-square" height="14" alt=""> | **EX File Manager** | 🚫 🛡️ 💎 3 | `1.6.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.ace.ex.file.manager) |
 | <img src="assets/icons/com.gkfriend.gpsmapcameraeditor.png" width="20" height="20" alt=""> | **GPS Map Camera Editor** | 🚫 💎 🔑 🧩 5 | `1.0.32` | APKM | [Play](https://play.google.com/store/apps/details?id=com.gkfriend.gpsmapcameraeditor) |
 | <img src="assets/icons/ru.wasiliysoft.ircodefindernec.png" width="20" height="20" alt=""> | **IrCode Finder** | 🚫 1 | `14.17.0 build 206 InAPP` | APKM | [Play](https://play.google.com/store/apps/details?id=ru.wasiliysoft.ircodefindernec) |
 | <img src="assets/icons/com.rawcam.app.png" width="20" height="20" alt=""> | **Native Camera** | 💎 🔑 2 | `1.4.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.rawcam.app) |
 | <img src="https://img.shields.io/badge/-%20-FAF5FF?style=flat-square" height="14" alt=""> | **NotiAlarm** | 💎 🔑 2 | `1.3.31` | APKM | [Play](https://play.google.com/store/apps/details?id=com.soosu.notialarm) |
 | <img src="assets/icons/com.pocketcolorwheel.PCW.png" width="20" height="20" alt=""> | **Pocket Color Wheel** | 🚫 1 | `3.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.pocketcolorwheel.PCW) |
+| <img src="https://img.shields.io/badge/-%20-3E91FF?style=flat-square" height="14" alt=""> | **Samsung Keyboard** | 🛡️ 🧩 17 | `5.9.40.75` | APK | [Play](https://play.google.com/store/apps/details?id=com.samsung.android.honeyboard) |
 | <img src="assets/icons/com.fyxtech.muslim.png" width="20" height="20" alt=""> | **WeMuslim** | 🚫 🛡️ 💎 🧩 8 | `3.5.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.fyxtech.muslim) |
 
 ### 🔍 Patch details
@@ -265,7 +265,7 @@ Verified on: `6.7.1`
 <details>
 <summary><img src="assets/icons/com.bleacherreport.android.teamstream.png" width="16" height="16" alt=""> <b>Bleacher Report</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>com.bleacherreport.android.teamstream</code></summary>
 
-Verified on: `11.13.0.39`
+Verified on: `11.14.0.35`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -687,7 +687,7 @@ Verified on: `15.13.0.44249`
 <details>
 <summary><b>TV 2 Nyheder</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>dk.tv2.nyhedscenter</code></summary>
 
-Verified on: `2026.10-10188:RELEASE`
+Verified on: `2026.11-10189:RELEASE`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -743,7 +743,7 @@ Verified on: `2.2.426`
 <details>
 <summary><img src="assets/icons/eu.faircode.email.png" width="16" height="16" alt=""> <b>FairEmail</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>eu.faircode.email</code></summary>
 
-Verified on: `1.2339`
+Verified on: `1.2341`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -924,7 +924,7 @@ Verified on: `11.6.1`
 <details>
 <summary><img src="assets/icons/com.viaplay.android.png" width="16" height="16" alt=""> <b>Viaplay</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.viaplay.android</code></summary>
 
-Verified on: `26.44.0`
+Verified on: `26.45.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -948,7 +948,7 @@ Verified on: `13.12.0 (build 22025)`
 <details>
 <summary><img src="assets/icons/com.foobnix.pdf.reader.png" width="16" height="16" alt=""> <b>Librera</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.foobnix.pdf.reader</code></summary>
 
-Verified on: `10.0.31`
+Verified on: `10.0.35`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -981,7 +981,7 @@ Verified on: `6.5.2`
 <details>
 <summary><img src="assets/icons/com.hevy.png" width="16" height="16" alt=""> <b>Hevy</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.hevy</code></summary>
 
-Verified on: `3.2.6`
+Verified on: `3.2.7.1`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1145,17 +1145,6 @@ Verified on: `3.9.6`
 
 </details>
 <details>
-<summary><img src="assets/icons/net.dinglisch.android.taskerm.png" width="16" height="16" alt=""> <b>Tasker</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>net.dinglisch.android.taskerm</code></summary>
-
-Verified on: `6.7.8`
-
-| Patch | What it does | Default |
-|---|---|:-:|
-| 💎 **Enable Full Version** | Unlocks the full version. | ✅ |
-| 🧩 **GmsCore support** | Lets you sign in with Google through MicroG RE. | ➖ |
-
-</details>
-<details>
 <summary><img src="assets/icons/com.fenchtose.reflog.png" width="16" height="16" alt=""> <b>Taskito</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.fenchtose.reflog</code></summary>
 
 Verified on: `1.3.4`
@@ -1206,7 +1195,7 @@ Verified on: `1.99.56`
 <details>
 <summary><img src="assets/icons/org.mozilla.firefox.png" width="16" height="16" alt=""> <b>Firefox</b> &nbsp;·&nbsp; 7 patches &nbsp;·&nbsp; <code>org.mozilla.firefox</code></summary>
 
-Verified on: `159.0.1`
+Verified on: `160.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1222,7 +1211,7 @@ Verified on: `159.0.1`
 <details>
 <summary><img src="assets/icons/org.mozilla.focus.png" width="16" height="16" alt=""> <b>Firefox Focus</b> &nbsp;·&nbsp; 7 patches &nbsp;·&nbsp; <code>org.mozilla.focus</code></summary>
 
-Verified on: `159.0.1`
+Verified on: `160.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1238,7 +1227,7 @@ Verified on: `159.0.1`
 <details>
 <summary><img src="assets/icons/mark.via.gp.png" width="16" height="16" alt=""> <b>Via</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>mark.via.gp</code></summary>
 
-Verified on: `7.3.3`
+Verified on: `7.4.1`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1251,7 +1240,7 @@ Verified on: `7.3.3`
 <details>
 <summary><img src="assets/icons/easy.launcher.png" width="16" height="16" alt=""> <b>Easy Homescreen</b> &nbsp;·&nbsp; 6 patches &nbsp;·&nbsp; <code>easy.launcher</code></summary>
 
-Verified on: `1.10.31`
+Verified on: `1.10.33`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1276,7 +1265,7 @@ Verified on: `2.2.16`
 <details>
 <summary><img src="assets/icons/app.pinya.mango.png" width="16" height="16" alt=""> <b>Mango Launcher</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>app.pinya.mango</code></summary>
 
-Verified on: `1.67`
+Verified on: `1.68`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1332,7 +1321,7 @@ Verified on: `4.8`
 <details>
 <summary><img src="assets/icons/com.pzolee.bluetoothscanner.png" width="16" height="16" alt=""> <b>Bluetooth Scanner</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.pzolee.bluetoothscanner</code></summary>
 
-Verified on: `1.9.3`
+Verified on: `1.9.4`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1352,7 +1341,7 @@ Verified on: `4.2.31.1`
 <details>
 <summary><img src="assets/icons/com.dev47apps.obsdroidcam.png" width="16" height="16" alt=""> <b>DroidCam</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.dev47apps.obsdroidcam</code></summary>
 
-Verified on: `8.2`
+Verified on: `10.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1425,6 +1414,32 @@ Verified on: `3.26`
 | Patch | What it does | Default |
 |---|---|:-:|
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
+
+</details>
+<details>
+<summary><b>Samsung Keyboard</b> &nbsp;·&nbsp; 17 patches &nbsp;·&nbsp; <code>com.samsung.android.honeyboard</code></summary>
+
+Verified on: `5.9.40.75`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🧩 **Always incognito** | Never learns from what you type. | ➖ |
+| 🧩 **Always use GIPHY** | Shows GIPHY GIFs in every language. | ✅ |
+| 🧩 **Autofill in any field** | Shows password and autofill suggestions even when the field already has text. | ➖ |
+| 🧩 **Bigger clipboard history** | Keeps more items in the clipboard history. | ✅ |
+| 🧩 **Change app name** | Renames Samsung Keyboard, so the two keyboards can be told apart. | ✅ |
+| 🧩 **Change package name** | Installs next to the system Samsung Keyboard under its own package name. | ✅ |
+| 🧩 **Clipboard columns** | Sets how many columns the clipboard panel has, and how many recent items its top row shows. | ➖ |
+| 🛡️ **Disable telemetry** | Turns off Samsung Analytics, crash reports and typed-text collection. | ✅ |
+| 🧩 **Enable non-One UI ROM support** | Makes Samsung Keyboard usable on non-One UI ROMs. | ✅ |
+| 🧩 **No GIF tracking** | Stops GIPHY and Tenor view and share pings. | ✅ |
+| 🧩 **One-handed keyboard** | Offers the one-handed keyboard, for non-Samsung phones. | ✅ |
+| 🧩 **Remove internet permission** | Keeps the keyboard offline. GIFs, stickers, translation, AI tools and language downloads stop working. | ➖ |
+| 🧩 **Restore key vibration** | Brings back the vibration on key taps, for non-Samsung phones. | ✅ |
+| 🧩 **Show GIFs in every region** | Shows the GIF board where the phone's region turns it off. | ➖ |
+| 🧩 **Stop remote updates** | Ignores keyboard policies pushed from Samsung's servers. | ✅ |
+| 🧩 **Swipe cursor control** | Offers moving the cursor by swiping on the space bar, for non-Samsung phones. | ✅ |
+| 🧩 **Toolbar item count** | Lets you place more items in the toolbar's top row; rearrange them in the toolbar editor. | ➖ |
 
 </details>
 <details>

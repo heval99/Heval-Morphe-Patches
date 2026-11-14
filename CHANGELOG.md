@@ -1,3 +1,36 @@
+## 2.4.0-dev.2 (2026-11-14)
+
+### 🆕 New apps
+- **Samsung Keyboard** `5.9.40.75` - Always incognito, Always use GIPHY, Autofill in any field, Bigger clipboard history, Change app name, Change package name, Clipboard columns, Disable telemetry, Enable non-One UI ROM support, No GIF tracking, One-handed keyboard, Remove internet permission, Restore key vibration, Show GIFs in every region, Stop remote updates, Swipe cursor control, Toolbar item count
+
+### ⬆️ Updated apps
+| App | From | To |
+|---|---|---|
+| Bleacher Report | `11.13.0.39` | `11.14.0.35` |
+| Bluetooth Scanner | `1.9.3` | `1.9.4` |
+| DroidCam | `8.2` | `10.0` |
+| Easy Homescreen | `1.10.31` | `1.10.33` |
+| FairEmail | `1.2339` | `1.2341` |
+| Firefox | `159.0.1` | `160.0` |
+| Firefox Focus | `159.0.1` | `160.0` |
+| Hevy | `3.2.6` | `3.2.7.1` |
+| Librera | `10.0.31` | `10.0.35` |
+| Mango Launcher | `1.67` | `1.68` |
+| TV 2 Nyheder | `2026.10-10188:RELEASE` | `2026.11-10189:RELEASE` |
+| Via | `7.3.3` | `7.4.1` |
+| Viaplay | `26.44.0` | `26.45.0` |
+
+### 🗑️ Removed apps
+- Tasker
+
+### 🔧 Other
+- Fixed: Drop the Tasker patches
+
+### 🙏 Credits
+- Samsung Keyboard non-One UI base, privacy and GIF patches from https://github.com/bearinmindcat/morphe-patches (GPL-3.0)
+
+**Download:** [patches-2.4.0-dev.2.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v2.4.0-dev.2/patches-2.4.0-dev.2.mpp)
+
 ## 2.4.0-dev.1 (2026-11-12)
 
 ### 📱 Sofascore `26.11.03`
