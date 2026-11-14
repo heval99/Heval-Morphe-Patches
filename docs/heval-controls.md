@@ -39,6 +39,7 @@ HushMessenger analysis, is kept outside the repo; this page is the developer gui
 - [Truecaller features](#truecaller-features)
 - [Sofascore features](#sofascore-features)
 - [FotMob features](#fotmob-features)
+- [Flashscore features](#flashscore-features)
 - [Samsung Keyboard features](#samsung-keyboard-features)
 - [App-specific Java helpers](#app-specific-java-helpers)
 - [List settings (pickers)](#list-settings-pickers)
@@ -568,6 +569,25 @@ resources: its resource part only adds the `HevalSystemFontOverlay` styles, and
 `ActivityHooks.onActivityCreated` applies them to each new screen while the switch is on. The
 activity hooks are registered from `FotMobApp.onCreate`. Not converted: Disable ads, Disable
 telemetry, Enable FotMob+, GmsCore support and Spoof signature.
+
+## Flashscore features
+
+Flashscore 26.11.6 (2026-11-14, stage A1; smoke-tested and CLI-patched, not run on a device). The
+"Patch settings" row is added by `flashscore/controls/FlashscoreControlsRowPatch.kt`. Every switch is on
+once its patch is selected unless the table says off; the Manager names and descriptions did not change.
+
+| Feature id | Name | Category | Default | Restart | Gated sites |
+|---|---|---|---|---|---|
+| `flashscore.animations_off` | Turn off animations | Display | off | yes | `AnimationSpeed` (animator scale and transitions) |
+| `flashscore.animations_fast` | Faster animations | Display | off | yes | `AnimationSpeed` (half the animator scale) |
+| `flashscore.block_marketing_notifications` | Block marketing notifications | Notifications | on | no | the push handler drops promotional "INFO" pushes |
+| `flashscore.hide_betting` | Hide betting content | Betting and promotions | on | yes | remote-config odds and GAMBLE_RESPONSIBLY keys, the ODDS tab filter, the isAgeVerified stores, the sponsored and bonus strip constructors |
+| `flashscore.hide_match_polls` | Hide match polls | Match page | on | yes | remote-config MATCH_POLL_ENABLED (the MATCH_POLL zone of the match page) |
+| `flashscore.hide_news` | Hide news | News | on | yes | remote-config MATCH_LIST_FS_NEWS, FLASHSCORE_NEWS_ENABLED (news in league match lists) and NEWS_ENABLED (NEWS tab on team pages) |
+
+The three remote-config switches (betting, polls, news) share one gated helper chain on the config value
+class: with the switch off the helper takes the stock path, so the app sees the server value. Only the
+keys traced to a visible element are gated; BREAKING_NEWS, NEWS_INFO_BOX_ENABLED and PREMIUM_OFFERS are not.
 
 ## 365Scores features
 

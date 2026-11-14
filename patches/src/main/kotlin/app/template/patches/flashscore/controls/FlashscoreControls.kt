@@ -24,6 +24,11 @@ internal object FlashscoreControlsCategory {
     const val DISPLAY = "Display"
     const val LISTS = "Lists"
     const val NOTIFICATIONS = "Notifications"
+
+    /** The same title as Sofascore's betting and promotions section. */
+    const val BETTING = "Betting and promotions"
+    const val MATCH_PAGE = "Match page"
+    const val NEWS = "News"
 }
 
 /** True for `invoke-virtual setContentView(View)` on the activity. */

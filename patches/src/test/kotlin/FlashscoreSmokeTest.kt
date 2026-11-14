@@ -1,3 +1,10 @@
+import app.template.patches.flashscore.misc.animations.ANIMATION_FEATURES
+import app.template.patches.flashscore.misc.betting.HIDE_BETTING
+import app.template.patches.flashscore.misc.news.HIDE_NEWS
+import app.template.patches.flashscore.misc.notifications.BLOCK_MARKETING_NOTIFICATIONS
+import app.template.patches.flashscore.misc.polls.HIDE_MATCH_POLLS
+import app.template.patches.flashscore.shared.findEnumConstantField
+import app.template.patches.shared.hevalcontrols.HevalRegistryCodec
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcodes
@@ -44,6 +51,26 @@ private const val ARRAY_LIST = "Ljava/util/ArrayList;"
 private const val TABS_HELPER = "morpheWithoutOddsTab"
 private const val SET = "Ljava/util/Set;"
 
+private const val TELEMETRY_HELPER = "morpheTelemetryGet"
+private const val POLLS_HELPER = "morpheMatchPollsGet"
+private const val NEWS_HELPER = "morpheNewsGet"
+private const val AGE_VERIFIED_HELPER = "morpheHevalAgeVerified"
+private const val HEVAL_SETTINGS = "Lapp/template/extension/hevalcontrols/HevalSettings;"
+private const val CLARITY = "Lcom/microsoft/clarity/Clarity;"
+
+// Enum constants R8 left without a static field of their own in 26.11.6: the resolver must say
+// null for them, not hand back the next constant's field.
+private val FIELDLESS_KEYS = listOf(
+    "SELF_UPDATE_APP",
+    "DETAIL_ODDS_COMPARISON_IMAGES_DISABLED",
+    "DATA_URL_PLATFORM",
+    "DATA_URL_PROJECT",
+    "DATA_URL_SHARED",
+    "DATA_URL_DATA_SERVICE",
+    "DATA_URL_IMAGE",
+    "AUDIO_COMMENT_HEADER_BUTTON_ENABLED",
+)
+
 private val FLASHSCORE_PATCHES = setOf(
     "Block marketing popups",
     "Disable ads",
@@ -51,6 +78,8 @@ private val FLASHSCORE_PATCHES = setOf(
     "Disable telemetry",
     "Disable update prompts",
     "Hide betting content",
+    "Hide match polls",
+    "Hide news",
     "Use system font",
     "Spoof signature",
     "Patch settings",
@@ -79,12 +108,31 @@ private val BETTING_KEYS = mapOf(
     "DETAIL_ODDS_SUMMARY_IMAGES_DISABLED" to "TRUE",
     "BONUS_PROMO_GIFT_ICON_URL" to "EMPTY_STRING",
     "LEAGUE_DETAIL_HEADER_STRIP_SPORTS_ENABLED" to "EMPTY_LIST",
+    "GAMBLE_RESPONSIBLY" to "EMPTY_STRING",
+    "GAMBLE_RESPONSIBLY_BODY" to "EMPTY_STRING",
+    "GAMBLE_RESPONSIBLY_TYPE" to "EMPTY_STRING",
+    "GAMBLE_RESPONSIBLY_SUMMARY_PLACEMENT_TYPE" to "EMPTY_STRING",
+    "GAMBLE_RESPONSIBLY_URL" to "EMPTY_STRING",
+    "GAMBLE_RESPONSIBLY_TITLES" to "EMPTY_LIST",
 )
 
 // Disable ads: the app's own ads kill switches.
 private val ADS_KEYS = mapOf(
     "ADS_ENABLED" to "FALSE",
     "ADS_AMAZON_ENABLED" to "FALSE",
+)
+
+// Disable telemetry: Clarity's remote-config switches (build-time, no gate).
+private val TELEMETRY_KEYS = mapOf(
+    "CLARITY_ENABLED" to "FALSE",
+    "CLARITY_PROJECT_ID" to "EMPTY_STRING",
+)
+
+private val POLLS_KEYS = mapOf("MATCH_POLL_ENABLED" to "FALSE")
+private val NEWS_KEYS = mapOf(
+    "MATCH_LIST_FS_NEWS" to "FALSE",
+    "FLASHSCORE_NEWS_ENABLED" to "FALSE",
+    "NEWS_ENABLED" to "FALSE",
 )
 
 class FlashscoreSmokeTest {
@@ -110,36 +158,46 @@ class FlashscoreSmokeTest {
 
     private fun Method.params(): List<String> = parameterTypes.map(CharSequence::toString)
 
-    /**
-     * The static field of enum constant [name], found the way the patch finds it: const-string
-     * NAME -> invoke-direct <init> with NAME as first argument -> sput-object of that instance.
-     */
+    /** The static field of enum constant [name]: the patch's own scan, run over the emitted `<clinit>`. */
     private fun ClassDef.enumConstantField(name: String): FieldReference? {
         val insns = methods.singleOrNull { it.name == "<clinit>" }?.instructions() ?: return null
-        val nameIndex = insns.indexOfFirst {
-            ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == name
-        }
-        if (nameIndex < 0) return null
-        val nameRegister = (insns[nameIndex] as OneRegisterInstruction).registerA
-        val initIndex = (nameIndex + 1 until insns.size).firstOrNull { i ->
-            val ref = (insns[i] as? ReferenceInstruction)?.reference as? MethodReference
-            val insn = insns[i]
-            ref?.definingClass == type && ref.name == "<init>" && when (insn) {
-                is FiveRegisterInstruction -> insn.registerD == nameRegister
-                is RegisterRangeInstruction -> insn.startRegister + 1 == nameRegister
-                else -> false
-            }
-        } ?: return null
-        val instance = when (val init = insns[initIndex]) {
-            is FiveRegisterInstruction -> init.registerC
-            else -> (init as RegisterRangeInstruction).startRegister
-        }
-        return (initIndex + 1 until insns.size).asSequence()
-            .map { insns[it] }
-            .filter { it.opcode == Opcode.SPUT_OBJECT && (it as OneRegisterInstruction).registerA == instance }
-            .map { (it as ReferenceInstruction).reference as FieldReference }
-            .firstOrNull { it.definingClass == type && it.type == type }
+        return findEnumConstantField(type, insns, name)
     }
+
+    /** What a helper answer block is: the forced value name and the Patch settings gate id, if any. */
+    private fun List<Instruction>.forcedAnswer(target: Int, stock: Int?): Pair<String, String?> {
+        var at = target
+        var gate: String? = null
+        val first = (this[at] as? ReferenceInstruction)?.reference as? StringReference
+        // A gate is: const-string v1, "<id>"; invoke-static/range isEnabled; move-result v1; if-eqz v1 -> stock.
+        if (this[at].opcode == Opcode.CONST_STRING && first != null && first.string.isNotEmpty()) {
+            gate = first.string
+            val call = (this[at + 1] as? ReferenceInstruction)?.reference as? MethodReference
+            assertTrue(
+                this[at + 1].opcode == Opcode.INVOKE_STATIC_RANGE && call?.definingClass == HEVAL_SETTINGS &&
+                    call.name == "isEnabled" && (this[at + 1] as RegisterRangeInstruction).registerCount == 1 &&
+                    this[at + 2].opcode == Opcode.MOVE_RESULT && this[at + 3].opcode == Opcode.IF_EQZ,
+                "the gate for \"$gate\" is not isEnabled + if-eqz",
+            )
+            assertEquals(
+                stock, indexOfInstruction(branchTarget(at + 3)),
+                "the gate for \"$gate\" does not fall back to the stock path",
+            )
+            at += 4
+        }
+        val answerRef = (this[at] as? ReferenceInstruction)?.reference
+        val forced = when {
+            answerRef is FieldReference && answerRef.definingClass == "Ljava/lang/Boolean;" -> answerRef.name
+            answerRef is StringReference && answerRef.string.isEmpty() -> "EMPTY_STRING"
+            answerRef is MethodReference && answerRef.definingClass == "Ljava/util/Collections;" &&
+                answerRef.name == "emptyList" -> "EMPTY_LIST"
+            else -> "${this[at].opcode} $answerRef"
+        }
+        return forced to gate
+    }
+
+    private fun List<Instruction>.indexOfInstruction(instruction: Instruction?): Int? =
+        indexOfFirst { it === instruction }.takeIf { it >= 0 }
 
     /** The instruction an if-* at [index] jumps to. */
     private fun List<Instruction>.branchTarget(index: Int): Instruction? {
@@ -148,19 +206,38 @@ class FlashscoreSmokeTest {
         return getOrNull(addresses.indexOf(target))
     }
 
-    /** True when the constructor starts with `new-instance pN, ArrayList` + `<init>()` for [registers]. */
-    private fun Method.startsWithNewArrayLists(registers: List<Int>): Boolean {
+    /**
+     * True when the constructor starts, for each of [registers], with `invoke-static/range {pN}` of
+     * the class's `morpheHevalStrip(ArrayList)ArrayList` and `move-result-object pN`.
+     */
+    private fun Method.startsWithStripHelper(registers: List<Int>): Boolean {
         val insns = instructions()
         return registers.withIndex().all { (i, register) ->
-            val newInstance = insns.getOrNull(2 * i)
-            val init = insns.getOrNull(2 * i + 1)
-            val initRef = (init as? ReferenceInstruction)?.reference as? MethodReference
-            newInstance?.opcode == Opcode.NEW_INSTANCE &&
-                (newInstance as OneRegisterInstruction).registerA == register &&
-                ((newInstance as ReferenceInstruction).reference as TypeReference).type == ARRAY_LIST &&
-                init != null && init.argumentRegisters().firstOrNull() == register &&
-                initRef?.definingClass == ARRAY_LIST && initRef.name == "<init>" && initRef.parameterTypes.isEmpty()
+            val call = insns.getOrNull(2 * i)
+            val ref = (call as? ReferenceInstruction)?.reference as? MethodReference
+            val result = insns.getOrNull(2 * i + 1)
+            call?.opcode == Opcode.INVOKE_STATIC_RANGE && (call as RegisterRangeInstruction).startRegister == register &&
+                call.registerCount == 1 && ref?.definingClass == definingClass && ref.name == "morpheHevalStrip" &&
+                ref.parameterTypes.map(CharSequence::toString) == listOf(ARRAY_LIST) && ref.returnType == ARRAY_LIST &&
+                result?.opcode == Opcode.MOVE_RESULT_OBJECT && (result as OneRegisterInstruction).registerA == register
         }
+    }
+
+    /** morpheHevalStrip: gate on hide_betting; on = new empty ArrayList, off = the argument. */
+    private fun assertStripHelper(cls: ClassDef) {
+        val helper = cls.methods.single { it.name == "morpheHevalStrip" }
+        val insns = helper.instructions()
+        val gate = (insns[0] as? ReferenceInstruction)?.reference as? StringReference
+        assertTrue(
+            helper.params() == listOf(ARRAY_LIST) && helper.returnType == ARRAY_LIST &&
+                AccessFlags.STATIC.isSet(helper.accessFlags) && insns[0].opcode == Opcode.CONST_STRING &&
+                gate?.string == "flashscore.hide_betting" && insns[3].opcode == Opcode.IF_EQZ &&
+                insns[4].opcode == Opcode.NEW_INSTANCE &&
+                ((insns[4] as ReferenceInstruction).reference as TypeReference).type == ARRAY_LIST &&
+                insns[6].opcode == Opcode.RETURN_OBJECT && insns[7].opcode == Opcode.RETURN_OBJECT &&
+                (insns[7] as OneRegisterInstruction).registerA == helper.implementation!!.registerCount - 1,
+            "${cls.type}.morpheHevalStrip is not the hide_betting ArrayList helper: ${insns.map { it.opcode }}",
+        )
     }
 
     /** The registers an invoke passes, in order (receiver first for non-static calls). */
@@ -314,6 +391,39 @@ class FlashscoreSmokeTest {
             )
         }
 
+        // Microsoft Clarity (unobfuscated): both initialize overloads and the session calls answer
+        // Boolean.FALSE first; sendCustomEvent and setCustomTag (primitive Z) return false.
+        val clarity = klass(CLARITY)
+        val clarityObjectMethods = listOf(
+            "initialize", "resume", "consent", "startNewSession", "setCustomUserId",
+            "setCustomSessionId", "setCurrentScreenName", "setOnSessionStartedCallback",
+        )
+        for (name in clarityObjectMethods) {
+            val methods = clarity.methods.filter { it.name == name && it.returnType == "Ljava/lang/Boolean;" }
+            assertTrue(methods.isNotEmpty(), "Clarity.$name is gone\n$diagnostics")
+            if (name == "initialize") {
+                assertEquals(
+                    setOf("Landroid/app/Activity;", "Landroid/content/Context;"), methods.map { it.params().first() }.toSet(),
+                    "Clarity.initialize overloads\n$diagnostics",
+                )
+            }
+            for (method in methods) {
+                val insns = method.instructions()
+                val field = (insns.getOrNull(0) as? ReferenceInstruction)?.reference as? FieldReference
+                assertTrue(
+                    insns.getOrNull(0)?.opcode == Opcode.SGET_OBJECT && field?.definingClass == "Ljava/lang/Boolean;" &&
+                        field.name == "FALSE" && insns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT &&
+                        (insns[1] as OneRegisterInstruction).registerA == (insns[0] as OneRegisterInstruction).registerA,
+                    "Clarity.$name(${method.params().joinToString()}) does not return Boolean.FALSE first\n$diagnostics",
+                )
+            }
+        }
+        for (name in listOf("sendCustomEvent", "setCustomTag")) {
+            val methods = clarity.methods.filter { it.name == name && it.returnType == "Z" }
+            assertTrue(methods.isNotEmpty(), "Clarity.$name is gone\n$diagnostics")
+            methods.forEach { assertForcedBoolean(it, expected = false, label = "Clarity.$name", diagnostics) }
+        }
+
         // Crashlytics is R8-renamed; locate its classes the same way the patch does.
         val crashlyticsClasses = classes.filter { it.referencesString(CRASHLYTICS_KEY) }
         assertTrue(crashlyticsClasses.isNotEmpty(), "no class references '$CRASHLYTICS_KEY'\n$diagnostics")
@@ -462,17 +572,42 @@ class FlashscoreSmokeTest {
             helpers += helper
             nextHelper = helper.instructions().firstNotNullOfOrNull { it.helperCall() }
         }
+        val expectedHelpers = setOf(ADS_HELPER, BETTING_HELPER, TELEMETRY_HELPER, POLLS_HELPER, NEWS_HELPER)
         assertTrue(
-            helpers.map { it.name }.toSet() == setOf(ADS_HELPER, BETTING_HELPER),
-            "${configValue.type}.${configGet.name}() helper chain is ${helpers.map { it.name }}, expected $ADS_HELPER and $BETTING_HELPER\n$diagnostics"
+            helpers.map { it.name }.toSet() == expectedHelpers,
+            "${configValue.type}.${configGet.name}() helper chain is ${helpers.map { it.name }}, expected $expectedHelpers\n$diagnostics"
         )
         assertReturnsMethodCall(configGet, configValue.type, helpers.first().name, label = "${configValue.type}.${configGet.name}()", diagnostics)
 
-        // Each helper compares the key against the resolved enum constants and answers with the
-        // forced value.
+        // The key resolver is exact: an enum constant R8 left without a static field of its own is
+        // null, never the next constant's field (AUDIO_COMMENT_HEADER_BUTTON_ENABLED used to give
+        // APPSFLYER_ENABLED).
         val keyEnum = klass(keyType)
-        for ((helperName, keys) in listOf(BETTING_HELPER to BETTING_KEYS, ADS_HELPER to ADS_KEYS)) {
+        for (name in FIELDLESS_KEYS) {
+            assertEquals(null, keyEnum.enumConstantField(name), "$name has no static field of its own, but resolves to one")
+        }
+        // Every forced key resolves to its own field: the one whose sput-object follows the
+        // constructor call of exactly that name, and no two keys share a field.
+        val forcedNames = BETTING_KEYS.keys + ADS_KEYS.keys + TELEMETRY_KEYS.keys + POLLS_KEYS.keys + NEWS_KEYS.keys
+        val forcedFields = forcedNames.associateWith { keyEnum.enumConstantField(it) ?: error("$keyType has no field for $it\n$diagnostics") }
+        assertEquals(forcedNames.size, forcedFields.values.toSet().size, "two forced keys resolve to the same field")
+
+        // Each helper compares the key against the resolved enum constants and answers with the
+        // forced value (behind the Patch settings gate where the patch registers a feature).
+        val gates = mapOf(
+            BETTING_HELPER to ("flashscore.hide_betting" to BETTING_KEYS),
+            POLLS_HELPER to ("flashscore.hide_match_polls" to POLLS_KEYS),
+            NEWS_HELPER to ("flashscore.hide_news" to NEWS_KEYS),
+        )
+        for ((helperName, keys) in listOf(
+            BETTING_HELPER to BETTING_KEYS, ADS_HELPER to ADS_KEYS, TELEMETRY_HELPER to TELEMETRY_KEYS,
+            POLLS_HELPER to POLLS_KEYS, NEWS_HELPER to NEWS_KEYS,
+        )) {
             val helperInsns = helpers.single { it.name == helperName }.instructions()
+            // The checks are sget-object/if-eq pairs after the key read; the stock path starts after them.
+            var stockStart = 1
+            while (helperInsns[stockStart].opcode == Opcode.SGET_OBJECT && helperInsns[stockStart + 1].opcode == Opcode.IF_EQ) stockStart += 2
+            val wantedGate = gates[helperName]?.first
             for ((name, expected) in keys) {
                 val field = keyEnum.enumConstantField(name)
                     ?: error("$keyType has no $name constant\n$diagnostics")
@@ -484,16 +619,11 @@ class FlashscoreSmokeTest {
                     helperInsns.getOrNull(load + 1)?.opcode == Opcode.IF_EQ,
                     "$helperName does not compare the key with $name\n$diagnostics"
                 )
-                val answer = helperInsns.branchTarget(load + 1)
-                val answerRef = (answer as? ReferenceInstruction)?.reference
-                val forced = when {
-                    answerRef is FieldReference && answerRef.definingClass == "Ljava/lang/Boolean;" -> answerRef.name
-                    answerRef is StringReference && answerRef.string.isEmpty() -> "EMPTY_STRING"
-                    answerRef is MethodReference && answerRef.definingClass == "Ljava/util/Collections;" &&
-                        answerRef.name == "emptyList" -> "EMPTY_LIST"
-                    else -> "$answer $answerRef"
-                }
+                val answerIndex = helperInsns.indexOfInstruction(helperInsns.branchTarget(load + 1))
+                    ?: error("$helperName: the branch for $name goes nowhere\n$diagnostics")
+                val (forced, gate) = helperInsns.forcedAnswer(answerIndex, stockStart)
                 assertTrue(forced == expected, "$helperName answers $name with $forced, expected $expected\n$diagnostics")
+                assertEquals(wantedGate, gate, "$helperName gates $name with $gate, expected $wantedGate\n$diagnostics")
             }
         }
         // Every helper but the last hands any other key to the next helper and returns its result.
@@ -526,7 +656,7 @@ class FlashscoreSmokeTest {
         // the value class with that key constant as its key argument, or the value class's own
         // constructor) is followed through its straight-line code: it must not be read through the
         // holder there, nor handed to a class that does such inlined reads (e.g. a listener).
-        val forcedKeyFields = (BETTING_KEYS.keys + ADS_KEYS.keys).map { keyEnum.enumConstantField(it)!! }.toSet()
+        val forcedKeyFields = forcedFields.values.toSet()
         fun Instruction.isHolderRead() =
             opcode == Opcode.IGET_OBJECT && (this as ReferenceInstruction).reference == holderRead
         val inlinedReaders = classes.filter { it.type != configValue.type }.flatMap { cls ->
@@ -601,10 +731,11 @@ class FlashscoreSmokeTest {
             it.name == "<init>" && it.parameterTypes.isNotEmpty() && it.params().all { type -> type == ARRAY_LIST }
         }
         assertTrue(sponsoredInits.isNotEmpty(), "${sponsoredStrip.type} has no ArrayList-only constructor\n$diagnostics")
+        assertStripHelper(sponsoredStrip)
         for (init in sponsoredInits) {
             val registers = init.implementation!!.registerCount
             assertTrue(
-                init.startsWithNewArrayLists((registers - init.parameterTypes.size until registers).toList()),
+                init.startsWithStripHelper((registers - init.parameterTypes.size until registers).toList()),
                 "${sponsoredStrip.type}.<init>(${init.params().joinToString()}) does not replace sponsoredItems first\n$diagnostics"
             )
         }
@@ -616,11 +747,12 @@ class FlashscoreSmokeTest {
             it.name == "<init>" && it.parameterTypes.isNotEmpty() && it.params().all { type -> type == ARRAY_LIST }
         }
         assertTrue(bonusInits.isNotEmpty(), "${bonusStrip.type} has no ArrayList-only constructor\n$diagnostics")
+        assertStripHelper(bonusStrip)
         for (init in bonusInits) {
             val registers = init.implementation!!.registerCount
             val params = init.parameterTypes.size
             assertTrue(
-                init.startsWithNewArrayLists((registers - params until registers).toList()),
+                init.startsWithStripHelper((registers - params until registers).toList()),
                 "${bonusStrip.type}.<init>(${init.params().joinToString()}) does not replace every bonus list first\n$diagnostics"
             )
         }
@@ -661,15 +793,29 @@ class FlashscoreSmokeTest {
                 tabsHelper.calls("Ljava/util/Set;", "add"),
             "$TABS_HELPER does not copy the tab set without ODDS\n$diagnostics"
         )
-        // A null set is handed back unchanged: if-nez p0 -> return-object p0.
+        // The ODDS tab gate: with hide_betting off the helper returns the stock set (const-string id,
+        // isEnabled, move-result, if-nez -> the copy below, return-object p0).
         val tabsHelperInsns = tabsHelper.instructions()
         val tabsParam = tabsHelper.implementation!!.registerCount - 1
+        val tabsGateCall = (tabsHelperInsns[1] as? ReferenceInstruction)?.reference as? MethodReference
         assertTrue(
-            tabsHelperInsns.getOrNull(0)?.opcode == Opcode.IF_NEZ &&
-                (tabsHelperInsns[0] as OneRegisterInstruction).registerA == tabsParam &&
-                tabsHelperInsns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT &&
-                (tabsHelperInsns[1] as OneRegisterInstruction).registerA == tabsParam,
-            "$TABS_HELPER does not return a null set unchanged first\n$diagnostics"
+            tabsHelperInsns[0].opcode == Opcode.CONST_STRING &&
+                (tabsHelperInsns[0] as ReferenceInstruction).reference.let { (it as StringReference).string } == "flashscore.hide_betting" &&
+                tabsHelperInsns[1].opcode == Opcode.INVOKE_STATIC_RANGE && tabsGateCall?.definingClass == HEVAL_SETTINGS &&
+                tabsGateCall.name == "isEnabled" && tabsHelperInsns[2].opcode == Opcode.MOVE_RESULT &&
+                tabsHelperInsns[3].opcode == Opcode.IF_NEZ &&
+                tabsHelperInsns[4].opcode == Opcode.RETURN_OBJECT &&
+                (tabsHelperInsns[4] as OneRegisterInstruction).registerA == tabsParam &&
+                tabsHelperInsns.indexOfInstruction(tabsHelperInsns.branchTarget(3)) == 5,
+            "$TABS_HELPER does not return the stock set while hide_betting is off\n$diagnostics"
+        )
+        // A null set is handed back unchanged: if-nez p0 -> return-object p0.
+        assertTrue(
+            tabsHelperInsns.getOrNull(5)?.opcode == Opcode.IF_NEZ &&
+                (tabsHelperInsns[5] as OneRegisterInstruction).registerA == tabsParam &&
+                tabsHelperInsns.getOrNull(6)?.opcode == Opcode.RETURN_OBJECT &&
+                (tabsHelperInsns[6] as OneRegisterInstruction).registerA == tabsParam,
+            "$TABS_HELPER does not return a null set unchanged\n$diagnostics"
         )
         // The league tab-id enum still has an ODDS constant for the helper to drop.
         val leagueTabEnum = classes.filter { cls ->
@@ -708,16 +854,33 @@ class FlashscoreSmokeTest {
             for ((index, store) in insns.withIndex()) {
                 if (store.opcode != Opcode.IPUT_BOOLEAN || (store as ReferenceInstruction).reference != ageVerified) continue
                 val register = (store as OneRegisterInstruction).registerA
-                val forced = insns.getOrNull(index - 1)
+                // invoke-static/range {vR}, helper; move-result vR; iput-boolean vR.
+                val call = insns.getOrNull(index - 2)
+                val callRef = (call as? ReferenceInstruction)?.reference as? MethodReference
+                val result = insns.getOrNull(index - 1)
                 assertTrue(
-                    forced is NarrowLiteralInstruction && forced.narrowLiteral == 0 &&
-                        (forced.opcode == Opcode.CONST_4 || forced.opcode == Opcode.CONST_16) &&
-                        (forced as OneRegisterInstruction).registerA == register,
-                    "${summaryParams.type}.<init> does not load false into v$register right before storing " +
-                        "isAgeVerified; the previous instruction is ${forced?.opcode}\n$diagnostics"
+                    call?.opcode == Opcode.INVOKE_STATIC_RANGE && (call as RegisterRangeInstruction).startRegister == register &&
+                        call.registerCount == 1 && callRef?.definingClass == summaryParams.type &&
+                        callRef.name == AGE_VERIFIED_HELPER &&
+                        result?.opcode == Opcode.MOVE_RESULT && (result as OneRegisterInstruction).registerA == register,
+                    "${summaryParams.type}.<init> does not pass v$register through $AGE_VERIFIED_HELPER right before storing " +
+                        "isAgeVerified; the previous instructions are ${call?.opcode}, ${result?.opcode}\n$diagnostics"
                 )
             }
         }
+        // The helper answers its argument while hide_betting is off and false while it is on.
+        val ageHelper = summaryParams.methods.single { it.name == AGE_VERIFIED_HELPER }
+        val ageInsns = ageHelper.instructions()
+        val ageGate = (ageInsns[0] as? ReferenceInstruction)?.reference as? StringReference
+        assertTrue(
+            ageHelper.params() == listOf("Z") && ageHelper.returnType == "Z" &&
+                ageInsns[0].opcode == Opcode.CONST_STRING && ageGate?.string == "flashscore.hide_betting" &&
+                ageInsns[3].opcode == Opcode.IF_EQZ &&
+                ageInsns[4].opcode == Opcode.CONST_4 && (ageInsns[4] as NarrowLiteralInstruction).narrowLiteral == 0 &&
+                ageInsns[5].opcode == Opcode.RETURN && ageInsns[6].opcode == Opcode.RETURN &&
+                (ageInsns[6] as OneRegisterInstruction).registerA == ageHelper.implementation!!.registerCount - 1,
+            "$AGE_VERIFIED_HELPER is not the hide_betting (Z)Z value helper: ${ageInsns.map { it.opcode }}\n$diagnostics"
+        )
 
         // Disable telemetry (manifest): the collection switches are set on <application>.
         val manifestFile = workDir.walkTopDown()
@@ -919,6 +1082,23 @@ class FlashscoreSmokeTest {
         for (id in listOf("flashscore.animations_off", "flashscore.animations_fast")) {
             assertTrue(id in encoded, "Patch settings registry has no $id")
         }
+        // The registry lists exactly the Flashscore features (any record order: execution order),
+        // the betting, polls and news switches among them with their category and restart flag.
+        val wantedRegistry = HevalRegistryCodec.encode(
+            ANIMATION_FEATURES + listOf(
+                BLOCK_MARKETING_NOTIFICATIONS, HIDE_BETTING, HIDE_MATCH_POLLS, HIDE_NEWS,
+            ),
+        ).split('\n')
+        val gotRegistry = encoded.split('\n')
+        assertTrue(
+            gotRegistry.first() == wantedRegistry.first() && gotRegistry.size == wantedRegistry.size &&
+                gotRegistry.toSet() == wantedRegistry.toSet(),
+            "Registry.encoded() is\n${gotRegistry.joinToString("\n")}\nexpected (any order)\n${wantedRegistry.joinToString("\n")}",
+        )
+        for (feature in listOf(HIDE_BETTING, HIDE_MATCH_POLLS, HIDE_NEWS)) {
+            assertTrue(feature.restartRequired && feature.default, "${feature.id} must be a restart-required switch that starts on")
+        }
+        assertEquals("Betting and promotions", HIDE_BETTING.category)
 
         // Force edge-to-edge: every navigation-bar colour write is preceded by a zero constant in
         // the register the call passes, so the bar is transparent (the status bar is untouched).

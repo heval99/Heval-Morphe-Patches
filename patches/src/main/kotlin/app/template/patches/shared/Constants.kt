@@ -1296,6 +1296,28 @@ object Constants {
     // font consumer then saw 300 or 1 depending on timing, so with Bold text on the weight and width
     // changed between launches. "Use system font" now returns early from it (found by shape: the
     // only method with an iput of that field; the patch fails if there is more than one).
+    // 2026-11-14 (stage A1, 26.11.6, smoke test and CLI only, not run on a device): the remote-config key
+    // resolver (enum constant name -> its static field) no longer scans past a register overwrite, so the
+    // 8 constants R8 left without a field (SELF_UPDATE_APP, DETAIL_ODDS_COMPARISON_IMAGES_DISABLED,
+    // DATA_URL_*, AUDIO_COMMENT_HEADER_BUTTON_ENABLED) resolve to nothing instead of the next constant's
+    // field; no key forced before is affected. A forced key can now sit behind a Patch settings switch
+    // (the helper checks HevalSettings.isEnabled(id) and takes the stock path while off). "Hide betting
+    // content" is the switch flashscore.hide_betting (restart required): it also forces the GAMBLE_RESPONSIBLY*
+    // notice keys, and the ODDS tab filter, the isAgeVerified stores and the sponsored/bonus strip
+    // constructors are gated too (the constructors have no local register, so each list parameter goes
+    // through a private static morpheHevalStrip(ArrayList)ArrayList helper that returns a new empty list
+    // while the switch is on and the argument while off). New patches,
+    // each its own switch with restart required, traced from the config key to its UI consumer in the 26.11.6
+    // code (runtime on a device NOT_RUN): "Hide match polls" (MATCH_POLL_ENABLED -> match-detail config
+    // matchPollEnabled -> adds the MATCH_POLL zone to the match page; on by default) and "Hide news"
+    // (MATCH_LIST_FS_NEWS -> the news block in the league match list, FLASHSCORE_NEWS_ENABLED -> the master
+    // check next to it, NEWS_ENABLED -> the NEWS tab on team pages; off by default). Keys that could not be
+    // traced to a view and were left out: BREAKING_NEWS, NEWS_INFO_BOX_ENABLED, PREMIUM_OFFERS (so no
+    // premium-offers switch). "Disable telemetry" also stops Microsoft
+    // Clarity (both initialize overloads and the session calls return Boolean.FALSE, sendCustomEvent and
+    // setCustomTag return false) and forces CLARITY_ENABLED=false and CLARITY_PROJECT_ID="". Skipped on
+    // purpose: ONBOARDING_* (first run only; ONBOARDING_CAMPAIGN is read through an inlined holder get),
+    // AUDIO_COMMENT_* (never read) and WWW_MODAL.
     val COMPATIBILITY_FLASHSCORE = Compatibility(
         name = "Flashscore",
         packageName = "eu.livesport.FlashScore_com",
