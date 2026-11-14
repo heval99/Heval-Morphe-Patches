@@ -39,6 +39,7 @@ HushMessenger analysis, is kept outside the repo; this page is the developer gui
 - [Truecaller features](#truecaller-features)
 - [Sofascore features](#sofascore-features)
 - [FotMob features](#fotmob-features)
+- [Samsung Keyboard features](#samsung-keyboard-features)
 - [App-specific Java helpers](#app-specific-java-helpers)
 - [List settings (pickers)](#list-settings-pickers)
 - [What cannot be toggled at runtime](#what-cannot-be-toggled-at-runtime)
@@ -89,6 +90,15 @@ be silently ignored.
    `Application.attachBaseContext`): it returns the feature's registered default, and does not
    cache that answer. The engine starts in `InitProvider.onCreate`. If a hook runs first, the
    engine starts lazily through `ActivityThread.currentApplication()`.
+   **Before the first unlock** (2026-11-14): a direct-boot-aware host (Samsung Keyboard's
+   `HoneyBoardService`) can run before credential-encrypted storage exists. While
+   `UserManager.isUserUnlocked()` is false (API 24+, checked at most once a second), `init` publishes
+   nothing and every answer is the registered default; the engine starts on the first call after
+   unlock. Before this, a hook running on the lock screen saved a failed snapshot and every
+   switch stayed at stock until the process died. Unlocked processes are unchanged. Two
+   consequences: until the first unlock the user's saved choices are not read (the defaults apply
+   on the lock-screen keyboard), and a process that started locked does not arm the crash guard
+   (the next, unlocked process does).
 2. **Engine failure** (the settings could not be read), **global pause** or **safe mode**: it
    returns `false` for every feature.
 3. **Unknown id**, an unsupported registry, or a **dependency** that is off, missing or cyclic:
@@ -601,6 +611,28 @@ picker yet. AMOLED black (`scores365.amoled_black`, build-time only) is shown as
 reason as on Sofascore: the app picks its dark colors by name in code and layouts and its themes have only three
 attributes. Not converted: Disable ads, Enable Premium, Disable update prompts, GmsCore support and
 Spoof signature.
+
+## Samsung Keyboard features
+
+Samsung Keyboard 5.9.40.75 (2026-11-14). The entry point is a "Patch settings" item in the overflow
+menu of the keyboard's settings screens (`samsungkeyboard/controls/SamsungKeyboardControls.kt`):
+`HoneyBoardSettingsFragment.onCreateOptionsMenu` adds the item (`HevalControlsEntry.addItem`, order
+1000, skipped when `HevalControlsActivity` is not installed) and `onOptionsItemSelected` asks
+`HevalControlsEntry.handles` first. Both hooks pass `Fragment.getContext()`. The fragment backs every
+settings page, so the item shows in each page's menu. Under "Change package name" the host's
+provider moves with the other authorities (`app.heval.honeyboard.hevalcontrols`). Categories: Clipboard,
+Typing & gestures, Toolbar, Privacy, Appearance.
+
+| Feature id | Patch | Default | Restart | Gated sites |
+|---|---|---|---|---|
+| `samsungkeyboard.swipe_dismiss` | Swipe down to dismiss | on | no | `HoneyBoardLayout.onInterceptTouchEvent` (`SwipeDismiss.intercept`): a downward swipe that starts on the suggestion strip or toolbar hides the keyboard |
+| `samsungkeyboard.incognito_switch` | Incognito toggle | off | no | the start-input method that logs `incognitoMode : ` (`Incognito.apply` ORs `IME_FLAG_NO_PERSONALIZED_LEARNING`) |
+
+When the build-time "Always incognito" patch is also applied, it wins: incognito stays on whatever
+the switch says. The id `samsungkeyboard.always_incognito` is kept free for converting that patch.
+Not converted yet (a later stage): Bigger clipboard history, Clipboard columns, Swipe cursor control,
+One-handed keyboard, Restore key vibration, Toolbar item count, Autofill in any field and the privacy
+patches. Not run on a device.
 
 ## App-specific Java helpers
 
