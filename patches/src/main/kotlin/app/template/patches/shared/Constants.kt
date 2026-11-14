@@ -5062,7 +5062,7 @@ object Constants {
         targets = listOf(AppTarget(version = "53.0", versionCode = 53000001))
     )
 
-    // Checked 2026-11-13 against nextapp.fx 9.1.0.8 (versionCode 9108, APKPure bundle merged;
+    // Checked 2026-11-13 against nextapp.fx 9.1.0.8 (versionCode 9108, single APKPure APK, no splits;
     // signer CN=Tod Liebeck, OU=android.nextapp.com, O=NextApp Inc., cert SHA-256
     // 02f79730...c677). The Play account has not acquired it (paid/region), so the APKPure build is
     // the source; the signer matches the developer's.
@@ -5076,7 +5076,7 @@ object Constants {
     val COMPATIBILITY_FXEXPLORER = Compatibility(
         name = "FX File Explorer",
         packageName = "nextapp.fx",
-        apkFileType = ApkFileType.APKM,
+        apkFileType = ApkFileType.APK,
         appIconColor = 0x2E7D32,
         signatures = setOf("02f79730223f454ccd108414ec063618b762a4768aedfb64462d8416f417c677"), // O=NextApp, Inc.
         targets = listOf(AppTarget(version = "9.1.0.8", versionCode = 9108))
