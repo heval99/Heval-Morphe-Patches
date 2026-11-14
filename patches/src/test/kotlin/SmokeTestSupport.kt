@@ -77,24 +77,6 @@ fun assertForcedBoolean(method: Method, expected: Boolean, label: String, diagno
     )
 }
 
-fun assertReturnsLicensedEnum(method: Method, label: String, diagnostics: String = "") {
-    val insns = method.instructions()
-    val first = insns.getOrNull(0) as? ReferenceInstruction
-    val ref = first?.reference as? FieldReference
-    assertTrue(
-        first != null &&
-            first.opcode == Opcode.SGET_OBJECT &&
-            ref != null &&
-            ref.definingClass == "Lcom/joaomgcd/taskerm/licensing/LicenseStatus;" &&
-            ref.name == "Licensed",
-        "$label does not return LicenseStatus.Licensed; first instruction is ${insns.getOrNull(0)?.opcode}\n$diagnostics"
-    )
-    assertTrue(
-        insns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT,
-        "$label does not return immediately; second instruction is ${insns.getOrNull(1)?.opcode}\n$diagnostics"
-    )
-}
-
 fun assertReturnsInt(method: Method, expected: Int, label: String, diagnostics: String = "") {
     val insns = method.instructions()
     val first = insns.getOrNull(0)
