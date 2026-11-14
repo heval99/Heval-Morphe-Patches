@@ -1472,6 +1472,25 @@ object Constants {
             // BaseAdView and AdManagerAdView loadAd are required). Smoke test passes; CLI (no -f)
             // Applied, 24 classes changed, MobileAds / BaseAdView / AdLoader disassembled (apkanalyzer).
             // 15.148.0 dropped (latest verified version only). Not run on an emulator.
+            // 2026-11-14: added "Disable telemetry" and "Hide betting content" (default off) on 15.150.0.
+            // Telemetry anchors: PreferencesImpl.isTrackingOptedOut() forced true (silences the Adjust
+            // and Firebase destinations of TrackingImpl and opts RudderStack out); the Adjust public
+            // statics that send data (trackEvent, trackAdRevenue, ..., onResume/onPause, setPushToken,
+            // setReferrer, processDeeplink, enable) return early while the listener-taking ones stay,
+            // and initSdk calls Adjust.disable() first, because a never-initialised Adjust queues
+            // getAdid / getAttribution callbacks and never answers them; comScore Analytics.start();
+            // the Firebase manifest switches (Analytics, Crashlytics, Sessions, Performance) in
+            // bytecode; the three Flutter tracking channels (logEvent, trackXpaEvent,
+            // trackMatchesStreamFilterEvent) answer success(0) like stock; Facebook App Events (the
+            // core logEvent by shape (String, Double, Bundle, Z, UUID) plus "app_events_killswitch",
+            // and the App Events enqueue, a second layer behind it, by "fb_mobile_activate_app"). Push (FCM,
+            // Airship, firebase_core) is untouched. Known gaps: the native Avo Inspector calls, Airship
+            // custom events (left alone for push), the Facebook activateApp / publishInstall path
+            // (not hooked; auto-logging is already off in the manifest), and the native odds poll (DefaultBettingRepository), which the betting patch
+            // does not stop. Betting: the "betting_card_enabled" and "legacy_betting_card_enabled"
+            // flags read off through AllRemoteFeatureFlags.getFeatureFlagValueByFeatureFlagKeyAsString
+            // (Flutter) and AbstractFeatureFlag.getValue (native); the visible effect is unproven at
+            // runtime. Runtime NOT_RUN (owner declined emulator run 2026-11-14).
             AppTarget(version = "15.150.0", versionCode = 1045049820)
         )
     )
