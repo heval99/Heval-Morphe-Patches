@@ -16,6 +16,11 @@ android {
     }
 }
 
+dependencies {
+    // HevalSettings (controls/). compileOnly: one copy of the core, from hevalcontrols.mpe.
+    compileOnly(project(":extensions:hevalcontrols:core"))
+}
+
 // Pure-Java extension. AGP's built-in Kotlin adds kotlin-stdlib by default, which would grow the
 // .mpe by ~2 MB and merge an unobfuscated Kotlin stdlib into the target app's dex.
 configurations.configureEach {

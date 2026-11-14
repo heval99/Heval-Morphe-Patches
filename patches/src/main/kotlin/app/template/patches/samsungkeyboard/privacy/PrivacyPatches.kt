@@ -4,6 +4,12 @@
 package app.template.patches.samsungkeyboard.privacy
 
 import app.template.patches.shared.addInstructionsChecked
+import app.template.patches.samsungkeyboard.controls.SamsungKeyboardControlsCategory
+import app.template.patches.samsungkeyboard.controls.samsungKeyboardControls
+import app.template.patches.shared.hevalcontrols.HevalFeature
+import app.template.patches.shared.hevalcontrols.addHevalGate
+import app.template.patches.shared.hevalcontrols.featurePatch
+import app.template.patches.shared.hevalcontrols.hevalReturnEarly
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -27,15 +33,22 @@ private const val NO_PERSONALIZED_LEARNING = 0x1000000L
 
 private fun MutableMethod.returnFirst(smali: String) = addInstructionsChecked(0, smali)
 
-/** Returns at once with nothing: void, false / 0, or null. */
-private fun MutableMethod.returnNothing() = returnFirst(
-    when (returnType.first()) {
-        'V' -> "return-void"
-        'L', '[' -> "const/4 v0, 0x0\nreturn-object v0"
-        'J', 'D' -> "const-wide/16 v0, 0x0\nreturn-wide v0"
-        else -> "const/4 v0, 0x0\nreturn v0"
-    },
-)
+/** Returns at once with nothing (void, false / 0, or null) while the Patch settings switch [id] is on. */
+private fun MutableMethod.returnNothingWhile(id: String) {
+    if (returnType.first() == 'J' || returnType.first() == 'D') {
+        val locals = (implementation?.registerCount ?: 0) - (if (com.android.tools.smali.dexlib2.AccessFlags.STATIC.isSet(accessFlags)) 0 else 1) -
+            parameterTypes.sumOf { if (it.toString() == "J" || it.toString() == "D") 2 else 1 }
+        if (locals < 2) throw PatchException("$definingClass->$name has no two free local registers for a wide answer")
+    }
+    addHevalGate(id) { v ->
+        when (returnType.first()) {
+            'V' -> "return-void"
+            'L', '[' -> "const/4 $v, 0x0\nreturn-object $v"
+            'J', 'D' -> "const-wide/16 $v, 0x0\nreturn-wide $v"
+            else -> "const/4 $v, 0x0\nreturn $v"
+        }
+    }
+}
 
 private val log = java.util.logging.Logger.getLogger("SamsungKeyboard")
 
@@ -60,11 +73,15 @@ private fun BytecodePatchContext.methodsWhere(predicate: (Method) -> Boolean): L
  * Patches [fingerprint]'s method, or -- when this build has no [marker] string anywhere, i.e. the feature isn't in it --
  * logs that and skips it. A build that has the feature in a shape the fingerprint misses still fails.
  */
-private fun BytecodePatchContext.whereBuilt(what: String, marker: String, fingerprint: Fingerprint, patch: MutableMethod.() -> Unit) {
+private fun BytecodePatchContext.whereBuilt(what: String, marker: String, fingerprint: Fingerprint, patch: MutableMethod.() -> Unit): Boolean {
     val method = fingerprint.methodOrNull
-    if (method != null) return method.patch()
+    if (method != null) {
+        method.patch()
+        return true
+    }
     if (methodsWhere { marker in it.strings() }.isNotEmpty()) throw PatchException("$what: not found where this build has it ($marker)")
     log.info("$what: not in this build, nothing to turn off")
+    return false
 }
 
 @Suppress("unused")
@@ -111,15 +128,31 @@ val noGifTrackingPatch = bytecodePatch(
     description = "Stops GIPHY and Tenor view and share pings.",
 ) {
     compatibleWith(COMPATIBILITY_SAMSUNG_KEYBOARD)
+    dependsOn(samsungKeyboardControls.patch)
 
     execute {
         // Samsung's GIF revenue share: GIPHY's sessions are never sent (the queue's sender returns, or each session's
         // request is never made -- its Future is unused), Tenor's register URL is never opened -- what each already
-        // does with nothing to send.
-        whereBuilt("GIPHY pingbacks", "pingback_id", GiphyPingbackFingerprint) { returnNothing() }
-        whereBuilt("Tenor register", "GRS_TenorRegisterManager", TenorRegisterFingerprint) { returnNothing() }
+        // does with nothing to send. Both returns sit behind the "No GIF tracking" switch; the switch is listed only
+        // when at least one of the two exists in this build.
+        val giphy = whereBuilt("GIPHY pingbacks", "pingback_id", GiphyPingbackFingerprint) { returnNothingWhile(NO_GIF_TRACKING_ID) }
+        val tenor = whereBuilt("Tenor register", "GRS_TenorRegisterManager", TenorRegisterFingerprint) { returnNothingWhile(NO_GIF_TRACKING_ID) }
+        if (giphy || tenor) {
+            samsungKeyboardControls.register(
+                HevalFeature(
+                    id = NO_GIF_TRACKING_ID,
+                    name = "No GIF tracking",
+                    description = "Stops GIPHY and Tenor view and share pings.",
+                    category = SamsungKeyboardControlsCategory.PRIVACY,
+                    default = true,
+                    icon = "shield",
+                ),
+            )
+        }
     }
 }
+
+private const val NO_GIF_TRACKING_ID = "samsungkeyboard.no_gif_tracking"
 
 @Suppress("unused")
 val stopRemoteUpdatesPatch = bytecodePatch(
@@ -144,14 +177,21 @@ private fun Method.calls() = implementation?.instructions?.mapNotNull {
 }.orEmpty()
 
 @Suppress("unused")
-val alwaysIncognitoPatch = bytecodePatch(
+val alwaysIncognitoPatch = samsungKeyboardControls.featurePatch(
+    HevalFeature(
+        id = "samsungkeyboard.always_incognito",
+        name = "Always use incognito mode",
+        description = "Makes the keyboard's own incognito check always say yes, so it never learns from what you type.",
+        category = SamsungKeyboardControlsCategory.PRIVACY,
+        // On once the patch is selected (the patch itself is opt-in in Manager).
+        default = true,
+        icon = "eye_off",
+    ),
     name = "Always incognito",
     description = "Never learns from what you type.",
     default = false,
 ) {
-    compatibleWith(COMPATIBILITY_SAMSUNG_KEYBOARD)
-
-    execute {
+    run {
         // The keyboard's incognito check -- true in a field that asks not to be learned from, a private field or
         // the Secure Folder -- answers yes everywhere. It is the no-argument boolean that asks the Secure Folder test
         // (the input binding's user is a Secure Folder) and tests that flag, itself or through the no-argument
@@ -171,7 +211,8 @@ val alwaysIncognitoPatch = bytecodePatch(
                 depth > 0 && m.calls().any { key -> booleans[key]?.let { testsFlag(it, depth - 1) } == true }
         val incognito = booleans.values.filter { m -> m.calls().any { it in secureFolderTests } && testsFlag(m, 2) }
             .singleOrNull() ?: throw PatchException("incognito check not found (Secure Folder tests: $secureFolderTests)")
-        mutable(incognito).returnFirst("const/4 v0, 0x1\nreturn v0")
+        // Behind its switch: while it is off the check runs as stock.
+        mutable(incognito).hevalReturnEarly("samsungkeyboard.always_incognito", true)
     }
 }
 

@@ -5018,6 +5018,36 @@ object Constants {
     // click (onClick(View) with the "samsungapps://CategoryList/0000005276" string, FingerprintProbe OK-unique) and any
     // other method building a samsungapps:// link get their try-less Context.startActivity moved to
     // SystemAccess.startActivitySafely (no Galaxy Store -> nothing opens instead of ActivityNotFoundException).
+    // 2026-11-14: Patch settings and the Swipe down to dismiss runtime switch added on 5.9.40.75. Anchors, all
+    // FingerprintProbe OK-unique by kept class + name + descriptor: HoneyBoardSettingsFragment onCreateOptionsMenu /
+    // onOptionsItemSelected ("Patch settings" overflow item), HoneyBoardLayout.onInterceptTouchEvent (swipe from the
+    // strip: CandidateTableLayout / CandidateView / ... by class simple name) and HoneyBoardService.onCreate (service
+    // fallback). The host's provider authority follows "Change package name" in either patch order. Swipe down to
+    // dismiss is ON once the patch is selected (the patch is opt-in). SamsungKeyboardSmokeTest asserts the emitted
+    // bytecode and the registry. Runtime NOT_RUN.
+    // 2026-11-14 (round 2, stage 1b): nine existing patches became Patch settings features on 5.9.40.75, keeping their
+    // Manager names and defaults (the option now only sets which runtime choice starts on): Swipe cursor control,
+    // One-handed keyboard, Restore key vibration (their forced flag stores in the features <clinit> go through a (Z)Z
+    // value helper; restart), Autofill in any field (the CharSequence length goes through an (I)I helper), Always
+    // incognito (row "Always use incognito mode", id samsungkeyboard.always_incognito; gate at index 0 of the incognito
+    // check; there is no separate incognito toggle), No GIF tracking (gate at index 0 of the GIPHY pingback sender and
+    // the Tenor register), Always use GIPHY and Show GIFs in every region (answers go through Gifs.giphyFirst /
+    // noticeLanguage / gifRegion, which ask the switch; the CSC read is restart), and the three number patches as
+    // choices of one switch per value (Bigger clipboard history 100/200/500/1000 via Choices.clipboardCap on the cap's
+    // <clinit> store, restart; Clipboard columns 1-6 via Choices.clipboardColumns at the start of getColCount; Toolbar
+    // item count 8-12 via Choices.toolbarItems on every int return of the cap, restart). The registry holds 24 features
+    // (9 switches plus 15 choice entries; one more when the clipboard size option is not a preset). Accepted option
+    // values stay as before: toolbar 8-12, clipboard columns 1-6, clipboard size any value >= 1 (a non-preset size gets
+    // its own switch, id samsungkeyboard.clipboard_size_<n>, passed to Choices through the cap helper). "Normal"
+    // (every switch of a choice off) is the keyboard's own value. The empty-list guard of the clipboard enforcer stays
+    // ungated (it only avoids an IndexOutOfBounds).
+    // Read-once flags and direct boot: the app is directBootAware, so a read-once flag whose class loads before the
+    // first unlock (swipe cursor, one-handed, key vibration, GIF region, clipboard size) keeps its registered default
+    // until the keyboard process restarts; the old always-on patches had no switch to ignore, so this is not a
+    // regression. Re-patching: a choice the user saved on the Patch settings screen wins over a different Manager
+    // option. Not converted, build time only: Disable telemetry, Stop remote updates, Remove internet permission,
+    // Change package name, Change app name, Enable non-One UI ROM support.
+    // SamsungKeyboardSmokeTest asserts every gate, helper and the registry. Runtime NOT_RUN.
     val COMPATIBILITY_SAMSUNG_KEYBOARD = Compatibility(
         name = "Samsung Keyboard",
         packageName = "com.samsung.android.honeyboard",

@@ -626,13 +626,57 @@ Typing & gestures, Toolbar, Privacy, Appearance.
 | Feature id | Patch | Default | Restart | Gated sites |
 |---|---|---|---|---|
 | `samsungkeyboard.swipe_dismiss` | Swipe down to dismiss | on | no | `HoneyBoardLayout.onInterceptTouchEvent` (`SwipeDismiss.intercept`): a downward swipe that starts on the suggestion strip or toolbar hides the keyboard |
-| `samsungkeyboard.incognito_switch` | Incognito toggle | off | no | the start-input method that logs `incognitoMode : ` (`Incognito.apply` ORs `IME_FLAG_NO_PERSONALIZED_LEARNING`) |
 
-When the build-time "Always incognito" patch is also applied, it wins: incognito stays on whatever
-the switch says. The id `samsungkeyboard.always_incognito` is kept free for converting that patch.
-Not converted yet (a later stage): Bigger clipboard history, Clipboard columns, Swipe cursor control,
-One-handed keyboard, Restore key vibration, Toolbar item count, Autofill in any field and the privacy
-patches. Not run on a device.
+Stage 1b (2026-11-14) converted the other feature and privacy patches (24 registry features in all: 9 switches and
+15 choice entries). The Manager patch names, descriptions and defaults did not change; a converted patch's runtime
+switch starts on (its effect equals the patch's old effect), so applying a patch behaves as before until the user
+changes it. A patch option (clipboard size, columns, toolbar items) now only decides which choice starts on. The
+accepted option values are the same as before: Toolbar items 8, 9, 10, 11 or 12; Clipboard columns 1 to 6; Clipboard
+history size any number of 1 or more (the presets 100, 200, 500 and 1000 are listed in Manager, and any other number
+gets its own switch `samsungkeyboard.clipboard_size_<n>` sorted in with the presets, so one more registry entry).
+
+| Feature id | Patch | Default | Restart | Gated sites |
+|---|---|---|---|---|
+| `samsungkeyboard.swipe_cursor` | Swipe cursor control | on | yes | the cursor-control flag store in the features `<clinit>` (`(Z)Z` value helper `morpheHevalSwipeCursor`) |
+| `samsungkeyboard.one_handed` | One-handed keyboard | on | yes | the one-handed flag store in the same `<clinit>` (`morpheHevalOneHanded`) |
+| `samsungkeyboard.key_vibration` | Restore key vibration | on | yes | the vibration flag store in the same `<clinit>` (`morpheHevalKeyVibration`) |
+| `samsungkeyboard.autofill_any_field` | Autofill in any field | on | no | the `CharSequence.length()` result before its `if-lez` (`(I)I` helper `morpheHevalAutofillLength`, returns 0 while on) |
+| `samsungkeyboard.always_incognito` | Always incognito (row "Always use incognito mode") | on | no | index 0 of the keyboard's incognito check (`hevalReturnEarly(id, true)`) |
+| `samsungkeyboard.no_gif_tracking` | No GIF tracking | on | no | index 0 of the GIPHY pingback sender and of the Tenor register (gate, then return nothing) |
+| `samsungkeyboard.always_giphy` | Always use GIPHY | on | no | every int return of the provider choice (`Gifs.giphyFirst`) and the language of the notices (`Gifs.noticeLanguage`) |
+| `samsungkeyboard.gifs_every_region` | Show GIFs in every region | on | yes | the CSC `SemCscFeature.getString` answer for the GIF board (`Gifs.gifRegion`) |
+| `samsungkeyboard.clipboard_size_<100\|200\|500\|1000>` | Bigger clipboard history | the Manager option (200) | yes | the cap's `sput` in its `<clinit>` (a `(I)I` helper in the cap's class passes the Manager's non-preset size to `Choices.clipboardCap(II)I`; 0 for a preset) |
+| `samsungkeyboard.clipboard_columns_<1..6>` | Clipboard columns | the Manager option (3) | no | start of `ClipboardViewModel.getColCount` (`Choices.clipboardColumns`, -1 means stock) |
+| `samsungkeyboard.toolbar_items_<8..12>` | Toolbar item count | the Manager option (8) | yes | every int return of the toolbar cap (`Choices.toolbarItems`; only a 7 or 8 is replaced, the 4 of the small modes stays) |
+
+**Number choices.** The registry has only on/off switches, so a number is a choice group (see
+[Settings screen](#settings-screen)): one switch per value, all in one category and sharing a `choice` title
+(Clipboard history size, Clipboard columns, Toolbar items in the top row). The screen shows one row whose dialog
+offers "Normal" plus one entry per value. "Normal" (every switch off) is the keyboard's own value, which is not the
+same as the patch's old default (stock keeps its own 7/8 toolbar items and its own clipboard cap). The Manager option
+decides which switch starts on. `Choices` in `extensions/samsungkeyboard` (`controls` package) asks each switch in
+turn and returns the first value that is on, or the keyboard's own value; its ids and values must match the lists in
+`features/FeaturePatches.kt` (the smoke test checks the registry); the one id it cannot list, a non-preset clipboard
+size, is handed in by the patch. A saved "Normal" survives, because picking it writes
+every switch off.
+
+**Read-once flags and direct boot.** The three floating-feature flags and the clipboard cap are stored by static
+initializers, once per process, so those features are marked restart-required and their gates are evaluated when the
+class loads. The app is directBootAware: a read-once flag whose class loads before the first unlock (swipe cursor,
+one-handed, key vibration, GIF region, clipboard size) keeps its registered default until the keyboard process
+restarts, because the engine only starts after unlock. This is not a regression against the old always-on patches. The
+CSC read for GIFs and the toolbar cap are also treated as restart-required. The clipboard enforcer's empty-list guard
+(an `ArrayList.isEmpty()` check before `get(0)`, which only avoids an exception) is not behind a switch.
+
+**Re-patching.** A choice the user saved on the Patch settings screen wins over a different Manager option: the option
+only sets the registered default, and the saved choice is kept.
+
+**Always incognito.** The only incognito row is "Always use incognito mode" (samsungkeyboard.always_incognito): the
+keyboard's own incognito check answers yes.
+
+Build time only, not shown on the screen (nothing to switch): Disable telemetry, Stop remote updates, Remove internet
+permission, Change package name, Change app name and Enable non-One UI ROM support (manifest, resource and
+wholesale-return edits; see [What cannot be toggled at runtime](#what-cannot-be-toggled-at-runtime)). Not run on a device.
 
 ## App-specific Java helpers
 

@@ -19,6 +19,9 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import app.template.patches.shared.Constants.COMPATIBILITY_SAMSUNG_KEYBOARD
 import app.template.patches.samsungkeyboard.misc.SAMSUNG_KEYBOARD_EXTENSION
 import app.template.patches.shared.addInstructionsAtControlFlowLabelChecked
+import app.template.patches.samsungkeyboard.controls.SamsungKeyboardControlsCategory
+import app.template.patches.samsungkeyboard.controls.samsungKeyboardControls
+import app.template.patches.shared.hevalcontrols.HevalFeature
 
 private const val GIFS = "Lapp/template/extension/samsungkeyboard/Gifs;"
 
@@ -62,6 +65,7 @@ val alwaysUseGiphyPatch = bytecodePatch(
     description = "Shows GIPHY GIFs in every language.",
 ) {
     compatibleWith(COMPATIBILITY_SAMSUNG_KEYBOARD)
+    dependsOn(samsungKeyboardControls.patch)
     extendWith(SAMSUNG_KEYBOARD_EXTENSION)
 
     execute {
@@ -100,17 +104,31 @@ val alwaysUseGiphyPatch = bytecodePatch(
             returns.size
         }
 
-        // R8 copied the choice into the "Get content from ..." line and the privacy links of the GIF board; they now
-        // name both providers, as every language gets both.
+        // R8 copied the choice into the "Get content from ..." line and the privacy links of the GIF board; while the
+        // switch is on they name both providers, as every language gets both (Gifs.noticeLanguage keeps the language
+        // while it is off).
         for (copy in copies) mutable(copy).apply {
             val instructions = implementation!!.instructions
             val cut = instructions.indices.singleOrNull { instructions[it].call() == SUBSTRING }
                 ?: throw PatchException("GIF provider notice ${copy.definingClass}->${copy.name}: no single language cut")
             val language = instructions.getOrNull(cut + 1)?.takeIf { it.opcode == Opcode.MOVE_RESULT_OBJECT }
                 ?: throw PatchException("GIF provider notice ${copy.definingClass}->${copy.name}: language not kept")
-            addInstructionsAtControlFlowLabelChecked(cut + 2, "const-string v${(language as OneRegisterInstruction).registerA}, \"en\"")
+            val register = (language as OneRegisterInstruction).registerA
+            addInstructionsAtControlFlowLabelChecked(
+                cut + 2,
+                "invoke-static/range {v$register .. v$register}, $GIFS->noticeLanguage(Ljava/lang/String;)Ljava/lang/String;\nmove-result-object v$register",
+            )
         }
         log.info("Always use GIPHY: ${choice.definingClass}->${choice.name}, $answers answers, ${lists.size} provider lists, ${copies.size} notices")
+        samsungKeyboardControls.register(
+            HevalFeature(
+                id = "samsungkeyboard.always_giphy",
+                name = "Always use GIPHY",
+                description = "Shows GIPHY GIFs in every language.",
+                category = SamsungKeyboardControlsCategory.APPEARANCE,
+                default = true,
+            ),
+        )
     }
 }
 
@@ -121,9 +139,12 @@ val showGifsInEveryRegionPatch = bytecodePatch(
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_SAMSUNG_KEYBOARD)
+    dependsOn(samsungKeyboardControls.patch)
+    extendWith(SAMSUNG_KEYBOARD_EXTENSION)
 
     execute {
-        // The keyboard reads its own CSC switch once, in its feature flags; that one answer reads "enable". The rest
+        // The keyboard reads its own CSC switch once, in its feature flags; that one answer goes through Gifs.gifRegion, which says "enable" while the switch is on and hands back the phone's own answer
+        // while it is off. The rest
         // of the gate (no-network builds, dongles) and every other CSC feature stay as the phone says.
         var switches = 0
         for (reader in methodsWithString(CSC_GIF)) mutable(reader).apply {
@@ -136,11 +157,26 @@ val showGifsInEveryRegionPatch = bytecodePatch(
                 } ?: throw PatchException("$CSC_GIF is not read through SemCscFeature.getString here")
                 val answer = instructions.getOrNull(read + 1)?.takeIf { it.opcode == Opcode.MOVE_RESULT_OBJECT }
                     ?: throw PatchException("$CSC_GIF: the answer is not kept")
-                addInstructionsAtControlFlowLabelChecked(read + 2, "const-string v${(answer as OneRegisterInstruction).registerA}, \"enable\"")
+                val register = (answer as OneRegisterInstruction).registerA
+                addInstructionsAtControlFlowLabelChecked(
+                    read + 2,
+                    "invoke-static/range {v$register .. v$register}, $GIFS->gifRegion(Ljava/lang/String;)Ljava/lang/String;\nmove-result-object v$register",
+                )
                 switches++
             }
         }
         if (switches == 0) throw PatchException("the keyboard's GIF region switch ($CSC_GIF) not found")
         log.info("Show GIFs in every region: $switches switch reads")
+        // The phone's feature flags are read when the keyboard builds them, so a change needs a restart.
+        samsungKeyboardControls.register(
+            HevalFeature(
+                id = "samsungkeyboard.gifs_every_region",
+                name = "Show GIFs in every region",
+                description = "Shows the GIF board where the phone's region turns it off.",
+                category = SamsungKeyboardControlsCategory.APPEARANCE,
+                default = true,
+                restartRequired = true,
+            ),
+        )
     }
 }
