@@ -419,6 +419,7 @@ class TruecallerSmokeTest {
         assertDisableUpdatePrompts(classes)
         assertFeatureToggles(classes)
         assertReferralGate(classes)
+        assertFeedbackCardGates(classes)
         assertHiddenTabs(classes)
         assertHideMessagesTab(classes)
         assertHiddenSettingsRows(classes)
@@ -1088,6 +1089,22 @@ class TruecallerSmokeTest {
         }
         check(insns.drop(stock).mapNotNull { it.stringOrNull() }.containsAll(keys)) { "$label lost its stock code" }
         check(insns.count { it.call()?.definingClass == HEVAL_SETTINGS_CLASS } == 1) { "$label has more than one Heval Controls gate" }
+    }
+
+    private fun assertFeedbackCardGates(classes: List<ClassDef>) {
+        // Hide promotions step 4: the Share and Invite card checks on FeedbackItemView.DisplaySource
+        // start with the feature's gate (patched path answers false) and keep their stock code;
+        // shouldShowFeedback (rate us) stays untouched.
+        val cls = classes.single { it.type == "Lcom/truecaller/ui/components/FeedbackItemView\$DisplaySource;" }
+        for (name in listOf("shouldShowShare", "shouldShowInviteFriends")) {
+            val m = cls.methods.single { it.name == name && it.parameters.isEmpty() && it.returnType == "Z" }
+            val label = "${cls.type}.$name"
+            val stock = assertGate(m, HIDE_PROMOTIONS, label)
+            check(m.instructions().subList(stock - 2, stock).isReturnZero()) { "$label does not answer false after the Hide promotions gate" }
+            check(m.instructions().size > stock) { "$label lost its stock code" }
+        }
+        val feedback = cls.methods.single { it.name == "shouldShowFeedback" }
+        check(feedback.instructions().none { it.call()?.definingClass == HEVAL_SETTINGS_CLASS }) { "shouldShowFeedback must stay stock" }
     }
 
     private fun assertHiddenTabs(classes: List<ClassDef>) {

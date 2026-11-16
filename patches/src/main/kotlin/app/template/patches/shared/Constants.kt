@@ -2813,6 +2813,10 @@ object Constants {
     // (anchored on "featureReferralNavigationDrawer" + "featureGoPro" + getBoolean), Disable nags adds
     // featureInvalidProfileNotification, new opt-in "Disable Who viewed me" (featureWhoViewedMe), and
     // Disable telemetry reads four first-party reporting toggles as off. Smoke test only; not run on a device.
+    // 2026-11-16 (26.44.6, issue #163): Hide promotions also gates FeedbackItemView$DisplaySource
+    // .shouldShowShare() and .shouldShowInviteFriends() (kept names, plain enum methods, answer false),
+    // so the "Share Truecaller with your friends" card above Search history goes; shouldShowFeedback
+    // (rate us) stays stock. Smoke test + CLI checked; runtime NOT_RUN.
     // 2026-11-12: updated to 26.44.6 (versionCode 2644006, Google Play arm64 merged, same signer). Probe:
     // every fingerprint unique as before except the bottom bar builder, which no longer builds a tab
     // array: the tab list now comes from a new assembler call (isFamilyAdmin, MemberRole, three badge

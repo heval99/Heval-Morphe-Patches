@@ -47,6 +47,22 @@ internal object ReferralContextGateFingerprint : Fingerprint(
     ),
 )
 
+// The Search history card pickers on FeedbackItemView.DisplaySource (kept, non-obfuscated names):
+// "Share Truecaller with your friends" (shouldShowShare) and the invite card (shouldShowInviteFriends).
+// Plain public enum methods reading SharedPreferences; the enum constants have no bodies of their own.
+internal object FeedbackShareCardFingerprint : Fingerprint(
+    definingClass = "Lcom/truecaller/ui/components/FeedbackItemView${'$'}DisplaySource;",
+    name = "shouldShowShare",
+    returnType = "Z",
+    parameters = listOf(),
+)
+
+internal object FeedbackInviteCardFingerprint : Fingerprint(
+    definingClass = "Lcom/truecaller/ui/components/FeedbackItemView${'$'}DisplaySource;",
+    name = "shouldShowInviteFriends",
+    returnType = "Z",
+    parameters = listOf(),
+)
 internal const val FAMILY_MEMBER_ROLE = "Lcom/truecaller/familyprotect/api/model/Family\$MemberRole;"
 
 // The bottom bar builder (xm6.g(SparseIntArray) in 26.39.6, cp6.g in 26.40.5, mr6.i in 26.44.6):

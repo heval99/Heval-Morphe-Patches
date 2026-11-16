@@ -294,7 +294,7 @@ never renamed.
 
 | Feature id | Patch | Restart | Gated sites |
 |---|---|---|---|
-| `truecaller.hide_promotions` | Hide promotions | yes | toggle overrides, referral context gate at index 0 (answers false) |
+| `truecaller.hide_promotions` | Hide promotions | yes | toggle overrides, referral context gate at index 0 (answers false), FeedbackItemView.DisplaySource shouldShowShare / shouldShowInviteFriends at index 0 (answer false, 2026-11-16) |
 | `truecaller.disable_nags` | Disable nags | no | toggle overrides |
 | `truecaller.disable_who_viewed_me` | Disable Who viewed me (off) | no | toggle override |
 | `truecaller.disable_auto_launch` | Disable auto-launch | no | toggle override |
