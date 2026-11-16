@@ -2108,7 +2108,8 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1565C0,
         signatures = setOf("4e8e4f711a222f9c9c75b4fa1560bb3cb09d7a25b1ce26db1808b2b0e042ca15"), // CN=Grega Cucnik
-        targets = listOf(AppTarget(version = "4.8.1", versionCode = 412))
+        // 2026-11-16: updated to version 4.8.2 (versionCode 413, same signer); smoke test + CLI verified.
+        targets = listOf(AppTarget(version = "4.8.2", versionCode = 413))
     )
 
     // Verified 2026-10-07 against com.onesports.score 4.3.1 (versionCode 296, APKPure split
