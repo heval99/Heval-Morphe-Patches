@@ -698,7 +698,8 @@ object Constants {
         appIconColor = 0xFF0000,
         signatures = setOf("ea97f13707620039a2c9d8ab8f3122304e1dedb58ea87b131845e0b14b8d7518"), // Google Play app signing key
         targets = listOf(
-            AppTarget(version = "5.4.18", versionCode = 262)
+            // 2026-11-16: updated to version 5.4.19 (versionCode 263, same signer); smoke test + CLI verified.
+            AppTarget(version = "5.4.19", versionCode = 263)
         )
     )
 
