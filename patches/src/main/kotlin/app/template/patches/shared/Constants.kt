@@ -1156,7 +1156,9 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x8BC34A,
         signatures = setOf("1648cbbe1517389ffbf1d6e0dd911dab52656d53ed01be670f9caf112dbeb85e"), // CN=Monefy App, O=www.monefy.me
-        targets = listOf(AppTarget(version = "1.22.11", versionCode = 2229))
+        // 2026-11-16: updated to version 1.23.0 (versionCode 2230, same signer); smoke test + CLI verified.
+        // Source changed from APKPure (armeabi-v7a only) to the Google Play arm64 build.
+        targets = listOf(AppTarget(version = "1.23.0", versionCode = 2230))
     )
 
     // Verified 2026-09-18 against Flashscore 26.9.2 (versionCode 517) supplied from
