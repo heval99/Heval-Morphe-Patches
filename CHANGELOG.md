@@ -1,3 +1,86 @@
+## 3.0.0 (2026-11-16)
+
+### ⚠️ Breaking change
+- The patch bundle is built for Morphe patcher 2.3.0 and needs Morphe Manager 2.5.0 or newer. Older Managers (2.0 to 2.4) cannot load it
+
+### 🆕 New apps
+- **Action Launcher** `53.0` - Disable ads, Disable telemetry, Enable Premium
+- **Beeper** `4.64.0` - Disable telemetry, Enable Premium, GmsCore support
+- **CCleaner** `26.16.1` - Disable ads, Disable telemetry, Enable Premium
+- **FX File Explorer** `9.1.0.8` - Enable Premium
+- **Samsung Keyboard** `5.9.40.75` - Always incognito, Always use GIPHY, Autofill in any field, Bigger clipboard history, Change app name, Change package name, Clipboard columns, Disable telemetry, Enable non-One UI ROM support, No GIF tracking, One-handed keyboard, Patch settings, Remove internet permission, Restore key vibration, Show GIFs in every region, Stop remote updates, Swipe cursor control, Swipe down to dismiss, Toolbar item count
+- **YouCut** `1.722.1225` - Disable ads, Disable native signature check, Disable telemetry, Enable Premium
+
+### 📱 AiScore `4.3.3`
+- New: Disable ads, Disable telemetry
+
+### 📱 BBC News `2026.10.0`
+- New: Spoof signature
+- Fixed: Add Spoof signature to restore push notifications
+
+### 📱 Flashscore `26.11.6`
+- New: AMOLED black, Hide competitions, Hide match polls, Hide news, Spoiler-free mode
+- Fixed: Keep Bold text steady with Use system font ([#128](https://github.com/heval99/Heval-Morphe-Patches/issues/128))
+
+### 📱 Livescore `10.4.1`
+- New: Disable telemetry, Hide betting content
+
+### 📱 OneFootball `15.150.0`
+- New: Disable telemetry, Hide betting content
+
+### 📱 Sofascore `26.11.03`
+- New: Clean shared links, Compact match lists, Disable screenshot prompt, Keep screen on
+- New: Add compact match lists, keep screen on, clean shared links and a screenshot prompt switch
+
+### 📱 The Guardian `6.241.23504`
+- New: Spoof signature
+- Fixed: Add Spoof signature to restore push notifications
+
+### 📱 Truecaller `26.44.6`
+- New: Hide inbox cards, Tap call history to call
+- New: Add a switch to hide the cards above the Messages inbox
+- New: Add a switch to call a number by tapping it in the call history ([#158](https://github.com/heval99/Heval-Morphe-Patches/issues/158))
+- New: Hide the share and invite cards above search history
+
+### ⬆️ Updated apps
+| App | From | To |
+|---|---|---|
+| AiScore | `4.3.2` | `4.3.3` |
+| Bleacher Report | `11.13.0.39` | `11.14.0.35` |
+| BlueMail | `2.2.426` | `2.2.432` |
+| Bluetooth Scanner | `1.9.3` | `1.9.4` |
+| Bookly | `2.4.2` | `2.4.3` |
+| BoxBox | `5.4.18` | `5.4.19` |
+| Brave Browser | `1.99.56` | `1.99.57` |
+| DroidCam | `8.2` | `10.0` |
+| Easy Homescreen | `1.10.31` | `1.10.33` |
+| FairEmail | `1.2339` | `1.2341` |
+| Firefox | `159.0.1` | `160.0` |
+| Firefox Focus | `159.0.1` | `160.0` |
+| Fishing Points | `4.8.1` | `4.8.2` |
+| Hevy | `3.2.6` | `3.2.7.1` |
+| Librera | `10.0.31` | `10.0.35` |
+| Mango Launcher | `1.67` | `1.68` |
+| Monefy | `1.22.11` | `1.23.0` |
+| Native Camera | `1.4.5` | `1.4.8` |
+| Pro Launcher | `v2.4.3` | `v2.4.4` |
+| TV 2 Nyheder | `2026.10-10188:RELEASE` | `2026.11-10189:RELEASE` |
+| Via | `7.3.3` | `7.4.1` |
+| Viaplay | `26.44.0` | `26.45.0` |
+
+### 🗑️ Removed apps
+- Tasker
+
+### 🔧 Other
+- Fixed: Drop the Tasker patches
+- Fixed: Wait for the first unlock instead of failing in direct boot
+- New: Upgrade to Morphe patcher 2.3.0
+
+### 🙏 Credits
+- Samsung Keyboard non-One UI base, privacy and GIF patches from https://github.com/bearinmindcat/morphe-patches (GPL-3.0)
+
+**Download:** [patches-3.0.0.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v3.0.0/patches-3.0.0.mpp)
+
 ## 3.0.0-dev.2 (2026-11-16)
 
 ### 📱 BBC News `2026.10.0`
