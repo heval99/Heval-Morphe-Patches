@@ -2227,7 +2227,10 @@ object Constants {
         appIconColor = 0xD0BCFF,
         signatures = setOf("e6cb3d3dc3c31c4ffbcc5a2b95d71875c1861ee2b17ddc3e591471c274bd9768"), // Google Play app signing key
         targets = listOf(
-            AppTarget(version = "1.4.5", versionCode = 57)
+            // 2026-11-16: updated to version 1.4.8 (versionCode 60, same signer; APKPure XAPK, now arm64-v8a, so
+            // the armeabi-v7a-only remarks above no longer apply); smoke test + CLI verified, including the PairIP
+            // licence-check bypass. The premium setter now has 24 registers, so its forced argument uses const/16.
+            AppTarget(version = "1.4.8", versionCode = 60)
         )
     )
 
