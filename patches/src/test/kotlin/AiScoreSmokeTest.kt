@@ -110,7 +110,7 @@ class AiScoreSmokeTest {
         val funnel = funnelClass.methods.single { "FirebaseLogEvent" in it.strings() }
 
         val patched = applyPatches(
-            apk = apk, workDir = workDir, pkg = PKG, version = "4.3.2",
+            apk = apk, workDir = workDir, pkg = PKG, version = "4.3.3",
             patchNames = setOf("Enable Premium", "Spoof signature", "Disable ads", "Disable telemetry"), allPatches = loadAllPatches(newestPatchBundle(root)),
         )
         val byType = patched.associateBy { it.type }

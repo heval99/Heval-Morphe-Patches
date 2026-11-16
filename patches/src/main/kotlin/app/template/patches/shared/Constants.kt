@@ -2157,7 +2157,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00C853,
         signatures = setOf("175a57de17de7811434710e42b2afbbf8e60811e54a6e570b740fa7bb4c6906f"), // CN=onescore, O=onescore
-        targets = listOf(AppTarget(version = "4.3.2", versionCode = 297))
+        // 2026-11-16: updated to version 4.3.3 (versionCode 298, same signer); smoke test + CLI verified.
+        targets = listOf(AppTarget(version = "4.3.3", versionCode = 298))
     )
 
     // Verified 2026-10-07 against com.resultadosfutbol.mobile 6.6.0 (versionCode 23005536,
