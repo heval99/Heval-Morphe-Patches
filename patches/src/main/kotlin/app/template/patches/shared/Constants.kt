@@ -965,7 +965,8 @@ object Constants {
             // 2026-11-12: updated to 1.99.56 (versionCode 429905604, Google Play arm64 merged, same signer). Probe:
             // every Origin, DNS filter, Disable ads and Disable telemetry fingerprint OK-unique, all patches apply
             // unchanged; smoke + CLI without -f; not run on a device.
-            AppTarget(version = "1.99.56"),
+            // 2026-11-16: updated to 1.99.57 (versionCode 429905704, same signer); smoke test + CLI verified.
+            AppTarget(version = "1.99.57"),
         )
     )
 
@@ -1014,8 +1015,9 @@ object Constants {
             // CLI without -f.
             // 2026-11-12: updated to 1.99.56 (versionCode 429905604); all three experimental patches apply
             // unchanged; smoke + CLI without -f.
+            // 2026-11-16: updated to 1.99.57 (versionCode 429905704, same signer); smoke test + CLI verified.
             AppTarget(
-                version = "1.99.56",
+                version = "1.99.57",
                 isExperimental = true,
             ),
         )
