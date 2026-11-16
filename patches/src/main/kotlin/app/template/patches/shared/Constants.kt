@@ -3382,6 +3382,15 @@ object Constants {
     // passes (it reads the types the same way); CLI (no -f) applies all 3 patches; apkanalyzer
     // shows the prologue (getAdListener on p2, new lt7(3, "Ads disabled", ...), tc.b, return-void)
     // and h8c.a returning false. Emulator not run.
+    // 2026-11-16: added Spoof signature (issue #164, notifications do not work). Firebase
+    // Installations sends the app's signing-certificate SHA-1 as X-Android-Cert, so the re-signed build
+    // most likely gets 403 API_KEY_ANDROID_APP_BLOCKED and Pushy never gets an FCM token. The 2026-10-16
+    // emulator note above saw the same 403 on its stock control, which was re-signed with the test key,
+    // so its "(environment)" attribution is superseded by this cause. News alerts go FCM -> Pushy and
+    // Disable telemetry is not on that path (only the received beacon); Braze-delivered marketing
+    // pushes stay off while Disable telemetry is on. The shared builder routes every getPackageInfo call through the signature
+    // extension with the original Guardian cert (SHA-256 4965429e...a9e7d, matches signatures above).
+    // Cause analysis is static; runtime is NOT_RUN (no owner-approved emulator run).
     val COMPATIBILITY_GUARDIAN = Compatibility(
         name = "The Guardian",
         packageName = "com.guardian",
@@ -4612,6 +4621,13 @@ object Constants {
     // bundle, same signer). Disable ads uses only the Google Mobile Ads library hooks (no
     // fingerprints); the smoke test and a CLI patch run (no -f) confirm all eight load entry points
     // are neutered. Bytecode only, no runtime check.
+    // 2026-11-16: added Spoof signature (issue #164, notifications do not work). Push is Urban Airship
+    // over FCM; Firebase Installations and Remote Config send the app's signing-certificate SHA-1 as
+    // X-Android-Cert, and the re-signed build most likely gets 403 API_KEY_ANDROID_APP_BLOCKED, so
+    // FcmPushProvider never receives a token. The shared builder routes every getPackageInfo call
+    // through the signature extension with the original BBC Worldwide cert (SHA-256 fd76b3b8...065dc7,
+    // matches the signatures hash above). Cause analysis is static; runtime is NOT_RUN (no owner-approved
+    // emulator run).
     val COMPATIBILITY_BBCNEWS = Compatibility(
         name = "BBC News",
         packageName = "bbc.mobile.news.ww",
