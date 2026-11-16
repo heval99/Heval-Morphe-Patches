@@ -2304,7 +2304,8 @@ object Constants {
         appIconColor = 0x006CEF,
         signatures = setOf("46cc9dad502c7581cb5fa56c1e7ea092db8f31948f4a6af2388fcf9391c41af6"), // O=BlueMail
         // 2026-11-11: updated to 2.2.426 (versionCode 48449): all fingerprints unique on the real matcher; smoke test passed.
-        targets = listOf(AppTarget(version = "2.2.426", versionCode = 48449))
+        // 2026-11-16: updated to version 2.2.432 (versionCode 48659, same signer); smoke test + CLI verified.
+        targets = listOf(AppTarget(version = "2.2.432", versionCode = 48659))
     )
 
     // Verified 2026-10-12 against com.truecaller 26.39.6 (versionCode 2639006, APKMirror bundle
