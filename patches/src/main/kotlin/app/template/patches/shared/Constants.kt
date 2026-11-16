@@ -4315,7 +4315,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x2E7D5B,
         signatures = setOf("abe821f2d1f04d226fe1e994f68e13929c2b75745a8c0ed08fffa7bd1a362255"),
-        targets = listOf(AppTarget(version = "2.4.2", versionCode = 505))
+        // 2026-11-16: updated to version 2.4.3 (versionCode 507, same signer); smoke test + CLI verified.
+        targets = listOf(AppTarget(version = "2.4.3", versionCode = 507))
     )
 
     // Verified 2026-10-27 against com.qqlabs.minimalistlauncher 1.22.8 (versionCode 236, APKPure XAPK
