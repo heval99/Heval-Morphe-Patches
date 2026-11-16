@@ -3591,7 +3591,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x111111, // The icon's near-black background (white glyph).
         signatures = setOf("07fd559fb0d1e34ee71433f11e1ca05945a069f8009d7214f74c3770a6bd6da7"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "v2.4.3", versionCode = 271))
+        // 2026-11-16: updated to version v2.4.4 (versionCode 273, same signer); smoke test + CLI verified.
+        targets = listOf(AppTarget(version = "v2.4.4", versionCode = 273))
     )
 
     // Verified 2026-10-26 against bitpit.launcher 1.16.33 (versionCode 1639, owner-supplied
