@@ -1,3 +1,31 @@
+## 3.0.0-dev.2 (2026-11-16)
+
+### 📱 BBC News `2026.10.0`
+- New: Spoof signature
+- Fixed: Add Spoof signature to restore push notifications
+
+### 📱 The Guardian `6.241.23504`
+- New: Spoof signature
+- Fixed: Add Spoof signature to restore push notifications
+
+### 📱 Truecaller `26.44.6`
+- New: Hide the share and invite cards above search history
+
+### ⬆️ Updated apps
+| App | From | To |
+|---|---|---|
+| AiScore | `4.3.2` | `4.3.3` |
+| BlueMail | `2.2.426` | `2.2.432` |
+| Bookly | `2.4.2` | `2.4.3` |
+| BoxBox | `5.4.18` | `5.4.19` |
+| Brave Browser | `1.99.56` | `1.99.57` |
+| Fishing Points | `4.8.1` | `4.8.2` |
+| Monefy | `1.22.11` | `1.23.0` |
+| Native Camera | `1.4.5` | `1.4.8` |
+| Pro Launcher | `v2.4.3` | `v2.4.4` |
+
+**Download:** [patches-3.0.0-dev.2.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v3.0.0-dev.2/patches-3.0.0-dev.2.mpp)
+
 ## 3.0.0-dev.1 (2026-11-14)
 
 ### 📱 AiScore `4.3.2`

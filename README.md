@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v3.0.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v3.0.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**105** apps&nbsp;&nbsp;•&nbsp;&nbsp;**345** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-14
+> **[v3.0.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v3.0.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**105** apps&nbsp;&nbsp;•&nbsp;&nbsp;**347** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-16
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -52,10 +52,10 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 |:-:|---|---|---|:-:|:-:|
 | <img src="assets/icons/com.scores365.png" width="20" height="20" alt=""> | **365Scores** | 🚫 💎 🔕 🧩 10 | `15.0.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.scores365) |
 | <img src="assets/icons/com.football433.png" width="20" height="20" alt=""> | **433** | 🚫 🛡️ 🧪 2 | `2.3.608` | APKM | [Play](https://play.google.com/store/apps/details?id=com.football433) |
-| <img src="assets/icons/com.onesports.score.png" width="20" height="20" alt=""> | **AiScore** | 🚫 🛡️ 💎 🧩 4 | `4.3.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.onesports.score) |
+| <img src="assets/icons/com.onesports.score.png" width="20" height="20" alt=""> | **AiScore** | 🚫 🛡️ 💎 🧩 4 | `4.3.3` | APKM | [Play](https://play.google.com/store/apps/details?id=com.onesports.score) |
 | <img src="assets/icons/com.resultadosfutbol.mobile.png" width="20" height="20" alt=""> | **BeSoccer** | 🚫 🔑 2 | `6.7.1` | APKM | [Play](https://play.google.com/store/apps/details?id=com.resultadosfutbol.mobile) |
 | <img src="assets/icons/com.bleacherreport.android.teamstream.png" width="20" height="20" alt=""> | **Bleacher Report** | 🚫 🛡️ 🧩 3 | `11.14.0.35` | APKM | [Play](https://play.google.com/store/apps/details?id=com.bleacherreport.android.teamstream) |
-| <img src="assets/icons/club.boxbox.android.png" width="20" height="20" alt=""> | **BoxBox** | 🚫 🛡️ 💎 3 | `5.4.18` | APKM | [Play](https://play.google.com/store/apps/details?id=club.boxbox.android) |
+| <img src="assets/icons/club.boxbox.android.png" width="20" height="20" alt=""> | **BoxBox** | 🚫 🛡️ 💎 3 | `5.4.19` | APKM | [Play](https://play.google.com/store/apps/details?id=club.boxbox.android) |
 | <img src="assets/icons/in.cricketexchange.app.cricketexchange.png" width="20" height="20" alt=""> | **CREX** | 🚫 💎 2 | `26.11.01` | APKM | [Play](https://play.google.com/store/apps/details?id=in.cricketexchange.app.cricketexchange) |
 | <img src="assets/icons/ro.rcsrds.digisport.png" width="20" height="20" alt=""> | **Digi Sport** | 🚫 🛡️ 🔕 🧩 8 | `1.1.15` | APK | [Play](https://play.google.com/store/apps/details?id=ro.rcsrds.digisport) |
 | <img src="assets/icons/com.eurosport.png" width="20" height="20" alt=""> | **Eurosport** | 🚫 🛡️ 🧩 3 | `8.35.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.eurosport) |
@@ -77,20 +77,20 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 |:-:|---|---|---|:-:|:-:|
 | <img src="https://img.shields.io/badge/-%20-0096D6?style=flat-square" height="14" alt=""> | **Allente** | 🛡️ 1 | `6.2.1.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.canaldigital.go) |
 | <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **B.T.** | 🚫 🛡️ 2 | `4.5.8` | APK | [Play](https://play.google.com/store/apps/details?id=com.mecom.bt) |
-| <img src="assets/icons/bbc.mobile.news.ww.png" width="20" height="20" alt=""> | **BBC News** | 🚫 1 | `2026.10.0` | APKM | [Play](https://play.google.com/store/apps/details?id=bbc.mobile.news.ww) |
+| <img src="assets/icons/bbc.mobile.news.ww.png" width="20" height="20" alt=""> | **BBC News** | 🚫 🧩 2 | `2026.10.0` | APKM | [Play](https://play.google.com/store/apps/details?id=bbc.mobile.news.ww) |
 | <img src="https://img.shields.io/badge/-%20-002B5C?style=flat-square" height="14" alt=""> | **Berlingske** | 🚫 🛡️ 2 | `4.5.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mecom.Berlingske) |
 | <img src="https://img.shields.io/badge/-%20-0057B8?style=flat-square" height="14" alt=""> | **Blockbuster** | 🛡️ 1 | `7.1.27` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tdc.blockbuster.nordic) |
 | <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **Ekstra Bladet** | 🛡️ 1 | `2026.09.20` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.ekstrabladet.breakingnews) |
 | <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **Fyens Stiftstidende** | 🚫 🛡️ 🧩 3 | `15.32` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.fyensstifts.areader) |
 | <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **JydskeVestkysten** | 🚫 🛡️ 🧩 3 | `15.32` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.jydskevestkystenmain.areader) |
 | <img src="https://img.shields.io/badge/-%20-C8102E?style=flat-square" height="14" alt=""> | **Jyllands Posten** | 🚫 🛡️ 2 | `2026.10.15` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.jyllandsposten.jp) |
-| <img src="assets/icons/com.monefy.app.lite.png" width="20" height="20" alt=""> | **Monefy** | 💎 1 | `1.22.11` | APKM | [Play](https://play.google.com/store/apps/details?id=com.monefy.app.lite) |
+| <img src="assets/icons/com.monefy.app.lite.png" width="20" height="20" alt=""> | **Monefy** | 💎 1 | `1.23.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.monefy.app.lite) |
 | <img src="assets/icons/com.divum.MoneyControl.png" width="20" height="20" alt=""> | **Moneycontrol** | 🚫 🧪 1 | `14.6.3.RC0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.divum.MoneyControl) |
 | <img src="https://img.shields.io/badge/-%20-0B1F3A?style=flat-square" height="14" alt=""> | **Nordisk Film+** | 🛡️ 1 | `1.5.4` | APKM | [Play](https://play.google.com/store/apps/details?id=com.nordiskfilmplus.android) |
 | <img src="https://img.shields.io/badge/-%20-E20110?style=flat-square" height="14" alt=""> | **Nordjyske** | 🚫 🛡️ 🧩 3 | `8.0.17` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.nordjyske.reader) |
 | <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **Politiken** | 🚫 🛡️ 2 | `4.1.5` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.pol.news) |
 | <img src="assets/icons/ie.rte.news.png" width="20" height="20" alt=""> | **RTÉ News** | 🚫 1 | `10.0.2` | APKM | [Play](https://play.google.com/store/apps/details?id=ie.rte.news) |
-| <img src="assets/icons/com.guardian.png" width="20" height="20" alt=""> | **The Guardian** | 🚫 🛡️ 🧩 3 | `6.241.23504` | APKM | [Play](https://play.google.com/store/apps/details?id=com.guardian) |
+| <img src="assets/icons/com.guardian.png" width="20" height="20" alt=""> | **The Guardian** | 🚫 🛡️ 🧩 4 | `6.241.23504` | APKM | [Play](https://play.google.com/store/apps/details?id=com.guardian) |
 | <img src="assets/icons/wsj.reader_sp.png" width="20" height="20" alt=""> | **The Wall Street Journal** | 🚫 1 | `15.13.0.44249` | APK | [Play](https://play.google.com/store/apps/details?id=wsj.reader_sp) |
 | <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **TV 2 Nyheder** | 🚫 🛡️ 2 | `2026.11-10189:RELEASE` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tv2.nyhedscenter) |
 | <img src="https://img.shields.io/badge/-%20-E30613?style=flat-square" height="14" alt=""> | **TV 2 Play** | 🛡️ 1 | `2026.10-1` | APKM | [Play](https://play.google.com/store/apps/details?id=dk.tv2.tv2play) |
@@ -102,7 +102,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 |:-:|---|---|---|:-:|:-:|
 | <img src="assets/icons/org.kman.AquaMail.png" width="20" height="20" alt=""> | **Aqua Mail** | 💎 1 | `2.8.1` | APKM | [Play](https://play.google.com/store/apps/details?id=org.kman.AquaMail) |
 | <img src="https://img.shields.io/badge/-%20-1F6FEB?style=flat-square" height="14" alt=""> | **Beeper** | 🛡️ 💎 🧩 3 | `4.64.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.beeper.android) |
-| <img src="assets/icons/me.bluemail.mail.png" width="20" height="20" alt=""> | **BlueMail** | 🚫 1 | `2.2.426` | APKM | [Play](https://play.google.com/store/apps/details?id=me.bluemail.mail) |
+| <img src="assets/icons/me.bluemail.mail.png" width="20" height="20" alt=""> | **BlueMail** | 🚫 1 | `2.2.432` | APKM | [Play](https://play.google.com/store/apps/details?id=me.bluemail.mail) |
 | <img src="assets/icons/eu.faircode.email.png" width="20" height="20" alt=""> | **FairEmail** | 💎 1 | `1.2341` | APK | [Play](https://play.google.com/store/apps/details?id=eu.faircode.email) |
 | <img src="assets/icons/com.mail.mobile.android.mail.png" width="20" height="20" alt=""> | **mail.com** | 🚫 🛡️ 🔕 🧩 4 | `9.20.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.mail.mobile.android.mail) |
 | <img src="assets/icons/com.truecaller.png" width="20" height="20" alt=""> | **Truecaller** | 🚫 🛡️ 💎 🔕 🧩 36 | `26.44.6` | APKM | [Play](https://play.google.com/store/apps/details?id=com.truecaller) |
@@ -152,7 +152,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="assets/icons/no.fishbuddy_playground.app.png" width="20" height="20" alt=""> | **FishBuddy** | 💎 1 | `11.0.137` | APKM | [Play](https://play.google.com/store/apps/details?id=no.fishbuddy_playground.app) |
-| <img src="assets/icons/com.gregacucnik.fishingpoints.png" width="20" height="20" alt=""> | **Fishing Points** | 💎 1 | `4.8.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.gregacucnik.fishingpoints) |
+| <img src="assets/icons/com.gregacucnik.fishingpoints.png" width="20" height="20" alt=""> | **Fishing Points** | 💎 1 | `4.8.2` | APK | [Play](https://play.google.com/store/apps/details?id=com.gregacucnik.fishingpoints) |
 | <img src="assets/icons/net.osmand.png" width="20" height="20" alt=""> | **OsmAnd** | 💎 1 | `5.4.11` | APKM | [Play](https://play.google.com/store/apps/details?id=net.osmand) |
 | <img src="assets/icons/com.astrapaging.vff.png" width="20" height="20" alt=""> | **VesselFinder** | 🚫 🔑 2 | `6.7.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.astrapaging.vff) |
 | <img src="assets/icons/com.wunderground.android.weather.png" width="20" height="20" alt=""> | **Weather Underground** | 🚫 1 | `6.20.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.wunderground.android.weather) |
@@ -162,7 +162,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
 | <img src="assets/icons/com.alarmclock.xtreme.free.png" width="20" height="20" alt=""> | **Alarm Clock Xtreme** | 🚫 1 | `26.06.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.alarmclock.xtreme.free) |
-| <img src="assets/icons/com.twodoor.bookly.png" width="20" height="20" alt=""> | **Bookly** | 💎 1 | `2.4.2` | APKM | [Play](https://play.google.com/store/apps/details?id=com.twodoor.bookly) |
+| <img src="assets/icons/com.twodoor.bookly.png" width="20" height="20" alt=""> | **Bookly** | 💎 1 | `2.4.3` | APKM | [Play](https://play.google.com/store/apps/details?id=com.twodoor.bookly) |
 | <img src="assets/icons/com.appgenix.bizcal.png" width="20" height="20" alt=""> | **Business Calendar 2** | 🚫 🛡️ 💎 3 | `2.56.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.appgenix.bizcal) |
 | <img src="assets/icons/easynotes.notes.notepad.notebook.privatenotes.note.png" width="20" height="20" alt=""> | **EasyNotes** | 🚫 💎 2 | `1.3.65.1019` | APKM | [Play](https://play.google.com/store/apps/details?id=easynotes.notes.notepad.notebook.privatenotes.note) |
 | <img src="assets/icons/com.ztnstudio.notepad.png" width="20" height="20" alt=""> | **#Notepad** | 🚫 💎 2 | `5.4.4.19080` | APKM | [Play](https://play.google.com/store/apps/details?id=com.ztnstudio.notepad) |
@@ -175,7 +175,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 
 | | App | Patches | Latest verified | Type | Google Play |
 |:-:|---|---|---|:-:|:-:|
-| <img src="assets/icons/com.brave.browser.png" width="20" height="20" alt=""> | **Brave Browser** | 🚫 🛡️ 💎 🔕 🧩 🧪 5 | `1.99.56` | APKM | [Play](https://play.google.com/store/apps/details?id=com.brave.browser) |
+| <img src="assets/icons/com.brave.browser.png" width="20" height="20" alt=""> | **Brave Browser** | 🚫 🛡️ 💎 🔕 🧩 🧪 5 | `1.99.57` | APKM | [Play](https://play.google.com/store/apps/details?id=com.brave.browser) |
 | <img src="assets/icons/org.mozilla.firefox.png" width="20" height="20" alt=""> | **Firefox** | 🛡️ 🔕 🧩 7 | `160.0` | APK | [Play](https://play.google.com/store/apps/details?id=org.mozilla.firefox) |
 | <img src="assets/icons/org.mozilla.focus.png" width="20" height="20" alt=""> | **Firefox Focus** | 🛡️ 🔕 🧩 7 | `160.0` | APKM | [Play](https://play.google.com/store/apps/details?id=org.mozilla.focus) |
 | <img src="assets/icons/mark.via.gp.png" width="20" height="20" alt=""> | **Via** | 🛡️ 1 | `7.4.1` | APK | [Play](https://play.google.com/store/apps/details?id=mark.via.gp) |
@@ -190,7 +190,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/app.pinya.mango.png" width="20" height="20" alt=""> | **Mango Launcher** | 💎 🔑 2 | `1.68` | APKM | [Play](https://play.google.com/store/apps/details?id=app.pinya.mango) |
 | <img src="assets/icons/com.qqlabs.minimalistlauncher.png" width="20" height="20" alt=""> | **Minimalist Launcher** | 💎 1 | `1.22.8v236` | APKM | [Play](https://play.google.com/store/apps/details?id=com.qqlabs.minimalistlauncher) |
 | <img src="assets/icons/bitpit.launcher.png" width="20" height="20" alt=""> | **Niagara Launcher** | 🛡️ 💎 🧩 3 | `1.16.36` | APK | [Play](https://play.google.com/store/apps/details?id=bitpit.launcher) |
-| <img src="assets/icons/app.prolauncher.png" width="20" height="20" alt=""> | **Pro Launcher** | 💎 1 | `v2.4.3` | APKM | [Play](https://play.google.com/store/apps/details?id=app.prolauncher) |
+| <img src="assets/icons/app.prolauncher.png" width="20" height="20" alt=""> | **Pro Launcher** | 💎 1 | `v2.4.4` | APKM | [Play](https://play.google.com/store/apps/details?id=app.prolauncher) |
 
 #### 🛠️ Tools & utilities <sub>14 apps</sub>
 
@@ -205,7 +205,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-2E7D32?style=flat-square" height="14" alt=""> | **FX File Explorer** | 💎 1 | `9.1.0.8` | APK | [Play](https://play.google.com/store/apps/details?id=nextapp.fx) |
 | <img src="assets/icons/com.gkfriend.gpsmapcameraeditor.png" width="20" height="20" alt=""> | **GPS Map Camera Editor** | 🚫 💎 🔑 🧩 5 | `1.0.32` | APKM | [Play](https://play.google.com/store/apps/details?id=com.gkfriend.gpsmapcameraeditor) |
 | <img src="assets/icons/ru.wasiliysoft.ircodefindernec.png" width="20" height="20" alt=""> | **IrCode Finder** | 🚫 1 | `14.17.0 build 206 InAPP` | APKM | [Play](https://play.google.com/store/apps/details?id=ru.wasiliysoft.ircodefindernec) |
-| <img src="assets/icons/com.rawcam.app.png" width="20" height="20" alt=""> | **Native Camera** | 💎 🔑 2 | `1.4.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.rawcam.app) |
+| <img src="assets/icons/com.rawcam.app.png" width="20" height="20" alt=""> | **Native Camera** | 💎 🔑 2 | `1.4.8` | APKM | [Play](https://play.google.com/store/apps/details?id=com.rawcam.app) |
 | <img src="https://img.shields.io/badge/-%20-FAF5FF?style=flat-square" height="14" alt=""> | **NotiAlarm** | 💎 🔑 2 | `1.3.31` | APKM | [Play](https://play.google.com/store/apps/details?id=com.soosu.notialarm) |
 | <img src="assets/icons/com.pocketcolorwheel.PCW.png" width="20" height="20" alt=""> | **Pocket Color Wheel** | 🚫 1 | `3.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.pocketcolorwheel.PCW) |
 | <img src="https://img.shields.io/badge/-%20-3E91FF?style=flat-square" height="14" alt=""> | **Samsung Keyboard** | 🛡️ 🧩 19 | `5.9.40.75` | APK | [Play](https://play.google.com/store/apps/details?id=com.samsung.android.honeyboard) |
@@ -248,7 +248,7 @@ Verified on: `2.3.608`
 <details>
 <summary><img src="assets/icons/com.onesports.score.png" width="16" height="16" alt=""> <b>AiScore</b> &nbsp;·&nbsp; 4 patches &nbsp;·&nbsp; <code>com.onesports.score</code></summary>
 
-Verified on: `4.3.2`
+Verified on: `4.3.3`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -284,7 +284,7 @@ Verified on: `11.14.0.35`
 <details>
 <summary><img src="assets/icons/club.boxbox.android.png" width="16" height="16" alt=""> <b>BoxBox</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>club.boxbox.android</code></summary>
 
-Verified on: `5.4.18`
+Verified on: `5.4.19`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -540,13 +540,14 @@ Verified on: `4.5.8`
 
 </details>
 <details>
-<summary><img src="assets/icons/bbc.mobile.news.ww.png" width="16" height="16" alt=""> <b>BBC News</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>bbc.mobile.news.ww</code></summary>
+<summary><img src="assets/icons/bbc.mobile.news.ww.png" width="16" height="16" alt=""> <b>BBC News</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>bbc.mobile.news.ww</code></summary>
 
 Verified on: `2026.10.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
 | 🚫 **Disable ads** | Stops every Google Mobile Ads banner, native, interstitial, rewarded and app-open load. | ✅ |
+| 🧩 **Spoof signature** | Fixes push notifications. | ✅ |
 
 </details>
 <details>
@@ -618,7 +619,7 @@ Verified on: `2026.10.15`
 <details>
 <summary><img src="assets/icons/com.monefy.app.lite.png" width="16" height="16" alt=""> <b>Monefy</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.monefy.app.lite</code></summary>
 
-Verified on: `1.22.11`
+Verified on: `1.23.0`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -679,7 +680,7 @@ Verified on: `10.0.2`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.guardian.png" width="16" height="16" alt=""> <b>The Guardian</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>com.guardian</code></summary>
+<summary><img src="assets/icons/com.guardian.png" width="16" height="16" alt=""> <b>The Guardian</b> &nbsp;·&nbsp; 4 patches &nbsp;·&nbsp; <code>com.guardian</code></summary>
 
 Verified on: `6.241.23504`
 
@@ -688,6 +689,7 @@ Verified on: `6.241.23504`
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
 | 🧩 **Disable article limit** | Removes the article limit. | ✅ |
 | 🛡️ **Disable telemetry** | Disables analytics, tracking and crash reporting. | ✅ |
+| 🧩 **Spoof signature** | Fixes push notifications. | ✅ |
 
 </details>
 <details>
@@ -761,7 +763,7 @@ Verified on: `4.64.0`
 <details>
 <summary><img src="assets/icons/me.bluemail.mail.png" width="16" height="16" alt=""> <b>BlueMail</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>me.bluemail.mail</code></summary>
 
-Verified on: `2.2.426`
+Verified on: `2.2.432`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -824,7 +826,7 @@ Verified on: `26.44.6`
 | 🧩 **Hide inbox cards** | Hides the info and promo cards above the Messages inbox. | ➖ |
 | 🧩 **Hide poor network warning** | Hides the "Your network is poor" tooltip on the in-call screen. | ➖ |
 | 🧩 **Hide profile menu items** | Adds switches to hide items in the profile menu. | ➖ |
-| 🧩 **Hide promotions** | Hides promo banners, referral offers and Who viewed me promos. | ✅ |
+| 🧩 **Hide promotions** | Hides promo banners, referral offers, share and invite cards and Who viewed me promos. | ✅ |
 | 🧩 **Patch settings** | Adds a screen to turn supported features on or off. | ✅ |
 | 🧩 **Privacy defaults** | Turns the Privacy Center sharing options off unless you opt in. | ✅ |
 | 🧩 **Restore classic call log** | Experimental: restores the classic call log. | ➖ |
@@ -1080,7 +1082,7 @@ Verified on: `11.0.137`
 <details>
 <summary><img src="assets/icons/com.gregacucnik.fishingpoints.png" width="16" height="16" alt=""> <b>Fishing Points</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.gregacucnik.fishingpoints</code></summary>
 
-Verified on: `4.8.1`
+Verified on: `4.8.2`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1134,7 +1136,7 @@ Verified on: `26.06.0`
 <details>
 <summary><img src="assets/icons/com.twodoor.bookly.png" width="16" height="16" alt=""> <b>Bookly</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.twodoor.bookly</code></summary>
 
-Verified on: `2.4.2`
+Verified on: `2.4.3`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1223,7 +1225,7 @@ Verified on: `9.22.8`
 <details>
 <summary><img src="assets/icons/com.brave.browser.png" width="16" height="16" alt=""> <b>Brave Browser</b> &nbsp;·&nbsp; 5 patches &nbsp;·&nbsp; <code>com.brave.browser</code></summary>
 
-Verified on: `1.99.56`
+Verified on: `1.99.57`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1352,7 +1354,7 @@ Verified on: `1.16.36`
 <details>
 <summary><img src="assets/icons/app.prolauncher.png" width="16" height="16" alt=""> <b>Pro Launcher</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>app.prolauncher</code></summary>
 
-Verified on: `v2.4.3`
+Verified on: `v2.4.4`
 
 | Patch | What it does | Default |
 |---|---|:-:|
@@ -1463,7 +1465,7 @@ Verified on: `14.17.0 build 206 InAPP`
 <details>
 <summary><img src="assets/icons/com.rawcam.app.png" width="16" height="16" alt=""> <b>Native Camera</b> &nbsp;·&nbsp; 2 patches &nbsp;·&nbsp; <code>com.rawcam.app</code></summary>
 
-Verified on: `1.4.5`
+Verified on: `1.4.8`
 
 | Patch | What it does | Default |
 |---|---|:-:|
