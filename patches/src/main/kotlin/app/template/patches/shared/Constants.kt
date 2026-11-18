@@ -3919,7 +3919,15 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x283167, // The adaptive icon's navy background.
         signatures = setOf("07ada0886afd11865d631373b2078ee6d15d8c4769f622b890bcbef778ccdfbe"), // CN=Raimund Rix, O=1&1 Mail & Media GmbH
-        targets = listOf(AppTarget(version = "9.20.2", versionCode = 405218))
+        // 2026-11-18: updated to version 9.21.2 (versionCode 405222, same signer).
+        // Re-anchored: Disable ads (the ad pixel sender is now the suspend CommonTracker.trackCustomUrl, returns Unit),
+        // Disable telemetry (R8 inlined SentryApi.start into MailApplication.onCreate, so CrashTrackingConfig's constructor
+        // forces isCrashTrackingAllowedByUser false), Disable rating prompts (inlined into MailListModuleAdapterImpl.shouldStartInAppFlow)
+        // and Hide upsells (Swipe2UpsellFeature.isEnabledByConfig, found by its "feature.swipe2upsell.enabled" key).
+        // Side effect: every CrashTrackingConfig now reads off, so the About screen's crash-report switch
+        // always shows off and snaps back if turned on. Smoke test (real matcher) green; CLI without -f, all
+        // 5 patches Applied; changed sites checked with apkanalyzer; not run on a device.
+        targets = listOf(AppTarget(version = "9.21.2", versionCode = 405222))
     )
 
     // Updated 2026-10-23 to com.eurosport 8.34.1 (versionCode 113929; replaces 8.33.0 /
