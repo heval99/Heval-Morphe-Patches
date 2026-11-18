@@ -4231,9 +4231,11 @@ object Constants {
         appIconColor = 0xFF7139, // The icon's orange.
         signatures = setOf("a78b62a5165b4494b2fead9e76a280d22d937fee6251aece599446b2ea319b04"), // O=Mozilla Corporation
         targets = listOf(
+            // 2026-11-18: updated to version 160.0.1 (Play arm64 build, versionCode 2016196679; x86_64
+            // 2016196678 read from Mozilla's archive x86_64 build, same Mozilla signer).
             AppTarget(
-                version = "160.0",
-                versionCodes = mapOf(SupportedAbi.X86_64 to 2016194414, SupportedAbi.ARM64_V8A to 2016194415),
+                version = "160.0.1",
+                versionCodes = mapOf(SupportedAbi.X86_64 to 2016196678, SupportedAbi.ARM64_V8A to 2016196679),
             )
         )
     )
