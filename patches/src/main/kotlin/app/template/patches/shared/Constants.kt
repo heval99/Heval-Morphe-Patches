@@ -589,9 +589,27 @@ object Constants {
             // Hide competitions read by reflection is now "id" (still serialized as "ID", so the
             // favourites files are unchanged). Verified: FotMobSmokeTest (all 15 patches) and a CLI
             // run without -f with a decompile of the hook sites. Not run on the emulator.
+            // 2026-11-18: updated to version 242.18410.20261117 (versionCode 18410, Play arm64, same
+            // CN=Christer Nordvik cert) replaces 241.18134.20261030. Re-anchored:
+            // - Enable FotMob+ app icons: R8 keeps the MembershipActivity in v0 in two branches and in v5
+            //   (after move-object v5, v0) in the NoEntitlement one, so the activity register is tracked
+            //   from the check-cast through the branch instead of read from the picker calls.
+            // - Hide countries / competitions / Spoiler-free: League, LeagueMatches and Match became
+            //   Kotlin classes (League rawCountryCode/id/parentId/countryName/nameNoLocalization, Match id;
+            //   JSON names unchanged), LeagueMatches is rebuilt through (Collator, League, List, int),
+            //   LiveMatchesAndLeagueRank.<init> gained a SystemMessage parameter.
+            // - Spoiler-free widget: the started checks moved from the row builder into the state
+            //   builder it calls (static (Context, Match, String)); each started check is overridden. The
+            //   separate status label hook is gone (the status text comes from the same branches).
+            // - Show FotMob+ logo: the two drawable ids are looked up by name (ic_fotmob_plus_logo_app_bar
+            //   and ic_fotmob_logo_app_bar; ids moved from 0x7f0802c5 to 0x7f0802cd).
+            // - Turn off / Faster animations: 12 getFloat callers (11 in 241), all redirected.
+            // Verified: FotMobSmokeTest (all 18 patches), a CLI run without -f (all 18 Applied), apkanalyzer
+            // on the picker call, the widget state builder and the logo observer, and an aapt2 string-pool
+            // diff stock vs patched (identical). Runtime NOT_RUN (no emulator approved).
             AppTarget(
-                version = "241.18134.20261030",
-                versionCode = 18134
+                version = "242.18410.20261117",
+                versionCode = 18410
             )
         )
     )
