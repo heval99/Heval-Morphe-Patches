@@ -1514,7 +1514,8 @@ object Constants {
             // flags read off through AllRemoteFeatureFlags.getFeatureFlagValueByFeatureFlagKeyAsString
             // (Flutter) and AbstractFeatureFlag.getValue (native); the visible effect is unproven at
             // runtime. Runtime NOT_RUN (owner declined emulator run 2026-11-14).
-            AppTarget(version = "15.150.0", versionCode = 1045049820)
+            // 2026-11-18: updated to version 15.151.0 (versionCode 1045059947, same signer).
+            AppTarget(version = "15.151.0", versionCode = 1045059947)
         )
     )
 
