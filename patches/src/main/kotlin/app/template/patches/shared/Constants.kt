@@ -2869,13 +2869,18 @@ object Constants {
     //   shape plus the CallLogAction.CALLBACK read, unique) with (id, false) and jumps to the branch's
     //   selection path. Other events and selection mode stay stock. Smoke test + CLI without -f verified;
     //   not run on a device.
+    // 2026-11-18: updated to version 26.45.5 (versionCode 2645005). Source: APKMirror bundle (.apkm,
+    //   arm64 + v7a splits) merged with APKEditor; signer unchanged (CN=truecaller, same SHA-256), so
+    //   apkFileType stays APKM and the signatures hash is kept. Probe: every fingerprint as before except
+    //   the call log filter row, which gained a selected FilterType (kept type) and a click lambda and
+    //   now has 14 parameters (ya.e). Smoke test + CLI without -f (36 patches Applied); runtime NOT_RUN.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0087FF,
         signatures = setOf("7712b5f255f2c85b8b164519116ac4381bb9a3582dcdd2b73ac06ee7464913ae"), // CN=truecaller
-        targets = listOf(AppTarget(version = "26.44.6", versionCode = 2644006))
+        targets = listOf(AppTarget(version = "26.45.5", versionCode = 2645005))
     )
 
     // Verified 2026-10-13 against com.hevy 3.1.16 (versionCode 3325935, XAPK base + arm64 + en +

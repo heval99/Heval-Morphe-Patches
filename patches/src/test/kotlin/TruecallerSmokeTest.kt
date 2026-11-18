@@ -367,7 +367,7 @@ class TruecallerSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.44.6",
+            version = "26.45.5",
             patchNames = setOf(
                 "Enable Premium",
                 "Disable ads",
@@ -2027,10 +2027,10 @@ class TruecallerSmokeTest {
     }
 
     private fun assertHideCallLogFilters(classes: List<ClassDef>, byType: Map<String, ClassDef>) {
-        // 1. The filter row composable (static, void, 11 parameters, "filtersStartPadding") returns at
-        // once while the feature is on.
+        // 1. The filter row composable (static, void, 14 parameters since 26.45.5, "filtersStartPadding")
+        // returns at once while the feature is on.
         val (rowClass, row) = classes.singleMethod("call log filter row") { _, m ->
-            AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && m.params().size == 11 &&
+            AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && m.params().size == 14 &&
                 m.params()[2] == "Lkotlin/jvm/functions/Function1;" && m.params()[4] == "I" &&
                 m.params()[6] == "Lkotlin/jvm/functions/Function0;" && m.params()[7] == "Z" &&
                 "filtersStartPadding" in m.strings()
