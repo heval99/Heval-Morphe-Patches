@@ -3367,7 +3367,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3C59AD, // Mid-point of the icon's blue-to-indigo background gradient.
         signatures = setOf("b83ad17c73dc062be4dc188f2b91e7f7632f69f85f962616e6866effe43bf603"), // O=projekt
-        targets = listOf(AppTarget(version = "2.2.16", versionCode = 20216))
+        // 2026-11-18: updated to version 2.2.17 (versionCode 20217, same signer).
+        targets = listOf(AppTarget(version = "2.2.17", versionCode = 20217))
     )
 
     // Written 2026-10-15/16 against com.guardian 6.238.23405 (versionCode 23405), the STABLE
