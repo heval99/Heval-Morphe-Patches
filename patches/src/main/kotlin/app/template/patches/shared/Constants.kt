@@ -4160,7 +4160,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x7542E5, // The icon's purple.
         signatures = setOf("6203a473be36d64ee37f87fa500edbc79eab930610ab9b9fa4ca7d5c1f1b4ffc"), // CN=Release Engineering, O=Mozilla Corporation
-        targets = listOf(AppTarget(version = "160.0", versionCode = 403082131))
+        // 2026-11-18: updated to version 160.0.1 (versionCode 403201659, same signer).
+        targets = listOf(AppTarget(version = "160.0.1", versionCode = 403201659))
     )
 
     // Written 2026-10-18 against org.mozilla.firefox 158.0 (versionCode 2016189054 for x86_64 and
