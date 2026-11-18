@@ -2002,7 +2002,8 @@ object Constants {
             // merged, same signer). All four patches apply unchanged: smoke test green and CLI
             // without -f applied them.
             // 2026-11-11: updated to 16.67.0-261105 (versionCode 1606700): all fingerprints unique on the real matcher; smoke test passed.
-            AppTarget(version = "16.67.0-261105", versionCode = 1606700),
+            // 2026-11-18: updated to version 16.68.0-261112 (versionCode 1606800, same signer).
+            AppTarget(version = "16.68.0-261112", versionCode = 1606800),
         )
     )
 
