@@ -4646,7 +4646,8 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x2E7D32, // The green of the icon's background.
         signatures = setOf("5ab419834c1f5279b1ccaf262d75a6db2c2dcd9e8c1dab9bead92a640cf26727"), // CN=Jay Rambhia
-        targets = listOf(AppTarget(version = "1.3.4", versionCode = 1340))
+        // 2026-11-18: updated to build 1341 of 1.3.4 (versionCode 1341, same signer).
+        targets = listOf(AppTarget(version = "1.3.4", versionCode = 1341))
     )
 
     // Verified 2026-10-28 against com.gmail.jmartindev.timetune 5.6.3 (versionCode 584, APKPure
