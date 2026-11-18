@@ -5363,6 +5363,7 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x1F6FEB,
         signatures = setOf("786f42f5e93e8a7c111fde4eab018ab490666dedcda7cce4bc7006f52a6f31f8"), // O=Beeper
-        targets = listOf(AppTarget(version = "4.64.0", versionCode = 1744163566))
+        // 2026-11-18: updated to version 4.65.0 (versionCode 1744164584, same signer).
+        targets = listOf(AppTarget(version = "4.65.0", versionCode = 1744164584))
     )
 }
