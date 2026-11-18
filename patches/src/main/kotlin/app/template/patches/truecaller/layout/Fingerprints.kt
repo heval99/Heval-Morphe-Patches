@@ -63,6 +63,22 @@ internal object FeedbackInviteCardFingerprint : Fingerprint(
     returnType = "Z",
     parameters = listOf(),
 )
+
+// The survey eligibility check (hh40.N in 26.44.6, g740.O in 26.45.5, a member of the surveys
+// repository): true when the survey's frequency and the per-number cooldown have both passed. The
+// first parameter (the R8-named last-shown state) is matched by position only; the other two are kept
+// types. The survey start (sj50.e / du50.e) and the "has a survey for this context" check
+// (hh40.a0 / g740.e0, used by the details view, block and after-call hosts) both call it.
+internal object SurveyEligibilityFingerprint : Fingerprint(
+    returnType = "Z",
+    parameters = listOf(
+        "L",
+        "Lcom/truecaller/contact/entity/model/ContactSurveyEntity;",
+        "Lcom/truecaller/surveys/data/domain/SurveyConfig;",
+    ),
+    custom = { method, _ -> method.implementation != null },
+)
+
 internal const val FAMILY_MEMBER_ROLE = "Lcom/truecaller/familyprotect/api/model/Family\$MemberRole;"
 
 // The bottom bar builder (xm6.g(SparseIntArray) in 26.39.6, cp6.g in 26.40.5, mr6.i in 26.44.6):

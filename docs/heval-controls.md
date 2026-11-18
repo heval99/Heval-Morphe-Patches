@@ -313,6 +313,7 @@ never renamed.
 | `truecaller.hide_call_log_filters` | Hide call log filters | yes | filter row composable and filter setter (index 0) |
 | `truecaller.hide_frequent_contacts` | Hide frequently called contacts | no | LazyColumn item skip |
 | `truecaller.hide_important_senders` | Hide important senders | no | LazyColumn item skip |
+| `truecaller.hide_surveys` | Hide surveys | no | survey eligibility check at index 0 (answers false; covers details view, block and after-call surveys, 2026-11-18) |
 | `truecaller.hide_inbox_cards` | Hide inbox cards (off) | no | carousel skip in the Messages inbox builder |
 | `truecaller.tap_call_history_to_call` | Tap call history to call (off) | no | ItemClick case of the call log event dispatcher (gate before the selection branch) |
 | `truecaller.disable_call_button_haptics` | Disable call button haptics | no | haptic dispatch skips, drag progress (value helper) |

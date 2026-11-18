@@ -2846,6 +2846,19 @@ object Constants {
     // .shouldShowShare() and .shouldShowInviteFriends() (kept names, plain enum methods, answer false),
     // so the "Share Truecaller with your friends" card above Search history goes; shouldShowFeedback
     // (rate us) stays stock. Smoke test + CLI checked; runtime NOT_RUN.
+    // 2026-11-18 (issue #167, written on 26.44.6, verified on 26.45.5): new "Hide surveys" (switch truecaller.hide_surveys, on by default,
+    //   no restart). The surveys ("Did we show the right name?" and the like) come from the server with the
+    //   contact (ContactSurveyEntity), so there is no text to anchor on. The patch makes the survey
+    //   eligibility check (Z, (state, ContactSurveyEntity, SurveyConfig): frequency and per-number
+    //   cooldown passed; matched by the two kept parameter types and the Z return, OK-unique in the
+    //   probe; g740.O in 26.45.5) answer false. Its only callers are the survey start and the "has a
+    //   survey" check (g740.e0),
+    //   which the legacy details view fragment, the Compose survey view model and the block and
+    //   after-call hosts use, so surveys stop in every context, not only on the details screen. The
+    //   Compose details list still adds its Survey component (statically traced, not seen on a
+    //   device). "Share this name with Truecaller?" is not in the APK's strings or resources, so
+    //   it is taken to be a server survey; DetailsViewComponent.Feedback (resource "Suggest a better
+    //   name") is untouched. Smoke test + CLI checked; runtime NOT_RUN.
     // 2026-11-12: updated to 26.44.6 (versionCode 2644006, Google Play arm64 merged, same signer). Probe:
     // every fingerprint unique as before except the bottom bar builder, which no longer builds a tab
     // array: the tab list now comes from a new assembler call (isFamilyAdmin, MemberRole, three badge
