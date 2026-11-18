@@ -1,3 +1,26 @@
+## 3.1.0-dev.1 (2026-11-18)
+
+### 📱 Truecaller `26.45.5`
+- New: Hide surveys
+
+### ⬆️ Updated apps
+| App | From | To |
+|---|---|---|
+| Beeper | `4.64.0` | `4.65.0` |
+| Bookly | `2.4.3` | `2.4.4` |
+| Firefox | `160.0` | `160.0.1` |
+| Firefox Focus | `160.0` | `160.0.1` |
+| FotMob | `241.18134.20261030` | `242.18410.20261117` |
+| Futbin | `27.13` | `27.14` |
+| Hyperion Launcher | `2.2.16` | `2.2.17` |
+| mail.com | `9.20.2` | `9.21.2` |
+| OneFootball | `15.150.0` | `15.151.0` |
+| Shazam | `16.67.0-261105` | `16.68.0-261112` |
+| Sofascore | `26.11.03` | `26.11.09` |
+| Truecaller | `26.44.6` | `26.45.5` |
+
+**Download:** [patches-3.1.0-dev.1.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v3.1.0-dev.1/patches-3.1.0-dev.1.mpp)
+
 ## 3.0.0 (2026-11-16)
 
 ### ⚠️ Breaking change
