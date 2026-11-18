@@ -390,7 +390,7 @@ class SofascoreSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.11.03",
+            version = "26.11.09",
             patchNames = SOFASCORE_PATCHES,
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -769,16 +769,15 @@ class SofascoreSmokeTest {
                 ) { "$helper in ${m.definingClass}.${m.name} is not vX = $helper(vX); return vX" }
             }
         }
-        // 26.11.03 split the old shared lambda: the rows and one selected-sport case share one
-        // lambda class, the names query and the other selected-sport case another, and a third
-        // lambda class holds the names query alone.
+        // 26.11.09: the rows and the selected-sport case share one lambda class; the names query
+        // sits alone in another, loaded once above a switch and prepared by two of its cases.
         val rowsAndSelected = "SELECT * FROM sport_order ORDER BY sportOrder ASC, SELECT sportName FROM sport_order WHERE isSelected = 1"
-        val namesAndSelected = "SELECT sportName FROM sport_order ORDER BY sportOrder ASC, SELECT sportName FROM sport_order WHERE isSelected = 1"
         val namesOnly = "SELECT sportName FROM sport_order ORDER BY sportOrder ASC"
         assertReturnFilter("filterSportOrders", mapOf(rowsAndSelected to 1))
-        assertReturnFilter("filterSportNames", mapOf(namesAndSelected to 1, namesOnly to 1))
-        // Two selected-sport cases, and the three returns of the PREF_HOME_SPORT_V2 getter.
-        assertReturnFilter("visibleSport", mapOf(rowsAndSelected to 1, namesAndSelected to 1, "PREF_HOME_SPORT_V2" to 3))
+        assertReturnFilter("filterSportNames", mapOf(namesOnly to 2))
+        // Two selected-sport cases (the former rows+selected and names+selected lambdas, one class
+        // since 26.11.09), and the three returns of the PREF_HOME_SPORT_V2 getter.
+        assertReturnFilter("visibleSport", mapOf(rowsAndSelected to 2, "PREF_HOME_SPORT_V2" to 3))
 
         // Hide promo sections: Remote Config getBoolean (the instance (String)Z reading the value
         // handler's Patterns; the handler is found by its TRUE regex) asks hidePromoSection(key)
@@ -1370,26 +1369,28 @@ class SofascoreSmokeTest {
         assertGatedPath(autoPlayHelper, TURN_OFF_VIDEO_AUTOPLAY.id, "morpheVideoAutoplay(Z)Z", listOf(Opcode.CONST_4, Opcode.RETURN), literal = 0)
         check(autoPlayHelper.instructions().last().opcode == Opcode.RETURN) { "morpheVideoAutoplay must end by returning its argument" }
         // Slower widget refresh: in the widget scheduler (static (Context)V holding the unique work
-        // label and the worker class), the 30-minute interval passes through widgetRefreshInterval
-        // before it is stored: const-wide vX, 1800000; invoke-static/range {vX .. vX+1}; move-result-wide vX; iput-wide vX.
+        // label and the worker class), the 30-minute interval passes through widgetRefreshMinutes
+        // before PeriodicWorkRequest.Builder(Class, long, TimeUnit.MINUTES) gets it (26.11.09):
+        // const-wide vX, 30; invoke-static/range {vX .. vX+1}; move-result-wide vX.
         val scheduler = classes.flatMap { it.methods }.filter { m ->
             m.isStatic() && m.returnType == "V" && m.params() == listOf(CONTEXT) &&
-                "enqueueUniquePeriodic_widget_periodic_refresh" in m.strings() &&
+                "widget_periodic_refresh" in m.strings() &&
                 m.instructions().any { (it as? ReferenceInstruction)?.reference.let { r -> r is TypeReference && r.type == WIDGET_REFRESH_WORKER } }
         }
         check(scheduler.size == 1) { "expected one widget refresh scheduler, found ${scheduler.size}\n$diagnostics" }
         val wInsns = scheduler.single().instructions()
-        val hook = wInsns.indexOfFirst { it.call()?.let { c -> c.definingClass == SOFASCORE_CONTROLS && c.name == "widgetRefreshInterval" } == true }
-        check(hook > 0) { "the widget scheduler does not call widgetRefreshInterval" }
+        val hook = wInsns.indexOfFirst { it.call()?.let { c -> c.definingClass == SOFASCORE_CONTROLS && c.name == "widgetRefreshMinutes" } == true }
+        check(hook > 0) { "the widget scheduler does not call widgetRefreshMinutes" }
         val load = wInsns[hook - 1]
         val register = (load as OneRegisterInstruction).registerA
         check(
-            (load as? com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction)?.wideLiteral == 1_800_000L &&
+            (load as? com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction)?.wideLiteral == 30L &&
                 wInsns[hook].opcode == Opcode.INVOKE_STATIC_RANGE && (wInsns[hook] as RegisterRangeInstruction).startRegister == register &&
                 (wInsns[hook] as RegisterRangeInstruction).registerCount == 2 &&
                 wInsns[hook + 1].opcode == Opcode.MOVE_RESULT_WIDE && (wInsns[hook + 1] as OneRegisterInstruction).registerA == register &&
-                wInsns[hook + 2].opcode == Opcode.IPUT_WIDE && (wInsns[hook + 2] as OneRegisterInstruction).registerA == register
+                wInsns.subList(hook + 2, wInsns.size).first { it.opcode == Opcode.INVOKE_DIRECT }.call()
+                    .let { it?.definingClass == "Landroidx/work/PeriodicWorkRequest\$Builder;" && it.name == "<init>" }
         ) { "the widget interval hook is malformed: ${wInsns.subList(hook - 1, hook + 3).map { it.opcode }}" }
-        check(wInsns.count { it.call()?.name == "widgetRefreshInterval" } == 1) { "widgetRefreshInterval is called more than once" }
+        check(wInsns.count { it.call()?.name == "widgetRefreshMinutes" } == 1) { "widgetRefreshMinutes is called more than once" }
     }
 }

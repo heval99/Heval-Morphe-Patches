@@ -365,9 +365,14 @@ object Constants {
             //   re-cues instead of resuming. FingerprintProbe OK-unique on 26.10.26 (vmp.c); on
             //   26.11.03 the smoke test (real matcher, exactly one match) and dexindex; CLI patch
             //   without -f; not run on a device.
+            // 2026-11-18: updated to version 26.11.09 (versionCode 261109002, signer unchanged).
+            // Re-anchored: Hide sports (queries now prepared several times per lambda class) and Slower widget refresh (the
+            // scheduler builds PeriodicWorkRequest.Builder(Class, 30, TimeUnit.MINUTES), hooked by SofascoreControls.widgetRefreshMinutes).
+            // Smoke test (real matcher) green; CLI without -f, all 31 patches Applied; changed sites checked
+            // with apkanalyzer; aapt2 strings unchanged; not run on a device.
             AppTarget(
-                version = "26.11.03",
-                versionCode = 261103003
+                version = "26.11.09",
+                versionCode = 261109002
             )
         )
     )

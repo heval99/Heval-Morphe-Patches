@@ -90,6 +90,41 @@ private fun MutableMethod.queryListReturn(load: Int, query: String): Int {
     return ret
 }
 
+/**
+ * The return-object of every [prepare] call that takes the SQL loaded by [load] (the nearest
+ * const-string into that register before the call is [load]); each is checked to return the
+ * ArrayList that is built between the call and the return.
+ */
+private fun MutableMethod.preparedListReturns(load: Int, query: String, prepare: MethodReference): List<Int> {
+    val sqlRegister = (getInstruction(load) as OneRegisterInstruction).registerA
+    fun lastSqlLoad(before: Int): Int? = (before - 1 downTo 0).firstOrNull { j ->
+        val ins = getInstruction(j)
+        (ins.opcode == Opcode.CONST_STRING || ins.opcode == Opcode.CONST_STRING_JUMBO) &&
+            (ins as OneRegisterInstruction).registerA == sqlRegister
+    }
+    val calls = (load + 1 until instructions.size).filter { i ->
+        val call = getInstruction(i)
+        lastSqlLoad(i) == load && call is FiveRegisterInstruction && call.registerCount == 2 &&
+            call.registerD == sqlRegister &&
+            ((call as ReferenceInstruction).reference as? MethodReference)?.let {
+                it.name == prepare.name && it.definingClass == prepare.definingClass
+            } == true
+    }
+    if (calls.isEmpty()) throw PatchException("\"$query\" is never prepared in $definingClass")
+    return calls.map { call ->
+        val ret = (call until instructions.size).firstOrNull { instructions[it].opcode == Opcode.RETURN_OBJECT }
+            ?: throw PatchException("\"$query\" in $definingClass->$name has no return-object")
+        val list = (call until ret).firstOrNull { i ->
+            instructions[i].opcode == Opcode.NEW_INSTANCE &&
+                ((instructions[i] as ReferenceInstruction).reference as TypeReference).type == "Ljava/util/ArrayList;"
+        } ?: throw PatchException("\"$query\" in $definingClass->$name builds no ArrayList before its return")
+        if ((instructions[ret] as OneRegisterInstruction).registerA != (instructions[list] as OneRegisterInstruction).registerA) {
+            throw PatchException("\"$query\" in $definingClass->$name does not return its ArrayList")
+        }
+        ret
+    }
+}
+
 /** Before the return-object at [ret]: `vX = SofascoreControls.<helper>(vX)`. */
 private fun MutableMethod.filterReturn(ret: Int, helper: String, signature: String, what: String) {
     requireNoBranchTargetAt(ret, what)
@@ -146,9 +181,15 @@ val hideSportsPatch = bytecodePatch(
             ?: throw PatchException("\"$SPORT_ORDER_ROWS_QUERY\" is not prepared right after its load")
 
         // 2. The names (List<String>): the sport repository's list (feed, favourites, start screen,
-        //    notification settings). Two lambda classes hold the same query.
+        //    notification settings). Up to 26.11.03 two lambda classes held the same query.
+        //    Up to 26.11.03 each lambda loaded the SQL right before its ArrayList; in 26.11.09 one
+        //    lambda class loads it once at the top and two switch cases prepare it, so the sites are
+        //    the prepare calls whose SQL register was last loaded with the names SQL (each is checked
+        //    to return the ArrayList built after the call).
         val namesSites = methodsHolding(SPORT_NAMES_QUERY).map { method ->
-            method to method.stringIndices(SPORT_NAMES_QUERY).map { method.queryListReturn(it, SPORT_NAMES_QUERY) }
+            method to method.stringIndices(SPORT_NAMES_QUERY).flatMap { load ->
+                method.preparedListReturns(load, SPORT_NAMES_QUERY, prepare)
+            }
         }
 
         // 3. The selected sport query. Its sites are the prepare calls taking the register its SQL is
