@@ -313,6 +313,7 @@ never renamed.
 | `truecaller.hide_call_log_filters` | Hide call log filters | yes | filter row composable and filter setter (index 0) |
 | `truecaller.hide_frequent_contacts` | Hide frequently called contacts | no | LazyColumn item skip |
 | `truecaller.hide_important_senders` | Hide important senders | no | LazyColumn item skip |
+| `truecaller.hide_surveys` | Hide surveys | no | survey eligibility check at index 0 (answers false; covers details view, block and after-call surveys, 2026-11-18) |
 | `truecaller.hide_inbox_cards` | Hide inbox cards (off) | no | carousel skip in the Messages inbox builder |
 | `truecaller.tap_call_history_to_call` | Tap call history to call (off) | no | ItemClick case of the call log event dispatcher (gate before the selection branch) |
 | `truecaller.disable_call_button_haptics` | Disable call button haptics | no | haptic dispatch skips, drag progress (value helper) |
@@ -393,7 +394,7 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.disable_rating_prompts` | Disable rating prompts | on | no | its forced value |
 | `sofascore.animations_off` | Animation speed | off | yes | `AnimationSpeed.init` first in ReleaseApp.onCreate, every app call to `Settings.Global.getFloat` (`AnimationSpeed.getFloat`) |
 | `sofascore.animations_fast` | Animation speed | off | yes | the same sites |
-| `sofascore.slower_widget_refresh` | Slower widget refresh | off | yes | widget refresh interval (`widgetRefreshInterval`) |
+| `sofascore.slower_widget_refresh` | Slower widget refresh | off | yes | widget refresh interval, in minutes (`widgetRefreshMinutes`) |
 | `sofascore.hidden_countries` (list) | Hide countries | off | yes | SportCategoriesResponse.getCategories (`filterCategories`), CategoriesForDateResponse.getCategories (`filterCategoryWrappers`), SearchResponse.getResults (`filterSearchResults`), the sportLiveEvents and getIndexedEventsPage request returns (`filterEventList`), the categoryScheduledEvents request return (`filterCategoryEvents`), seeds by `CountryFilter.init` at the end of ReleaseApp.onCreate |
 | `sofascore.hidden_competitions` (list) | Hide competitions | off | yes | the same shared sites minus the leagues list, plus UniqueTournamentGroupResponse.getUniqueTournaments (`filterUniqueTournaments`); icons by `CompetitionFilter.init` (called from `CountryFilter.init`) |
 | `sofascore.spoiler_free` | Spoiler-free mode | on | no | EventActivity and LeagueActivity onCreateOptionsMenu (`addMatchItem`, `addCompetitionItem`) and their (Event)V / (UniqueTournament)V methods (`onMatch`, `onCompetition`); master of the five rows below |

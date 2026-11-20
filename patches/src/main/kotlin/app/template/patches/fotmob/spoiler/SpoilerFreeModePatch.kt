@@ -168,8 +168,9 @@ private fun MutableMethod.addMenuItemHook(host: FieldReference, helper: String) 
 /** The fields SpoilerFree reads by name (kept Gson model names); a rename fails here. */
 private fun BytecodePatchContext.requireMatchFields() {
     val wanted = mapOf(
-        MATCH to mapOf("Id" to "Ljava/lang/String;", "league" to LEAGUE),
-        LEAGUE to mapOf("Id" to "I", "ParentId" to "I"),
+        // 242 turned Match and League into Kotlin classes: Id/ParentId became id/parentId (JSON names kept).
+        MATCH to mapOf("id" to "Ljava/lang/String;", "league" to LEAGUE),
+        LEAGUE to mapOf("id" to "I", "parentId" to "I"),
     )
     for ((owner, fields) in wanted) {
         val present = classDefBy(owner).fields.associate { it.name to it.type }
@@ -199,58 +200,56 @@ private fun BytecodePatchContext.startedCheck(): Method {
 }
 
 /**
- * The home-screen live score widget's row (LiveScoreAppWidget.Companion: static
- * (Context, Match, boolean, Integer)RemoteViews). It draws "home - away" when the match has started,
- * else the kickoff time, and a status label ("FT", "67'") whose view is hidden when blank.
+ * The home-screen live score widget. LiveScoreAppWidget.Companion's match row builder (static
+ * (Context, Match, ...)RemoteViews; 242 added float and flag parameters, so only the first two are
+ * matched) hands the match to a model builder, static (Context, Match, String) that returns the row's
+ * state. That builder asks the Match whether it has started several times: the first result is stored
+ * as the state's "show the score" flag and the others pick the status text. Each started check
+ * answers "not started" for a marked match, so the row shows the kickoff time and no score or status.
+ * (241 had the checks and the status label inside the row builder itself.)
  */
 private fun BytecodePatchContext.widgetScoreHook(): () -> Unit {
     val rows = mutableClassDefBy(LIVE_SCORE_WIDGET).methods.filter {
         it.returnType == "Landroid/widget/RemoteViews;" && AccessFlags.STATIC.isSet(it.accessFlags) &&
-            it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;", MATCH, "Z", "Ljava/lang/Integer;")
+            !AccessFlags.SYNTHETIC.isSet(it.accessFlags) &&
+            it.parameterTypes.take(2).map(CharSequence::toString) == listOf("Landroid/content/Context;", MATCH)
     }
     if (rows.size != 1) throw PatchException("$LIVE_SCORE_WIDGET: ${rows.size} match row builders, expected one")
     val row = rows.single()
     val started = startedCheck()
 
-    val insns = row.instructions.toList()
-    fun MethodReference.isStarted() = definingClass == MATCH && name == started.name && returnType == "Z" && parameterTypes.isEmpty()
-    fun MethodReference.isStatusLabel() = returnType == "Ljava/lang/String;" &&
-        parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;", MATCH, "Z")
-    val startedCalls = insns.indices.filter { insns[it].opcode == Opcode.INVOKE_VIRTUAL && insns[it].methodRef()?.isStarted() == true }
-    val labelCalls = insns.indices.filter { insns[it].opcode == Opcode.INVOKE_STATIC && insns[it].methodRef()?.isStatusLabel() == true }
-    if (startedCalls.size != 1 || labelCalls.size != 1) {
-        throw PatchException("${row.definingClass}->${row.name}: ${startedCalls.size} started checks and ${labelCalls.size} status labels, expected one each")
-    }
-    val startedCall = startedCalls.single()
-    val labelCall = labelCalls.single()
-    val startedResult = insns[startedCall + 1] as? OneRegisterInstruction
-    val labelResult = insns[labelCall + 1] as? OneRegisterInstruction
-    if (insns[startedCall + 1].opcode != Opcode.MOVE_RESULT || insns[labelCall + 1].opcode != Opcode.MOVE_RESULT_OBJECT) {
-        throw PatchException("${row.definingClass}->${row.name}: the started check or the status label has no result move")
-    }
-    val startedMatch = (insns[startedCall] as FiveRegisterInstruction).registerC
-    val labelMatch = (insns[labelCall] as FiveRegisterInstruction).registerD
-    val flag = startedResult!!.registerA
-    val label = labelResult!!.registerA
-    if (flag == startedMatch || label == labelMatch) {
-        throw PatchException("${row.definingClass}->${row.name}: a result overwrites the match register")
+    val builderRefs = row.instructions.mapNotNull { it.methodRef() }.filter {
+        it.returnType != "V" && it.returnType != "Landroid/widget/RemoteViews;" &&
+            it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;", MATCH, "Ljava/lang/String;")
+    }.distinctBy { "${it.definingClass}->${it.name}${it.parameterTypes}" }
+    val builderRef = builderRefs.singleOrNull()
+        ?: throw PatchException("${row.definingClass}->${row.name}: ${builderRefs.size} widget state builders, expected one")
+    val builder = mutableClassDefBy(builderRef.definingClass).methods.single {
+        it.name == builderRef.name && it.returnType == builderRef.returnType &&
+            it.parameterTypes.map(CharSequence::toString) == builderRef.parameterTypes.map(CharSequence::toString)
     }
 
-    // Later site first, so the earlier index stays valid. A marked match: the status label is "".
-    return { row.applyWidgetHooks(startedCall, labelCall, flag, startedMatch, label, labelMatch) }
+    val insns = builder.instructions.toList()
+    fun MethodReference.isStarted() = definingClass == MATCH && name == started.name && returnType == "Z" && parameterTypes.isEmpty()
+    val calls = insns.indices.filter { insns[it].opcode == Opcode.INVOKE_VIRTUAL && insns[it].methodRef()?.isStarted() == true }
+    if (calls.isEmpty()) throw PatchException("${builder.definingClass}->${builder.name}: no started check")
+    val sites = calls.map { call ->
+        if (insns[call + 1].opcode != Opcode.MOVE_RESULT) {
+            throw PatchException("${builder.definingClass}->${builder.name}: a started check has no result move")
+        }
+        val flag = (insns[call + 1] as OneRegisterInstruction).registerA
+        val match = (insns[call] as FiveRegisterInstruction).registerC
+        if (flag == match) throw PatchException("${builder.definingClass}->${builder.name}: a result overwrites the match register")
+        Triple(call, flag, match)
+    }
+
+    // Later sites first, so the earlier indexes stay valid.
+    return { sites.reversed().forEach { (call, flag, match) -> builder.applyWidgetHook(call, flag, match) } }
 }
 
-private fun MutableMethod.applyWidgetHooks(startedCall: Int, labelCall: Int, flag: Int, startedMatch: Int, label: Int, labelMatch: Int) {
-    val row = this
-    row.addInstructionsChecked(
-        labelCall + 2,
-        """
-            invoke-static { v$label, v$labelMatch }, $SPOILER_FREE->status(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/String;
-            move-result-object v$label
-        """,
-    )
-    // A started, marked match counts as not started, so the row takes the kickoff-time branch.
-    row.addInstructionsWithLabelsChecked(
+private fun MutableMethod.applyWidgetHook(startedCall: Int, flag: Int, startedMatch: Int) {
+    // A started, marked match counts as not started, so the state takes the kickoff-time branch.
+    addInstructionsWithLabelsChecked(
         startedCall + 2,
         """
             if-eqz v$flag, :spoiler_keep
@@ -258,7 +257,7 @@ private fun MutableMethod.applyWidgetHooks(startedCall: Int, labelCall: Int, fla
             move-result v$flag
             xor-int/lit8 v$flag, v$flag, 0x1
         """,
-        ExternalLabel("spoiler_keep", row.getInstruction(startedCall + 2)),
+        ExternalLabel("spoiler_keep", getInstruction(startedCall + 2)),
     )
 }
 
@@ -361,17 +360,18 @@ private fun MutableMethod.hideStartedAt(call: Int, insns: List<Instruction>, hel
 //    id is the "leagueId" extra.
 // The item is added before the inflate with order 1000 (after the inflated items) and handles its own
 // click (MenuItem's click listener runs before the provider's onMenuItemSelected).
-// 4. Home-screen live score widget (LiveScoreAppWidget.Companion row builder): after Match's "has
-//    started" check, a marked match answers false, so the row draws the kickoff time instead of
-//    "home - away"; its status label ("FT", "67'") becomes "" and the widget hides that view. Only
-//    this call site changes; the Match model, sorting and every other reader of the check are stock.
+// 4. Home-screen widgets (since 242): the widget row state builder, static (Context, Match, String),
+//    called by the LiveScoreAppWidget.Companion row builder, its width measurement and the league
+//    widget rows. At each of its Match "has started" checks a marked match answers false, so the row
+//    shows the kickoff time and no score. A live marked match keeps an empty live-text view, and an
+//    aborted match still shows its status label. The Match model and sorting are stock.
 // 5. Match rows: every method that formats the live score ("%d %s- %d") and asks Match whether it
 //    started (the live row, the fixture row, the match page header, two view-holder methods and the
 //    live-update worker, six in 241) gets the same override at each started check, so a marked
 //    match shows its kickoff time there too.
 // Not covered in phase 1: the score-drawing methods that never ask Match whether it started (the team
 // form line, the holder-based builders, the shared string helper), the match page tabs (events,
-// stats, momentum), the league and team widgets, search, head-to-head, brackets, standings, the
+// stats, momentum), the team widget, search, head-to-head, brackets, standings, the
 // bold winner (the live row reads the aggregate and the penalties directly), the status text
 // ("FT", the minute) and the widget's bold winner name after a penalty shootout.
 @Suppress("unused")

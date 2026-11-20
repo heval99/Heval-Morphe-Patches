@@ -365,9 +365,14 @@ object Constants {
             //   re-cues instead of resuming. FingerprintProbe OK-unique on 26.10.26 (vmp.c); on
             //   26.11.03 the smoke test (real matcher, exactly one match) and dexindex; CLI patch
             //   without -f; not run on a device.
+            // 2026-11-18: updated to version 26.11.09 (versionCode 261109002, signer unchanged).
+            // Re-anchored: Hide sports (queries now prepared several times per lambda class) and Slower widget refresh (the
+            // scheduler builds PeriodicWorkRequest.Builder(Class, 30, TimeUnit.MINUTES), hooked by SofascoreControls.widgetRefreshMinutes).
+            // Smoke test (real matcher) green; CLI without -f, all 31 patches Applied; changed sites checked
+            // with apkanalyzer; aapt2 strings unchanged; not run on a device.
             AppTarget(
-                version = "26.11.03",
-                versionCode = 261103003
+                version = "26.11.09",
+                versionCode = 261109002
             )
         )
     )
@@ -589,9 +594,27 @@ object Constants {
             // Hide competitions read by reflection is now "id" (still serialized as "ID", so the
             // favourites files are unchanged). Verified: FotMobSmokeTest (all 15 patches) and a CLI
             // run without -f with a decompile of the hook sites. Not run on the emulator.
+            // 2026-11-18: updated to version 242.18410.20261117 (versionCode 18410, Play arm64, same
+            // CN=Christer Nordvik cert) replaces 241.18134.20261030. Re-anchored:
+            // - Enable FotMob+ app icons: R8 keeps the MembershipActivity in v0 in two branches and in v5
+            //   (after move-object v5, v0) in the NoEntitlement one, so the activity register is tracked
+            //   from the check-cast through the branch instead of read from the picker calls.
+            // - Hide countries / competitions / Spoiler-free: League, LeagueMatches and Match became
+            //   Kotlin classes (League rawCountryCode/id/parentId/countryName/nameNoLocalization, Match id;
+            //   JSON names unchanged), LeagueMatches is rebuilt through (Collator, League, List, int),
+            //   LiveMatchesAndLeagueRank.<init> gained a SystemMessage parameter.
+            // - Spoiler-free widget: the started checks moved from the row builder into the state
+            //   builder it calls (static (Context, Match, String)); each started check is overridden. The
+            //   separate status label hook is gone (the status text comes from the same branches).
+            // - Show FotMob+ logo: the two drawable ids are looked up by name (ic_fotmob_plus_logo_app_bar
+            //   and ic_fotmob_logo_app_bar; ids moved from 0x7f0802c5 to 0x7f0802cd).
+            // - Turn off / Faster animations: 12 getFloat callers (11 in 241), all redirected.
+            // Verified: FotMobSmokeTest (all 18 patches), a CLI run without -f (all 18 Applied), apkanalyzer
+            // on the picker call, the widget state builder and the logo observer, and an aapt2 string-pool
+            // diff stock vs patched (identical). Runtime NOT_RUN (no emulator approved).
             AppTarget(
-                version = "241.18134.20261030",
-                versionCode = 18134
+                version = "242.18410.20261117",
+                versionCode = 18410
             )
         )
     )
@@ -1496,7 +1519,8 @@ object Constants {
             // flags read off through AllRemoteFeatureFlags.getFeatureFlagValueByFeatureFlagKeyAsString
             // (Flutter) and AbstractFeatureFlag.getValue (native); the visible effect is unproven at
             // runtime. Runtime NOT_RUN (owner declined emulator run 2026-11-14).
-            AppTarget(version = "15.150.0", versionCode = 1045049820)
+            // 2026-11-18: updated to version 15.151.0 (versionCode 1045059947, same signer).
+            AppTarget(version = "15.151.0", versionCode = 1045059947)
         )
     )
 
@@ -1610,7 +1634,8 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x26A69A,
         signatures = setOf("1cf7ff75f2e364c2e671321af98f86d35979fe8f3575da508b90d530df75e904"), // CN=Dirk Duncan, O=FUTBIN
-        targets = listOf(AppTarget(version = "27.13", versionCode = 7013))
+        // 2026-11-18: updated to version 27.14 (versionCode 7014, same O=FUTBIN signer).
+        targets = listOf(AppTarget(version = "27.14", versionCode = 7014))
     )
 
     // Verified 2026-09-27 against com.pocketcolorwheel.PCW 3.26 (versionCode 57,
@@ -1984,7 +2009,8 @@ object Constants {
             // merged, same signer). All four patches apply unchanged: smoke test green and CLI
             // without -f applied them.
             // 2026-11-11: updated to 16.67.0-261105 (versionCode 1606700): all fingerprints unique on the real matcher; smoke test passed.
-            AppTarget(version = "16.67.0-261105", versionCode = 1606700),
+            // 2026-11-18: updated to version 16.68.0-261112 (versionCode 1606800, same signer).
+            AppTarget(version = "16.68.0-261112", versionCode = 1606800),
         )
     )
 
@@ -2828,6 +2854,19 @@ object Constants {
     // .shouldShowShare() and .shouldShowInviteFriends() (kept names, plain enum methods, answer false),
     // so the "Share Truecaller with your friends" card above Search history goes; shouldShowFeedback
     // (rate us) stays stock. Smoke test + CLI checked; runtime NOT_RUN.
+    // 2026-11-18 (issue #167, written on 26.44.6, verified on 26.45.5): new "Hide surveys" (switch truecaller.hide_surveys, on by default,
+    //   no restart). The surveys ("Did we show the right name?" and the like) come from the server with the
+    //   contact (ContactSurveyEntity), so there is no text to anchor on. The patch makes the survey
+    //   eligibility check (Z, (state, ContactSurveyEntity, SurveyConfig): frequency and per-number
+    //   cooldown passed; matched by the two kept parameter types and the Z return, OK-unique in the
+    //   probe; g740.O in 26.45.5) answer false. Its only callers are the survey start and the "has a
+    //   survey" check (g740.e0),
+    //   which the legacy details view fragment, the Compose survey view model and the block and
+    //   after-call hosts use, so surveys stop in every context, not only on the details screen. The
+    //   Compose details list still adds its Survey component (statically traced, not seen on a
+    //   device). "Share this name with Truecaller?" is not in the APK's strings or resources, so
+    //   it is taken to be a server survey; DetailsViewComponent.Feedback (resource "Suggest a better
+    //   name") is untouched. Smoke test + CLI checked; runtime NOT_RUN.
     // 2026-11-12: updated to 26.44.6 (versionCode 2644006, Google Play arm64 merged, same signer). Probe:
     // every fingerprint unique as before except the bottom bar builder, which no longer builds a tab
     // array: the tab list now comes from a new assembler call (isFamilyAdmin, MemberRole, three badge
@@ -2851,13 +2890,18 @@ object Constants {
     //   shape plus the CallLogAction.CALLBACK read, unique) with (id, false) and jumps to the branch's
     //   selection path. Other events and selection mode stay stock. Smoke test + CLI without -f verified;
     //   not run on a device.
+    // 2026-11-18: updated to version 26.45.5 (versionCode 2645005). Source: APKMirror bundle (.apkm,
+    //   arm64 + v7a splits) merged with APKEditor; signer unchanged (CN=truecaller, same SHA-256), so
+    //   apkFileType stays APKM and the signatures hash is kept. Probe: every fingerprint as before except
+    //   the call log filter row, which gained a selected FilterType (kept type) and a click lambda and
+    //   now has 14 parameters (ya.e). Smoke test + CLI without -f (36 patches Applied); runtime NOT_RUN.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0087FF,
         signatures = setOf("7712b5f255f2c85b8b164519116ac4381bb9a3582dcdd2b73ac06ee7464913ae"), // CN=truecaller
-        targets = listOf(AppTarget(version = "26.44.6", versionCode = 2644006))
+        targets = listOf(AppTarget(version = "26.45.5", versionCode = 2645005))
     )
 
     // Verified 2026-10-13 against com.hevy 3.1.16 (versionCode 3325935, XAPK base + arm64 + en +
@@ -3328,7 +3372,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3C59AD, // Mid-point of the icon's blue-to-indigo background gradient.
         signatures = setOf("b83ad17c73dc062be4dc188f2b91e7f7632f69f85f962616e6866effe43bf603"), // O=projekt
-        targets = listOf(AppTarget(version = "2.2.16", versionCode = 20216))
+        // 2026-11-18: updated to version 2.2.17 (versionCode 20217, same signer).
+        targets = listOf(AppTarget(version = "2.2.17", versionCode = 20217))
     )
 
     // Written 2026-10-15/16 against com.guardian 6.238.23405 (versionCode 23405), the STABLE
@@ -3879,7 +3924,15 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x283167, // The adaptive icon's navy background.
         signatures = setOf("07ada0886afd11865d631373b2078ee6d15d8c4769f622b890bcbef778ccdfbe"), // CN=Raimund Rix, O=1&1 Mail & Media GmbH
-        targets = listOf(AppTarget(version = "9.20.2", versionCode = 405218))
+        // 2026-11-18: updated to version 9.21.2 (versionCode 405222, same signer).
+        // Re-anchored: Disable ads (the ad pixel sender is now the suspend CommonTracker.trackCustomUrl, returns Unit),
+        // Disable telemetry (R8 inlined SentryApi.start into MailApplication.onCreate, so CrashTrackingConfig's constructor
+        // forces isCrashTrackingAllowedByUser false), Disable rating prompts (inlined into MailListModuleAdapterImpl.shouldStartInAppFlow)
+        // and Hide upsells (Swipe2UpsellFeature.isEnabledByConfig, found by its "feature.swipe2upsell.enabled" key).
+        // Side effect: every CrashTrackingConfig now reads off, so the About screen's crash-report switch
+        // always shows off and snaps back if turned on. Smoke test (real matcher) green; CLI without -f, all
+        // 5 patches Applied; changed sites checked with apkanalyzer; not run on a device.
+        targets = listOf(AppTarget(version = "9.21.2", versionCode = 405222))
     )
 
     // Updated 2026-10-23 to com.eurosport 8.34.1 (versionCode 113929; replaces 8.33.0 /
@@ -4122,7 +4175,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x7542E5, // The icon's purple.
         signatures = setOf("6203a473be36d64ee37f87fa500edbc79eab930610ab9b9fa4ca7d5c1f1b4ffc"), // CN=Release Engineering, O=Mozilla Corporation
-        targets = listOf(AppTarget(version = "160.0", versionCode = 403082131))
+        // 2026-11-18: updated to version 160.0.1 (versionCode 403201659, same signer).
+        targets = listOf(AppTarget(version = "160.0.1", versionCode = 403201659))
     )
 
     // Written 2026-10-18 against org.mozilla.firefox 158.0 (versionCode 2016189054 for x86_64 and
@@ -4193,9 +4247,11 @@ object Constants {
         appIconColor = 0xFF7139, // The icon's orange.
         signatures = setOf("a78b62a5165b4494b2fead9e76a280d22d937fee6251aece599446b2ea319b04"), // O=Mozilla Corporation
         targets = listOf(
+            // 2026-11-18: updated to version 160.0.1 (Play arm64 build, versionCode 2016196679; x86_64
+            // 2016196678 read from Mozilla's archive x86_64 build, same Mozilla signer).
             AppTarget(
-                version = "160.0",
-                versionCodes = mapOf(SupportedAbi.X86_64 to 2016194414, SupportedAbi.ARM64_V8A to 2016194415),
+                version = "160.0.1",
+                versionCodes = mapOf(SupportedAbi.X86_64 to 2016196678, SupportedAbi.ARM64_V8A to 2016196679),
             )
         )
     )
@@ -4317,7 +4373,9 @@ object Constants {
         appIconColor = 0x2E7D5B,
         signatures = setOf("abe821f2d1f04d226fe1e994f68e13929c2b75745a8c0ed08fffa7bd1a362255"),
         // 2026-11-16: updated to version 2.4.3 (versionCode 507, same signer); smoke test + CLI verified.
-        targets = listOf(AppTarget(version = "2.4.3", versionCode = 507))
+        // 2026-11-18: updated to version 2.4.4 (versionCode 508). Source changed from APKPure (v7a-only
+        // build) to Google Play (arm64); same signer.
+        targets = listOf(AppTarget(version = "2.4.4", versionCode = 508))
     )
 
     // Verified 2026-10-27 against com.qqlabs.minimalistlauncher 1.22.8 (versionCode 236, APKPure XAPK
@@ -4601,7 +4659,8 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x2E7D32, // The green of the icon's background.
         signatures = setOf("5ab419834c1f5279b1ccaf262d75a6db2c2dcd9e8c1dab9bead92a640cf26727"), // CN=Jay Rambhia
-        targets = listOf(AppTarget(version = "1.3.4", versionCode = 1340))
+        // 2026-11-18: updated to build 1341 of 1.3.4 (versionCode 1341, same signer).
+        targets = listOf(AppTarget(version = "1.3.4", versionCode = 1341))
     )
 
     // Verified 2026-10-28 against com.gmail.jmartindev.timetune 5.6.3 (versionCode 584, APKPure
@@ -5320,6 +5379,7 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x1F6FEB,
         signatures = setOf("786f42f5e93e8a7c111fde4eab018ab490666dedcda7cce4bc7006f52a6f31f8"), // O=Beeper
-        targets = listOf(AppTarget(version = "4.64.0", versionCode = 1744163566))
+        // 2026-11-18: updated to version 4.65.0 (versionCode 1744164584, same signer).
+        targets = listOf(AppTarget(version = "4.65.0", versionCode = 1744164584))
     )
 }
