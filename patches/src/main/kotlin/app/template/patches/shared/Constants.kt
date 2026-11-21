@@ -1839,7 +1839,8 @@ object Constants {
         // 2026-11-03: updated to 11.6.1 (versionCode 315, Play arm64 build via gplaydl, same Play
         // signer), both patches apply unchanged; smoke + CLI without -f.
         // 2026-11-03 emulator: patched cold starts reach MainActivity (stock stops at the PairIP licence screen), no crash.
-        targets = listOf(AppTarget(version = "11.6.1", versionCode = 315))
+        // 2026-11-20: updated to version 11.6.3 (versionCode 318, same signer). Smoke test + CLI without -f + whole-APK method diff; runtime not run.
+        targets = listOf(AppTarget(version = "11.6.3", versionCode = 318))
     )
 
     // Verified 2026-09-29 against com.streema.simpleradio 6.2.0 (versionCode 872,
