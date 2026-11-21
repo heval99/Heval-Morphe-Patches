@@ -3579,7 +3579,8 @@ object Constants {
         appIconColor = 0x6001D2, // Yahoo purple.
         signatures = setOf("d3f1fb1b2c81e096e3f5809a503afda0cfaf56b9d39dedc656ee2660acef614c"), // CN=Yahoo! mobile CA, O=Yahoo! Inc.
         // 2026-11-11: updated to 12.28.1 (versionCode 11168679): all fingerprints unique on the real matcher; smoke test passed.
-        targets = listOf(AppTarget(version = "12.28.1", versionCode = 11168679))
+        // 2026-11-20: updated to version 12.29.0 (versionCode 11168702, same signer). Smoke test + CLI without -f + whole-APK method diff; runtime not run.
+        targets = listOf(AppTarget(version = "12.29.0", versionCode = 11168702))
     )
 
     // Smoke-tested 2026-10-15 against com.pzolee.bluetoothscanner 1.9.3 (versionCode 93, APKPure
