@@ -3385,7 +3385,8 @@ object Constants {
         appIconColor = 0x3C59AD, // Mid-point of the icon's blue-to-indigo background gradient.
         signatures = setOf("b83ad17c73dc062be4dc188f2b91e7f7632f69f85f962616e6866effe43bf603"), // O=projekt
         // 2026-11-18: updated to version 2.2.17 (versionCode 20217, same signer).
-        targets = listOf(AppTarget(version = "2.2.17", versionCode = 20217))
+        // 2026-11-20: updated to version 2.2.19 (versionCode 20219, same signer). Smoke test + CLI without -f + whole-APK method diff; runtime not run.
+        targets = listOf(AppTarget(version = "2.2.19", versionCode = 20219))
     )
 
     // Checked 2026-11-21 against ginlemon.flowerfree 6.6 build 026 (versionCode 660260; Play arm64
