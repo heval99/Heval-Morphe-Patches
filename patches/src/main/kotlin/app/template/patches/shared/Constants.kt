@@ -3376,6 +3376,58 @@ object Constants {
         targets = listOf(AppTarget(version = "2.2.17", versionCode = 20217))
     )
 
+    // Checked 2026-11-21 against ginlemon.flowerfree 6.6 build 026 (versionCode 660260; Play arm64
+    // split set merged with APKEditor, signer CN=vincenzo colucci, SHA-256 dbc3effb...2de60).
+    // App code is R8-renamed (ginlemon.flower.App, Lz99, Ld74...), so every anchor is a library API,
+    // a stable string or a shape. Disable telemetry: (1) the no-arg boolean method that reads a
+    // FirebaseAnalytics field and calls Boolean.valueOf is the inlined
+    // setAnalyticsCollectionEnabled(userChoice); false is loaded into its argument register before
+    // the call, so Firebase and the app's own flag stay off at start and on every preference change;
+    // (2) FirebaseAnalytics.logEvent, the only (String, Bundle) void in the kept class, returns at
+    // once; (3) Crashlytics' renamed setCrashlyticsCollectionEnabled(boolean) (the (Z)V holding
+    // "firebase_crashlytics_collection_enabled" next to SharedPreferences.Editor.putBoolean) gets
+    // its parameter overwritten with false. Hide promotions: the remote-config data class is found
+    // by its toString prefix "SLConfig(isDefaultConfig="; its single constructor (one build path
+    // for the default and the fetched config) gets isRatingActivityEnabled,
+    // isScheduledPromoEnabled, isSeasonalPromoEnabled, showSurveyTip and enableProBanner set to
+    // false and periodicPromoSchedule set to "" at entry. The property-to-parameter map is derived
+    // at patch time from the toString labels and checked against the constructor types (this build:
+    // p6, p12, p13, p25, p28 and p16). The schedule reader tests length() > 0 before parsing, so ""
+    // is safe. The Play review prompt is gated by isRatingActivityEnabled (its guard returns false when the flag is false), so it needs no hook.
+    // Spoof signature (a dependency of both patches): App.onCreate starts a coroutine that reads
+    // getPackageInfo(pkg, GET_SIGNATURES).signatures[0], takes its SHA-1 and, when it equals neither
+    // 0C6F28FE... nor DFAAB993DE750D7B5430BBD4217472311D94F9D0, logs "Not genuine apk..." and calls
+    // System.exit(0), so a re-signed build would close at start. The Play certificate read from the
+    // v3 block (SHA-256 dbc3effb...) has SHA-1 dfaab993de750d7b5430bbd4217472311d94f9d0, the second
+    // constant, so the shared spoof satisfies the check. The other signature reader, a static int
+    // method that calls getPackageInfo("ginlemon.flower.slcompanionapp", 0x40), inspects the
+    // companion app, not this one, so the spoof (own package only) leaves it alone.
+    // Enable Premium: ported from MrCool-888/mrcool-patches (GPL-3.0), adapted from
+    // hoo-dles/morphe-patches (copyright 2026 Hoo-dles, GPL-3.0). The PurchasableItems holder's
+    // static initializer gets the "lifetime" item set to true through its own setter and fires
+    // "ginlemon.action.hasPremiumAccessChanged", so feature gates, the licence provider and widgets
+    // see one consistent Pro state; the Play Billing refresh's revoke flag is forced false, because
+    // a sideloaded app gets no purchases and the stock refresh would clear that state again.
+    // Fix Galaxy Buds3 Pro widget: ported from the same project. Samsung's provider still points at
+    // the One UI 6/7 configure activity, which redirects without forwarding the launcher's result,
+    // so both stock config launches are replaced with a helper that starts
+    // WidgetSettingActivityUI85 directly on One UI >= 80500 (Buds package, same profile, activity
+    // exported/enabled), otherwise falls back. The size publisher is wrapped for Buds so only the
+    // current measurement is reported (min = max = current) and the invalidation coroutine keeps
+    // the last usable size; other widgets keep the stock path. Runtime NOT_RUN (needs a Galaxy
+    // device with Buds3 Pro + One UI 8.5/9); smoke test, CLI and decompile only.
+    // No ad SDK in dex (only the gms ads-identifier from Firebase measurement; no
+    // MobileAds/AdView/MAX); Disable ads not applicable and not shipped.
+    // Runtime not run (NOT_RUN); smoke test, CLI without -f and apkanalyzer only.
+    val COMPATIBILITY_SMARTLAUNCHER = Compatibility(
+        name = "Smart Launcher",
+        packageName = "ginlemon.flowerfree",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0x2196F3, // Smart Launcher's blue
+        signatures = setOf("dbc3effb13da2f7447a07f29b9e9c605e301d001196301897a1656c75b22de60"), // CN=vincenzo colucci
+        targets = listOf(AppTarget(version = "6.6 build 026", versionCode = 660260))
+    )
+
     // Written 2026-10-15/16 against com.guardian 6.238.23405 (versionCode 23405), the STABLE
     // build: an owner-supplied APKCube bundle merged into one APK. The bundle's base.apk is signed
     // by Guardian (CN=Android, O=Guardian News and Media, SHA-256 4965429e...9e7d) with a Play
