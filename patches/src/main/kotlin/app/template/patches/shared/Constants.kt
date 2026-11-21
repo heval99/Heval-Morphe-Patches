@@ -4442,7 +4442,8 @@ object Constants {
         // 2026-11-16: updated to version 2.4.3 (versionCode 507, same signer); smoke test + CLI verified.
         // 2026-11-18: updated to version 2.4.4 (versionCode 508). Source changed from APKPure (v7a-only
         // build) to Google Play (arm64); same signer.
-        targets = listOf(AppTarget(version = "2.4.4", versionCode = 508))
+        // 2026-11-20: updated to version 2.4.5 (versionCode 509, same signer). R8 removed the constructor of SubscriptionState$Active, so Enable Premium now seeds it with Object.<init> like SubscriptionManager.b (do not restore Active.<init>). Smoke test + CLI without -f + whole-APK method diff verified; runtime: cold start matched stock on the emulator but both stalled at the splash screen, so the entitlement effect was not observed.
+        targets = listOf(AppTarget(version = "2.4.5", versionCode = 509))
     )
 
     // Verified 2026-10-27 against com.qqlabs.minimalistlauncher 1.22.8 (versionCode 236, APKPure XAPK
