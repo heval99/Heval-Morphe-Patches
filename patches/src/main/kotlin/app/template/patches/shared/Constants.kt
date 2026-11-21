@@ -2340,7 +2340,8 @@ object Constants {
         signatures = setOf("46cc9dad502c7581cb5fa56c1e7ea092db8f31948f4a6af2388fcf9391c41af6"), // O=BlueMail
         // 2026-11-11: updated to 2.2.426 (versionCode 48449): all fingerprints unique on the real matcher; smoke test passed.
         // 2026-11-16: updated to version 2.2.432 (versionCode 48659, same signer); smoke test + CLI verified.
-        targets = listOf(AppTarget(version = "2.2.432", versionCode = 48659))
+        // 2026-11-20: updated to version 2.2.436 (versionCode 48765, same signer). Smoke test + CLI without -f + whole-APK method diff; runtime not run.
+        targets = listOf(AppTarget(version = "2.2.436", versionCode = 48765))
     )
 
     // Verified 2026-10-12 against com.truecaller 26.39.6 (versionCode 2639006, APKMirror bundle
