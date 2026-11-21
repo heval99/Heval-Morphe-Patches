@@ -3081,7 +3081,17 @@ object Constants {
         signatures = setOf("b9e623fa79aeb566d3388d717d074da7ae4e63160440d24f89c5c0f2af37ea07"), // CN=Purushotam Rawat
         // 2026-10-28: updated to 26.10.09 (versionCode 673, arm64-v8a, same signer). Enable Premium
         // and Disable ads apply unchanged: smoke test green and CLI without -f applied both.
-        targets = listOf(AppTarget(version = "26.11.01", versionCode = 674))
+        // 2026-11-20: updated to version 26.11.04 (versionCode 679, same signer). Re-anchored Disable
+        // ads: R8 removed the interface-level static load on the GMA next-gen InterstitialAd, AppOpenAd
+        // and NativeAdLoader (their Companion keeps it), so each format now needs a load on at least
+        // one of its owners (still matched by the load-callback parameter). Parth AdRequest now has 9
+        // public load methods (was 14: R8 merged the overloads and the integrated-prediction and
+        // prediction-polls loaders no longer sit on it). Those two widgets load through their own app
+        // classes (ads.IntegratedPredictionAdLoader and ads.PredictionPollsAdLoader, kept names, one
+        // (Activity, Context, JSONObject)V load each: new com.parth.ads.a, then parthadex.com
+        // getAdForAdUnit); they are the only constructors of com.parth.ads.a (dexindex xrefs) and are
+        // now neutered too. Smoke test + CLI without -f + whole-APK method diff of the real APK; runtime not run.
+        targets = listOf(AppTarget(version = "26.11.04", versionCode = 679))
     )
 
     // Added 2026-10-14 from the request queue ("the ads mess with the UI"). Verified
