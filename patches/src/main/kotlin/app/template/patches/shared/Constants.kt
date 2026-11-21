@@ -3781,7 +3781,8 @@ object Constants {
         appIconColor = 0x03004C, // The adaptive icon's background colour (ic_launcher_background).
         signatures = setOf("ccb918002c40334b416899258de4f730a36c5d38821b3cb6fcb8c15a4b8198ed"), // CN=Peter Huber
         // 2026-11-11: updated to 1.16.36 (versionCode 1642): all fingerprints unique on the real matcher; smoke test passed.
-        targets = listOf(AppTarget(version = "1.16.36", versionCode = 1642))
+        // 2026-11-20: updated to version 1.16.37 (versionCode 1643, same signer). Smoke test + CLI without -f + whole-APK method diff; runtime not run.
+        targets = listOf(AppTarget(version = "1.16.37", versionCode = 1643))
     )
 
     // Verified 2026-10-15 against mark.via.gp 7.3.3 (versionCode 20260823, single universal

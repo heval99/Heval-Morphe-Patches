@@ -59,7 +59,7 @@ class NiagaraSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "1.16.36",
+            version = "1.16.37",
             patchNames = setOf("Disable telemetry", "Enable Premium", "Fix home screen numbers tile"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
