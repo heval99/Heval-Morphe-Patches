@@ -1,3 +1,15 @@
+## 3.2.0-dev.1 (2026-11-22)
+
+### 📱 FotMob `242.18410.20261117`
+- New: Spoiler-free mode hides a marked match only while it is live
+
+### 📱 Sofascore `26.11.09`
+- New: Spoiler-free mode hides a marked match only while it is live
+- Fixed: Filter the main list's popular events and close two Hide sports and update gaps
+- Fixed: Say when the full-time push is blocked
+
+**Download:** [patches-3.2.0-dev.1.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v3.2.0-dev.1/patches-3.2.0-dev.1.mpp)
+
 ## 3.1.0 (2026-11-22)
 
 ### 🆕 New apps
