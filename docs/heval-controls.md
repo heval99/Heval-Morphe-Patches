@@ -289,8 +289,13 @@ The usual rules still apply (AGENTS.md):
 ## Truecaller features
 
 Truecaller 26.42.5 (2026-11-03). Every converted switch defaults on; its Manager patch keeps its
-name, description and default. The switches marked "off" (the profile menu rows, Hide inbox cards, Tap call history to call) start off. A shipped id is
-never renamed.
+name, description and default. The switches marked "off" (the profile menu rows, Hide inbox cards, Tap call history to call, and since
+2026-11-23 Swap call answer and decline buttons) start off. A shipped id is never renamed.
+
+Default review (owner 2026-11-23, "update recommended default settings"; quick-hide actions must be off by
+default): `truecaller.swap_call_buttons` now registers off, because swapped buttons nobody asked for can cost a
+declined or answered call (its Manager default was already off). A registered-default change only reaches users
+with no saved choice for that switch; "Reset all to defaults" applies it, and a choice saved earlier stays.
 
 | Feature id | Patch | Restart | Gated sites |
 |---|---|---|---|
@@ -317,7 +322,7 @@ never renamed.
 | `truecaller.hide_inbox_cards` | Hide inbox cards (off) | no | carousel skip in the Messages inbox builder |
 | `truecaller.tap_call_history_to_call` | Tap call history to call (off) | no | ItemClick case of the call log event dispatcher (gate before the selection branch) |
 | `truecaller.disable_call_button_haptics` | Disable call button haptics | no | haptic dispatch skips, drag progress (value helper) |
-| `truecaller.swap_call_buttons` | Swap call answer and decline buttons | no | offsets and call style check (value helpers), notification layouts |
+| `truecaller.swap_call_buttons` | Swap call answer and decline buttons (off) | no | offsets and call style check (value helpers), notification layouts |
 | `truecaller.hide_profile_premium_banner` | Hide profile menu items (off) | no | row state renderers (Enabled -> Disabled helper) |
 | `truecaller.hide_profile_watch` | Hide profile menu items (off) | no | MenuItemUiState isVisible store (row helper), empty-group drop |
 | `truecaller.hide_profile_invite` | Hide profile menu items (off) | no | MenuItemUiState isVisible store (row helper), empty-group drop |
@@ -387,7 +392,10 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.hide_sport_<slug>` (25, `-` as `_`) | Hide sports | off | yes | sport_order queries (`filterSportOrders`, `filterSportNames`), home sport getter (`visibleSport`) |
 | `sofascore.hide_ai_insights` | Hide AI insights | on | no | EventHeadFlags `getAiInsights` (flag and not switch) |
 | `sofascore.hide_tab_<tab>` (commentary, crowdsourcing, media, graphs, standings, cup_tree, matches) | Hide match tabs | off | no | EventHeadFlags getters, the match page tab check (`isEventTabHidden`) |
-| `sofascore.hide_modal_<key>` (match_of_the_week, remove_ads, promotion, weekly_challenge, survey, propose_follow) | Hide promo pop-ups | on | no | modal queue enqueue and evaluator (`hideModal`) |
+| `sofascore.hide_modal_{match_of_the_week, remove_ads, promotion, weekly_challenge, survey, propose_follow}` (one switch per pop-up, six in all) | Hide promo pop-ups | on | no | modal queue enqueue and evaluator (`hideModal`); all six are Calm |
+| `sofascore.hide_main_tab_{favorites, feed, fantasy, featured}` (4) | Hide main tabs | off | yes | the main screen's bottom tab list (`MAIN_TAB_NAMES` enum; the sport tab has no switch; Manager patch default off) |
+| `sofascore.hide_match_chat` | Hide match chat | on (Manager patch, default off) | no | the chat button's motion helper at index 0 and its visibility sets (`hideChatButton`), match and league pages |
+| `sofascore.turn_off_video_autoplay` | Turn off video autoplay | off (Manager patch, default off) | no | the embedded player's load-or-cue helper: its autoPlay argument goes through a `(Z)Z` value helper that answers false while on, so the video is cued, not loaded |
 | `sofascore.hide_promo_<id>` (10 Remote Config keys) | Hide promo sections | off | yes | Remote Config boolean getter (`hidePromoSection`) |
 | `sofascore.hide_betting_content` | Hide betting content | on | no | its forced values |
 | `sofascore.block_marketing_notifications` | Block marketing notifications | on | no | its dismiss, keep-gone and in-app message sites |
@@ -600,8 +608,9 @@ did not change for the converted patches.
 | `fotmob.spoiler_lists` | Spoiler-free mode | on | no | what gets hidden: the score rows in the match lists; needs `fotmob.spoiler_free` |
 | `fotmob.spoiler_match_page` | Spoiler-free mode | on | no | what gets hidden: the score at the top of the match page; needs `fotmob.spoiler_free` |
 | `fotmob.spoiler_widget` | Spoiler-free mode | on | no | what gets hidden: the score in the live score widget; needs `fotmob.spoiler_free` |
+| `fotmob.spoiler_keep_final` | Spoiler-free mode | off | no | keeps finished marked matches hidden until un-marked; not in Calm mode (2026-11-22); needs `fotmob.spoiler_free` |
 
-Each surface has its own switch (all default on, all off while `fotmob.spoiler_free` is off), so the
+Each surface has its own switch (all default on except `fotmob.spoiler_keep_final`; all off while `fotmob.spoiler_free` is off), so the
 user chooses in Patch settings what marked matches hide; every hook asks its own surface.
 
 Spoiler-free mode (2026-11-08, phase 1; smoke-tested on 241.18134, not run on a device). The user marks a
@@ -648,20 +657,29 @@ Flashscore 26.11.6 (2026-11-14, stage A1; smoke-tested and CLI-patched, not run 
 "Patch settings" row is added by `flashscore/controls/FlashscoreControlsRowPatch.kt`. Every switch is on
 once its patch is selected unless the table says off; the Manager names and descriptions did not change.
 
+Default review (owner 2026-11-23, "update recommended default settings"; quick-hide actions must be off by
+default): `flashscore.hide_competitions` now registers off (its Manager default was already off), so a long press
+on a match row shows no "Hide this competition" until the user turns the switch on; the list
+`flashscore.hidden_competitions` depends on it and stays inactive meanwhile, and its row text says "needs
+Hide competitions on". `flashscore.hide_match_polls` keeps its registered default (on) but its Manager default
+is now off. `flashscore.block_marketing_notifications` keeps its registered default (on), its Manager default is
+now on and it joins Calm mode. A registered-default change only reaches users with no saved choice for that
+switch; "Reset all to defaults" applies it, and a choice saved earlier stays.
+
 | Feature id | Name | Category | Default | Restart | Gated sites |
 |---|---|---|---|---|---|
 | `flashscore.animations_off` | Turn off animations | Display | off | yes | `AnimationSpeed` (animator scale and transitions) |
 | `flashscore.animations_fast` | Faster animations | Display | off | yes | `AnimationSpeed` (half the animator scale) |
-| `flashscore.block_marketing_notifications` | Block marketing notifications | Notifications | on | no | the push handler drops promotional "INFO" pushes |
+| `flashscore.block_marketing_notifications` | Block marketing notifications | Notifications | on (Manager patch, default on; Calm) | no | the push handler drops promotional "INFO" pushes |
 | `flashscore.hide_betting` | Hide betting content | Betting and promotions | on | yes | remote-config odds and GAMBLE_RESPONSIBLY keys, the ODDS tab filter, the isAgeVerified stores, the sponsored and bonus strip constructors |
-| `flashscore.hide_match_polls` | Hide match polls | Match page | on | yes | remote-config MATCH_POLL_ENABLED (the MATCH_POLL zone of the match page) |
+| `flashscore.hide_match_polls` | Hide match polls | Match page | on (Manager patch, default off) | yes | remote-config MATCH_POLL_ENABLED (the MATCH_POLL zone of the match page) |
 | `flashscore.hide_news` | Hide news | News | on | yes | remote-config MATCH_LIST_FS_NEWS, FLASHSCORE_NEWS_ENABLED (news in league match lists) and NEWS_ENABLED (NEWS tab on team pages) |
 | `flashscore.amoled_black` | AMOLED black | Display | off (Manager patch, default off) | n/a | build-time only: a read-only "Applied at patch time" row, no switch |
 | `flashscore.spoiler_free` | Spoiler-free mode | Scores and spoilers | on | no | master switch: the long-press dialog on match list rows |
 | `flashscore.spoiler_notifications` | Hide alerts for marked matches | Scores and spoilers | on | no | `isValid` of HandlerEventDuel/NoDuel/Report answers false for a marked event id |
 | `flashscore.spoiler_lists` | Hide scores in match lists | Scores and spoilers | on | no | the duel row binder: `SpoilerFree.unmaskRow` first, `maskRow` before the return |
 | `flashscore.spoiler_events` | Marked matches (list) | Scores and spoilers | empty | no | the marked event ids; remove one or clear the list to show scores again |
-| `flashscore.hide_competitions` | Hide competitions | Leagues and countries | on (Manager patch, default off) | no | the "Hide this competition" row-dialog entry and `CompetitionFilter.filterEvents` in the event filter (`"FILTER_EVENTS: "` method) |
+| `flashscore.hide_competitions` | Hide competitions | Leagues and countries | off (Manager patch, default off) | no | the "Hide this competition" row-dialog entry and `CompetitionFilter.filterEvents` in the event filter (`"FILTER_EVENTS: "` method) |
 | `flashscore.hidden_competitions` | Hidden competitions (list) | Leagues and countries | empty | no | competition template ids labelled "prefix · league name"; remove one or clear the list to show its matches again |
 
 The three remote-config switches (betting, polls, news) share one gated helper chain on the config value
@@ -702,7 +720,7 @@ competition pages, score updates made outside the row binder, and FCM notificati
 shows by itself. Run on a device: NOT_RUN.
 
 Hide competitions (2026-11-14, stage B2, `flashscore/competitions/HideCompetitionsPatch.kt`,
-`CompetitionFilter` in `extensions/flashscore`) follows Sofascore's and FotMob's: the same Manager name
+`CompetitionFilter` in `extensions/flashscore`; the switch registers off since 2026-11-23) follows Sofascore's and FotMob's: the same Manager name
 and default (off), the same category, and a list the user edits or clears in Patch settings. Unlike
 those, the user picks a competition from a match row: the long-press dialog (now the unnamed
 `flashscoreMatchRowPatch` in `spoiler/MatchRowHooks.kt`, shared by both patches, so either works
@@ -1124,10 +1142,19 @@ not run on a device.
 at least one switch with the `calm` flag (`HevalFeature(calm = true)`, the twelfth registry field, `1`). It
 first saves the current choices as the profile "Before Calm mode" (replacing an older one), then turns every
 calm switch on in one write; nothing else changes, so turning it off is applying that profile. The flag is set
-on: FotMob - Spoiler-free mode and its four surfaces, Hide betting content, Disable rating prompts, Disable
-FotMob+ promo popup; Sofascore - Spoiler-free mode and its three surfaces, Hide betting content, Disable
-rating prompts, Block marketing notifications and the hide-modal pop-up switches; 365Scores - Spoiler-free
-mode and its five surfaces. Not run on a device.
+on (checked against the code 2026-11-23):
+
+- FotMob (8): `spoiler_free`, `spoiler_notifications`, `spoiler_lists`, `spoiler_match_page`, `spoiler_widget`,
+  `hide_betting_content`, `disable_rating_prompts`, `disable_plus_promo_popup`. Not `spoiler_keep_final`.
+- Sofascore (14): `spoiler_free`, `spoiler_notifications`, `spoiler_lists`, `spoiler_widget`,
+  `spoiler_match_page`, `hide_betting_content`, `disable_rating_prompts`, `block_marketing_notifications` and the
+  six `hide_modal_*` pop-up switches. Not `spoiler_keep_final`.
+- 365Scores (6): `spoiler_free`, `spoiler_notifications`, `spoiler_lists`, `spoiler_match_header`,
+  `spoiler_status`, `spoiler_winner`.
+- Flashscore (5): `hide_betting`, `spoiler_free`, `spoiler_notifications`, `spoiler_lists` and, since 2026-11-23,
+  `block_marketing_notifications` (a promotional push is noise, like Sofascore's).
+
+Truecaller has no Calm switches. Not run on a device.
 
 **Extension points** (not built yet): none open at the moment; a launcher shortcut and translations
 remain on the list below.

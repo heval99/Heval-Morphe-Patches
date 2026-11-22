@@ -302,7 +302,8 @@ class TruecallerSmokeTest {
         // records are compared as a set.
         val expected = HEVAL_FEATURES.map { (name, id, rest) ->
             val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
-            HevalFeature(id, name, patch.description!!, rest.first, default = true, restartRequired = rest.second)
+            // Swap call buttons registers off (owner 2026-11-23: a swap nobody asked for can cost a call).
+            HevalFeature(id, name, patch.description!!, rest.first, default = id != SWAP_CALL_BUTTONS, restartRequired = rest.second)
         } + OPT_IN_FEATURES.map { (name, id, category) ->
             val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
             HevalFeature(id, name, patch.description!!, category, default = false)

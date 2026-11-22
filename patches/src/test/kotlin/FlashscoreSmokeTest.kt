@@ -1,5 +1,9 @@
 import app.template.patches.flashscore.competitions.COMPETITION_FEATURES
 import app.template.patches.flashscore.competitions.COMPETITION_FILTER
+import app.template.patches.flashscore.competitions.HIDE_COMPETITIONS
+import app.template.patches.flashscore.competitions.hideCompetitionsPatch
+import app.template.patches.flashscore.misc.notifications.blockMarketingNotificationsPatch
+import app.template.patches.flashscore.misc.polls.hideMatchPollsPatch
 import app.template.patches.flashscore.competitions.EVENT_ENTITY_TO_STRING
 import app.template.patches.flashscore.competitions.FILTER_EVENTS_LOG
 import app.template.patches.flashscore.competitions.LEAGUE_MODEL_TO_STRING
@@ -1318,6 +1322,22 @@ class FlashscoreSmokeTest {
             assertTrue(feature.restartRequired && feature.default, "${feature.id} must be a restart-required switch that starts on")
         }
         assertEquals("Betting and promotions", HIDE_BETTING.category)
+
+        // Default review (owner 2026-11-23). Registered defaults: the quick-hide switch starts off, the
+        // polls and marketing switches stay on. Manager defaults: polls off, marketing on (and Calm),
+        // competitions off.
+        assertEquals(false, HIDE_COMPETITIONS.default, "flashscore.hide_competitions must register off")
+        assertTrue(HIDE_MATCH_POLLS.default, "flashscore.hide_match_polls must register on")
+        assertTrue(BLOCK_MARKETING_NOTIFICATIONS.default && BLOCK_MARKETING_NOTIFICATIONS.calm, "marketing blocker is on and Calm")
+        assertEquals(false, hideCompetitionsPatch.default, "Hide competitions Manager default")
+        assertEquals(false, hideMatchPollsPatch.default, "Hide match polls Manager default")
+        assertEquals(true, blockMarketingNotificationsPatch.default, "Block marketing notifications Manager default")
+        assertEquals(
+            setOf("hide_betting", "spoiler_free", "spoiler_notifications", "spoiler_lists", "block_marketing_notifications").map { "flashscore.$it" }.sorted(),
+            (ANIMATION_FEATURES + listOf(BLOCK_MARKETING_NOTIFICATIONS, HIDE_BETTING, HIDE_MATCH_POLLS, HIDE_NEWS) +
+                SPOILER_FEATURES + COMPETITION_FEATURES).filter { it.calm }.map { it.id }.sorted(),
+            "Flashscore Calm switches",
+        )
 
         // AMOLED black (2026-11-14): the night entries of the decoded values-night/colors.xml are
         // pure black (build-time only, a read-only row in Patch settings); the elevated fills and
