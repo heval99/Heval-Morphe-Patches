@@ -1,3 +1,10 @@
+## 3.2.1-dev.1 (2026-11-22)
+
+### 🔧 Other
+- Fixed: Say when Spoof signature gets an already patched APK
+
+**Download:** [patches-3.2.1-dev.1.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v3.2.1-dev.1/patches-3.2.1-dev.1.mpp)
+
 ## 3.2.0 (2026-11-22)
 
 ### 📱 FotMob `242.18410.20261117`
