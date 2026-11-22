@@ -649,14 +649,22 @@ object Constants {
         packageName = "com.myfitnesspal.android",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0072BC,
-        signatures = setOf("e2f39185315095611b23f9602cef6332a89db8960ee76a45fb41eeef4975d95d"), // CN=MyFitnessPal LLC
+        signatures = setOf(
+            "e391b8490556f1066d25f55a93a38b989d581545032c60ebab99b37bee2fdc28", // Google Play app signing key (CN=Android, O=Google Inc.)
+            "e2f39185315095611b23f9602cef6332a89db8960ee76a45fb41eeef4975d95d" // CN=MyFitnessPal LLC (older builds, rotation lineage)
+        ),
         // 2026-10-28: updated to 26.43.0 (versionCode 51626, arm64-v8a). Both patches apply
         // unchanged: smoke test green, CLI without -f applied both, and the patched Datadog start
         // decision decompiles to Skip(FLAG_DISABLED).
         // 2026-11-04: updated to 26.44.0 (versionCode 51651; Play arm64 split bundle merged, same
         // signer). Both patches apply unchanged: smoke test green and CLI without -f applied both.
         // 2026-11-11: updated to 26.45.0 (versionCode 51670): all fingerprints unique on the real matcher; smoke test passed.
-        targets = listOf(AppTarget(version = "26.45.0", versionCode = 51670))
+        // 2026-11-22: updated to 26.46.0 (versionCode 51691, Google Play). Signer changed: the Play-delivered
+        // base APK is signed by the Google Play app signing key (SHA-256 e391b849...dc28, CN=Android, O=Google
+        // Inc.) and its v3 block also carries the old MyFitnessPal LLC cert (rotation lineage), so both are
+        // listed. Smoke test passes, no anchor changes. APK from Play. apksigner lineage confirms Signer #1 e2f39185 then #2 e391b849.
+        // Smoke test, CLI 2.1.1 without -f and a 3-method whole-APK diff done; not run on a device.
+        targets = listOf(AppTarget(version = "26.46.0", versionCode = 51691))
     )
 
     // Verified 2026-09-18 against club.boxbox.android 5.4.9 (versionCode 251, the current
