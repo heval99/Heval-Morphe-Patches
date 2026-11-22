@@ -1,0 +1,68 @@
+name: 🗑️ App removal request
+description: For app owners and developers who want an app's patches removed from this bundle.
+title: "remove: "
+labels: ["App removal request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # heval patches app removal request
+
+        This form is for the **owner or an authorised representative of an app** that has patches in this bundle and wants them removed. If you only use the app, please open a bug report or a feature request instead.
+
+        - The issue is **public**. Do not post private details here. If you prefer to prove ownership privately, say so below and use the contact address in the [README](https://github.com/heval99/Heval-Morphe-Patches#readme) under "Requests and bug reports".
+        - Check the [patch list](https://github.com/heval99/Heval-Morphe-Patches#-patches-list) to see which patches exist for your app.
+        - What happens next is described in the [README](https://github.com/heval99/Heval-Morphe-Patches#readme).
+  - type: input
+    id: app-name
+    attributes:
+      label: App name
+      description: The app's name as it appears in the patch list.
+    validations:
+      required: true
+  - type: input
+    id: package
+    attributes:
+      label: Package name
+      description: 'Example: com.example.app (shown in the patch list and on the Play Store page).'
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: What should be removed?
+      options:
+        - All patches for this app
+        - Only some patches (name them below)
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: |
+        - Which patches, if only some?
+        - Optional: why you want them removed. A reason is not required.
+  - type: textarea
+    id: ownership
+    attributes:
+      label: How can I confirm you represent the app's developer?
+      description: |
+        Any of these helps, but one is enough:
+        - A link on the developer's official website or the app's store page that points to your GitHub account.
+        - A message from an address on the developer's own domain (say here that you will use the contact address from the README).
+        - A comment or post from the developer's official account that links to this issue.
+        Do not post passwords, keys or private documents.
+    validations:
+      required: true
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Acknowledgements
+      options:
+        - label: I am the owner or an authorised representative of this app's developer.
+          required: true
+        - label: I have checked the patch list and this is not a duplicate request.
+          required: true
+        - label: I understand that code already published in earlier releases and in the git history stays available, and that this request is about removing the app from future releases.
+          required: true

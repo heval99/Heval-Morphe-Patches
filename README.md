@@ -1604,6 +1604,26 @@ they are **off by default**; enable them yourself and report anything odd.
   [blocklist](https://github.com/heval99/Heval-Morphe-Patches/blob/dev/docs/patch-blocklist.md)
   for apps that cannot be patched), or email hevalomevalo@gmail.com.
 
+## 🗑️ For app owners: removal requests
+
+If you own an app, or represent its developer, and you do not want patches for it in this
+bundle, tell me and I will remove them.
+
+1. Open an [app removal request](https://github.com/heval99/Heval-Morphe-Patches/issues/new?template=app_removal_request.yml)
+   with the app name, its package name and what should go (all patches or only some). A
+   reason is welcome but not required.
+2. Include a way to confirm you represent the developer, for example a link on the
+   developer's official site or store page to your GitHub account, or a message from an address
+   on the developer's domain. You can use the contact address in
+   [Requests and bug reports](#-requests-and-bug-reports) if you would rather not post details
+   publicly.
+3. After I have confirmed it, the app's patches are removed in the next release and the app is
+   added to the [blocklist](https://github.com/heval99/Heval-Morphe-Patches/blob/dev/docs/patch-blocklist.md)
+   so it is not added back. I will answer on the issue when it is done.
+
+Releases that were already published, and the git history, stay available; a removal applies to
+future releases. This is how LibrePods was removed at its developer's request.
+
 ## 🤖 How the patches are made
 
 > **AI-generated patches.** Every patch here is written with AI assistance: the code

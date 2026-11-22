@@ -3,6 +3,8 @@
 A record of apps we tried and why they failed. Keep entries short; link the blocker,
 not the story.
 
+> **App owner removal requests (2026-11-23):** an app owner or the developer's authorised representative can ask for an app to be removed through the "App removal request" issue form (see the README section "For app owners"). After the request is confirmed, remove the app's patches, its `COMPATIBILITY_*` entry, smoke test and README/category entries in a normal `fix:`/`chore:` commit, and add the app to this file with the issue number and "Not to be re-added" (see the LibrePods row below).
+
 > **2026-10-19 - owner policy:** anti-tamper / app-shield bypass patches, including PairIP
 > (`LicenseClient`, `SignatureCheck`, `VMRunner`/`libpairipcore`) and app-level signing-certificate
 > checks, are allowed in this bundle. Shielded apps can be revisited with that in mind; the entries
