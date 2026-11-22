@@ -87,6 +87,46 @@ object Constants {
     // point to the plain Sofascore homepage and no longer carry the match target the tracking link had;
     // Compact match lists shrinks the bell button to 40 dp, below the usual 48 dp touch target. All four fingerprints
     // OK-unique in FingerprintProbe; smoke test and a CLI run without -f pass.
+    // 2026-11-22 Spoiler-free mode now also hides scores in the Compose row model used by the main
+    // Matches tab (coverage of the other screens, such as team, league, live, favourites and match page
+    // lists, is expected from static analysis, not observed) on 26.11.09: the EventRowModel class is found by
+    // its "EventRowModel(eventId=" toString constant, its only constructor masks the score fields of both
+    // team lines and the status text (SpoilerFree.maskRow), and the mapper (found by its (int, int,
+    // Object)Object shape plus three kept Event/FootballEvent calls) notes the Event first for competition
+    // marks. The kickoff time stays; the winner colour, the extra info text and search are not covered.
+    // Smoke test passes; runtime NOT run (no emulator).
+    // 2026-11-22 audit on 26.11.09 (static only, no device runtime): the patch set was verified
+    // statically and the smoke test asserts the exact method sets. CLI run (morphe-desktop 2.1.1,
+    // no -f, --unsigned --exclusive --continue-on-error, every one of the 30 Sofascore patches
+    // enabled, including the default-off ones and GmsCore support / Spoof signature): 30 "Applied"
+    // lines, no incompatibility skip, no failure. The 2026-11-18 note below says 31; the helper
+    // resource patch "Disable Facebook telemetry" is now unnamed, which is the likely cause
+    // (list-patches also shows the universal "Remove screenshot restriction", left off here).
+    // Known coverage gaps, not bugs:
+    //   - Compact match lists only reaches res/layout/list_event_row.xml, which on this version is the
+    //     row of the Player and Manager lists; the legacy spoiler row hooks (EventListScoreTextView and
+    //     the row binder) reach the same lists only. The main lists are Compose rows, covered by the
+    //     Compose-row spoiler hooks above.
+    //   - Hide countries / Hide competitions do not filter pinned or favourite leagues fetched by their
+    //     own requests, team/player/tournament pages, the widget or notifications. Hide sports only
+    //     changes the sport list and the selected-sport lookups (its Room queries); screens that load
+    //     a sport some other way were not traced.
+    //   - Disable telemetry: the TikTok, APM and Aurion start paths were not verified, so those SDKs
+    //     may still start. Crashlytics, AppMeasurementSdk.logEvent and AppsFlyer (start, logEvent,
+    //     logSession and logAdRevenue each need at least one concrete method) fail the patch when
+    //     they match nothing; every concrete method is changed.
+    //   - Disable Facebook SDK: the AudienceNetworkContentProvider.onCreate bytecode step is dead on
+    //     26.11.09 (the provider is not declared in the manifest, checked with apkanalyzer, so it never
+    //     runs); the working part is the manifest flags that turn off Facebook auto-logging and
+    //     advertiser-ID collection.
+    //   - Push and Google sign-in on a re-signed build need GmsCore support + Spoof signature (and a
+    //     MicroG); without them FCM and Firebase's signature check fail (issues #24/#25).
+    //   - Enable Premium: AI insights follow the server's EventHeadFlags.aiInsights flag, not
+    //     getHasPremium (see sofascore/premium/Fingerprints.kt).
+    // Descriptions reworded the same day to match what the patches do (Disable Facebook SDK no
+    // longer promises login, Hide countries/competitions no longer say "even favourites", Clean shared
+    // links names image-share text and highlight links, Block marketing notifications names
+    // banners and pop-ups, not push). Runtime on 26.11.09: NOT run (no device).
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",
@@ -114,7 +154,8 @@ object Constants {
             //   - Disable ads: unchanged; UserAccount getForceAds/getForceHideAds/getHasServerAds
             //     are still unobfuscated.
             //   - Enable Premium: forces UserAccount.getHasPremium() and ProfileData.getHasPremium(),
-            //     the two boxed-Boolean flags every premium gate reads.
+            //     the two boxed-Boolean flags (as believed then; the 2026-11-22 audit on 26.11.09
+            //     found no AI insights gate behind them, see sofascore/premium/Fingerprints.kt).
             //   - Disable telemetry: AppsFlyer Lib subclass logEvent, AppMeasurementSdk.logEvent,
             //     and Crashlytics (located via its collection-enabled SharedPreferences key).
             //   - Disable Facebook SDK: AudienceNetworkContentProvider onCreate only, plus
@@ -131,7 +172,7 @@ object Constants {
             // The "Disable Play Integrity" patch was dropped: this build does not bundle the
             // Play Integrity classes (the AppsFlyer SDK only references them, behind a catch),
             // so the patch had nothing to patch.
-            // All 5 patches apply cleanly; SofascoreSmokeTest asserts the emitted bytecode.
+            // All 5 patches that existed then apply cleanly; SofascoreSmokeTest asserts the emitted bytecode.
             // Re-verified 2026-09-28 against 26.09.14 (versionCode 260914002, from
             // APKMirror): all 5 patches apply unchanged and the decompiled output shows
             // the same forced values (getHasPremium -> TRUE, ad flags false).
@@ -199,7 +240,9 @@ object Constants {
             // Rule 12 (2026-10-19 audit): the resource table is still re-encoded by the
             // default-on Disable Facebook SDK (its manifest flags) and by GmsCore support, and
             // that strips the literal surrounding quotes of the Arabic (values-ar)
-            // string/fantasy_rebuild_squad_token. Not checked at runtime.
+            // string/fantasy_rebuild_squad_token. Not checked at runtime. (Finding of 2026-10-19; the
+            // 2026-11-18 aapt2 diff on 26.11.09 below found no changed values, so it is open whether
+            // the quote stripping still happens.)
             // 2026-10-22: updated to version 26.10.12 (versionCode 261012002; APKMirror bundle,
             // signer CN=Sofa Score cert SHA-256 ecd3a2c9...f841, identical on APKPure). All 9 patches
             // apply unchanged: SofascoreSmokeTest passes, and the Morphe matcher (FingerprintProbe)
@@ -325,12 +368,12 @@ object Constants {
             //     listener forces an immediate update when Remote Config "force_update_to_version"
             //     is above the build (16172 on the server on 2026-11-06) or the update is 60+ days
             //     old; MainActivity.onStart resumes through the same flow method.
-            //   - Hide match chat (Heval Controls): the Chat button is the ExtendedFloatingActionButton
+            //   - Hide match chat (Patch settings): the Chat button is the ExtendedFloatingActionButton
             //     with id floating_action_button in four layouts. The helper that shows it (static
             //     (EFAB, Function0)V with "PREF_CHAT_SHOW_ANIMATED_CHAT_ICON") and the button's (I)V
             //     motion method ask SofascoreControls.hideChatButton first; the extension keeps the
             //     chat button GONE with a pre-draw guard (three pages also set its visibility).
-            //   - Hide main tabs (Heval Controls): the tab list builder (static ArrayList(Context,
+            //   - Hide main tabs (Patch settings): the tab list builder (static ArrayList(Context,
             //     String) reading "should_show_world_cup", over the tab enum naming MATCHES ..
             //     FANTASY) passes its result through SofascoreControls.filterMainTabs. A hidden tab's
             //     deep link finds no page (MainActivity's select-tab lookup gets -1 and does nothing).
@@ -369,7 +412,7 @@ object Constants {
             // Re-anchored: Hide sports (queries now prepared several times per lambda class) and Slower widget refresh (the
             // scheduler builds PeriodicWorkRequest.Builder(Class, 30, TimeUnit.MINUTES), hooked by SofascoreControls.widgetRefreshMinutes).
             // Smoke test (real matcher) green; CLI without -f, all 31 patches Applied; changed sites checked
-            // with apkanalyzer; aapt2 strings unchanged; not run on a device.
+            // with apkanalyzer; aapt2 string diff on 26.11.09 showed no changed values (checked 2026-11-18); not run on a device.
             AppTarget(
                 version = "26.11.09",
                 versionCode = 261109002

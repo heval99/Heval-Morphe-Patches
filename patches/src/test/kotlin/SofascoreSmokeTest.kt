@@ -438,15 +438,23 @@ class SofascoreSmokeTest {
                 diagnostics,
             )
         }
-        // start() must be among them: an anchor that matched nothing must fail the test.
-        assertTrue(
-            appsFlyer.methods.any { it.name == "start" && it.returnType == "V" && it.implementation != null },
-            "AppsFlyerLib subclass has no concrete start()\n$diagnostics",
-        )
-        assertReturnsEarlyVoid(
-            require(GMS_MEASUREMENT).methodsNamed("logEvent").single(),
-            label = "AppMeasurementSdk.logEvent()", diagnostics
-        )
+        // Every name must be present (the patch fails when one matches nothing): an anchor that
+        // matched nothing must fail the test.
+        for (name in APPSFLYER_METHODS) {
+            assertTrue(
+                appsFlyer.methods.any { it.name == name && it.returnType == "V" && it.implementation != null },
+                "AppsFlyerLib subclass has no concrete $name()\n$diagnostics",
+            )
+        }
+        val measurementEvents = require(GMS_MEASUREMENT).methodsNamed("logEvent")
+            .filter { it.returnType == "V" && it.implementation != null }
+        assertTrue(measurementEvents.isNotEmpty(), "AppMeasurementSdk has no concrete logEvent\n$diagnostics")
+        for (event in measurementEvents) {
+            assertReturnsEarlyVoid(
+                event,
+                label = "AppMeasurementSdk.logEvent(${event.parameterTypes.joinToString()})", diagnostics
+            )
+        }
 
         // The "firebase_analytics_collection_deactivated" read (the R8-renamed measurement
         // config, found like the patch: the single method holding the string) answers
@@ -491,24 +499,31 @@ class SofascoreSmokeTest {
             crashlyticsClasses.isNotEmpty(),
             "no class referencing '$CRASHLYTICS_KEY' in emitted dexes\n$diagnostics"
         )
-        val crashlyticsSettings = crashlyticsClasses.firstNotNullOfOrNull { cls ->
-            cls.methods.firstOrNull { it.returnType == "Z" && it.parameterTypes.isEmpty() }
-        } ?: error("Crashlytics settings getter not found\n$diagnostics")
-        assertForcedBoolean(
-            crashlyticsSettings, expected = false,
-            label = "Crashlytics collection-enabled getter", diagnostics
-        )
-        val crashlyticsRecordException = crashlyticsClasses.firstNotNullOfOrNull { cls ->
-            cls.methods.firstOrNull {
-                it.returnType == "V" &&
+        // Every concrete method the patch targets, not only the first (the patch throws when there is none).
+        val crashlyticsGetters = crashlyticsClasses.flatMap { cls ->
+            cls.methods.filter { it.implementation != null && it.returnType == "Z" && it.parameterTypes.isEmpty() }
+        }
+        assertTrue(crashlyticsGetters.isNotEmpty(), "Crashlytics settings getter not found\n$diagnostics")
+        for (getter in crashlyticsGetters) {
+            assertForcedBoolean(
+                getter, expected = false,
+                label = "Crashlytics ${getter.definingClass}.${getter.name}() getter", diagnostics
+            )
+        }
+        val crashlyticsReports = crashlyticsClasses.flatMap { cls ->
+            cls.methods.filter {
+                it.implementation != null && it.returnType == "V" &&
                     it.parameterTypes.size == 1 &&
                     it.parameterTypes.first().toString() == "Ljava/lang/Throwable;"
             }
-        } ?: error("Crashlytics recordException not found\n$diagnostics")
-        assertReturnsEarlyVoid(
-            crashlyticsRecordException,
-            label = "Crashlytics recordException(Throwable)", diagnostics
-        )
+        }
+        assertTrue(crashlyticsReports.isNotEmpty(), "Crashlytics recordException not found\n$diagnostics")
+        for (report in crashlyticsReports) {
+            assertReturnsEarlyVoid(
+                report,
+                label = "Crashlytics ${report.definingClass}.${report.name}(Throwable)", diagnostics
+            )
+        }
 
         // Sofascore's own analytics sender, found like the fingerprint: the (String,
         // FirebaseBundle)V method holding "event_date" and "event_timestamp". It returns at once.
@@ -549,12 +564,37 @@ class SofascoreSmokeTest {
             require(AUDIENCE_PROVIDER).methodsNamed("onCreate").single(),
             expected = false, label = "AudienceNetworkContentProvider.onCreate()", diagnostics
         )
+        // FacebookInitProvider.onCreate() keeps its stock start: getContext(), a null check, then the
+        // synchronized SDK initialisation (static call taking the Context) before the final
+        // `return false`. The class behind the init call is R8-renamed, so only its shape is checked.
         val initOnCreate = require(FACEBOOK_PROVIDER).methodsNamed("onCreate").single()
+        val initInsns = initOnCreate.instructions()
         assertTrue(
-            initOnCreate.instructions().firstOrNull()?.opcode != Opcode.CONST_4,
-            "FacebookInitProvider.onCreate() must not be forced - login needs sdkInitialize() " +
-                "(issue #24)\n$diagnostics"
+            initInsns.take(8).map { it.opcode } == listOf(
+                Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ, Opcode.SGET_OBJECT,
+                Opcode.CONST_CLASS, Opcode.MONITOR_ENTER, Opcode.INVOKE_STATIC, Opcode.MONITOR_EXIT,
+            ) && initInsns[0].call()?.let {
+                it.definingClass == "Landroid/content/ContentProvider;" && it.name == "getContext"
+            } == true && initInsns[6].call()?.let {
+                it.returnType == "V" && it.parameterTypes.map(CharSequence::toString) == listOf(CONTEXT)
+            } == true && initInsns.size == 19,
+            "FacebookInitProvider.onCreate() is not the stock sdkInitialize() path - login needs it " +
+                "(issue #24); got ${initInsns.map { it.opcode }}\n$diagnostics"
         )
+        // The two manifest flags are present and false (overwritten when the stock manifest had one).
+        val facebookManifest = workDir.walkTopDown()
+            .firstOrNull { it.name == "AndroidManifest.xml" && it.readText().contains("hevalcontrols") }
+            ?: error("no decoded AndroidManifest.xml under $workDir")
+        val facebookApplication = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(facebookManifest)
+            .documentElement.getElementsByTagName("application").item(0) as Element
+        val facebookMeta = facebookApplication.getElementsByTagName("meta-data").let { list ->
+            (0 until list.length).map { list.item(it) as Element }
+        }
+        for (flag in listOf("com.facebook.sdk.AutoLogAppEventsEnabled", "com.facebook.sdk.AdvertiserIDCollectionEnabled")) {
+            val entries = facebookMeta.filter { it.getAttribute("android:name") == flag }
+            assertTrue(entries.size == 1, "expected one $flag meta-data, found ${entries.size}")
+            assertTrue(entries.single().getAttribute("android:value") == "false", "$flag is not false")
+        }
 
         // Disable Play Integrity is intentionally absent: the Play Integrity classes are not
         // bundled in this build (the AppsFlyer SDK only references them, behind a catch), so
@@ -1099,6 +1139,62 @@ class SofascoreSmokeTest {
         check(w.filterIndexed { i, _ -> i < gateAt - 1 || i >= widgetTarget }.opcodesWithoutNops() == stockWidget.instructions().opcodesWithoutNops()) {
             "the widget row builder changed outside the gate"
         }
+
+        // 4b. Compose rows: found like the patch does, by the toString constant of the row model.
+        val rowModels = byType.values.filter { c ->
+            c.methods.any { m -> m.name == "toString" && m.params().isEmpty() && m.strings().any { it.startsWith("EventRowModel(eventId=") } }
+        }
+        check(rowModels.size == 1) { "${rowModels.size} classes with an EventRowModel toString, expected one" }
+        val rowModel = rowModels.single()
+        val ctor = rowModel.methods.single { it.name == "<init>" }
+        val ctorInsns = ctor.instructions()
+        val ctorStock = stockByType.getValue(rowModel.type).methods.single { it.name == "<init>" }.instructions()
+        val maskCall = ctorInsns[0]
+        check(maskCall.opcode == Opcode.INVOKE_STATIC_RANGE && maskCall.callsHelper("maskRow") &&
+            maskCall.call()!!.let { it.returnType == "Ljava/lang/Object;" && it.parameterTypes.map(CharSequence::toString) == listOf("I") + List(4) { "Ljava/lang/Object;" } } &&
+            (maskCall as RegisterRangeInstruction).startRegister == ctor.parameterRegister(1) && maskCall.registerCount == 5
+        ) { "the row model constructor does not start with maskRow(p1 .. p5); got ${maskCall.opcode} ${maskCall.call()}" }
+        val statusReg = ctor.parameterRegister(3)
+        check(ctorInsns[1].opcode == Opcode.MOVE_RESULT_OBJECT && (ctorInsns[1] as OneRegisterInstruction).registerA == statusReg) {
+            "maskRow's result does not go to p3 (the status text)"
+        }
+        val cast = ctorInsns[2]
+        check(cast.opcode == Opcode.CHECK_CAST && (cast as OneRegisterInstruction).registerA == statusReg &&
+            ((cast as ReferenceInstruction).reference as TypeReference).type == ctor.parameterTypes[2].toString()
+        ) { "p3 is not cast back to the RowText type: ${cast.opcode}" }
+        check(ctorInsns.drop(3).opcodesWithoutNops() == ctorStock.opcodesWithoutNops()) { "the row model constructor changed after the hook" }
+        check(ctor.params().let { it.size == 11 && it[0] == "I" && it[1] == it[2] && it[3] == it[4] }) { "row model constructor shape: ${ctor.params()}" }
+
+        // The mapper notes the Event right before the row model's new-instance (a branch target: the
+        // note takes over its labels, so every path runs it), in the register that held the Event.
+        val notes = byType.values.flatMap { it.methods }.filter { m -> m.instructions().any { it.callsHelper("noteEvent") } }
+        check(notes.size == 1) { "${notes.size} methods call SpoilerFree.noteEvent, expected one (the row mapper)" }
+        val mapper = notes.single()
+        val m = mapper.instructions()
+        val noteAt = m.indexOfFirst { it.callsHelper("noteEvent") }
+        check(m.count { it.callsHelper("noteEvent") } == 1) { "the mapper calls noteEvent more than once" }
+        val note = m[noteAt]
+        val created = m[noteAt + 1]
+        check(note.opcode == Opcode.INVOKE_STATIC && (note as FiveRegisterInstruction).registerCount == 1 &&
+            created.opcode == Opcode.NEW_INSTANCE && ((created as ReferenceInstruction).reference as TypeReference).type == rowModel.type &&
+            note.registerC == (created as OneRegisterInstruction).registerA
+        ) { "noteEvent is not right before the row model's new-instance: ${created.opcode}" }
+        val eventUse = (noteAt - 1 downTo 0).first { m[it].call() != null && (m[it] as? FiveRegisterInstruction)?.let { c -> c.registerCount > 0 && c.registerC == note.registerC } == true }
+        check(m[eventUse].call()!!.let { it.definingClass == "Lcom/sofascore/model/mvvm/model/Event;" || it.parameterTypes.firstOrNull()?.toString() == "Lcom/sofascore/model/mvvm/model/Event;" }) {
+            "the register noteEvent reads does not carry an Event (last use ${m[eventUse].call()})"
+        }
+        check(m.drop(noteAt + 1).any { it.opcode == Opcode.INVOKE_DIRECT_RANGE && it.call()?.let { c -> c.definingClass == rowModel.type && c.name == "<init>" } == true }) {
+            "the mapper no longer calls the row model constructor after noteEvent"
+        }
+        val jumpsTo = { target: Int -> m.indices.filter { m[it] is OffsetInstruction && m[it].opcode !in switches && m.branchTarget(it) == target } }
+        check(jumpsTo(noteAt).isNotEmpty() && jumpsTo(noteAt + 1).isEmpty()) {
+            "branches into the row model's new-instance skip the noteEvent hook: ${jumpsTo(noteAt)} / ${jumpsTo(noteAt + 1)}"
+        }
+        // The stock mapper is otherwise unchanged (one added instruction).
+        val stockMapper = stockByType.getValue(mapper.definingClass).methods.single { it.name == mapper.name && it.params() == mapper.params() }
+        check(m.filterIndexed { i, _ -> i != noteAt }.opcodesWithoutNops() == stockMapper.instructions().opcodesWithoutNops()) { "the row mapper changed outside the noteEvent hook" }
+        // The legacy list_event_row hooks stay (asserted above): the binder still marks every score cell.
+        check(binders.size == 1 && setText.instructions().any { it.callsHelper("scoreText") }) { "the legacy list row hooks are gone" }
     }
 
     private fun assertUpdateChatAndTabs(classes: List<ClassDef>, byType: Map<String, ClassDef>) {
