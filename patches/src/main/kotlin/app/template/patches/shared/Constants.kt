@@ -127,6 +127,30 @@ object Constants {
     // longer promises login, Hide countries/competitions no longer say "even favourites", Clean shared
     // links names image-share text and highlight links, Block marketing notifications names
     // banners and pop-ups, not push). Runtime on 26.11.09: NOT run (no device).
+    // 2026-11-22 Spoiler-free mode, full time (owner 2026-11-22), same target 26.11.09: a marked match
+    // (or a match of a marked competition) is hidden only while it is not over. One shared decision,
+    // SpoilerFree.hidesScore (Event.getStatusType() is not "finished"; an unknown status hides), now
+    // drives the legacy list rows (markRow), the Compose rows (noteEvent decides per event id with the
+    // status, maskRow follows that decision, the live tick copy keeps it) and the widget row. New
+    // Patch settings option sofascore.spoiler_keep_final ("Keep final scores hidden", off, depends on
+    // the master) keeps finished marked matches hidden until un-marked. getStatusType joins the
+    // reflected getters the patch checks.
+    // Phase 2, same date and target: pushes of a marked match pass only for the full-time result
+    // (notification JSON "icon" "finish") while keep-final is off (pure rule JVM-tested; same smali
+    // site). New switch sofascore.spoiler_match_page (on, depends on the master): every concrete
+    // match header setEvent(Event) below the header base (found by its kept setResultView and
+    // abstract setEvent; 4 on 26.11.09), the base's setResultView and the kept setFootballGoals
+    // hide the result view, goal scorers and collapsed scores; the Details module base's
+    // setVisibility override, the three period score tables (by getLayoutId layouts details_table,
+    // darts_table_score_view, details_table_cricket and their one interface (Event)V method), the
+    // period points graph (EventGraphPoint calls) and the share header (layout
+    // share_match_details_modal_header) are GONE while hidden. Not covered yet: Incidents, baseball
+    // and ice hockey period tables, football momentum, statistics, lineups, commentary, featured
+    // players, the volleyball collapsed score while scrolling, chat messages, search, favourites
+    // outside the Compose rows, team form, standings and the ongoing match notification. Which
+    // screens each hook reaches, and the score reappearing at full time, is inferred statically,
+    // not observed. Smoke test, extension unit tests and a CLI run without -f; runtime NOT run (no
+    // emulator).
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",

@@ -215,7 +215,7 @@ class HevalControlsTest {
             "block_marketing_notifications", "disable_rating_prompts", "amoled_black", "slower_widget_refresh",
             "turn_off_video_autoplay", "compact_match_lists", "keep_screen_on", "clean_share_links", "disable_screenshot_prompt",
             "animations_off", "animations_fast", "spoiler_free", "spoiler_notifications", "spoiler_lists", "spoiler_widget",
-            "spoiler_events", "spoiler_competitions",
+            "spoiler_match_page", "spoiler_keep_final", "spoiler_events", "spoiler_competitions",
         ) + listOf("favorites", "feed", "fantasy", "featured").map { "hide_main_tab_$it" } +
             listOf("commentary", "crowdsourcing", "media", "graphs", "standings", "cup_tree", "matches").map { "hide_tab_$it" } +
             sports.map { "hide_sport_$it" } +
