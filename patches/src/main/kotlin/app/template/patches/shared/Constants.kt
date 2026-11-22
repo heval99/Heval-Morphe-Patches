@@ -2973,7 +2973,8 @@ object Constants {
         // is forced to true, so the reload that R8 inlined into onActivityStopped (a store) can no
         // longer turn tracking back on after the app goes to the background. Verified: FingerprintProbe on
         // the real matcher, smoke test, CLI without -f, apkanalyzer disassembly.
-        targets = listOf(AppTarget(version = "3.2.7.1", versionCode = 3449157))
+        // 2026-11-22: updated to version 3.2.8 (versionCode 3461877, same signer). Smoke test passed; CLI 2.1.1 without -f applied every patch; whole-APK method diff: only the intended methods changed (Hermes bundle isPro getter, two Sentry manifest providers, dex hooks); aapt2 string values unchanged. Runtime not run.
+        targets = listOf(AppTarget(version = "3.2.8", versionCode = 3461877))
     )
 
     // Verified 2026-10-13 against easy.launcher 1.10.28 (versionCode 11028, the owner's APKMirror
