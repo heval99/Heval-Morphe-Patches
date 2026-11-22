@@ -3927,13 +3927,63 @@ object Constants {
     // geo-blocked to the DIGI network ("LIVE stream-ul este disponibil doar din reteaua DIGI") for
     // the stock app too. 2026-11-12: no longer experimental on the owner's word that DIGI-network
     // users report it works; not confirmed by us, so there is no live-playback run on record.
+    // 2026-11-22: updated to 1.1.16 (versionCode 76, Google Play; signer unchanged, 014322fe...).
+    // 1.1.16 is R8-obfuscated: app, player and SDK classes (AdMob, Crashlytics, Performance,
+    // Cxense, Play Core, UMP, jsoup, media3, Kotlin) are renamed, merged and partly inlined into
+    // multi-case lambdas, so every 1.1.15 anchor above is gone. The behaviour of all eight patches
+    // is unchanged; the anchors are now kept names, strings and shapes only:
+    // - data-class getters (UiLivePreroll / UiLiveDai enable, the four ad lists, UIResultsMatch
+    //   bet, ApiArticle sponsored, ApiArticleLayout type) by class + return type + the kept field;
+    // - requestAd / putAd as the app's only two (ViewGroup, UIAd)V methods (instance with the
+    //   300/250/320/100/468/60 sizes, static with removeAllViews/addView); VHSectionAd.bind as the
+    //   (UIAd)V with View.post. AdMobManager.loadAd no longer exists (inlined into bind), so its
+    //   old hook and test assertion are replaced by the bind hook;
+    // - getMVideoPreroll is inlined: the field is the one after ", mVideoPreroll=" in
+    //   ArticleApiPayloads' toString, and every outside read becomes "";
+    // - initImaAds / updateAdViewForDai as static PlayerService methods (ImaAdsLoader's 10000 ms
+    //   preload timeout; "media_item_type" + "dai"); addBanner as static (List, UIEpgCacheDay,
+    //   String)V with "ad"; adConstraints inlined: hasAttr("data-slot") is forced false;
+    //   addAdWidget inlined into a lambda that reads the article ad list step 6 already empties,
+    //   so its old step and assertion are replaced by the ad-list ones;
+    // - parseListingArticles / addArticleWidget / widgetTitle cases of merged lambdas found by the
+    //   app strings "1" + "bg", "widgetCross" and "row.widget.title"; each hook first checks the
+    //   lambda's byte case selector (case key read from the switch payload); getSpacing by its
+    //   SectionType.SPACING; getExclusiveVideo inlined into HomeFragment: both UIExclusive count
+    //   reads read 0;
+    // - checkUpdate: MainActivity ()V with Play Core's "requestUpdateInfo(%s)"; loadConsentInfo:
+    //   (Z)V reading STATUS.STARTED + "mConsentInformation", posting SUCCESS through its own
+    //   LiveData field/post method; the include_settings_user_data_ads binding (from
+    //   DataBinderMapperImpl's layout tag) hides its ViewDataBinding root in its constructor
+    //   (mboundView0 is gone);
+    // - telemetry: Crashlytics by "FirebaseCrashlytics component is not present." (the (Z) switch
+    //   with "firebase_crashlytics_collection_enabled", recordException(RuntimeException), the
+    //   Boolean.TRUE sendUnsentReports, the core's timed log(String)); Performance's (Z) switch by
+    //   "Firebase Performance is permanently disabled"; Cxense: pushEvents and putEventsInDatabase
+    //   are inlined, so the store case of a merged Runnable (the only Event[] cast) returns,
+    //   guarded on its case selector; every concrete measurement AIDL logEvent
+    //   (FirebaseAnalytics.logEvent is inlined).
+    // All 28 Fingerprints declared under patches/digisport were run through tools.FingerprintProbe
+    // (the real matcher) on the 1.1.16 APK on 2026-11-22: each matches exactly 1 method
+    // (OK-unique). Not Fingerprints but scans inside the patches, which fail loudly when their
+    // shape is not found: the Crashlytics class members and core log (found from the
+    // getInstance fingerprint's class), the pre-roll field readers, the AppMeasurement logEvent
+    // overloads, the ViewHolder itemView field, the lambda case selector/keys/captures
+    // (LambdaCases.kt) and the consent binding's superclass root view. DigiSportSmokeTest finds
+    // each target in the stock APK the same way, pins the case keys by hand and asserts the
+    // patched bytecode. The stock 1.1.16 manifest has none of the three Firebase meta-data
+    // switches. The Morphe CLI without -f applied all 8 patches on 1.1.16 (31 methods changed,
+    // all mapped to patch steps, the smali of every changed method checked by hand, resources and
+    // manifest clean; no ART verifier was available). Only the emulator run is missing: "Skip ad
+    // consent form" follows the 1.1.15 design (GdprActivity.onResume -> loadConsentInfo(false) ->
+    // observe the status; the 1.1.15 patch also posted SUCCESS at once and passed an emulator
+    // run), but 1.1.16 has not run on a device.
     val COMPATIBILITY_DIGISPORT = Compatibility(
         name = "Digi Sport",
         packageName = "ro.rcsrds.digisport",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1D56A8, // The icon's blue gradient (mid-tone).
         signatures = setOf("014322fe24ad21500ec22894f597be2f29904fe0762f7a27b887762de80c2853"), // CN=DigiSport, O=RCS&RDS
-        targets = listOf(AppTarget(version = "1.1.15", versionCode = 75))
+        targets = listOf(AppTarget(version = "1.1.16", versionCode = 76))
     )
 
     // Smoke-tested 2026-10-17 against com.football433 2.3.548 (versionCode 868, APKPure XAPK
