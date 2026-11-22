@@ -3096,7 +3096,8 @@ object Constants {
         // (Activity, Context, JSONObject)V load each: new com.parth.ads.a, then parthadex.com
         // getAdForAdUnit); they are the only constructors of com.parth.ads.a (dexindex xrefs) and are
         // now neutered too. Smoke test + CLI without -f + whole-APK method diff of the real APK; runtime not run.
-        targets = listOf(AppTarget(version = "26.11.04", versionCode = 679))
+        // 2026-11-22: updated to 26.11.07 (versionCode 682, APKPure because Play only has 26.11.04, same signer). Smoke test passes, no anchor changes. Smoke test, CLI 2.1.1 without -f and a 23-method whole-APK diff done; not run on a device.
+        targets = listOf(AppTarget(version = "26.11.07", versionCode = 682))
     )
 
     // Added 2026-10-14 from the request queue ("the ads mess with the UI"). Verified
