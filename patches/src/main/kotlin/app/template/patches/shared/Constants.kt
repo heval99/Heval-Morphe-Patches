@@ -1001,7 +1001,8 @@ object Constants {
             // every Origin, DNS filter, Disable ads and Disable telemetry fingerprint OK-unique, all patches apply
             // unchanged; smoke + CLI without -f; not run on a device.
             // 2026-11-16: updated to 1.99.57 (versionCode 429905704, same signer); smoke test + CLI verified.
-            AppTarget(version = "1.99.57"),
+            // 2026-11-22: updated to 1.100.58 (versionCode 430005804, APKMirror arm64-v8a bundle merged, same signer); BraveSmokeTest passes.
+            AppTarget(version = "1.100.58"),
         )
     )
 
@@ -1051,8 +1052,9 @@ object Constants {
             // 2026-11-12: updated to 1.99.56 (versionCode 429905604); all three experimental patches apply
             // unchanged; smoke + CLI without -f.
             // 2026-11-16: updated to 1.99.57 (versionCode 429905704, same signer); smoke test + CLI verified.
+            // 2026-11-22: updated to 1.100.58 (versionCode 430005804, same signer) together with the stable entry (APKMirror arm64-v8a bundle merged); BraveSmokeTest passes.
             AppTarget(
-                version = "1.99.57",
+                version = "1.100.58",
                 isExperimental = true,
             ),
         )
