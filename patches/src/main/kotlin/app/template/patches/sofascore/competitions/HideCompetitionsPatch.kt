@@ -11,7 +11,7 @@ import app.template.patches.sofascore.countries.sofascoreListFiltersPatch
 internal val HIDDEN_COMPETITIONS = HevalListFeature(
     id = "sofascore.hidden_competitions",
     name = "Hide competitions",
-    description = "Hides matches of the competitions you pick, even favourites.",
+    description = "Hides the competitions you pick from match lists and search, not pinned leagues.",
     category = SofascoreControlsCategory.LEAGUES,
     restartRequired = true,
 )

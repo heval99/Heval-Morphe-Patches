@@ -13,8 +13,16 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -192,6 +200,144 @@ public final class SpoilerFree {
             method.invoke(view, cell.text);
         } catch (Throwable failure) {
             HevalSettings.reportFailure(LISTS, failure);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Compose match rows (main Matches tab, team, league, live, favourites, match page lists).
+    // Apart from the main Matches tab these screens are expected from static analysis of who
+    // renders the row model, not observed on a device.
+    // ---------------------------------------------------------------------------------------
+
+    private static final int MAX_NOTED = 8192;
+
+    /**
+     * Ids of events whose competition is marked, filled by the row mapper. Only marked ids are
+     * kept (absent = not marked). Access-ordered, so a row still being drawn stays; the least
+     * recently used id is dropped past {@link #MAX_NOTED}.
+     */
+    private static final Map<Integer, Boolean> competitionMarks = new LinkedHashMap<Integer, Boolean>(256, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Integer, Boolean> eldest) {
+            return size() > MAX_NOTED;
+        }
+    };
+
+    /** Line class -> its score fields (home/away line objects share one class), or an empty array. */
+    private static final Map<Class<?>, Field[]> scoreFields = new HashMap<>();
+
+    /**
+     * Patched into the Compose row mapper just before it builds the row model, with the Event: the
+     * row model only carries the event id, so the competition's mark is noted here for
+     * {@link #maskRow}. Behind {@value #LISTS}.
+     */
+    public static void noteEvent(Object event) {
+        try {
+            if (event == null || !HevalSettings.isEnabled(LISTS)) return;
+            Object id = CountryFilter.call(event, "getId");
+            if (!(id instanceof Integer)) return;
+            boolean marked = isCompetitionMarked(competitionKey(event));
+            synchronized (competitionMarks) {
+                if (marked) {
+                    competitionMarks.put((Integer) id, Boolean.TRUE);
+                } else {
+                    competitionMarks.remove(id);
+                }
+            }
+        } catch (Throwable failure) {
+            HevalSettings.reportFailure(LISTS, failure);
+        }
+    }
+
+    /**
+     * Patched into the start of the Compose row model's constructor with its first five arguments
+     * (event id, kickoff text, status text, home line, away line): for a marked match the score
+     * fields of both team lines are set to null (the row shows no score) and null is returned as
+     * the status text (the live minute or "FT"); otherwise {@code timeLower} comes back unchanged.
+     * The kickoff time and the team names stay. Behind {@value #LISTS} and its master switch.
+     */
+    public static Object maskRow(int eventId, Object timeUpper, Object timeLower, Object home, Object away) {
+        try {
+            if (!HevalSettings.isEnabled(LISTS)) return timeLower;
+            boolean marked = isMatchMarked(eventId > 0 ? Integer.toString(eventId) : null);
+            if (!marked) {
+                synchronized (competitionMarks) {
+                    marked = competitionMarks.get(eventId) != null;
+                }
+            }
+            if (!marked) return timeLower;
+            clearScores(home);
+            clearScores(away);
+            return null;
+        } catch (Throwable failure) {
+            HevalSettings.reportFailure(LISTS, failure);
+            return timeLower;
+        }
+    }
+
+    private static void clearScores(Object line) throws Exception {
+        if (line == null) return;
+        Field[] fields = scoreFieldsOf(line.getClass());
+        for (Field field : fields) {
+            field.set(line, null);
+        }
+    }
+
+    /**
+     * The last three declared fields of the type that the line class declares four times (the name,
+     * game score, set score and score cells are all RowText; the patch checked this shape), in
+     * field-name order (the patch checks that this is the constructor order): game score, set score, score. Empty
+     * when the shape is not as expected.
+     */
+    static Field[] scoreFieldsOf(Class<?> type) {
+        synchronized (scoreFields) {
+            Field[] cached = scoreFields.get(type);
+            if (cached != null) return cached;
+            Field[] found = new Field[0];
+            try {
+                Map<Class<?>, List<Field>> byType = new LinkedHashMap<>();
+                for (Field field : type.getDeclaredFields()) {
+                    Class<?> fieldType = field.getType();
+                    if (Modifier.isStatic(field.getModifiers()) || fieldType.isPrimitive()) continue;
+                    List<Field> same = byType.get(fieldType);
+                    if (same == null) {
+                        same = new ArrayList<>();
+                        byType.put(fieldType, same);
+                    }
+                    same.add(field);
+                }
+                List<Field> cells = null;
+                for (List<Field> same : byType.values()) {
+                    if (same.size() == 4) {
+                        if (cells != null) {
+                            cells = null;
+                            break;
+                        }
+                        cells = same;
+                    }
+                }
+                if (cells != null) {
+                    // The patch pins the constructor order to the name order; sort here so the result
+                    // never depends on the order getDeclaredFields() happens to return.
+                    Collections.sort(cells, new Comparator<Field>() {
+                        @Override
+                        public int compare(Field a, Field b) {
+                            return a.getName().compareTo(b.getName());
+                        }
+                    });
+                    found = new Field[] {cells.get(1), cells.get(2), cells.get(3)};
+                    for (Field field : found) {
+                        field.setAccessible(true);
+                    }
+                } else {
+                    HevalSettings.reportFailure(LISTS, new IllegalStateException("EventTeamLine shape changed"));
+                }
+            } catch (Throwable failure) {
+                found = new Field[0];
+                HevalSettings.reportFailure(LISTS, failure);
+            }
+            scoreFields.put(type, found);
+            return found;
         }
     }
 

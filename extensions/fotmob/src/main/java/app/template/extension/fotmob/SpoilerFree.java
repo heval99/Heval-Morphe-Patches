@@ -109,7 +109,7 @@ public final class SpoilerFree {
     // Score display (the home-screen live score widget)
     // ---------------------------------------------------------------------------------------
 
-    /** Match.Id, Match.league, League.Id and League.ParentId: kept model names (the patch checks them). */
+    /** Match.id, Match.league, League.id and League.parentId: kept model names (the patch checks them; 242 renamed Id/ParentId). */
     private static volatile Field matchId, matchLeague, leagueId, leagueParentId;
 
     private static Field field(Class<?> owner, String name) throws NoSuchFieldException {
@@ -149,10 +149,10 @@ public final class SpoilerFree {
             if (matchId == null) {
                 Class<?> type = match.getClass();
                 Field league = field(type, "league");
-                leagueId = field(league.getType(), "Id");
-                leagueParentId = field(league.getType(), "ParentId");
+                leagueId = field(league.getType(), "id");
+                leagueParentId = field(league.getType(), "parentId");
                 matchLeague = league;
-                matchId = field(type, "Id");
+                matchId = field(type, "id");
             }
             Object id = matchId.get(match);
             Object league = matchLeague.get(match);

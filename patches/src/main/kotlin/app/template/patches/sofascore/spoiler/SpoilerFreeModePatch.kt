@@ -7,6 +7,7 @@ import app.morphe.patcher.resource.ResourceType
 import app.morphe.patcher.resource.resourceId
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.template.patches.shared.addInstructionsAtControlFlowLabelChecked
+import app.template.patches.shared.addInstructionsChecked
 import app.template.patches.shared.hevalcontrols.HevalFeature
 import app.template.patches.shared.hevalcontrols.HevalListFeature
 import app.template.patches.shared.hevalcontrols.addHevalGate
@@ -17,11 +18,16 @@ import app.template.patches.sofascore.controls.sofascoreControls
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 internal const val SPOILER_FREE = "Lapp/template/extension/sofascore/SpoilerFree;"
 internal const val SCORE_TEXT_VIEW = "Lcom/sofascore/results/view/EventListScoreTextView;"
@@ -230,6 +236,95 @@ private fun BytecodePatchContext.widgetRow(): Pair<MutableMethod, String> {
     return method to "$type->${context.name}:$CONTEXT"
 }
 
+/** Every register an instruction reads or writes, wide pairs not expanded. */
+private fun com.android.tools.smali.dexlib2.iface.instruction.Instruction.registers(): List<Int> = when (this) {
+    is FiveRegisterInstruction -> listOf(registerC, registerD, registerE, registerF, registerG).take(registerCount)
+    is RegisterRangeInstruction -> (startRegister until startRegister + registerCount).toList()
+    is ThreeRegisterInstruction -> listOf(registerA, registerB, registerC)
+    is TwoRegisterInstruction -> listOf(registerA, registerB)
+    is OneRegisterInstruction -> listOf(registerA)
+    else -> emptyList()
+}
+
+/**
+ * The Compose row model hooks (26.11.09: ji7 / mi7.m): where the row model is built and what the
+ * constructor takes. The row model class is the one named by the "EventRowModel(eventId=" toString.
+ */
+private class ComposeRow(
+    val mapper: MutableMethod,
+    val newInstanceIndex: Int,
+    val eventRegister: Int,
+    val constructor: MutableMethod,
+    val rowText: String,
+)
+
+private fun BytecodePatchContext.composeRow(): ComposeRow {
+    val rowType = EventRowModelToStringFingerprint.method.definingClass
+    val constructors = mutableClassDefBy(rowType).methods.filter { it.name == "<init>" }
+    val constructor = constructors.singleOrNull()
+        ?: throw PatchException("$rowType has ${constructors.size} constructors, expected one (the Compose row model)")
+    val p = constructor.params()
+    // (eventId, timeUpper, timeLower, home, away, additionalInfo, ...): the first six parameters.
+    if (p.size < 6 || p[0] != "I" || p[1] != p[2] || p[1] != p[5] || p[3] != p[4] || p[3] == p[1] || constructor.implementation == null) {
+        throw PatchException("$rowType.<init> parameters are $p, expected (I, RowText, RowText, Line, Line, RowText, ...)")
+    }
+    val rowText = p[1]
+    val lines = classDefBy(p[3]).fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == rowText }
+    if (lines.size != 4) {
+        throw PatchException("${p[3]} has ${lines.size} $rowText fields, expected four (name and three scores)")
+    }
+    // The line's constructor takes the name first and the game score, set score and score last; the
+    // extension sorts the RowText fields by name itself and nulls the last three.
+    val lineInit = classDefBy(p[3]).methods.singleOrNull { it.name == "<init>" }
+    val lineCtor = lineInit?.parameterTypes?.map(CharSequence::toString)
+    if (lineInit != null && lineCtor != null && lineInit.implementation != null) {
+        // The fields the constructor assigns the RowText parameters to (name, game, set, score, in
+        // parameter order) must sort ascending by name, the order the extension sorts the fields into.
+        val impl = lineInit.implementation!!
+        val firstParam = impl.registerCount - lineCtor.sumOf { (if (it == "J" || it == "D") 2 else 1) }
+        val rowTextRegisters = lineCtor.indices.filter { lineCtor[it] == rowText }.map { i ->
+            firstParam + lineCtor.take(i).sumOf { (if (it == "J" || it == "D") 2 else 1) }
+        }
+        val assigned = rowTextRegisters.map { register ->
+            val stores = impl.instructions.filter {
+                it.opcode == Opcode.IPUT_OBJECT && (it as OneRegisterInstruction).registerA == register
+            }.mapNotNull { it.fieldRef() }.filter { it.definingClass == p[3] && it.type == rowText }
+            stores.singleOrNull()?.name
+        }
+        if (assigned.any { it == null } || assigned.size != 4 || assigned.zipWithNext().any { (a, b) -> a!! >= b!! }) {
+            throw PatchException("${p[3]}: the RowText fields assigned by the constructor are $assigned, expected four names in ascending order (name, game, set, score)")
+        }
+    }
+    if (lineCtor == null || lineCtor.size < 4 || lineCtor.first() != rowText || lineCtor.takeLast(3).any { it != rowText } || lineCtor.count { it == rowText } != 4) {
+        throw PatchException("${p[3]}.<init> parameters are $lineCtor, expected (RowText name, ..., RowText game, RowText set, RowText score)")
+    }
+    if (constructor.implementation!!.registerCount < 6) throw PatchException("$rowType.<init> has fewer registers than p1..p5")
+
+    val mapper = EventRowModelMapperFingerprint.method
+    val insns = mapper.implementation!!.instructions.toList()
+    val creates = insns.indices.filter {
+        insns[it].opcode == Opcode.NEW_INSTANCE && ((insns[it] as ReferenceInstruction).reference as? TypeReference)?.type == rowType
+    }
+    val index = creates.singleOrNull()
+        ?: throw PatchException("${mapper.definingClass}->${mapper.name} creates $rowType ${creates.size} times, expected once")
+    val register = (insns[index] as OneRegisterInstruction).registerA
+    if (register > 15) throw PatchException("${mapper.definingClass}->${mapper.name}: the row model is built in v$register, above v15")
+    // The instruction before it that touches that register must hand it to an Event call: the new-instance
+    // reuses the register that held the Event until now.
+    val last = (index - 1 downTo 0).firstOrNull { register in insns[it].registers() }
+        ?: throw PatchException("${mapper.definingClass}->${mapper.name}: v$register is never used before the row model is built")
+    val ref = (insns[last] as? ReferenceInstruction)?.reference as? MethodReference
+    val firstIsEvent = ref != null && when (insns[last].opcode) {
+        Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE -> ref.parameterTypes.firstOrNull()?.toString() == EVENT
+        Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_VIRTUAL_RANGE -> ref.definingClass == EVENT
+        else -> false
+    } && insns[last].registers().first() == register
+    if (!firstIsEvent) {
+        throw PatchException("${mapper.definingClass}->${mapper.name}: v$register does not hold the Event before the row model is built (last use: ${insns[last].opcode} $ref)")
+    }
+    return ComposeRow(mapper, index, register, constructor, rowText)
+}
+
 // Spoiler-free mode (2026-11-08, owner request), phase 1. The user marks a match on its match page or
 // a competition on its page ("Spoiler-free: on/off" in the overflow menu); the marks are two Patch
 // settings lists that depend on the master switch. Each surface has its own switch (on by default,
@@ -253,12 +348,25 @@ private fun BytecodePatchContext.widgetRow(): Pair<MutableMethod, String> {
 //    marked for the row's Event, and EventListScoreTextView.setText answers "" for a marked cell, so
 //    later updates (the ticking minute, live scores) stay hidden too. The kickoff time has its own
 //    cell (a TextView) and stays. Only the display changes: the Event, sorting, the Live tab, live
-//    updates and favourites in the database are stock.
+//    updates and favourites in the database are stock. On 26.11.09 these rows exist only in the
+//    Player and Manager match lists.
+// 4b. Compose match rows (the main Matches tab, team, league, live, favourites and match page lists,
+//    same switch; apart from the main Matches tab these screens are expected from static analysis of
+//    who renders the row model, not observed on a device):the row model (EventRowModel, found by its toString constant) is built in two
+//    places, the mapper from an Event and a copy that only swaps the status text. The mapper tells
+//    SpoilerFree.noteEvent the Event just before it builds the model (the model carries only the
+//    event id, so the competition mark is noted there), and the model's only constructor starts with
+//    SpoilerFree.maskRow(eventId, kickoff, status, home line, away line): for a marked match it nulls
+//    the three score fields of both team lines (found by type and order) and the status text (live
+//    minute, "FT"), so the row shows no score. The kickoff time, team names and the extra info
+//    (postponed and the like) stay. The switch is read in Java; the constructor has no free register.
 // 5. Home-screen widget (sofascore.spoiler_widget): before the widget row builder returns, a marked
 //    match's score cells are emptied and its status cell shows the kickoff time.
 // Not covered in phase 1: the match page header and tabs (incidents, statistics, lineups, momentum),
-// search, favourites' and featured match views, the chat/share card, team form, standings, the
-// winner colour of the team names (list rows and widget), Wear and lock-screen notifications.
+// search, featured match views, the chat/share card, team form, standings, the winner colour of the
+// team names (list rows and widget) and the extra info text of a Compose row, Wear and lock-screen
+// notifications. A Compose row kept in memory (the live status copy) shows scores again only after
+// its list refreshes when the user un-marks a match.
 @Suppress("unused")
 val spoilerFreeModePatch = sofascoreControls.featurePatch(
     SPOILER_FREE_MODE,
@@ -297,6 +405,8 @@ val spoilerFreeModePatch = sofascoreControls.featurePatch(
     val row = rowBinder()
     row.method.requireLocals(3)
     row.method.requireNoBranchTargetAt(0, "Spoiler-free row hook")
+
+    val compose = composeRow()
 
     val (widget, widgetContext) = widgetRow()
     val widgetInsns = widget.instructions.toList()
@@ -351,6 +461,21 @@ val spoilerFreeModePatch = sofascoreControls.featurePatch(
             }
         }
     }
+
+    // 4b. Compose match rows: the mapper notes the Event (the new-instance is a branch target, so the
+    // note takes over its labels), the row model constructor masks the scores before they are stored.
+    compose.mapper.addInstructionsAtControlFlowLabelChecked(
+        compose.newInstanceIndex,
+        "invoke-static { v${compose.eventRegister} }, $SPOILER_FREE->noteEvent(Ljava/lang/Object;)V",
+    )
+    compose.constructor.addInstructionsChecked(
+        0,
+        """
+            invoke-static/range { p1 .. p5 }, $SPOILER_FREE->maskRow(ILjava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+            move-result-object p3
+            check-cast p3, ${compose.rowText}
+        """,
+    )
 
     // 5. The widget row. The return is a branch target: a nop takes over its labels first, so every
     // path into the return runs the gate.

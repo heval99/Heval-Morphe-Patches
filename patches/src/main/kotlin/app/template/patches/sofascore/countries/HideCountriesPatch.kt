@@ -23,7 +23,7 @@ import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringRefere
 internal val HIDDEN_COUNTRIES = HevalListFeature(
     id = "sofascore.hidden_countries",
     name = "Hide countries",
-    description = "Hides leagues and matches from the countries you pick, even favourites.",
+    description = "Hides the countries you pick from match lists and search, not pinned leagues.",
     category = SofascoreControlsCategory.LEAGUES,
     restartRequired = true,
 )
@@ -109,7 +109,7 @@ private fun MutableMethod.returnString(value: String) {
 // Not filtered: LiveCategoriesResponse.getLiveCategories (a category id -> live count map with no
 // country; the rows it counts are filtered by the date feed's rows), pinned/favourite leagues fetched
 // by their own tournament requests, team/player/tournament pages, the widget and notifications.
-// Favourites are not exempt in the filtered lists. The picker is seeded with the app's own country
+// Rows of the filtered lists are filtered even when they are favourites. The picker is seeded with the app's own country
 // list (read at patch time) by CountryFilter.init at the end of ReleaseApp.onCreate; every filtered
 // category is reported as seen, also while nothing is picked, under the seed's name when its key is
 // a seeded country (the "X Amateur" categories share the country's alpha2 and used to rename it in

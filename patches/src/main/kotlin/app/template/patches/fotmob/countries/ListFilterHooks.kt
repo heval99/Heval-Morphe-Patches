@@ -33,7 +33,9 @@ internal val SUGGESTION_FILTERS = mapOf(
 internal val REFLECTED_FIELDS = mapOf(
     LIVE_MATCHES to listOf("leagueMatches"),
     "Lcom/fotmob/models/LeagueMatches;" to listOf("league", "Matches", "sortPriority"),
-    "Lcom/fotmob/models/League;" to listOf("CountryCode", "Id", "ParentId", "CountryName", "Name", "isSuggested"),
+    // 242 turned League and LeagueMatches into Kotlin classes (raw/camel-case field names, @SerializedName
+    // keeps the JSON names; LeagueMatches is built through its (Collator, League, List, int) constructor).
+    "Lcom/fotmob/models/League;" to listOf("rawCountryCode", "id", "parentId", "countryName", "nameNoLocalization", "isSuggested"),
     "Lcom/fotmob/models/Match;" to listOf("HomeTeam", "AwayTeam"),
     // 241 made Team a Kotlin class: the field is "id" (still serialized as "ID").
     "Lcom/fotmob/models/Team;" to listOf("id"),
@@ -63,6 +65,14 @@ private fun BytecodePatchContext.requireReflectedFields() {
         names.filterNot(fields::contains).takeIf { it.isNotEmpty() }?.let { missing ->
             throw PatchException("Hide countries/competitions: $type no longer has the fields $missing")
         }
+    }
+    // CountryFilter rebuilds a trimmed LeagueMatches through this constructor.
+    val leagueMatchesShape = listOf("Ljava/text/Collator;", "Lcom/fotmob/models/League;", "Ljava/util/List;", "I")
+    if (classDefBy("Lcom/fotmob/models/LeagueMatches;").methods.none { method ->
+            method.name == "<init>" && method.parameterTypes.map { it.toString() } == leagueMatchesShape
+        }
+    ) {
+        throw PatchException("Hide countries/competitions: LeagueMatches has no $leagueMatchesShape constructor")
     }
 }
 
