@@ -4541,7 +4541,13 @@ object Constants {
         // test green, CLI without -f applied both patches (2 changed classes), disassembly shows
         // the const/4 1 after the contains result, 5 Boolean.TRUE flow writes and checkLicense
         // starting with return-void. Runtime not run on 1.68.
-        targets = listOf(AppTarget(version = "1.68", versionCode = 68))
+        // 2026-11-22: updated to 1.70 (versionCode 70, same signer). Re-anchored Enable Premium step 2: the
+        // purchase-query writer now computes Boolean.valueOf before it reads the Pro flow field (1.68 read
+        // the field first), so the writer search looks on both sides of the field read and requires the
+        // valueOf result to still be in the register handed to the flow's (Object, Object)Z setter.
+        // The site must follow the read, its setter receiver must be the register the read loaded, and neither register may be rewritten before the setter.
+        // MangoSmokeTest passes. APK from Play via gplay (1.64 was APKPure); smoke test, CLI 2.1.1 without -f and a 3-method whole-APK diff done; not run on a device.
+        targets = listOf(AppTarget(version = "1.70", versionCode = 70))
     )
 
     // Verified 2026-10-27 against ie.rte.news 10.0.2 (versionCode 440, APKPure XAPK merged with
