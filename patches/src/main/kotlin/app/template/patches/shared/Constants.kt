@@ -4141,7 +4141,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x0A1E32,
         signatures = setOf("6d9f086b1df6eb441304d1d114c674185c985bc46fafcb045211db6172bd6e59"), // CN=Xavier Debbasch, O=Airweb
-        targets = listOf(AppTarget(version = "10.71.1", versionCode = 1626, isExperimental = true))
+        // 2026-11-22: updated to 10.72.0 (versionCode 1627, same signer); LequipeSmokeTest passes, anchors unchanged. APK from Play; smoke test, CLI 2.1.1 without -f and a 25-method whole-APK diff (GMA ads classes) done; not run on a device.
+        targets = listOf(AppTarget(version = "10.72.0", versionCode = 1627, isExperimental = true))
     )
 
     // Written 2026-10-17 against de.transfermarkt.v2 4.3.2 (versionCode 2075, Play bundle merged).
