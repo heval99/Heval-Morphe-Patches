@@ -85,13 +85,28 @@ fun spoofSignaturePatch(
 
             // Collect first: mutating classes while iterating them is not allowed.
             val targets = mutableListOf<ClassDef>()
+            var alreadyPatched = false
             classDefForEach { classDef ->
                 if (classDef.type.startsWith(EXTENSION_PACKAGE_PREFIX)) return@classDefForEach
-                if (classDef.methods.any { m -> m.implementation?.instructions?.any { it.isGetPackageInfo() } == true }) {
-                    targets += classDef
+                var hasCall = false
+                for (method in classDef.methods) {
+                    for (instruction in method.implementation?.instructions ?: continue) {
+                        if (instruction.isGetPackageInfo()) hasCall = true
+                        else if (instruction.isSpoofedGetPackageInfo()) alreadyPatched = true
+                    }
                 }
+                if (hasCall) targets += classDef
             }
-            if (targets.isEmpty()) throw PatchException("No PackageManager.getPackageInfo call found")
+            if (targets.isEmpty()) {
+                throw PatchException(
+                    if (alreadyPatched) {
+                        "This APK is already patched with Spoof signature. " +
+                            "Patch the original APK, not an installed or patched copy."
+                    } else {
+                        "No PackageManager.getPackageInfo call found"
+                    }
+                )
+            }
 
             for (classDef in targets) {
                 for (method in mutableClassDefBy(classDef).methods) {
@@ -121,6 +136,13 @@ fun spoofSignaturePatch(
             }
         }
     }
+}
+
+/** A call this patch already redirected: `invoke-static[/range] SignatureSpoof.getPackageInfo(...)`. */
+internal fun Instruction.isSpoofedGetPackageInfo(): Boolean {
+    if (opcode != Opcode.INVOKE_STATIC && opcode != Opcode.INVOKE_STATIC_RANGE) return false
+    val call = (this as ReferenceInstruction).reference as? MethodReference ?: return false
+    return call.definingClass == SIGNATURE_SPOOF_EXTENSION_CLASS && call.name == "getPackageInfo"
 }
 
 /** `invoke-virtual PackageManager.getPackageInfo(String, int | PackageInfoFlags)`. */
