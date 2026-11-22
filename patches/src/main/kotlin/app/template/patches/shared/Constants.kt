@@ -1098,9 +1098,10 @@ object Constants {
             // 2026-10-19: older target 1.3.61.0907 dropped (latest version only, owner).
             // 2026-10-25: updated to version 1.3.64.0929 (versionCode 10570; APKPure XAPK merged,
             // same signer); EasyNotesSmokeTest passes on patcher 2.0.0; anchors unchanged.
+            // 2026-11-22: updated to 1.3.66.1117 (versionCode 10573, same signer); EasyNotesSmokeTest passes, anchors unchanged. APK from Play via gplay; smoke test, CLI 2.1.1 without -f and a 3-method whole-APK diff done; not run on a device.
             AppTarget(
-                version = "1.3.65.1019",
-                versionCode = 10571
+                version = "1.3.66.1117",
+                versionCode = 10573
             )
         )
     )
