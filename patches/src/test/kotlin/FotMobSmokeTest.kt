@@ -10,9 +10,14 @@ import app.template.patches.fotmob.competitions.HIDDEN_COMPETITIONS
 import app.template.patches.fotmob.countries.COMPETITION_FILTER
 import app.template.patches.fotmob.countries.COUNTRY_FILTER
 import app.template.patches.fotmob.countries.HIDDEN_COUNTRIES
+import app.template.patches.fotmob.countries.REFLECTED_CONSTRUCTORS
 import app.template.patches.fotmob.countries.SUGGESTION_FILTERS
+import app.template.patches.fotmob.spoiler.AGGREGATE_FORMAT
+import app.template.patches.fotmob.spoiler.FINISHED_STATUSES
 import app.template.patches.fotmob.spoiler.LIVE_SCORE_WIDGET
 import app.template.patches.fotmob.spoiler.SCORE_FORMAT
+import app.template.patches.fotmob.spoiler.SPOILER_FREE_KEEP_FINAL
+import app.template.patches.fotmob.spoiler.THIN_DASH
 import app.template.patches.fotmob.spoiler.SPOILER_FREE
 import app.template.patches.fotmob.spoiler.SPOILER_FREE_COMPETITIONS
 import app.template.patches.fotmob.spoiler.SPOILER_FREE_LISTS
@@ -80,6 +85,8 @@ private const val FOTMOB_CONTROLS_ENTRY = "Lapp/template/extension/fotmob/HevalC
 private const val HEVAL_EXTENSION = "Lapp/template/extension/hevalcontrols/"
 private const val SETTINGS_GLOBAL = "Landroid/provider/Settings\$Global;"
 private const val SETTINGS_ACTIVITY = "Lcom/fotmob/android/feature/setting/ui/SettingsActivity;"
+private const val MATCH_ACTIVITY_TYPE = "Lcom/fotmob/android/feature/match/ui/MatchActivity;"
+private const val LIVE_UPDATE_WORKER_TYPE = "Lcom/fotmob/android/feature/liveupdate/worker/LiveUpdateWorker;"
 private const val RC_REALTIME_PATH = "/namespaces/firebase:streamFetchInvalidations"
 
 class FotMobSmokeTest {
@@ -418,6 +425,15 @@ class FotMobSmokeTest {
     private fun assertHideCountries(classes: List<ClassDef>) {
         val byType = classes.associateBy { it.type }
 
+        // The constructors CountryFilter calls through reflection still exist (the patch checks them too).
+        for ((type, shape) in REFLECTED_CONSTRUCTORS) {
+            assertTrue(
+                byType.getValue(type).methods.any { it.name == "<init>" && it.parameterTypes.map(CharSequence::toString) == shape },
+                "$type has no $shape constructor",
+            )
+        }
+        assertEquals(5, REFLECTED_CONSTRUCTORS.size, "reflected constructors")
+
         val holder = byType.getValue("Lcom/fotmob/models/LiveMatchesAndLeagueRank;")
             .method("<init>", listOf("Lcom/fotmob/models/LiveMatches;", "Ljava/util/List;", "Lcom/fotmob/models/SystemMessage;")).instructions()
         val store = holder.indexOfFirst { it.opcode == Opcode.IPUT_OBJECT && it.fieldRef()?.type == "Lcom/fotmob/models/LiveMatches;" }
@@ -547,6 +563,7 @@ class FotMobSmokeTest {
                 DISABLE_ANIMATIONS, FASTER_ANIMATIONS, SLOWER_LIVE_REFRESH, HIDDEN_COUNTRIES, HIDDEN_COMPETITIONS,
                 SPOILER_FREE_MODE, SPOILER_FREE_MATCHES, SPOILER_FREE_COMPETITIONS,
                 SPOILER_FREE_NOTIFICATIONS, SPOILER_FREE_LISTS, SPOILER_FREE_MATCH_PAGE, SPOILER_FREE_WIDGET,
+                SPOILER_FREE_KEEP_FINAL,
             ),
         ).split('\n')
         assertTrue(
@@ -762,6 +779,7 @@ class FotMobSmokeTest {
                 ins.any { it.methodRef()?.let { r -> r.definingClass == SPOILER_FREE && r.name.startsWith("hidesScore") } == true }
         }
         assertEquals(6, rowMethods.size, "methods that format the live score and carry the started override")
+        var matchPageObservers = 0
         for (row in rowMethods) {
             val r = row.instructions()
             val rLabel = "${row.definingClass}->${row.name}"
@@ -775,13 +793,15 @@ class FotMobSmokeTest {
                 } == true
             }
             assertEquals(startedCalls.size, hides.size, "$rLabel: started checks and overrides")
-            // Each surface answers to its own switch: the match page header, the ongoing notification
+            // Each surface answers to its own switch: the match page (MatchActivity and its observers,
+            // which hold the activity in a field: 242's header observer e28), the ongoing notification
             // and every other row use their own SpoilerFree check.
             val expectedHelper = when (row.definingClass) {
-                "Lcom/fotmob/android/feature/match/ui/MatchActivity;" -> "hidesScoreOnMatchPage"
-                "Lcom/fotmob/android/feature/liveupdate/worker/LiveUpdateWorker;" -> "hidesScoreInNotifications"
-                else -> "hidesScoreInLists"
+                MATCH_ACTIVITY_TYPE -> "hidesScoreOnMatchPage"
+                LIVE_UPDATE_WORKER_TYPE -> "hidesScoreInNotifications"
+                else -> if (classes.single { it.type == row.definingClass }.holdsMatchActivity()) "hidesScoreOnMatchPage" else "hidesScoreInLists"
             }
+            if (row.definingClass != MATCH_ACTIVITY_TYPE && expectedHelper == "hidesScoreOnMatchPage") matchPageObservers++
             assertTrue(
                 hides.all { r[it].methodRef()?.name == expectedHelper },
                 "$rLabel: the override must call SpoilerFree.$expectedHelper; got ${hides.map { r[it].methodRef()?.name }}",
@@ -806,6 +826,150 @@ class FotMobSmokeTest {
                 assertEquals(h + 3, r.branchTarget(h - 1), "$rLabel: a match that has not started does not skip the override")
             }
         }
+        // The match header observer (e28 in 242) is a separate class holding MatchActivity: it must
+        // answer to the match page switch, not the lists switch.
+        assertTrue(matchPageObservers >= 1, "no MatchActivity observer row uses hidesScoreOnMatchPage")
+
+        assertSpoilerFreeLiveOnly(classes)
+    }
+
+    private fun ClassDef.holdsMatchActivity() =
+        fields.any { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == MATCH_ACTIVITY_TYPE }
+
+    /** At [index]: a flag override (if-eqz, the SpoilerFree [helper] on the receiver of the call at [index] - 3, xor 1). */
+    private fun assertFlagOverride(insns: List<Instruction>, hide: Int, helper: String, label: String) {
+        assertEquals(
+            listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.XOR_INT_LIT8),
+            insns.subList(hide - 2, hide + 3).map { it.opcode }, "$label: flag override at $hide",
+        )
+        assertEquals(helper, insns[hide].methodRef()?.name, "$label: override helper")
+        val receiver = when (val call = insns[hide - 3]) {
+            is FiveRegisterInstruction -> call.registerC
+            is RegisterRangeInstruction -> call.startRegister
+            else -> -1
+        }
+        assertEquals(receiver, (insns[hide] as RegisterRangeInstruction).startRegister, "$label: the helper gets the match")
+        val flag = (insns[hide - 2] as OneRegisterInstruction).registerA
+        assertTrue(
+            (insns[hide - 1] as OneRegisterInstruction).registerA == flag && (insns[hide + 1] as OneRegisterInstruction).registerA == flag &&
+                (insns[hide + 2] as TwoRegisterInstruction).registerA == flag && (insns[hide + 2] as NarrowLiteralInstruction).narrowLiteral == 1,
+            "$label: the override does not write !hides back into v$flag",
+        )
+        assertEquals(hide + 3, insns.branchTarget(hide - 1), "$label: a false flag does not skip the override")
+    }
+
+    /**
+     * At [move] (a move-result-object vX of [call]): invoke-static {vX, vMatch} SpoilerFree.[helper],
+     * move-result-object vX, and optionally check-cast vX back to [castTo]. vMatch is the receiver of
+     * the nearest Match call before [call].
+     */
+    private fun assertPassThrough(insns: List<Instruction>, move: Int, helper: String, label: String, castTo: String? = null) {
+        assertEquals(Opcode.MOVE_RESULT_OBJECT, insns[move].opcode, "$label: no result move at $move")
+        val value = (insns[move] as OneRegisterInstruction).registerA
+        val call = insns[move + 1]
+        assertTrue(
+            call.opcode == Opcode.INVOKE_STATIC && call.methodRef()?.definingClass == SPOILER_FREE && call.methodRef()?.name == helper,
+            "$label: no SpoilerFree.$helper after $move; got ${call.opcode} ${call.methodRef()}",
+        )
+        val match = (move - 2 downTo 0).first {
+            insns[it].methodRef()?.definingClass == "Lcom/fotmob/models/Match;" && insns[it].opcode == Opcode.INVOKE_VIRTUAL
+        }.let { (insns[it] as FiveRegisterInstruction).registerC }
+        val args = call as FiveRegisterInstruction
+        assertEquals(2, args.registerCount, "$label: helper arguments")
+        assertEquals(value, args.registerC, "$label: the helper gets the value")
+        assertEquals(match, args.registerD, "$label: the helper gets the match")
+        assertTrue(
+            insns[move + 2].opcode == Opcode.MOVE_RESULT_OBJECT && (insns[move + 2] as OneRegisterInstruction).registerA == value,
+            "$label: the helper result does not go back into v$value",
+        )
+        if (castTo != null) {
+            assertTrue(
+                insns[move + 3].opcode == Opcode.CHECK_CAST && insns[move + 3].typeRef() == castTo &&
+                    (insns[move + 3] as OneRegisterInstruction).registerA == value,
+                "$label: no check-cast v$value, $castTo",
+            )
+        }
+    }
+
+    // Spoiler-free, live only (2026-11-22): the status rule in the extension, the keep-final switch,
+    // the live-update texts, the main row's aggregate and bold winner, the share text and the push status.
+    private fun assertSpoilerFreeLiveOnly(classes: List<ClassDef>) {
+        val match = "Lcom/fotmob/models/Match;"
+        val rules = classes.singleOrNull { it.type == "Lapp/template/extension/fotmob/SpoilerRules;" }
+            ?: error("SpoilerRules is not in the patched dex")
+        // The extension's finished set (the names its static initialiser builds the set from) and the
+        // patch's FINISHED_STATUSES (checked against the MatchStatus constants) must not drift apart.
+        val ruleNames = rules.methods.single { it.name == "<clinit>" }.instructions().mapNotNull { it.stringOrNull() }
+            .filter { s -> s.isNotEmpty() && s.all(Char::isLetter) }.toSet()
+        assertEquals(FINISHED_STATUSES.toSet(), ruleNames, "SpoilerRules.FINISHED vs the patch's FINISHED_STATUSES")
+        assertTrue("After90Minutes" !in ruleNames, "After90Minutes is the break before extra time, not finished")
+        val spoiler = classes.single { it.type == SPOILER_FREE }
+        val spoilerStrings = spoiler.methods.flatMap { m -> m.instructions().mapNotNull { it.stringOrNull() } }
+        assertTrue("StatusOfMatch" in spoilerStrings, "SpoilerFree does not read Match.StatusOfMatch")
+        assertTrue(SPOILER_FREE_KEEP_FINAL.id in spoilerStrings, "SpoilerFree does not ask the keep-final switch")
+        assertEquals(false, SPOILER_FREE_KEEP_FINAL.default, "Keep final scores hidden must be off by default")
+        val push = spoiler.methods.single { it.name == "blocksPush" }.instructions()
+        assertTrue(push.any { it.stringOrNull() == "status" }, "blocksPush does not read the push's match status")
+
+        // Live-update notification: the header after the thin-space dash and every "%d %s- %d" format.
+        val worker = classes.single { it.type == LIVE_UPDATE_WORKER_TYPE }.methods.single { m ->
+            m.instructions().any { it.stringOrNull() == SCORE_FORMAT }
+        }
+        val w = worker.instructions()
+        val wLabel = "LiveUpdateWorker->${worker.name}"
+        val dash = w.indexOfFirst { it.stringOrNull() == THIN_DASH }
+        assertTrue(dash >= 0, "$wLabel: no header text")
+        val toString = (dash + 1 until w.size).first { w[it].methodRef()?.let { r -> r.definingClass == "Ljava/lang/StringBuilder;" && r.name == "toString" } == true }
+        assertPassThrough(w, toString + 1, "maskLeadingScoreInNotifications", "$wLabel header")
+        val formats = w.indices.filter { w[it].methodRef()?.let { r -> r.definingClass == "Ljava/lang/String;" && r.name == "format" } == true }
+        // 242: the score and the penalties.
+        assertEquals(2, formats.size, "$wLabel: String.format calls")
+        formats.forEach { assertPassThrough(w, it + 1, "maskScoreInNotifications", "$wLabel format at $it") }
+        assertEquals(2, w.count { it.methodRef()?.name == "maskScoreInNotifications" }, "$wLabel: score masks")
+
+        // The main row: the aggregate text's hasAggregate check and the bold winner names.
+        val aggregate = classes.flatMap { it.methods }.filter { m -> m.instructions().any { it.stringOrNull() == AGGREGATE_FORMAT } }
+        assertEquals(1, aggregate.size, "methods with the aggregate format")
+        val a = aggregate.single().instructions()
+        val aLabel = "${aggregate.single().definingClass}->${aggregate.single().name}"
+        val aggregateHides = a.indices.filter { a[it].methodRef()?.let { r -> r.definingClass == SPOILER_FREE && r.name == "hidesScoreInLists" } == true }
+        assertEquals(1, aggregateHides.size, "$aLabel: aggregate overrides")
+        val getter = a[aggregateHides.single() - 3].methodRef()!!
+        assertTrue(getter.definingClass == match && getter.returnType == "Z", "$aLabel: the override does not follow a Match flag getter")
+        val getterBody = classes.single { it.type == match }.methods.single { it.name == getter.name && it.parameterTypes.isEmpty() && it.returnType == "Z" }.instructions()
+        assertTrue(getterBody.any { it.fieldRef()?.name == "hasAggregate" }, "$aLabel: the overridden getter is not hasAggregate")
+        assertFlagOverride(a, aggregateHides.single(), "hidesScoreInLists", "$aLabel aggregate")
+
+        val rowClass = classes.single { it.type == aggregate.single().definingClass }
+        val bolder = rowClass.methods.single { m -> m.instructions().any { it.methodRef()?.name == "hiddenInLists" } }
+        val b = bolder.instructions()
+        val bLabel = "${rowClass.type}->${bolder.name}"
+        val winnerGetters = b.indices.filter { i ->
+            b[i].methodRef()?.let { r ->
+                r.definingClass == match && r.parameterTypes.isEmpty() &&
+                    (r.returnType == "Lcom/fotmob/models/Match\$AggregateStatus;" || r.returnType == "Lcom/fotmob/models/Match\$MatchStatus;")
+            } == true
+        }
+        // 242: the aggregate status and the "won on penalties" status, once per team.
+        assertEquals(4, winnerGetters.size, "$bLabel: winner inputs")
+        winnerGetters.forEach { assertPassThrough(b, it + 1, "hiddenInLists", "$bLabel at $it", b[it].methodRef()!!.returnType) }
+        assertEquals(4, b.count { it.methodRef()?.name == "hiddenInLists" }, "$bLabel: winner pass-throughs")
+
+        // The share text: every started check answers to the match page switch.
+        val share = classes.flatMap { it.methods }.filter { m ->
+            AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "Ljava/lang/String;" &&
+                m.parameterTypes.map(CharSequence::toString) == listOf("Landroid/app/Activity;", match) &&
+                m.instructions().any { it.stringOrNull() == " #FotMob" }
+        }
+        assertEquals(1, share.size, "share text builders")
+        val s = share.single().instructions()
+        val sLabel = "${share.single().definingClass}->${share.single().name}"
+        val shareHides = s.indices.filter { s[it].methodRef()?.definingClass == SPOILER_FREE }
+        assertTrue(shareHides.isNotEmpty(), "$sLabel: no override")
+        val started = s[shareHides.first() - 3].methodRef()!!
+        assertEquals(s.count { it.methodRef()?.let { r -> r.definingClass == match && r.name == started.name && r.returnType == "Z" } == true },
+            shareHides.size, "$sLabel: started checks and overrides")
+        shareHides.forEach { assertFlagOverride(s, it, "hidesScoreOnMatchPage", "$sLabel") }
     }
 
     // Use system font, bytecode: both targets found like the patch does (the "my" locale check

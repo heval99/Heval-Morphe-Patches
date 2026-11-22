@@ -36,8 +36,8 @@ val showFotMobPlusLogoPatch = bytecodePatch(
     compatibleWith(COMPATIBILITY_FOTMOB)
 
     execute {
-        // The drawable ids move with every resource rebuild (0x7f0802c5/c2 in 241), so they are
-        // resolved by name from the app's resource table.
+        // The drawable ids move with every resource rebuild, so they are resolved by name from the
+        // app's resource table.
         val plusLogo = resourceId(ResourceType.DRAWABLE, PLUS_LOGO_NAME)
         val normalLogo = resourceId(ResourceType.DRAWABLE, NORMAL_LOGO_NAME)
         val owners = mutableListOf<Pair<ClassDef, Method>>()
@@ -71,9 +71,8 @@ val showFotMobPlusLogoPatch = bytecodePatch(
         mutable.replaceInstruction(read, "const/4 v$register, 0x1")
 
         // 2. The home toolbar's own observer sets the logo from a Boolean flow through
-        // Toolbar.setLogo(I) (the ternary const 0x7f0802c5 is ic_fotmob_plus_logo_app_bar, the
-        // other 0x7f0802c2 is ic_fotmob_logo_app_bar). Skip the normal-logo branch so the Plus
-        // drawable is always used.
+        // Toolbar.setLogo(I) (the ternary picks ic_fotmob_plus_logo_app_bar or ic_fotmob_logo_app_bar,
+        // both resolved above). Skip the normal-logo branch so the Plus drawable is always used.
         val (hookClass, hookMethod) = hooks.singleOrNull() ?: throw PatchException(
             "expected one toolbar logo observer, found ${hooks.size}: " +
                 hooks.joinToString { (classDef, method) -> "${classDef.type}->${method.name}" },

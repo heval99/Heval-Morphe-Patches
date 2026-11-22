@@ -602,6 +602,37 @@ object Constants {
     // switch track unchecked) and popupMenuBackgroundColor joined the overlay, 20 attributes in all;
     // each was checked against its stock night gray and is used only as a fill (predictorCardBackgroundColor has no consumer in 241 yet; onboardingBottomSheetBackground only themes the Wear onboarding sheet). No app code reads any of them.
     // Smoke test, CLI run without -f and aapt2 dump; not run on a device.
+    // 2026-11-22 (242.18410.20261117, owner rule of 2026-11-22): Spoiler-free mode hides a marked match's
+    // score only while it is live. Every SpoilerFree check also reads Match.StatusOfMatch by its enum
+    // constant name (kept; the patch checks the field and the constants) and shows the score again once
+    // it is Finished, AfterExtraTime, AfterPenalties, AwardedWin, Aborted or Cancelled (unknown or
+    // unreadable = live, hidden). After90Minutes ("After fulltime", the break before extra time) is not
+    // in FotMob's own finished check (Match's X0 switch map) and stays hidden. The hooks run on every
+    // bind; inferred from static reading, not observed: the main row's payload bind (n58.t) re-runs the
+    // score binder on a status change, so the score comes back at the next update, and the widget and
+    // live-update notification at their next refresh. New Patch settings row "Keep final
+    // scores hidden" (fotmob.spoiler_keep_final, off, not in Calm mode) keeps finished matches hidden.
+    // Fixed: the match header observer (e28, a MatchActivity holder) now answers to the match page
+    // switch; the live-update notification's header "2 - 1 • 67'" and its "%d %s- %d" texts (score,
+    // penalties) are masked ("? - ?") since they are built before its started check; the main row's
+    // aggregate text (after Match's hasAggregate getter) and bold winner names (aggregate and match
+    // status getters answer null) are hidden; the share text (MatchShareTextFingerprint, foc.e) takes
+    // the kickoff branch. Pushes: the bundle's "status" (a MatchStatus name, MatchNotificationData
+    // parses it with valueOf) lets the full-time push of a marked match through unless final scores
+    // stay hidden; a missing status still blocks (which values the server sends per alert type is not
+    // confirmed at runtime). Still not covered: team form / team-vs-team rows (ivd.w, gvd.w: the
+    // win/draw/loss colour), the match page tabs (events hbe.o and s48, shot map t9c.o, stats), the event
+    // share text (foc.d), the status text, and the bold winner of other rows (fa8.a) and the widget, which
+    // (from static reading, not observed) only matter with "Keep final scores hidden" on. Same day: Hide countries/competitions also checks
+    // the five constructors CountryFilter calls by reflection; "Hide betting content" forces only the
+    // odds gate that FotMob's own "no odds" setting uses (wl9.b; wl9.c/d/f/g/k and the tk9/mj9 readers
+    // are not gated, as with the setting) and its description says so; Disable ads: 242 has no legacy
+    // com.google.android.gms.ads.MobileAds class (apkanalyzer: not found; the gms.ads package is present
+    // with 45 methods, none of them MobileAds; the init log line is absent; ads come from the next-gen SDK), so
+    // rule 9's shared neutraliser does not apply and no MobileAds method is no-opped; Enable FotMob+ fails loudly when
+    // MembershipActivity exists but its "No active subscriptions found" literal is gone. Verified by
+    // FotMobSmokeTest, SpoilerRulesTest, FingerprintProbe and a CLI run without -f; runtime NOT run (no
+    // emulator check approved).
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",

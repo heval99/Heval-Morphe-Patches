@@ -66,15 +66,28 @@ private fun BytecodePatchContext.requireReflectedFields() {
             throw PatchException("Hide countries/competitions: $type no longer has the fields $missing")
         }
     }
-    // CountryFilter rebuilds a trimmed LeagueMatches through this constructor.
-    val leagueMatchesShape = listOf("Ljava/text/Collator;", "Lcom/fotmob/models/League;", "Ljava/util/List;", "I")
-    if (classDefBy("Lcom/fotmob/models/LeagueMatches;").methods.none { method ->
-            method.name == "<init>" && method.parameterTypes.map { it.toString() } == leagueMatchesShape
+    // CountryFilter rebuilds trimmed lists through these constructors (CountryFilter.constructor).
+    REFLECTED_CONSTRUCTORS.forEach { (type, shape) ->
+        if (classDefBy(type).methods.none { method ->
+                method.name == "<init>" && method.parameterTypes.map { it.toString() } == shape
+            }
+        ) {
+            throw PatchException("Hide countries/competitions: $type has no $shape constructor")
         }
-    ) {
-        throw PatchException("Hide countries/competitions: LeagueMatches has no $leagueMatchesShape constructor")
     }
 }
+
+/**
+ * The constructors CountryFilter calls through reflection: LiveMatches(List), the three search
+ * holders (List) and LeagueMatches(Collator, League, List, int) (242, Kotlin classes).
+ */
+internal val REFLECTED_CONSTRUCTORS = listOf(
+    LIVE_MATCHES to listOf("Ljava/util/List;"),
+    "Lcom/fotmob/models/search/LeagueSuggestions;" to listOf("Ljava/util/List;"),
+    "Lcom/fotmob/models/search/TeamSuggestions;" to listOf("Ljava/util/List;"),
+    "Lcom/fotmob/models/search/MatchSuggestions;" to listOf("Ljava/util/List;"),
+    "Lcom/fotmob/models/LeagueMatches;" to listOf("Ljava/text/Collator;", "Lcom/fotmob/models/League;", "Ljava/util/List;", "I"),
+)
 
 // The hook sites of "Hide countries" and "Hide competitions" (2026-11-03): both feature patches
 // depend on this unnamed patch, so each site is edited once whichever of them is selected, and each
