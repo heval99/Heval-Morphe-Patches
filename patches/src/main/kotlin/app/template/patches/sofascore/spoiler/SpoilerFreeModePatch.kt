@@ -57,7 +57,7 @@ internal val SPOILER_NOTIFICATIONS = HevalFeature(
     id = "sofascore.spoiler_notifications",
     calm = true,
     name = "Hide alerts for marked matches",
-    description = "Blocks alerts, goals included, for the matches you mark.",
+    description = "Blocks alerts for marked matches; full time passes unless final scores stay hidden.",
     category = SofascoreControlsCategory.SPOILER_FREE,
     icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
@@ -85,6 +85,32 @@ internal val SPOILER_WIDGET = HevalFeature(
     dependencies = listOf(SPOILER_FREE_MODE.id),
 )
 
+/** Surface (added 2026-11-22): the match page of a marked match (the header and the Details score tables). */
+internal val SPOILER_MATCH_PAGE = HevalFeature(
+    id = "sofascore.spoiler_match_page",
+    calm = true,
+    name = "Hide scores on match pages",
+    description = "Hides the score at the top of a marked match's page and its score tables.",
+    category = SofascoreControlsCategory.SPOILER_FREE,
+    icon = "eye_off",
+    dependencies = listOf(SPOILER_FREE_MODE.id),
+)
+
+/**
+ * Option (owner 2026-11-22, added 2026-11-22): marked matches stay hidden after full time too, until un-marked. Off by
+ * default (a marked match shows its score again at full time). Read only in SpoilerFree (the shared
+ * decision and the push rule), so it has no gate of its own in the app code.
+ */
+internal val SPOILER_KEEP_FINAL_HIDDEN = HevalFeature(
+    id = "sofascore.spoiler_keep_final",
+    name = "Keep final scores hidden",
+    description = "Keeps the scores of marked matches hidden after full time too.",
+    category = SofascoreControlsCategory.SPOILER_FREE,
+    default = false,
+    icon = "eye_off",
+    dependencies = listOf(SPOILER_FREE_MODE.id),
+)
+
 /** The matches marked on their match page (Sofascore event ids); the user can un-mark them here. */
 internal val SPOILER_EVENTS = HevalListFeature(
     id = "sofascore.spoiler_events",
@@ -107,7 +133,14 @@ internal val SPOILER_COMPETITIONS = HevalListFeature(
 
 /** Every feature this patch registers, in registration order. */
 internal val SPOILER_FEATURES = listOf(
-    SPOILER_FREE_MODE, SPOILER_NOTIFICATIONS, SPOILER_LISTS, SPOILER_WIDGET, SPOILER_EVENTS, SPOILER_COMPETITIONS,
+    SPOILER_FREE_MODE, SPOILER_NOTIFICATIONS, SPOILER_LISTS, SPOILER_WIDGET, SPOILER_MATCH_PAGE, SPOILER_KEEP_FINAL_HIDDEN,
+    SPOILER_EVENTS, SPOILER_COMPETITIONS,
+)
+
+/** Header parts that show the score besides the result view; SpoilerFree.onHeader looks them up by these names. */
+internal val HEADER_SCORE_IDS = listOf(
+    "additional_info_container", "container_result_collapsed", "collapsed_result_first_team",
+    "collapsed_result_second_team", "collapsed_result_view",
 )
 
 /** The widget row's score cells and status cell; SpoilerFree.maskWidgetRow looks them up by these names. */
@@ -118,7 +151,8 @@ internal const val WIDGET_STATUS_ID = "status_text"
 
 /** The model getters SpoilerFree calls by name through reflection; a rename fails here. */
 private val REFLECTED = mapOf(
-    EVENT to listOf("getTournament", "getHomeTeam", "getAwayTeam", "getStartTimestamp"),
+    // getStatusType: the status type string ("inprogress", "finished") the shared decision reads.
+    EVENT to listOf("getTournament", "getHomeTeam", "getAwayTeam", "getStartTimestamp", "getStatusType"),
     "${MODEL}FootballEvent;" to listOf("getId"),
     "${MODEL}Tournament;" to listOf("getUniqueTournament"),
     UNIQUE_TOURNAMENT to listOf("getId", "getName", "getCategory"),
@@ -236,6 +270,110 @@ private fun BytecodePatchContext.widgetRow(): Pair<MutableMethod, String> {
     return method to "$type->${context.name}:$CONTEXT"
 }
 
+/**
+ * The match page header (26.11.09: base gr1; setEvent in uq1 (football and the generic sports,
+ * also used by c24, w5a, ww1), fvm (tennis), gzo (volleyball) and ss3 (chat)): the base's
+ * setResultView, every concrete setEvent(Event)V below the base, and the one setFootballGoals(List)V.
+ */
+private class MatchHeader(
+    val resultViewSetter: MutableMethod,
+    val setEvents: List<MutableMethod>,
+    val footballGoals: MutableMethod,
+)
+
+private fun BytecodePatchContext.matchHeader(): MatchHeader {
+    val setter = MatchHeaderResultViewSetterFingerprint.method
+    val base = setter.definingClass
+    val supers = mutableMapOf<String, String?>()
+    classDefForEach { supers[it.type] = it.superclass }
+    fun below(type: String): Boolean {
+        var current = supers[type]
+        while (current != null) {
+            if (current == base) return true
+            current = supers[current]
+        }
+        return false
+    }
+    val headers = supers.keys.filter(::below)
+    val setEvents = headers.flatMap { type ->
+        mutableClassDefBy(type).methods.filter {
+            it.name == "setEvent" && it.returnType == "V" && it.params() == listOf(EVENT) && !it.isStatic() && it.implementation != null
+        }
+    }
+    if (setEvents.isEmpty()) throw PatchException("no header below $base implements setEvent(Event)V")
+    val goals = headers.flatMap { type ->
+        mutableClassDefBy(type).methods.filter {
+            it.name == "setFootballGoals" && it.returnType == "V" && it.params() == listOf("Ljava/util/List;") && it.implementation != null
+        }
+    }
+    val footballGoals = goals.singleOrNull()
+        ?: throw PatchException("${goals.size} headers below $base have setFootballGoals(List)V, expected one")
+    return MatchHeader(mutableClassDefBy(base).methods.single { it.name == setter.name && it.params() == setter.params() }, setEvents, footballGoals)
+}
+
+/** The Details tab's period score tables, by the layout their getLayoutId() returns (26.11.09: vhm, mk5, u75). */
+internal val DETAILS_TABLE_LAYOUTS = listOf("details_table", "darts_table_score_view", "details_table_cricket")
+
+/**
+ * The Details tab score modules (26.11.09): the module base hc (a FrameLayout whose kept
+ * getShowAsCard / setNewLayoutParams / getLayoutId mark it; its setVisibility(I)V override is
+ * hooked), the three period score tables below it, each found by the layout its getLayoutId()
+ * returns, with the (Event)V method of its one interface (fc2.a), and the period points graph.
+ */
+private class DetailsModules(val setVisibility: MutableMethod, val tables: List<MutableMethod>, val graph: MutableMethod, val share: MutableMethod)
+
+private fun BytecodePatchContext.detailsModules(): DetailsModules {
+    val layouts = DETAILS_TABLE_LAYOUTS.associateBy { resourceId(ResourceType.LAYOUT, it).toInt() }
+    val found = mutableListOf<Pair<String, String>>() // class, layout
+    classDefForEach { classDef ->
+        val layoutGetter = classDef.methods.singleOrNull { it.name == "getLayoutId" && it.returnType == "I" && it.parameterTypes.isEmpty() }
+            ?: return@classDefForEach
+        val literals = layoutGetter.implementation?.instructions?.mapNotNull { (it as? NarrowLiteralInstruction)?.narrowLiteral }.orEmpty()
+        literals.mapNotNull(layouts::get).singleOrNull()?.let { found += classDef.type to it }
+    }
+    if (found.map { it.second }.sorted() != DETAILS_TABLE_LAYOUTS.sorted()) {
+        throw PatchException("Details score tables by layout: $found, expected one class each for $DETAILS_TABLE_LAYOUTS")
+    }
+    val bases = found.map { classDefBy(it.first).superclass!! }.distinct()
+    val base = bases.singleOrNull() ?: throw PatchException("the Details score tables have the base classes $bases, expected one")
+    val baseDef = classDefBy(base)
+    if (baseDef.superclass != "Landroid/widget/FrameLayout;" || listOf("getShowAsCard", "setNewLayoutParams").any { n -> baseDef.methods.none { it.name == n } }) {
+        throw PatchException("$base is not the Details module base (FrameLayout with getShowAsCard and setNewLayoutParams)")
+    }
+    val setVisibility = mutableClassDefBy(base).methods.singleOrNull {
+        it.name == "setVisibility" && it.params() == listOf("I") && it.returnType == "V" && it.implementation != null
+    } ?: throw PatchException("$base has no setVisibility(I)V override")
+    val tables = found.map { (type, layout) ->
+        val interfaces = classDefBy(type).interfaces
+        val binders = interfaces.flatMap { iface ->
+            classDefBy(iface).methods.filter { it.returnType == "V" && it.params() == listOf(EVENT) && AccessFlags.ABSTRACT.isSet(it.accessFlags) }
+        }
+        val binder = binders.singleOrNull()
+            ?: throw PatchException("$type ($layout) implements ${binders.size} (Event)V interface methods, expected one")
+        mutableClassDefBy(type).methods.singleOrNull { it.name == binder.name && it.params() == listOf(EVENT) && it.returnType == "V" && it.implementation != null }
+            ?: throw PatchException("$type ($layout) does not implement ${binder.definingClass}->${binder.name}(Event)V")
+    }
+    val graph = PeriodPointsGraphFingerprint.method
+    if (graph.isStatic()) throw PatchException("${graph.definingClass}->${graph.name} is static, expected the graph view's method")
+    // The share modal's match header (26.11.09: ejk.f(wgd, Event)V) is a module of the same base.
+    val shareLayout = resourceId(ResourceType.LAYOUT, SHARE_HEADER_LAYOUT).toInt()
+    val shares = mutableListOf<String>()
+    classDefForEach { classDef ->
+        if (classDef.superclass != base) return@classDefForEach
+        val getter = classDef.methods.singleOrNull { it.name == "getLayoutId" && it.returnType == "I" && it.parameterTypes.isEmpty() }
+        if (getter?.implementation?.instructions?.any { (it as? NarrowLiteralInstruction)?.narrowLiteral == shareLayout } == true) shares += classDef.type
+    }
+    val shareType = shares.singleOrNull() ?: throw PatchException("${shares.size} $SHARE_HEADER_LAYOUT modules, expected one")
+    val shareBinders = mutableClassDefBy(shareType).methods.filter {
+        it.returnType == "V" && it.params().size == 2 && it.params()[1] == EVENT && !it.isStatic() && it.implementation != null
+    }
+    val share = shareBinders.singleOrNull() ?: throw PatchException("$shareType has ${shareBinders.size} (?, Event)V methods, expected one")
+    return DetailsModules(setVisibility, tables, graph, share)
+}
+
+/** The share modal's match header layout (score, status, teams). */
+internal const val SHARE_HEADER_LAYOUT = "share_match_details_modal_header"
+
 /** Every register an instruction reads or writes, wide pairs not expanded. */
 private fun com.android.tools.smali.dexlib2.iface.instruction.Instruction.registers(): List<Int> = when (this) {
     is FiveRegisterInstruction -> listOf(registerC, registerD, registerE, registerF, registerG).take(registerCount)
@@ -332,12 +470,24 @@ private fun BytecodePatchContext.composeRow(): ComposeRow {
 // for that surface only. Stored on the phone only (SpoilerFree in extensions/sofascore). Read at use
 // time (menu, each push, each bind), so no restart is needed.
 //
+// Full time (owner 2026-11-22, added 2026-11-22): a marked match is hidden only while it is not over. Every score
+// surface (4, 4b, 5) asks one shared decision, SpoilerFree.hidesScore: marked (match or competition)
+// and Event.getStatusType() is not "finished" (an unreadable or unknown status hides). The option
+// sofascore.spoiler_keep_final (off by default, depends on the master) keeps finished marked matches
+// hidden too. The status is read when a row is built or bound, so a finished match shows its score
+// at the next redraw with no refresh or un-marking (inferred statically: a status or score change
+// arrives as a new list item and is mapped/bound again).
+//
 // 1. Notifications (sofascore.spoiler_notifications): FCMListenerService.onMessageReceived returns
 //    at entry when the "notification" JSON opens a marked event ("open": target details, highlights
-//    or lineups, "id" the event id). The message bundle is RemoteMessage's only Bundle field. Pushes
-//    carry no competition id, so a marked competition does not block its pushes (only marked
-//    matches do). Pushes with a notification payload shown by the system itself while the app is in
-//    the background never reach this method.
+//    or lineups, "id" the event id), except the full-time result ("icon" "finish") while
+//    sofascore.spoiler_keep_final is off (2026-11-22; a push without a readable icon is dropped).
+//    The message bundle is RemoteMessage's only Bundle field. Pushes carry no competition id, so a
+//    marked competition does not block its pushes (only marked matches do). Not covered: pushes
+//    with a notification payload shown by the system itself while the app is in the background
+//    (they never reach this method), and alerts stored before the user marked the match, which can
+//    reappear stacked under a later allowed push of the same group (blocked pushes are never stored).
+//    The spoken readout (talk) of a blocked push never runs.
 // 2. Match page (master): EventActivity.onCreateOptionsMenu adds the item (hidden until the match is
 //    known); EventActivity's only (Event)V method, which onPrepareOptionsMenu calls with the match,
 //    hands the Event over. The item handles its own click (EventActivity has no
@@ -352,21 +502,45 @@ private fun BytecodePatchContext.composeRow(): ComposeRow {
 //    Player and Manager match lists.
 // 4b. Compose match rows (the main Matches tab, team, league, live, favourites and match page lists,
 //    same switch; apart from the main Matches tab these screens are expected from static analysis of
-//    who renders the row model, not observed on a device):the row model (EventRowModel, found by its toString constant) is built in two
-//    places, the mapper from an Event and a copy that only swaps the status text. The mapper tells
-//    SpoilerFree.noteEvent the Event just before it builds the model (the model carries only the
-//    event id, so the competition mark is noted there), and the model's only constructor starts with
-//    SpoilerFree.maskRow(eventId, kickoff, status, home line, away line): for a marked match it nulls
-//    the three score fields of both team lines (found by type and order) and the status text (live
-//    minute, "FT"), so the row shows no score. The kickoff time, team names and the extra info
-//    (postponed and the like) stay. The switch is read in Java; the constructor has no free register.
-// 5. Home-screen widget (sofascore.spoiler_widget): before the widget row builder returns, a marked
-//    match's score cells are emptied and its status cell shows the kickoff time.
-// Not covered in phase 1: the match page header and tabs (incidents, statistics, lineups, momentum),
-// search, featured match views, the chat/share card, team form, standings, the winner colour of the
-// team names (list rows and widget) and the extra info text of a Compose row, Wear and lock-screen
-// notifications. A Compose row kept in memory (the live status copy) shows scores again only after
-// its list refreshes when the user un-marks a match.
+//    who renders the row model, not observed on a device): the row model (EventRowModel, found by its
+//    toString constant) is built in two places, the mapper from an Event and a copy that only swaps
+//    the status text (the live minute tick). The mapper tells SpoilerFree.noteEvent the Event just
+//    before it builds the model (the model carries only the event id, so the decision, marks and
+//    status, is made and noted there per event id), and the model's only constructor starts with
+//    SpoilerFree.maskRow(eventId, kickoff, status, home line, away line): for a row that hides its
+//    score it nulls the three score fields of both team lines (found by type and order) and the
+//    status text (live minute, "FT"), so the row shows no score. The team lines are built fresh on
+//    every mapping, so a row mapped after full time keeps its score. The copy reuses the lines of the
+//    row it copies and gets the same noted decision (an undecided id falls back to the match's own
+//    mark). The kickoff time, team names and the extra info (postponed and the like) stay. The
+//    switch is read in Java; the constructor has no free register.
+// 5. Home-screen widget (sofascore.spoiler_widget): before the widget row builder returns, a hidden
+//    match's score cells are emptied and its status cell shows the kickoff time. The widget redraws
+//    on its own schedule, so a finished match shows its score at its next refresh.
+// 6. Match page header (sofascore.spoiler_match_page, 2026-11-22): every concrete setEvent(Event)
+//    below the header base (found by its kept setResultView; 26.11.09: football and generic sports,
+//    tennis, volleyball, and the chat page's header) starts with SpoilerFree.onHeader, which makes
+//    the result view (score, live minute, period scores) and the goal scorers / collapsed score
+//    views (by id name) INVISIBLE while the page hides the score, and shows again only what it hid.
+//    The activity calls setEvent with every match update, so full time shows the score at once;
+//    setResultView hands a newly inflated result view the same decision; setFootballGoals is skipped
+//    while hidden. Before kick-off the kickoff date stays (no score yet). The switch is read in Java.
+// 7. Details tab (same switch): the three period score tables (by layout: details_table,
+//    darts_table_score_view, details_table_cricket) start their bind with maskModule (GONE while
+//    hidden) and their base's setVisibility override keeps a masked module GONE when the table sets
+//    its own visibility; the period points graph (EventGraphPoint by period) is masked the same way.
+// 8. Share modal (same switch): the share card's match header (share_match_details_modal_header, a
+//    module of the same base) is GONE while hidden, so a shared image carries no score.
+// Not covered yet: in the match page, the Incidents list (goal rows with the running score), the
+// baseball (Compose) and ice hockey period tables, the football momentum graph, the statistics,
+// lineups (ratings, goal icons) and commentary tabs, featured players, the volleyball collapsed score
+// (its visibility is reset by the app bar while scrolling), and chat messages; elsewhere search,
+// favourites screens outside the Compose rows, featured match views, team form, standings, the
+// ongoing match notification, the winner colour of the team names (list rows and widget) and the
+// extra info text of a Compose row, Wear and lock-screen notifications. Which header and module each
+// sport uses is read from the code (26.11.09), not observed on a device. A Compose row kept
+// in memory (the live status copy) shows scores again only after its list refreshes when the user
+// un-marks a match.
 @Suppress("unused")
 val spoilerFreeModePatch = sofascoreControls.featurePatch(
     SPOILER_FREE_MODE,
@@ -421,6 +595,18 @@ val spoilerFreeModePatch = sofascoreControls.featurePatch(
     }
     val (scratch, contextReg, eventReg) = (0..3).filter { it != rowViews }.take(3)
     widget.requireLocals(4)
+
+    val header = matchHeader()
+    HEADER_SCORE_IDS.forEach { resourceId(ResourceType.ID, it) }
+    if (classDefBy(header.resultViewSetter.definingClass).methods.none { it.name == "getResultView" && it.params().isEmpty() }) {
+        throw PatchException("${header.resultViewSetter.definingClass} has no getResultView(), SpoilerFree calls it")
+    }
+    (header.setEvents + header.resultViewSetter).forEach { it.requireNoBranchTargetAt(0, "Spoiler-free header hook") }
+    header.footballGoals.requireLocals(1)
+    header.footballGoals.requireNoBranchTargetAt(0, "Spoiler-free goals hook")
+
+    val details = detailsModules()
+    (details.tables + details.graph + details.setVisibility + details.share).forEach { it.requireNoBranchTargetAt(0, "Spoiler-free Details hook") }
 
     // 1. Notifications.
     push.addHevalGate(SPOILER_NOTIFICATIONS.id) { v ->
@@ -489,9 +675,49 @@ val spoilerFreeModePatch = sofascoreControls.featurePatch(
         """
     }
 
+    // 6. Match page header. setEvent and setResultView call SpoilerFree with no gate (it reads the
+    // switch itself, so turning the switch off shows a hidden header again at the next update);
+    // setResultView has no local register for a gate. p0 and p1 are consecutive, so /range works.
+    header.setEvents.forEach {
+        it.addInstructionsChecked(0, "invoke-static/range { p0 .. p1 }, $SPOILER_FREE->onHeader(Ljava/lang/Object;Ljava/lang/Object;)V")
+    }
+    header.resultViewSetter.addInstructionsChecked(
+        0,
+        "invoke-static/range { p0 .. p1 }, $SPOILER_FREE->onResultView(Ljava/lang/Object;Ljava/lang/Object;)V",
+    )
+    header.footballGoals.addHevalGate(SPOILER_MATCH_PAGE.id) { v ->
+        """
+            invoke-static/range { p0 .. p0 }, $SPOILER_FREE->hidesHeaderGoals(Ljava/lang/Object;)Z
+            move-result $v
+            if-eqz $v, :heval_stock
+            return-void
+        """
+    }
+
+    // 7. Details tab (same switch, read in Java): the module base's setVisibility passes its value
+    // through moduleVisibility (a masked module stays GONE while the table binds and sets its own
+    // visibility), and each score table's bind and the period points graph start with maskModule.
+    details.setVisibility.addInstructionsChecked(
+        0,
+        """
+            invoke-static/range { p0 .. p1 }, $SPOILER_FREE->moduleVisibility(Ljava/lang/Object;I)I
+            move-result p1
+        """,
+    )
+    (details.tables + details.graph).forEach {
+        it.addInstructionsChecked(0, "invoke-static/range { p0 .. p1 }, $SPOILER_FREE->maskModule(Ljava/lang/Object;Ljava/lang/Object;)V")
+    }
+    // 8. The share modal's match header (same switch): its bind (?, Event) starts with maskShareHeader.
+    details.share.addInstructionsChecked(
+        0,
+        "invoke-static/range { p0 .. p2 }, $SPOILER_FREE->maskShareHeader(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V",
+    )
+
     sofascoreControls.register(SPOILER_NOTIFICATIONS)
     sofascoreControls.register(SPOILER_LISTS)
     sofascoreControls.register(SPOILER_WIDGET)
+    sofascoreControls.register(SPOILER_MATCH_PAGE)
+    sofascoreControls.register(SPOILER_KEEP_FINAL_HIDDEN)
     sofascoreControls.register(SPOILER_EVENTS)
     sofascoreControls.register(SPOILER_COMPETITIONS)
 }

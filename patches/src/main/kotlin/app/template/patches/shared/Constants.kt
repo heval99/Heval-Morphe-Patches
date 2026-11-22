@@ -109,8 +109,8 @@ object Constants {
     //     Compose-row spoiler hooks above.
     //   - Hide countries / Hide competitions do not filter pinned or favourite leagues fetched by their
     //     own requests, team/player/tournament pages, the widget or notifications. Hide sports only
-    //     changes the sport list and the selected-sport lookups (its Room queries); screens that load
-    //     a sport some other way were not traced.
+    //     changes the sport list and the selected-sport lookups (its Room queries; since 2026-11-22 also
+    //     the selected-sport setter); screens that load a sport some other way were not traced.
     //   - Disable telemetry: the TikTok, APM and Aurion start paths were not verified, so those SDKs
     //     may still start. Crashlytics, AppMeasurementSdk.logEvent and AppsFlyer (start, logEvent,
     //     logSession and logAdRevenue each need at least one concrete method) fail the patch when
@@ -127,6 +127,43 @@ object Constants {
     // longer promises login, Hide countries/competitions no longer say "even favourites", Clean shared
     // links names image-share text and highlight links, Block marketing notifications names
     // banners and pop-ups, not push). Runtime on 26.11.09: NOT run (no device).
+    // 2026-11-22 Spoiler-free mode, full time (owner 2026-11-22), same target 26.11.09: a marked match
+    // (or a match of a marked competition) is hidden only while it is not over. One shared decision,
+    // SpoilerFree.hidesScore (Event.getStatusType() is not "finished"; an unknown status hides), now
+    // drives the legacy list rows (markRow), the Compose rows (noteEvent decides per event id with the
+    // status, maskRow follows that decision, the live tick copy keeps it) and the widget row. New
+    // Patch settings option sofascore.spoiler_keep_final ("Keep final scores hidden", off, depends on
+    // the master) keeps finished marked matches hidden until un-marked. getStatusType joins the
+    // reflected getters the patch checks.
+    // Phase 2, same date and target: pushes of a marked match pass only for the full-time result
+    // (notification JSON "icon" "finish") while keep-final is off (pure rule JVM-tested; same smali
+    // site). New switch sofascore.spoiler_match_page (on, depends on the master): every concrete
+    // match header setEvent(Event) below the header base (found by its kept setResultView and
+    // abstract setEvent; 4 on 26.11.09), the base's setResultView and the kept setFootballGoals
+    // hide the result view, goal scorers and collapsed scores; the Details module base's
+    // setVisibility override, the three period score tables (by getLayoutId layouts details_table,
+    // darts_table_score_view, details_table_cricket and their one interface (Event)V method), the
+    // period points graph (EventGraphPoint calls) and the share header (layout
+    // share_match_details_modal_header) are GONE while hidden. Not covered yet: Incidents, baseball
+    // and ice hockey period tables, football momentum, statistics, lineups, commentary, featured
+    // players, the volleyball collapsed score while scrolling, chat messages, search, favourites
+    // outside the Compose rows, team form, standings and the ongoing match notification. Which
+    // screens each hook reaches, and the score reappearing at full time, is inferred statically,
+    // not observed. Smoke test, extension unit tests and a CLI run without -f; runtime NOT run (no
+    // emulator).
+    // 2026-11-22 on 26.11.09 (static only, runtime NOT run): Hide countries / Hide competitions also
+    // filter the popular matches at the top of a date in the Matches tab (the request lambda calling
+    // NetworkCoroutineAPI.getPopularEvents(String, String, String, continuation), not its head-to-head
+    // (continuation) overload; result through CountryFilter.filterEventList before its own
+    // return-object). The pinned leagues section (uniqueTournamentScheduledEvents per pinned league,
+    // the same request as a league's page) stays unfiltered on purpose. Hide sports also maps the
+    // selected-sport setter's slug through visibleSport at entry (final (String, Z)V calling
+    // Sports.getEntries + List.contains and storing the home sport getter's static String cache), so
+    // a deep link or notification of a hidden sport selects a visible one. Disable update prompts also
+    // makes the Feed's update card check (static (Context)Z holding "feed_min_version" and
+    // "PREF_FEED_UPDATE_ON_VERSION") return false. All three fingerprints OK-unique in FingerprintProbe;
+    // smoke test, a CLI run without -f (the four patches + Patch settings: 5 Applied) and apkanalyzer
+    // dumps of the three changed methods pass.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",
@@ -565,6 +602,37 @@ object Constants {
     // switch track unchecked) and popupMenuBackgroundColor joined the overlay, 20 attributes in all;
     // each was checked against its stock night gray and is used only as a fill (predictorCardBackgroundColor has no consumer in 241 yet; onboardingBottomSheetBackground only themes the Wear onboarding sheet). No app code reads any of them.
     // Smoke test, CLI run without -f and aapt2 dump; not run on a device.
+    // 2026-11-22 (242.18410.20261117, owner rule of 2026-11-22): Spoiler-free mode hides a marked match's
+    // score only while it is live. Every SpoilerFree check also reads Match.StatusOfMatch by its enum
+    // constant name (kept; the patch checks the field and the constants) and shows the score again once
+    // it is Finished, AfterExtraTime, AfterPenalties, AwardedWin, Aborted or Cancelled (unknown or
+    // unreadable = live, hidden). After90Minutes ("After fulltime", the break before extra time) is not
+    // in FotMob's own finished check (Match's X0 switch map) and stays hidden. The hooks run on every
+    // bind; inferred from static reading, not observed: the main row's payload bind (n58.t) re-runs the
+    // score binder on a status change, so the score comes back at the next update, and the widget and
+    // live-update notification at their next refresh. New Patch settings row "Keep final
+    // scores hidden" (fotmob.spoiler_keep_final, off, not in Calm mode) keeps finished matches hidden.
+    // Fixed: the match header observer (e28, a MatchActivity holder) now answers to the match page
+    // switch; the live-update notification's header "2 - 1 • 67'" and its "%d %s- %d" texts (score,
+    // penalties) are masked ("? - ?") since they are built before its started check; the main row's
+    // aggregate text (after Match's hasAggregate getter) and bold winner names (aggregate and match
+    // status getters answer null) are hidden; the share text (MatchShareTextFingerprint, foc.e) takes
+    // the kickoff branch. Pushes: the bundle's "status" (a MatchStatus name, MatchNotificationData
+    // parses it with valueOf) lets the full-time push of a marked match through unless final scores
+    // stay hidden; a missing status still blocks (which values the server sends per alert type is not
+    // confirmed at runtime). Still not covered: team form / team-vs-team rows (ivd.w, gvd.w: the
+    // win/draw/loss colour), the match page tabs (events hbe.o and s48, shot map t9c.o, stats), the event
+    // share text (foc.d), the status text, and the bold winner of other rows (fa8.a) and the widget, which
+    // (from static reading, not observed) only matter with "Keep final scores hidden" on. Same day: Hide countries/competitions also checks
+    // the five constructors CountryFilter calls by reflection; "Hide betting content" forces only the
+    // odds gate that FotMob's own "no odds" setting uses (wl9.b; wl9.c/d/f/g/k and the tk9/mj9 readers
+    // are not gated, as with the setting) and its description says so; Disable ads: 242 has no legacy
+    // com.google.android.gms.ads.MobileAds class (apkanalyzer: not found; the gms.ads package is present
+    // with 45 methods, none of them MobileAds; the init log line is absent; ads come from the next-gen SDK), so
+    // rule 9's shared neutraliser does not apply and no MobileAds method is no-opped; Enable FotMob+ fails loudly when
+    // MembershipActivity exists but its "No active subscriptions found" literal is gone. Verified by
+    // FotMobSmokeTest, SpoilerRulesTest, FingerprintProbe and a CLI run without -f; runtime NOT run (no
+    // emulator check approved).
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",

@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v3.1.0](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v3.1.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;**106** apps&nbsp;&nbsp;•&nbsp;&nbsp;**354** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-22
+> **[v3.2.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v3.2.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**106** apps&nbsp;&nbsp;•&nbsp;&nbsp;**354** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-22
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -381,21 +381,21 @@ Verified on: `242.18410.20261117`
 
 | Patch | What it does | Default |
 |---|---|:-:|
-| 🧩 **AMOLED black** | Makes the dark theme pure black on OLED screens. Can be turned off in Patch settings. | ➖ |
+| 🧩 **AMOLED black** | Makes the dark theme pure black on OLED screens, with a switch in Patch settings. | ➖ |
 | 💎 **Disable FotMob+ promo popup** | Disables the FotMob+ promo popup. | ✅ |
-| 🚫 **Disable ads** | Removes all ads. | ✅ |
+| 🚫 **Disable ads** | Turns off FotMob's ads, as for FotMob+ members. | ✅ |
 | 🔕 **Disable rating prompts** | Disables the rating prompt. | ✅ |
 | 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
-| 💎 **Enable FotMob+** | Unlocks FotMob+ and removes ads. | ✅ |
+| 💎 **Enable FotMob+** | Unlocks FotMob+ features and its ad-free mode in the app, without a real subscription. | ✅ |
 | 🧩 **Faster animations** | Plays animations at twice the speed. | ➖ |
 | 🧩 **GmsCore support** | Makes Google sign-in and Google services work. Requires MicroG RE. Sign in with the Sign in with Google button. | ➖ |
-| 🧩 **Hide betting content** | Hides odds and betting content. | ➖ |
+| 🧩 **Hide betting content** | Hides odds the same way as turning odds off in FotMob's settings. | ➖ |
 | 🧩 **Hide competitions** | Hides the competitions you pick in Patch settings from match lists, leagues and search. | ➖ |
 | 🧩 **Hide countries** | Hides the countries you pick in Patch settings from match lists, leagues and search. | ➖ |
 | 🧩 **Patch settings** | Adds a screen to turn supported features on or off. | ✅ |
 | 💎 **Show FotMob+ logo** | Shows the FotMob+ wordmark in the home header. | ✅ |
 | 🧩 **Slower live refresh** | Refreshes an open live match every 30 seconds instead of every 15. | ➖ |
-| 🧩 **Spoiler-free mode** | Lets you hide scores and goal alerts for matches and competitions you mark. | ✅ |
+| 🧩 **Spoiler-free mode** | Hides live scores and goal alerts for matches and competitions you mark. | ✅ |
 | 🧩 **Spoof signature** | Fixes Google features that check the app's original signature. | ➖ |
 | 🧩 **Turn off animations** | Turns off animations in the app. | ➖ |
 | 🧩 **Use system font** | Uses the system font instead of the app's own font. | ➖ |

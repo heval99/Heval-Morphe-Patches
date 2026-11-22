@@ -35,7 +35,9 @@ import app.template.patches.sofascore.spoiler.SCORE_TEXT_VIEW
 import app.template.patches.sofascore.spoiler.SPOILER_FEATURES
 import app.template.patches.sofascore.spoiler.SPOILER_FREE
 import app.template.patches.sofascore.spoiler.SPOILER_FREE_MODE
+import app.template.patches.sofascore.spoiler.SPOILER_KEEP_FINAL_HIDDEN
 import app.template.patches.sofascore.spoiler.SPOILER_LISTS
+import app.template.patches.sofascore.spoiler.SPOILER_MATCH_PAGE
 import app.template.patches.sofascore.spoiler.SPOILER_NOTIFICATIONS
 import app.template.patches.sofascore.spoiler.SPOILER_WIDGET
 import com.android.tools.smali.dexlib2.Opcodes
@@ -789,8 +791,37 @@ class SofascoreSmokeTest {
         check(SPORT_FEATURES.size == 25 && SPORT_FEATURES.all { (slug, f) -> f.id == "sofascore.hide_sport_" + slug.replace('-', '_') }) {
             "sport feature ids changed"
         }
+        // The selected-sport setter (2026-11-22), found like SelectSportFingerprint: the final
+        // (String, Z)V calling Sports.getEntries and List.contains that stores the String cache the
+        // PREF_HOME_SPORT_V2 getter reads. It starts with p1 = visibleSport(p1), then the stock getClass.
+        val homeGetter = classes.flatMap { it.methods }.single { m ->
+            m.isStatic() && m.returnType == "Ljava/lang/String;" && m.params() == listOf(CONTEXT) && "PREF_HOME_SPORT_V2" in m.strings()
+        }
+        fun Instruction.stringField() = ((this as? ReferenceInstruction)?.reference as? FieldReference)
+            ?.takeIf { it.type == "Ljava/lang/String;" }?.let { "${it.definingClass}->${it.name}" }
+        val homeCache = homeGetter.instructions().filter { it.opcode == Opcode.SGET_OBJECT }.mapNotNull { it.stringField() }.distinct().single()
+        val setters = classes.flatMap { it.methods }.filter { m ->
+            !m.isStatic() && AccessFlags.FINAL.isSet(m.accessFlags) && m.returnType == "V" && m.params() == listOf("Ljava/lang/String;", "Z") &&
+                m.instructions().any { it.call()?.let { c -> c.definingClass == "Lcom/sofascore/model/Sports;" && c.name == "getEntries" } == true } &&
+                m.instructions().any { it.opcode == Opcode.SPUT_OBJECT && it.stringField() == homeCache }
+        }
+        check(setters.size == 1) { "expected one selected-sport setter, found ${setters.map { "${it.definingClass}->${it.name}" }}" }
+        val setter = setters.single()
+        val setterInsns = setter.instructions()
+        val slug = setter.implementation!!.registerCount - 2
+        check(setterInsns[0].opcode == Opcode.INVOKE_STATIC_RANGE && setterInsns[0].call()?.definingClass == SOFASCORE_CONTROLS &&
+            setterInsns[0].call()?.name == "visibleSport" && (setterInsns[0] as RegisterRangeInstruction).startRegister == slug &&
+            (setterInsns[0] as RegisterRangeInstruction).registerCount == 1 &&
+            setterInsns[1].opcode == Opcode.MOVE_RESULT_OBJECT && (setterInsns[1] as OneRegisterInstruction).registerA == slug &&
+            setterInsns[2].call()?.name == "getClass" && (setterInsns[2] as FiveRegisterInstruction).registerC == slug
+        ) { "${setter.definingClass}->${setter.name} does not start with p1 = visibleSport(p1); got ${setterInsns.take(3).map { it.opcode }}" }
+        check(setterInsns.count { it.call()?.name == "visibleSport" } == 1) { "the selected-sport setter calls visibleSport more than once" }
+        // Every other visibleSport site is a return filter (below).
+
         fun assertReturnFilter(helper: String, expected: Map<String, Int>) {
-            val sites = classes.flatMap { it.methods }.flatMap { m ->
+            val sites = classes.flatMap { it.methods }.filterNot {
+                it.definingClass == setter.definingClass && it.name == setter.name && it.params() == setter.params()
+            }.flatMap { m ->
                 val insns = m.instructions()
                 insns.indices.filter { insns[it].call()?.let { c -> c.definingClass == SOFASCORE_CONTROLS && c.name == helper } == true }
                     .map { m to it }
@@ -1195,6 +1226,117 @@ class SofascoreSmokeTest {
         check(m.filterIndexed { i, _ -> i != noteAt }.opcodesWithoutNops() == stockMapper.instructions().opcodesWithoutNops()) { "the row mapper changed outside the noteEvent hook" }
         // The legacy list_event_row hooks stay (asserted above): the binder still marks every score cell.
         check(binders.size == 1 && setText.instructions().any { it.callsHelper("scoreText") }) { "the legacy list row hooks are gone" }
+
+        // Full time (2026-11-22): the merged extension routes every score hook through the shared
+        // decision, which reads the status type and the keep-final-hidden option.
+        val helper = byType.getValue(SPOILER_FREE)
+        fun helperMethod(name: String, params: List<String>, returnType: String) =
+            helper.methods.singleOrNull { it.name == name && it.params() == params && it.returnType == returnType }
+                ?: error("SpoilerFree.$name$params$returnType is missing")
+        val decision = helperMethod("hidesScore", listOf("Ljava/lang/Object;"), "Z")
+        val pure = helperMethod("hidesScore", listOf("Z", "Z", "Ljava/lang/String;", "Z"), "Z")
+        val statusType = helperMethod("statusType", listOf("Ljava/lang/Object;"), "Ljava/lang/String;")
+        fun Method.callsMethod(target: Method) = instructions().any { insn ->
+            insn.call()?.let { it.definingClass == SPOILER_FREE && it.name == target.name && it.returnType == target.returnType &&
+                it.parameterTypes.map(CharSequence::toString) == target.params() } == true
+        }
+        check(decision.callsMethod(pure) && decision.callsMethod(statusType)) { "hidesScore(Object) does not use the pure decision and the status" }
+        check(decision.strings().contains(SPOILER_KEEP_FINAL_HIDDEN.id)) { "hidesScore(Object) does not read ${SPOILER_KEEP_FINAL_HIDDEN.id}" }
+        check("getStatusType" in statusType.strings()) { "statusType does not call Event.getStatusType" }
+        val noteEvent = helperMethod("noteEvent", listOf("Ljava/lang/Object;"), "V")
+        check(noteEvent.callsMethod(pure) && noteEvent.callsMethod(statusType) && SPOILER_KEEP_FINAL_HIDDEN.id in noteEvent.strings()) {
+            "noteEvent does not decide with the status and the keep-final-hidden option"
+        }
+        check(helperMethod("markRow", listOf("Landroid/view/View;", "Ljava/lang/Object;"), "V").callsMethod(decision)) { "markRow does not use hidesScore(Object)" }
+        check(helperMethod("maskWidgetRow", listOf(CONTEXT, "Landroid/widget/RemoteViews;", "Ljava/lang/Object;"), "V").callsMethod(decision)) {
+            "maskWidgetRow does not use hidesScore(Object)"
+        }
+        check(byType.getValue("Lcom/sofascore/model/mvvm/model/Event;").methods.any { it.name == "getStatusType" && it.params().isEmpty() && it.returnType == "Ljava/lang/String;" }) {
+            "Event.getStatusType()String is gone"
+        }
+
+        // 1. Pushes (2026-11-22): the Bundle entry point uses the pure push rule with the keep-final option.
+        val pushRule = helperMethod("blocksPush", listOf("Ljava/lang/String;", "${SPOILER_FREE.removeSuffix(";")}\$Marks;", "Z"), "Z")
+        val pushEntry = helperMethod("blocksPush", listOf("Landroid/os/Bundle;"), "Z")
+        check(pushEntry.callsMethod(pushRule) && SPOILER_KEEP_FINAL_HIDDEN.id in pushEntry.strings()) { "blocksPush(Bundle) does not use the push rule and the keep-final option" }
+        check("finish" in helper.methods.flatMap { it.strings() } && "icon" in pushRule.strings()) { "the push rule does not read the icon" }
+
+        // 6. Match page header (2026-11-22): found like the patch does, the FrameLayout base with setResultView and
+        // the abstract setEvent(Event). Every concrete setEvent below it starts with onHeader(p0, p1), the base's
+        // setResultView with onResultView(p0, p1), and setFootballGoals with its gate and hidesHeaderGoals.
+        val event = "Lcom/sofascore/model/mvvm/model/Event;"
+        val bases = byType.values.filter { c ->
+            c.superclass == "Landroid/widget/FrameLayout;" &&
+                c.methods.any { it.name == "setResultView" && it.params() == listOf("Landroid/view/ViewGroup;") } &&
+                c.methods.any { it.name == "setEvent" && it.params() == listOf(event) && AccessFlags.ABSTRACT.isSet(it.accessFlags) }
+        }
+        check(bases.size == 1) { "${bases.size} match header base classes, expected one" }
+        val base = bases.single()
+        fun below(type: String): Boolean {
+            var current = byType[type]?.superclass
+            while (current != null) {
+                if (current == base.type) return true
+                current = byType[current]?.superclass
+            }
+            return false
+        }
+        fun assertRangeHook(method: Method, helperName: String, count: Int) {
+            val first = method.instructions().first()
+            check(first.opcode == Opcode.INVOKE_STATIC_RANGE && first.callsHelper(helperName) &&
+                (first as RegisterRangeInstruction).startRegister == method.parameterRegister(0) && first.registerCount == count
+            ) { "${method.definingClass}->${method.name} does not start with SpoilerFree.$helperName(p0..); got ${first.opcode} ${first.call()}" }
+            val stockMethod = stockByType.getValue(method.definingClass).methods.single { it.name == method.name && it.params() == method.params() }
+            check(method.instructions().drop(1).opcodesWithoutNops() == stockMethod.instructions().opcodesWithoutNops()) {
+                "${method.definingClass}->${method.name} changed after the $helperName hook"
+            }
+        }
+        val headerSetEvents = byType.values.filter { below(it.type) }.flatMap { c ->
+            c.methods.filter { it.name == "setEvent" && it.params() == listOf(event) && it.returnType == "V" && it.implementation != null }
+        }
+        // 26.11.09: uq1 (football and the generic sports), fvm (tennis), gzo (volleyball), ss3 (chat).
+        check(headerSetEvents.size == 4) { "${headerSetEvents.size} concrete header setEvent methods, expected 4: ${headerSetEvents.map { it.definingClass }}" }
+        headerSetEvents.forEach { assertRangeHook(it, "onHeader", 2) }
+        assertRangeHook(base.methods.single { it.name == "setResultView" }, "onResultView", 2)
+        val (goals, stockGoals) = byType.values.filter { below(it.type) }.flatMap { c -> c.methods.filter { it.name == "setFootballGoals" } }.single().let { m ->
+            m to stockByType.getValue(m.definingClass).methods.single { it.name == m.name && it.params() == m.params() }
+        }
+        assertHook(goals, stockGoals, SPOILER_MATCH_PAGE.id, listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.RETURN_VOID), "hidesHeaderGoals")
+        val onHeader = helperMethod("onHeader", listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "V")
+        check(onHeader.callsMethod(decision) && SPOILER_MATCH_PAGE.id in onHeader.strings() && "getResultView" in onHeader.strings()) {
+            "onHeader does not use hidesScore(Object), its switch and the result view"
+        }
+        check(base.methods.any { it.name == "getResultView" && it.params().isEmpty() && it.returnType == "Landroid/view/ViewGroup;" }) { "getResultView() is gone" }
+
+        // 7. Details tab (2026-11-22): the module base's setVisibility starts with moduleVisibility(p0, p1) into
+        // p1; the three period score tables' (Event)V binders and the period points graph start with maskModule.
+        val appMethods = byType.values.filterNot { it.type.startsWith("Lapp/template/extension/") }.flatMap { it.methods }
+        val maskers = appMethods.filter { m -> m.instructions().firstOrNull()?.callsHelper("maskModule") == true }
+        // 26.11.09: vhm.a, mk5.a, u75.a (one interface method) and szo.l (the graph).
+        check(maskers.size == 4) { "${maskers.size} methods start with maskModule, expected 4: ${maskers.map { "${it.definingClass}->${it.name}" }}" }
+        maskers.forEach { assertRangeHook(it, "maskModule", 2) }
+        val tables = maskers.filter { it.params() == listOf(event) }
+        check(tables.size == 3 && tables.map { byType.getValue(it.definingClass).superclass }.distinct().size == 1) { "the score tables do not share one module base" }
+        check(maskers.single { it !in tables }.params() == listOf(event, "Ljava/util/List;")) { "the graph hook is not on an (Event, List) method" }
+        val moduleBase = byType.getValue(byType.getValue(tables.first().definingClass).superclass!!)
+        val setVisibility = moduleBase.methods.single { it.name == "setVisibility" && it.params() == listOf("I") }
+        val visibilityInsns = setVisibility.instructions()
+        check(visibilityInsns[0].opcode == Opcode.INVOKE_STATIC_RANGE && visibilityInsns[0].callsHelper("moduleVisibility") &&
+            (visibilityInsns[0] as RegisterRangeInstruction).startRegister == setVisibility.parameterRegister(0) &&
+            visibilityInsns[1].opcode == Opcode.MOVE_RESULT && (visibilityInsns[1] as OneRegisterInstruction).registerA == setVisibility.parameterRegister(1)
+        ) { "the module base's setVisibility does not filter p1 through moduleVisibility" }
+        val stockVisibility = stockByType.getValue(moduleBase.type).methods.single { it.name == "setVisibility" && it.params() == listOf("I") }
+        check(visibilityInsns.drop(2).opcodesWithoutNops() == stockVisibility.instructions().opcodesWithoutNops()) { "setVisibility changed after the hook" }
+        val maskModule = helperMethod("maskModule", listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "V")
+        check(maskModule.callsMethod(decision) && SPOILER_MATCH_PAGE.id in maskModule.strings()) {
+            "maskModule does not use hidesScore(Object) and its switch"
+        }
+        // 8. Share modal header: a module of the same base whose (?, Event) bind starts with maskShareHeader(p0 .. p2).
+        val shares = appMethods.filter { m -> m.instructions().firstOrNull()?.callsHelper("maskShareHeader") == true }
+        check(shares.size == 1 && byType.getValue(shares.single().definingClass).superclass == moduleBase.type && shares.single().params().last() == event) {
+            "expected one share header bind starting with maskShareHeader, found ${shares.map { it.definingClass }}"
+        }
+        assertRangeHook(shares.single(), "maskShareHeader", 3)
+        check(helperMethod("maskShareHeader", List(3) { "Ljava/lang/Object;" }, "V").callsMethod(maskModule)) { "maskShareHeader does not use maskModule" }
     }
 
     private fun assertUpdateChatAndTabs(classes: List<ClassDef>, byType: Map<String, ClassDef>) {
@@ -1212,6 +1354,14 @@ class SofascoreSmokeTest {
         for ((label, method) in listOf("update check" to check, "update flow" to flow)) {
             check(method.instructions().first().opcode == Opcode.RETURN_VOID) { "$label ${helper.type}->${method.name} does not return at once" }
         }
+        // The Feed's update card (2026-11-22): the static (Context)Z holding "feed_min_version" and
+        // "PREF_FEED_UPDATE_ON_VERSION" answers false at once.
+        val feedCards = classes.flatMap { it.methods }.filter { m ->
+            m.isStatic() && m.returnType == "Z" && m.params() == listOf(CONTEXT) &&
+                m.strings().containsAll(listOf("feed_min_version", "PREF_FEED_UPDATE_ON_VERSION"))
+        }
+        check(feedCards.size == 1) { "expected one Feed update card check, found ${feedCards.size}" }
+        assertForcedBoolean(feedCards.single(), expected = false, label = "Feed update card ${feedCards.single().definingClass}->${feedCards.single().name}")
 
         // Hide match chat: the chat button helper and the button's motion method ask
         // hideChatButton(p0) first and return when it answers true.
@@ -1335,17 +1485,22 @@ class SofascoreSmokeTest {
         // calling the request, the register returning the request's result (the result register, or
         // a move-object copy of it: categoryScheduledEvents in ro3) goes through the filter right
         // before its return, and every branch that returned it now jumps to the filter.
+        // A date's popular matches in the Matches tab (2026-11-22): getPopularEvents(sport,
+        // countryCode, date, continuation); its (continuation) overload is a head-to-head request.
+        fun MethodReference.isApi(api: String) = definingClass == NETWORK_COROUTINE_API && name == api &&
+            (api != "getPopularEvents" || (parameterTypes.size == 4 && parameterTypes.take(3).all { it.toString() == "Ljava/lang/String;" }))
         for ((api, helper) in listOf(
             "sportLiveEvents" to "filterEventList",
             "getIndexedEventsPage" to "filterEventList",
             "categoryScheduledEvents" to "filterCategoryEvents",
+            "getPopularEvents" to "filterEventList",
         )) {
             val callers = classes.flatMap { it.methods }.filter { m ->
-                m.instructions().any { it.call()?.let { c -> c.definingClass == NETWORK_COROUTINE_API && c.name == api } == true }
+                m.instructions().any { it.call()?.isApi(api) == true }
             }
             check(callers.size == 1) { "expected one caller of $api, found ${callers.map { it.definingClass }}" }
             val insns = callers.single().instructions()
-            val call = insns.indexOfFirst { it.call()?.let { c -> c.definingClass == NETWORK_COROUTINE_API && c.name == api } == true }
+            val call = insns.indexOfFirst { it.call()?.isApi(api) == true }
             val result = (insns[call + 1] as OneRegisterInstruction).registerA
             val hook = (call + 2 until insns.size).first {
                 insns[it].opcode == Opcode.RETURN_OBJECT || insns[it].call()?.definingClass == COUNTRY_FILTER
@@ -1366,6 +1521,14 @@ class SofascoreSmokeTest {
             }.map { insns.branchTarget(it) }
             check(hook in targets && (hook + 2) !in targets) { "$api: a branch skips $helper" }
             check(insns.count { it.call()?.definingClass == COUNTRY_FILTER } == 1) { "$api's lambda calls CountryFilter more than once" }
+        }
+        // Pinned leagues stay (the rows say so): the per-league request behind the Matches tab's
+        // pinned section and a league's page is not filtered.
+        val pinnedCallers = classes.flatMap { it.methods }.filter { m ->
+            m.instructions().any { it.call()?.isApi("uniqueTournamentScheduledEvents") == true }
+        }
+        check(pinnedCallers.isNotEmpty() && pinnedCallers.none { m -> m.instructions().any { it.call()?.definingClass == COUNTRY_FILTER } }) {
+            "uniqueTournamentScheduledEvents callers ${pinnedCallers.map { it.definingClass }} are missing or filtered"
         }
     }
 

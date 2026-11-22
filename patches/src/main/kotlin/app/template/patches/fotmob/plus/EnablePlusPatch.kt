@@ -32,7 +32,7 @@ private fun MutableMethod?.returnEarlyIfImplemented(value: Boolean) =
 @Suppress("unused")
 val enablePlusPatch = bytecodePatch(
     name = "Enable FotMob+",
-    description = "Unlocks FotMob+ and removes ads."
+    description = "Unlocks FotMob+ features and its ad-free mode in the app, without a real subscription."
 ) {
     compatibleWith(COMPATIBILITY_FOTMOB)
 
@@ -77,11 +77,12 @@ val enablePlusPatch = bytecodePatch(
         // newer, where the description promises the icons) a picker or branch shape that no
         // longer matches fails the patch instead of shipping it without the icons
         // (238.17794 and 238.17666 are checked; 237/236 had no APK at hand).
-        val screen = MembershipScreenFingerprint.methodOrNull
-        if (screen == null) {
-            logger.info("Enable FotMob+: no \"$NO_SUBSCRIPTION_TEXT\" screen, skipping the app-icon step")
+        // (2026-11-22) Optional only for builds without MembershipActivity: when the activity is
+        // there the literal must be too (.method fails loudly), else the icons would silently drop.
+        if (classDefByOrNull(MEMBERSHIP_ACTIVITY) == null) {
+            logger.info("Enable FotMob+: no MembershipActivity, skipping the app-icon step")
         } else {
-            unlockAppIcons(screen)
+            unlockAppIcons(MembershipScreenFingerprint.method)
         }
     }
 }

@@ -104,11 +104,14 @@ private fun MutableMethod.returnString(value: String) {
 // in extensions/sofascore does the filtering; the hook sites are in sofascoreListFiltersPatch
 // (ListFilterHooks.kt), shared with "Hide competitions" since 2026-11-03: the leagues list (never
 // emptied), the date feed's country rows, search (events, competitions, teams and players), the
-// Live tab, the chronological view and an expanded country's events. This patch turns the country
-// part on (CountryFilter.patched() -> true) and bakes the picker seeds.
+// Live tab, the chronological view, an expanded country's events and (2026-11-22) the popular
+// matches at the top of a date in the Matches tab. This patch turns the country part on
+// (CountryFilter.patched() -> true) and bakes the picker seeds.
 // Not filtered: LiveCategoriesResponse.getLiveCategories (a category id -> live count map with no
 // country; the rows it counts are filtered by the date feed's rows), pinned/favourite leagues fetched
-// by their own tournament requests, team/player/tournament pages, the widget and notifications.
+// by their own tournament requests (the Matches tab's pinned section asks
+// uniqueTournamentScheduledEvents per pinned league, like a league's page; kept on purpose),
+// team/player/tournament pages, the widget and notifications.
 // Rows of the filtered lists are filtered even when they are favourites. The picker is seeded with the app's own country
 // list (read at patch time) by CountryFilter.init at the end of ReleaseApp.onCreate; every filtered
 // category is reported as seen, also while nothing is picked, under the seed's name when its key is
