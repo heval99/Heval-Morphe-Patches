@@ -5184,7 +5184,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xE30613, // TV 2 red.
         signatures = setOf("ed472cfc59a2e354adafd9198e72ab1ada44ce088d77c5d0b58fbe8c233ee819"), // O=TV 2
-        targets = listOf(AppTarget(version = "2026.10-1", versionCode = 90851))
+        // 2026-11-22: updated to 2026.11 (versionCode 90852, Play arm64, same signer). Smoke test passes, no anchor changes. Smoke test, CLI 2.1.1 without -f and a 1-method whole-APK diff done; not run on a device.
+        targets = listOf(AppTarget(version = "2026.11", versionCode = 90852))
     )
 
     // Verified 2026-11-08 against dk.tdc.blockbuster.nordic 7.1.27 (versionCode 610000900, Google
