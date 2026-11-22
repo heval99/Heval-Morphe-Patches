@@ -1637,7 +1637,8 @@ object Constants {
         appIconColor = 0x26A69A,
         signatures = setOf("1cf7ff75f2e364c2e671321af98f86d35979fe8f3575da508b90d530df75e904"), // CN=Dirk Duncan, O=FUTBIN
         // 2026-11-18: updated to version 27.14 (versionCode 7014, same O=FUTBIN signer).
-        targets = listOf(AppTarget(version = "27.14", versionCode = 7014))
+        // 2026-11-22: updated to version 27.15 (versionCode 7015, same signer). Smoke test passed; CLI 2.1.1 without -f applied every patch; whole-APK method diff: only the intended methods changed. Runtime not run.
+        targets = listOf(AppTarget(version = "27.15", versionCode = 7015))
     )
 
     // Verified 2026-09-27 against com.pocketcolorwheel.PCW 3.26 (versionCode 57,
