@@ -3774,6 +3774,15 @@ object Constants {
     // stock handler was const-true. Emulator (fresh 1.16.35, patched build): cold start OK and the
     // normal onboarding tips still show; the diagnostic tile did not appear on a fresh install (it
     // needs the user's state/remote config), so its disappearance was not observed at runtime.
+    // 2026-11-22 (issue #173): added "Raise widget stack limit" (opt-in, needs Enable Premium; 1.16.37).
+    // Both anchors are in the same R8-renamed class and found by shape: the suspend add method (the
+    // only one with the "Widget stack at " string; iget-boolean Pro flag, if-eqz, const/4 4 is the
+    // Pro maximum, replaced by const/16 0x14) and the stack-full pre-check (same class; (List,Z,object)
+    // returning Object; List.size, move-result, const/4 4, if-lt): its const stays (the register is
+    // also passed on as a selector) and add-int/lit8 size,size,-16 goes right before the if-lt.
+    // The limit of 20 is a chosen value, not an app constant. NiagaraSmokeTest asserts both edits.
+    // Runtime NOT run: whether more than 4 widgets survive restart, backup/restore and sync is
+    // unverified, and the home-screen stack, adapter, restore and popup widget paths were not read.
     val COMPATIBILITY_NIAGARA = Compatibility(
         name = "Niagara Launcher",
         packageName = "bitpit.launcher",
