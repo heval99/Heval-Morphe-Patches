@@ -109,8 +109,8 @@ object Constants {
     //     Compose-row spoiler hooks above.
     //   - Hide countries / Hide competitions do not filter pinned or favourite leagues fetched by their
     //     own requests, team/player/tournament pages, the widget or notifications. Hide sports only
-    //     changes the sport list and the selected-sport lookups (its Room queries); screens that load
-    //     a sport some other way were not traced.
+    //     changes the sport list and the selected-sport lookups (its Room queries; since 2026-11-22 also
+    //     the selected-sport setter); screens that load a sport some other way were not traced.
     //   - Disable telemetry: the TikTok, APM and Aurion start paths were not verified, so those SDKs
     //     may still start. Crashlytics, AppMeasurementSdk.logEvent and AppsFlyer (start, logEvent,
     //     logSession and logAdRevenue each need at least one concrete method) fail the patch when
@@ -151,6 +151,19 @@ object Constants {
     // screens each hook reaches, and the score reappearing at full time, is inferred statically,
     // not observed. Smoke test, extension unit tests and a CLI run without -f; runtime NOT run (no
     // emulator).
+    // 2026-11-22 on 26.11.09 (static only, runtime NOT run): Hide countries / Hide competitions also
+    // filter the popular matches at the top of a date in the Matches tab (the request lambda calling
+    // NetworkCoroutineAPI.getPopularEvents(String, String, String, continuation), not its head-to-head
+    // (continuation) overload; result through CountryFilter.filterEventList before its own
+    // return-object). The pinned leagues section (uniqueTournamentScheduledEvents per pinned league,
+    // the same request as a league's page) stays unfiltered on purpose. Hide sports also maps the
+    // selected-sport setter's slug through visibleSport at entry (final (String, Z)V calling
+    // Sports.getEntries + List.contains and storing the home sport getter's static String cache), so
+    // a deep link or notification of a hidden sport selects a visible one. Disable update prompts also
+    // makes the Feed's update card check (static (Context)Z holding "feed_min_version" and
+    // "PREF_FEED_UPDATE_ON_VERSION") return false. All three fingerprints OK-unique in FingerprintProbe;
+    // smoke test, a CLI run without -f (the four patches + Patch settings: 5 Applied) and apkanalyzer
+    // dumps of the three changed methods pass.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",

@@ -791,8 +791,37 @@ class SofascoreSmokeTest {
         check(SPORT_FEATURES.size == 25 && SPORT_FEATURES.all { (slug, f) -> f.id == "sofascore.hide_sport_" + slug.replace('-', '_') }) {
             "sport feature ids changed"
         }
+        // The selected-sport setter (2026-11-22), found like SelectSportFingerprint: the final
+        // (String, Z)V calling Sports.getEntries and List.contains that stores the String cache the
+        // PREF_HOME_SPORT_V2 getter reads. It starts with p1 = visibleSport(p1), then the stock getClass.
+        val homeGetter = classes.flatMap { it.methods }.single { m ->
+            m.isStatic() && m.returnType == "Ljava/lang/String;" && m.params() == listOf(CONTEXT) && "PREF_HOME_SPORT_V2" in m.strings()
+        }
+        fun Instruction.stringField() = ((this as? ReferenceInstruction)?.reference as? FieldReference)
+            ?.takeIf { it.type == "Ljava/lang/String;" }?.let { "${it.definingClass}->${it.name}" }
+        val homeCache = homeGetter.instructions().filter { it.opcode == Opcode.SGET_OBJECT }.mapNotNull { it.stringField() }.distinct().single()
+        val setters = classes.flatMap { it.methods }.filter { m ->
+            !m.isStatic() && AccessFlags.FINAL.isSet(m.accessFlags) && m.returnType == "V" && m.params() == listOf("Ljava/lang/String;", "Z") &&
+                m.instructions().any { it.call()?.let { c -> c.definingClass == "Lcom/sofascore/model/Sports;" && c.name == "getEntries" } == true } &&
+                m.instructions().any { it.opcode == Opcode.SPUT_OBJECT && it.stringField() == homeCache }
+        }
+        check(setters.size == 1) { "expected one selected-sport setter, found ${setters.map { "${it.definingClass}->${it.name}" }}" }
+        val setter = setters.single()
+        val setterInsns = setter.instructions()
+        val slug = setter.implementation!!.registerCount - 2
+        check(setterInsns[0].opcode == Opcode.INVOKE_STATIC_RANGE && setterInsns[0].call()?.definingClass == SOFASCORE_CONTROLS &&
+            setterInsns[0].call()?.name == "visibleSport" && (setterInsns[0] as RegisterRangeInstruction).startRegister == slug &&
+            (setterInsns[0] as RegisterRangeInstruction).registerCount == 1 &&
+            setterInsns[1].opcode == Opcode.MOVE_RESULT_OBJECT && (setterInsns[1] as OneRegisterInstruction).registerA == slug &&
+            setterInsns[2].call()?.name == "getClass" && (setterInsns[2] as FiveRegisterInstruction).registerC == slug
+        ) { "${setter.definingClass}->${setter.name} does not start with p1 = visibleSport(p1); got ${setterInsns.take(3).map { it.opcode }}" }
+        check(setterInsns.count { it.call()?.name == "visibleSport" } == 1) { "the selected-sport setter calls visibleSport more than once" }
+        // Every other visibleSport site is a return filter (below).
+
         fun assertReturnFilter(helper: String, expected: Map<String, Int>) {
-            val sites = classes.flatMap { it.methods }.flatMap { m ->
+            val sites = classes.flatMap { it.methods }.filterNot {
+                it.definingClass == setter.definingClass && it.name == setter.name && it.params() == setter.params()
+            }.flatMap { m ->
                 val insns = m.instructions()
                 insns.indices.filter { insns[it].call()?.let { c -> c.definingClass == SOFASCORE_CONTROLS && c.name == helper } == true }
                     .map { m to it }
@@ -1325,6 +1354,14 @@ class SofascoreSmokeTest {
         for ((label, method) in listOf("update check" to check, "update flow" to flow)) {
             check(method.instructions().first().opcode == Opcode.RETURN_VOID) { "$label ${helper.type}->${method.name} does not return at once" }
         }
+        // The Feed's update card (2026-11-22): the static (Context)Z holding "feed_min_version" and
+        // "PREF_FEED_UPDATE_ON_VERSION" answers false at once.
+        val feedCards = classes.flatMap { it.methods }.filter { m ->
+            m.isStatic() && m.returnType == "Z" && m.params() == listOf(CONTEXT) &&
+                m.strings().containsAll(listOf("feed_min_version", "PREF_FEED_UPDATE_ON_VERSION"))
+        }
+        check(feedCards.size == 1) { "expected one Feed update card check, found ${feedCards.size}" }
+        assertForcedBoolean(feedCards.single(), expected = false, label = "Feed update card ${feedCards.single().definingClass}->${feedCards.single().name}")
 
         // Hide match chat: the chat button helper and the button's motion method ask
         // hideChatButton(p0) first and return when it answers true.
@@ -1448,17 +1485,22 @@ class SofascoreSmokeTest {
         // calling the request, the register returning the request's result (the result register, or
         // a move-object copy of it: categoryScheduledEvents in ro3) goes through the filter right
         // before its return, and every branch that returned it now jumps to the filter.
+        // A date's popular matches in the Matches tab (2026-11-22): getPopularEvents(sport,
+        // countryCode, date, continuation); its (continuation) overload is a head-to-head request.
+        fun MethodReference.isApi(api: String) = definingClass == NETWORK_COROUTINE_API && name == api &&
+            (api != "getPopularEvents" || (parameterTypes.size == 4 && parameterTypes.take(3).all { it.toString() == "Ljava/lang/String;" }))
         for ((api, helper) in listOf(
             "sportLiveEvents" to "filterEventList",
             "getIndexedEventsPage" to "filterEventList",
             "categoryScheduledEvents" to "filterCategoryEvents",
+            "getPopularEvents" to "filterEventList",
         )) {
             val callers = classes.flatMap { it.methods }.filter { m ->
-                m.instructions().any { it.call()?.let { c -> c.definingClass == NETWORK_COROUTINE_API && c.name == api } == true }
+                m.instructions().any { it.call()?.isApi(api) == true }
             }
             check(callers.size == 1) { "expected one caller of $api, found ${callers.map { it.definingClass }}" }
             val insns = callers.single().instructions()
-            val call = insns.indexOfFirst { it.call()?.let { c -> c.definingClass == NETWORK_COROUTINE_API && c.name == api } == true }
+            val call = insns.indexOfFirst { it.call()?.isApi(api) == true }
             val result = (insns[call + 1] as OneRegisterInstruction).registerA
             val hook = (call + 2 until insns.size).first {
                 insns[it].opcode == Opcode.RETURN_OBJECT || insns[it].call()?.definingClass == COUNTRY_FILTER
@@ -1479,6 +1521,14 @@ class SofascoreSmokeTest {
             }.map { insns.branchTarget(it) }
             check(hook in targets && (hook + 2) !in targets) { "$api: a branch skips $helper" }
             check(insns.count { it.call()?.definingClass == COUNTRY_FILTER } == 1) { "$api's lambda calls CountryFilter more than once" }
+        }
+        // Pinned leagues stay (the rows say so): the per-league request behind the Matches tab's
+        // pinned section and a league's page is not filtered.
+        val pinnedCallers = classes.flatMap { it.methods }.filter { m ->
+            m.instructions().any { it.call()?.isApi("uniqueTournamentScheduledEvents") == true }
+        }
+        check(pinnedCallers.isNotEmpty() && pinnedCallers.none { m -> m.instructions().any { it.call()?.definingClass == COUNTRY_FILTER } }) {
+            "uniqueTournamentScheduledEvents callers ${pinnedCallers.map { it.definingClass }} are missing or filtered"
         }
     }
 
