@@ -4485,7 +4485,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x1B1B1B,
         signatures = setOf("30ab0a6a032881270eed4c161fc304d3d5c22f5822dcf4505708f97e6fb6a47a"),
-        targets = listOf(AppTarget(version = "1.22.8v236", versionCode = 236))
+        // 2026-11-22: updated to 1.22.10v238 (versionCode 238, same signer); MinimalistSmokeTest passes, anchors unchanged. APK from APKPure (Play only has 1.22.8v236); smoke test, CLI 2.1.1 without -f and a 2-method whole-APK diff done; not run on a device.
+        targets = listOf(AppTarget(version = "1.22.10v238", versionCode = 238))
     )
 
     // Updated 2026-11-13 to 10.0 (versionCode 83; the old 575 was a typo, 8.2 was really 75). Signer
