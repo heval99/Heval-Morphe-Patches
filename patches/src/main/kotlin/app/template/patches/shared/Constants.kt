@@ -874,7 +874,9 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0xC8102E,
         signatures = setOf("82bf3a1c6498d93a22c4fe6ab8f272d5a8495093a8e04a66b0b1c92cdcd12ebb"), // CN=Sebastian, O=Cloeme
-        targets = listOf(AppTarget(version = "10.4.1", versionCode = 2260))
+        // 2026-11-22: updated to version 10.5.1 (versionCode 2280, same signer; APK from APKPure, signer matches,
+        // Play still served 10.4.1). Smoke test passed; CLI 2.1.1 without -f applied every patch; whole-APK method diff: only the intended methods changed. Runtime not run.
+        targets = listOf(AppTarget(version = "10.5.1", versionCode = 2280))
     )
 
     // Verified 2026-08-20 against FishBuddy v11.0.84 (universal, Android 7.0+).
