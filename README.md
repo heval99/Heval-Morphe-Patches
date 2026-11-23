@@ -40,7 +40,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v3.2.1-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v3.2.1-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**106** apps&nbsp;&nbsp;•&nbsp;&nbsp;**354** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-22
+> **[v3.3.0-dev.1](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v3.3.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**106** apps&nbsp;&nbsp;•&nbsp;&nbsp;**354** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-23
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
@@ -343,7 +343,7 @@ Verified on: `26.11.6`
 |---|---|:-:|
 | 🧩 **AMOLED black** | Makes the dark theme pure black on OLED screens. | ➖ |
 | 🧩 **Animation speed** | Adds switches to turn off or speed up animations. | ➖ |
-| 🔕 **Block marketing notifications** | Drops promotional push notifications. | ➖ |
+| 🔕 **Block marketing notifications** | Drops promotional push notifications. | ✅ |
 | 🧩 **Block marketing popups** | Blocks promo popups. | ✅ |
 | 🚫 **Disable ads** | Removes all ads. | ✅ |
 | 🔕 **Disable rating prompts** | Disables the rating prompts. | ✅ |
@@ -352,7 +352,7 @@ Verified on: `26.11.6`
 | 🧩 **Force edge-to-edge** | Blends the navigation bar area into the bottom tab bar. | ➖ |
 | 🧩 **Hide betting content** | Hides odds and betting content. | ➖ |
 | 🧩 **Hide competitions** | Hides matches of the competitions you pick. | ➖ |
-| 🧩 **Hide match polls** | Hides the polls on match pages. | ✅ |
+| 🧩 **Hide match polls** | Hides the polls on match pages. | ➖ |
 | 🧩 **Hide news** | Hides news in match lists and on team pages. | ➖ |
 | 🧩 **Patch settings** | Adds a screen to turn supported features on or off. | ✅ |
 | 🧩 **Spoiler-free mode** | Lets you hide scores and alerts for matches you mark. | ✅ |

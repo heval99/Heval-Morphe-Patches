@@ -1,3 +1,14 @@
+## 3.3.0-dev.1 (2026-11-23)
+
+### 📱 Sofascore `26.11.09`
+- New: Spoiler-free mode hides the tabs, incidents and search score of a marked match
+- New: Hide a competition or country from its own page
+
+### 🔧 Other
+- Fixed: Review Patch settings defaults for Flashscore and Truecaller
+
+**Download:** [patches-3.3.0-dev.1.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v3.3.0-dev.1/patches-3.3.0-dev.1.mpp)
+
 ## 3.2.1-dev.1 (2026-11-22)
 
 ### 🔧 Other
