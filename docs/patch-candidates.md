@@ -75,6 +75,7 @@ Addict, Windy, Hermit, Calimoto, Nova Launcher, Sleep as Android, MiXplorer.
 - Online games on the target device (Jawaker Tarneeb, Racify, UEFA Eurofantasy, Sorare)
   - online-server games: training/economy state is server-authoritative (the same wall
   the UFM 27 mod hit; see `apks/games/UFM 27/MODDING-NOTES.md`). Skip the whole category.
+  Sorare was checked on its own merits 2026-11-23: it is a Trusted Web Activity shell, see the blocklist.
 
 ## Queued by owner (2026-10-11)
 
