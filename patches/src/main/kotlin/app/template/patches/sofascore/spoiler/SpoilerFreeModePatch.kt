@@ -1,13 +1,19 @@
 package app.template.patches.sofascore.spoiler
 
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.resource.ResourceType
 import app.morphe.patcher.resource.resourceId
+import app.morphe.patcher.util.findFreeRegister
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.template.patches.shared.addInstructionsAtControlFlowLabelChecked
 import app.template.patches.shared.addInstructionsChecked
+import app.template.patches.shared.addInstructionsWithLabelsChecked
+import app.template.patches.sofascore.controls.eventTabEnum
+import app.template.patches.sofascore.controls.navigateToTabSite
 import app.template.patches.shared.hevalcontrols.HevalFeature
 import app.template.patches.shared.hevalcontrols.HevalListFeature
 import app.template.patches.shared.hevalcontrols.addHevalGate
@@ -27,6 +33,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 internal const val SPOILER_FREE = "Lapp/template/extension/sofascore/SpoilerFree;"
@@ -85,12 +92,15 @@ internal val SPOILER_WIDGET = HevalFeature(
     dependencies = listOf(SPOILER_FREE_MODE.id),
 )
 
-/** Surface (added 2026-11-22): the match page of a marked match (the header and the Details score tables). */
+/**
+ * Surface (added 2026-11-22): the match page of a marked match (the header and the Details score
+ * tables; since 2026-11-23 also the score tabs, the incidents and the share card's incidents).
+ */
 internal val SPOILER_MATCH_PAGE = HevalFeature(
     id = "sofascore.spoiler_match_page",
     calm = true,
     name = "Hide scores on match pages",
-    description = "Hides the score at the top of a marked match's page and its score tables.",
+    description = "Hides the score, tabs and goals of a marked match's page until full time.",
     category = SofascoreControlsCategory.SPOILER_FREE,
     icon = "eye_off",
     dependencies = listOf(SPOILER_FREE_MODE.id),
@@ -463,6 +473,223 @@ private fun BytecodePatchContext.composeRow(): ComposeRow {
     return ComposeRow(mapper, index, register, constructor, rowText)
 }
 
+/**
+ * The match page tabs a hidden page drops (phase 3, by enum constant name): every tab that shows the
+ * score or how the match goes. Details (incidents emptied, score tables gone), the prematch tabs,
+ * odds, standings, the knockout tree, matches and contribute stay. SpoilerFree.SPOILER_TABS holds the
+ * same names; the smoke test checks both.
+ */
+internal val SPOILER_TAB_NAMES = listOf(
+    "COMMENTARY", "AI_INSIGHTS", "OVERS", "SCORECARD", "GAMES", "LINEUPS", "BOX_SCORE", "STATISTICS",
+    "MMA_STATISTICS", "HOCKEY_PLAY_BY_PLAY", "GRAPHS", "MEDIA",
+)
+
+private const val EVENT_HEAD_DATA = "${MODEL}EventHeadData;"
+private const val INCIDENT = "${MODEL}Incident;"
+private const val LIST = "Ljava/util/List;"
+private const val ARRAY_LIST = "Ljava/util/ArrayList;"
+internal const val SHARE_MATCH_MODAL = "Lcom/sofascore/results/sharemodal/match/ShareMatchDetailsModal;"
+
+/** Whether the instruction writes register [register] (its result register, both halves of a wide one). */
+private fun com.android.tools.smali.dexlib2.iface.instruction.Instruction.writes(register: Int): Boolean {
+    if (!opcode.setsRegister()) return false
+    val a = (this as? OneRegisterInstruction)?.registerA ?: return false
+    return a == register || (opcode.setsWideRegister() && a + 1 == register)
+}
+
+/**
+ * The tab builder hooks (26.11.09: g55.a): the activity's register (its check-cast to EventActivity),
+ * where component1() hands over the Event and in which register, and the pager adapter's (List)V
+ * call with the tab list.
+ */
+private class TabBuilder(
+    val method: MutableMethod,
+    val activity: Int,
+    val afterEvent: Int,
+    val event: Int,
+    val setTabs: Int,
+    val tabs: Int,
+)
+
+private fun BytecodePatchContext.tabBuilder(): TabBuilder {
+    val method = MatchTabBuilderFingerprint.method
+    val label = "${method.definingClass}->${method.name}"
+    val insns = method.instructions.toList()
+    val casts = insns.indices.filter {
+        insns[it].opcode == Opcode.CHECK_CAST && ((insns[it] as ReferenceInstruction).reference as TypeReference).type == EVENT_ACTIVITY
+    }
+    val cast = casts.singleOrNull() ?: throw PatchException("$label casts to EventActivity ${casts.size} times, expected once")
+    val activity = (insns[cast] as OneRegisterInstruction).registerA
+    val component1s = insns.indices.filter { insns[it].methodRef()?.let { r -> r.definingClass == EVENT_HEAD_DATA && r.name == "component1" } == true }
+    val component1 = component1s.singleOrNull() ?: throw PatchException("$label calls EventHeadData.component1() ${component1s.size} times, expected once")
+    if (cast > component1) throw PatchException("$label casts to EventActivity after component1(), expected before")
+    val moved = insns.getOrNull(component1 + 1)
+    if (moved?.opcode != Opcode.MOVE_RESULT_OBJECT) throw PatchException("$label: component1() is not followed by move-result-object")
+    val event = (moved as OneRegisterInstruction).registerA
+    // The adapter's (List)V call after the Event is known; its list is the ArrayList the filter fills.
+    val setters = insns.indices.filter { i ->
+        i > component1 && insns[i].opcode == Opcode.INVOKE_VIRTUAL &&
+            insns[i].methodRef()?.let { it.returnType == "V" && it.parameterTypes.map(CharSequence::toString) == listOf(LIST) } == true
+    }
+    val setTabs = setters.singleOrNull() ?: throw PatchException("$label has ${setters.size} (List)V calls after component1(), expected one (the tab list)")
+    val tabs = (insns[setTabs] as FiveRegisterInstruction).registerD
+    val built = (setTabs - 1 downTo 0).firstOrNull { insns[it].writes(tabs) }
+    if (built == null || insns[built].opcode != Opcode.NEW_INSTANCE ||
+        ((insns[built] as ReferenceInstruction).reference as TypeReference).type != ARRAY_LIST
+    ) {
+        throw PatchException("$label: the tab list v$tabs is not a new ArrayList (last write ${built?.let { insns[it].opcode }})")
+    }
+    // The activity register must still hold the activity at the tab list call.
+    if ((cast + 1 until setTabs).any { insns[it].writes(activity) }) throw PatchException("$label overwrites the activity v$activity before the tab list call")
+    if (listOf(activity, event, tabs).any { it > 15 }) throw PatchException("$label: the activity, Event or tab list is above v15")
+    return TabBuilder(method, activity, component1 + 2, event, setTabs, tabs)
+}
+
+/**
+ * The incidents adapter's fill method (26.11.09: k8c.F(List, y87, sti, Z, Long)V): the one instance
+ * (List, ?, X, Z, Long)V method that builds incident rows with a static (Context, Incident, X) row
+ * builder (v8c.a). Holds the adapter's Context field the method reads from p0.
+ */
+private fun BytecodePatchContext.incidentsFill(): Pair<MutableMethod, FieldReference> {
+    val found = mutableListOf<Pair<String, Method>>()
+    classDefForEach { classDef ->
+        classDef.methods.forEach { m ->
+            val p = m.params()
+            if (m.returnType != "V" || m.isStatic() || p.size != 5 || p[0] != LIST || p[3] != "Z" || p[4] != "Ljava/lang/Long;") return@forEach
+            val insns = m.implementation?.instructions ?: return@forEach
+            val builds = insns.any { insn ->
+                insn.opcode == Opcode.INVOKE_STATIC && insn.methodRef()?.parameterTypes?.map(CharSequence::toString) == listOf(CONTEXT, INCIDENT, p[2])
+            }
+            if (builds) found += classDef.type to m
+        }
+    }
+    val (type, fill) = found.singleOrNull() ?: throw PatchException("${found.size} incident adapter fill methods (List, ?, X, Z, Long)V, expected one")
+    val label = "$type->${fill.name}"
+    val contexts = fill.implementation!!.instructions.filter { it.opcode == Opcode.IGET_OBJECT }.mapNotNull { it.fieldRef() }
+        .filter { it.type == CONTEXT }.distinctBy { it.smali }
+    val context = contexts.singleOrNull() ?: throw PatchException("$label reads ${contexts.size} Context fields, expected one (the adapter's)")
+    val method = mutableClassDefBy(type).methods.single { it.name == fill.name && it.params() == fill.params() && it.returnType == "V" }
+    val registers = method.implementation!!.registerCount
+    if (registers - 5 > 15) throw PatchException("$label: p1 is v${registers - 5}, above v15")
+    method.requireLocals(1)
+    return method to context
+}
+
+/**
+ * The period incidents grouping of the adapters below it (26.11.09: uv7.K and its override uzo.K,
+ * (ArrayList, Event)LinkedHashMap): every concrete implementation that reads PeriodIncident and the
+ * running score (Incident.getHomeScore${'$'}default). Throws unless they are one method and its overrides.
+ */
+private fun BytecodePatchContext.periodGroupings(): List<MutableMethod> {
+    val found = mutableListOf<Pair<String, Method>>()
+    val supers = mutableMapOf<String, String?>()
+    classDefForEach { classDef ->
+        supers[classDef.type] = classDef.superclass
+        classDef.methods.forEach { m ->
+            if (m.returnType != "Ljava/util/LinkedHashMap;" || m.params() != listOf(ARRAY_LIST, EVENT) || m.isStatic()) return@forEach
+            val refs = m.implementation?.instructions?.mapNotNull { it.methodRef() } ?: return@forEach
+            if (refs.any { it.definingClass == "${MODEL}Incident\$PeriodIncident;" } && refs.any { it.definingClass == INCIDENT && it.name == "getHomeScore\$default" }) {
+                found += classDef.type to m
+            }
+        }
+    }
+    if (found.isEmpty()) throw PatchException("no (ArrayList, Event)LinkedHashMap period incident grouping found")
+    val names = found.map { it.second.name }.distinct()
+    val name = names.singleOrNull() ?: throw PatchException("period incident groupings have the names $names, expected one method and its overrides")
+    fun below(type: String, base: String): Boolean {
+        var current = supers[type]
+        while (current != null) {
+            if (current == base) return true
+            current = supers[current]
+        }
+        return false
+    }
+    val types = found.map { it.first }
+    val bases = types.filter { t -> types.none { other -> other != t && below(t, other) } }
+    val base = bases.singleOrNull() ?: throw PatchException("period incident groupings in $types do not share one base")
+    // Every concrete override below the base must be among them, so none is left unhooked.
+    val overrides = supers.keys.filter { it == base || below(it, base) }.filter { t ->
+        classDefBy(t).methods.any { it.name == name && it.params() == listOf(ARRAY_LIST, EVENT) && it.implementation != null }
+    }
+    if (overrides.toSet() != types.toSet()) throw PatchException("period incident groupings $types, but $name is implemented in $overrides")
+    return types.map { t -> mutableClassDefBy(t).methods.single { it.name == name && it.params() == listOf(ARRAY_LIST, EVENT) } }
+}
+
+/**
+ * The share modal's incident reads (26.11.09: ShareMatchDetailsModal.j0 calls m0() seven times):
+ * every `invoke-virtual {vM}, <the modal's only ()ArrayList method>` plus its move-result-object, in
+ * the modal's methods. Each holds the method, the index after the move-result, the modal register and
+ * the result register. The modal's only ()Event method is what SpoilerFree reads the match from.
+ */
+private class ShareRead(val method: MutableMethod, val after: Int, val modal: Int, val list: Int)
+
+private fun BytecodePatchContext.shareIncidentReads(): List<ShareRead> {
+    val modal = classDefBy(SHARE_MATCH_MODAL)
+    val getters = modal.methods.filter { it.returnType == ARRAY_LIST && it.parameterTypes.isEmpty() && !it.isStatic() }
+    val getter = getters.singleOrNull() ?: throw PatchException("$SHARE_MATCH_MODAL has ${getters.size} ()ArrayList methods, expected one (the incidents)")
+    val events = modal.methods.filter { it.returnType == EVENT && it.parameterTypes.isEmpty() && !it.isStatic() }
+    if (events.size != 1) throw PatchException("$SHARE_MATCH_MODAL has ${events.size} ()Event methods, expected one (SpoilerFree reads the match from it)")
+    val reads = mutableClassDefBy(SHARE_MATCH_MODAL).methods.filter { it.implementation != null }.flatMap { method ->
+        val insns = method.instructions.toList()
+        insns.indices.filter { i ->
+            insns[i].methodRef()?.let {
+                it.definingClass == SHARE_MATCH_MODAL && it.name == getter.name && it.returnType == ARRAY_LIST && it.parameterTypes.isEmpty()
+            } == true
+        }.map { i ->
+            val label = "${method.definingClass}->${method.name}@$i"
+            // Only the plain invoke-virtual form is hooked; any other form (range, super) fails here.
+            if (insns[i].opcode != Opcode.INVOKE_VIRTUAL) throw PatchException("$label reads the incidents with ${insns[i].opcode}, expected invoke-virtual")
+            val moved = insns.getOrNull(i + 1)
+            if (moved?.opcode != Opcode.MOVE_RESULT_OBJECT) throw PatchException("$label: the incidents read is not followed by move-result-object")
+            val receiver = (insns[i] as FiveRegisterInstruction).registerC
+            val list = (moved as OneRegisterInstruction).registerA
+            if (receiver == list || receiver > 15 || list > 15) throw PatchException("$label: modal v$receiver / list v$list cannot be passed on")
+            method.requireNoBranchTargetAt(i + 2, "Spoiler-free share incidents hook")
+            ShareRead(method, i + 2, receiver, list)
+        }
+    }
+    if (reads.isEmpty()) throw PatchException("$SHARE_MATCH_MODAL never reads its incidents (${getter.name})")
+    return reads
+}
+
+/**
+ * The search result row binder (26.11.09: zb.g(xi2, I, Event)V): the one (binding, I, Event)V
+ * method that loads R.string.match_result_template. Holds the binding field of the score TextView
+ * (the receiver of the setText(CharSequence) after the template is loaded).
+ */
+private fun BytecodePatchContext.searchRow(): Pair<MutableMethod, FieldReference> {
+    val template = resourceId(ResourceType.STRING, "match_result_template").toInt()
+    val found = mutableListOf<Pair<String, Method>>()
+    classDefForEach { classDef ->
+        classDef.methods.forEach { m ->
+            val p = m.params()
+            if (m.returnType != "V" || m.isStatic() || p.size != 3 || p[1] != "I" || p[2] != EVENT) return@forEach
+            if (m.implementation?.instructions?.any { (it as? NarrowLiteralInstruction)?.narrowLiteral == template } == true) found += classDef.type to m
+        }
+    }
+    val (type, row) = found.singleOrNull() ?: throw PatchException("${found.size} (binding, I, Event)V methods load match_result_template, expected one (the search row)")
+    val label = "$type->${row.name}"
+    val insns = row.implementation!!.instructions.toList()
+    val load = insns.indexOfFirst { (it as? NarrowLiteralInstruction)?.narrowLiteral == template }
+    val setText = (load + 1 until insns.size).firstOrNull { i ->
+        insns[i].methodRef()?.let { it.definingClass == "Landroid/widget/TextView;" && it.name == "setText" && it.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/CharSequence;") } == true
+    } ?: throw PatchException("$label sets no text after loading match_result_template")
+    val view = (insns[setText] as FiveRegisterInstruction).registerC
+    val read = (setText - 1 downTo 0).filter { insns[it].writes(view) }.firstOrNull { insns[it].opcode == Opcode.IGET_OBJECT }
+        ?: throw PatchException("$label: the score view v$view is not read from a field")
+    val field = insns[read].fieldRef()!!
+    if (field.definingClass != row.params()[0]) throw PatchException("$label: the score view comes from $field, not from the binding ${row.params()[0]}")
+    val registers = row.implementation!!.registerCount
+    val p1 = registers - 3
+    val p3 = registers - 1
+    if (insns.any { it.writes(p1) || it.writes(p3) }) throw PatchException("$label overwrites p1 (the binding) or p3 (the Event)")
+    val returns = insns.indices.filter { insns[it].opcode == Opcode.RETURN_VOID }
+    if (returns.size != 1) throw PatchException("$label has ${returns.size} returns, expected one")
+    val method = mutableClassDefBy(type).methods.single { it.name == row.name && it.params() == row.params() && it.returnType == "V" }
+    method.requireLocals(2)
+    return method to field
+}
+
 // Spoiler-free mode (2026-11-08, owner request), phase 1. The user marks a match on its match page or
 // a competition on its page ("Spoiler-free: on/off" in the overflow menu); the marks are two Patch
 // settings lists that depend on the master switch. Each surface has its own switch (on by default,
@@ -531,16 +758,60 @@ private fun BytecodePatchContext.composeRow(): ComposeRow {
 //    its own visibility; the period points graph (EventGraphPoint by period) is masked the same way.
 // 8. Share modal (same switch): the share card's match header (share_match_details_modal_header, a
 //    module of the same base) is GONE while hidden, so a shared image carries no score.
-// Not covered yet: in the match page, the Incidents list (goal rows with the running score), the
-// baseball (Compose) and ice hockey period tables, the football momentum graph, the statistics,
-// lineups (ratings, goal icons) and commentary tabs, featured players, the volleyball collapsed score
-// (its visibility is reset by the app bar while scrolling), and chat messages; elsewhere search,
-// favourites screens outside the Compose rows, featured match views, team form, standings, the
-// ongoing match notification, the winner colour of the team names (list rows and widget) and the
-// extra info text of a Compose row, Wear and lock-screen notifications. Which header and module each
-// sport uses is read from the code (26.11.09), not observed on a device. A Compose row kept
-// in memory (the live status copy) shows scores again only after its list refreshes when the user
-// un-marks a match.
+// Phase 3 (2026-11-23, same target 26.11.09). The match page surfaces below ask one page decision,
+// SpoilerFree.pageHides(Context): the Context is unwrapped to its Activity, whose page subject (the
+// Event noted by step 2 or 9) decides with the step 6 rule (sofascore.spoiler_match_page on,
+// hidesScore, not "notstarted"). Surfaces that get the Event decide on it directly with the same rule.
+// 9. Tabs (same switch): the tab builder (the EventHeadData observer, found by the AI tab's preference
+//    keys and the EventHeadData component calls) notes the Event for the page right after
+//    component1() (it may run before step 2's observer), and just before it hands the tab list to the
+//    pager adapter, filterTabs removes the SPOILER_TAB_NAMES tabs (by enum constant name, in place:
+//    the list is the builder's own ArrayList and is read again after the call) from a hidden page.
+//    Details, the prematch tabs, odds, Standings, Knockout, Matches and Contribute stay (standings and
+//    the cup tree can show the result of a finished match only, so they stay for now). The
+//    navigateToTab lambda (the shared guard's site) asks blocksTab(tab, activity) right after it casts
+//    its receiver to EventActivity, so a removed tab cannot be navigated to. The tabs come back at the
+//    next EventHeadData emission after full time (inferred: the observer runs again on every refresh
+//    of the match head; not observed).
+// 10. Incidents (same switch): the incidents adapter's fill method starts with
+//    incidents(adapter Context, list), which answers a new empty list for a hidden page (the stock list
+//    may be the response's own list or an immutable empty one, so it is never changed); the period
+//    grouping of its basketball/ice hockey subclasses (one (ArrayList, Event) method and its override)
+//    starts with clearIfHidden(list, Event), which clears the ArrayList the caller has just built.
+//    The goal rows, cards, period rows and running score are all in that list, so the Details tab of
+//    the sports that use this adapter (football, basketball, ice hockey and the other users of the
+//    incidents adapter and its subclasses) shows no incidents while hidden. Other sports' Details
+//    adapters are not covered (see below).
+// 11. Share modal incidents (same switch): ShareMatchDetailsModal (kept name) reads its incidents
+//    through its only ()ArrayList method; every read is passed through shareIncidents(modal, list),
+//    which answers a new empty list for a hidden match (the modal's Event is read through its only
+//    ()Event method), so the share card has no goal rows or scorers (its momentum graph gets the
+//    empty list too).
+// 12. Search results (sofascore.spoiler_lists): before the search row binder returns (the one
+//    (binding, I, Event)V method loading R.string.match_result_template), maskSearchScore makes the
+//    score TextView (the receiver of the setText after the template) INVISIBLE for a hidden match.
+//    The binder sets that view's visibility on every path of every bind, so a recycled row needs no
+//    restore.
+// Timing gap (steps 9 to 11): the tabs and the incidents change only when the app delivers new head
+// data or new incidents, so marking a match on its open page, or a kick-off while the page is open,
+// takes effect at the next such delivery, not at once (inferred; the page keeps what it last built).
+// Un-marking a match whose page is open: its tabs and incidents come back only when the page is
+// reopened (the swipe refresh is disabled in the tab builder).
+// Not covered yet: in the match page, the esports Details game rows (an adapter filled through the
+// adapter base's list setter from EsportsGamesResponse) and the other Details adapters built in
+// EventDetailsFragment for tennis, volleyball, darts, table tennis, badminton, aussie rules and others
+// (26.11.09: k17, zrh, bei, ot5; not traced), the baseball (Compose) and ice hockey period tables, the
+// football momentum graph of the Details tab (its input was not traced; goal markers may remain), the Standings and
+// Knockout tabs (a finished match's result only), featured players, the volleyball collapsed score
+// (its visibility is reset by the app bar while scrolling), and chat message text; elsewhere
+// favourites screens outside the Compose rows, featured match views (FeaturedMatchView), the basic
+// event data and feed event cards (no Event-carrying producer was traced), team form (it lists
+// finished matches, so it only matters with Keep final scores hidden), standings form, the ongoing
+// match notification, the winner colour of the team names (list rows, widget and search) and the
+// extra info text of a Compose row, Wear and lock-screen notifications. The tabs come back only at the
+// next head refresh after full time, not at once. Which header, module, tab and adapter each sport
+// uses is read from the code (26.11.09), not observed on a device. A Compose row kept in memory (the
+// live status copy) shows scores again only after its list refreshes when the user un-marks a match.
 @Suppress("unused")
 val spoilerFreeModePatch = sofascoreControls.featurePatch(
     SPOILER_FREE_MODE,
@@ -607,6 +878,28 @@ val spoilerFreeModePatch = sofascoreControls.featurePatch(
 
     val details = detailsModules()
     (details.tables + details.graph + details.setVisibility + details.share).forEach { it.requireNoBranchTargetAt(0, "Spoiler-free Details hook") }
+
+    // Phase 3 sites.
+    val tabEnumStrings = eventTabEnum().methods.single { it.name == "<clinit>" }.implementation!!.instructions
+        .mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string }.toSet()
+    SPOILER_TAB_NAMES.filterNot(tabEnumStrings::contains).takeIf { it.isNotEmpty() }?.let {
+        throw PatchException("the match page tab enum has no constants $it")
+    }
+    val tabs = tabBuilder()
+    tabs.method.requireNoBranchTargetAt(tabs.afterEvent, "Spoiler-free tab builder Event hook")
+    val nav = navigateToTabSite(window = 12)
+    val navAt = nav.activityCast + 1
+    nav.method.requireNoBranchTargetAt(navAt, "Spoiler-free navigateToTab hook")
+    if (nav.tabRegister > 15 || nav.activityRegister > 15) throw PatchException("navigateToTab: the tab or activity register is above v15")
+    val navScratch = nav.method.findFreeRegister(navAt, nav.tabRegister, nav.activityRegister)
+    if (navScratch > 255) throw PatchException("navigateToTab: no free register below v256")
+    val (incidentsFill, adapterContext) = incidentsFill()
+    incidentsFill.requireNoBranchTargetAt(0, "Spoiler-free incidents hook")
+    val groupings = periodGroupings()
+    groupings.forEach { it.requireNoBranchTargetAt(0, "Spoiler-free period incidents hook") }
+    val shareReads = shareIncidentReads()
+    val (searchRow, searchScore) = searchRow()
+    val searchReturn = searchRow.instructions.indexOfFirst { it.opcode == Opcode.RETURN_VOID }
 
     // 1. Notifications.
     push.addHevalGate(SPOILER_NOTIFICATIONS.id) { v ->
@@ -711,6 +1004,64 @@ val spoilerFreeModePatch = sofascoreControls.featurePatch(
     details.share.addInstructionsChecked(
         0,
         "invoke-static/range { p0 .. p2 }, $SPOILER_FREE->maskShareHeader(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V",
+    )
+
+    // 9. Tabs (same switch, read in Java). The later site first, so the earlier index stays valid. The
+    // tab list call takes over its labels (every path into it filters).
+    tabs.method.addInstructionsAtControlFlowLabelChecked(
+        tabs.setTabs,
+        "invoke-static { v${tabs.activity}, v${tabs.tabs} }, $SPOILER_FREE->filterTabs(Ljava/lang/Object;$LIST)V",
+    )
+    tabs.method.addInstructionsChecked(
+        tabs.afterEvent,
+        "invoke-static { v${tabs.activity}, v${tabs.event} }, $SPOILER_FREE->onHeadData(Ljava/lang/Object;Ljava/lang/Object;)V",
+    )
+    nav.method.addInstructionsWithLabelsChecked(
+        navAt,
+        """
+            invoke-static { v${nav.tabRegister}, v${nav.activityRegister} }, $SPOILER_FREE->blocksTab(Ljava/lang/Enum;Ljava/lang/Object;)Z
+            move-result v$navScratch
+            if-eqz v$navScratch, :heval_stock
+            sget-object v$navScratch, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
+            return-object v$navScratch
+        """,
+        ExternalLabel("heval_stock", nav.method.getInstruction(navAt)),
+    )
+
+    // 10. Incidents (same switch, read in Java): the fill method's list (p1) and the period groupings' ArrayList.
+    incidentsFill.addInstructionsChecked(
+        0,
+        """
+            iget-object v0, p0, ${adapterContext.smali}
+            invoke-static { v0, p1 }, $SPOILER_FREE->incidents($CONTEXT$LIST)$LIST
+            move-result-object p1
+        """,
+    )
+    groupings.forEach {
+        it.addInstructionsChecked(0, "invoke-static/range { p1 .. p2 }, $SPOILER_FREE->clearIfHidden($ARRAY_LIST${"Ljava/lang/Object;"})V")
+    }
+
+    // 11. The share modal's incident reads, the last read of each method first.
+    shareReads.sortedByDescending { it.after }.forEach { read ->
+        read.method.addInstructionsChecked(
+            read.after,
+            """
+                invoke-static { v${read.modal}, v${read.list} }, $SPOILER_FREE->shareIncidents(Ljava/lang/Object;$ARRAY_LIST)$ARRAY_LIST
+                move-result-object v${read.list}
+            """,
+        )
+    }
+
+    // 12. Search results (sofascore.spoiler_lists, read in Java): before the single return, which keeps
+    // its labels on the inserted code. v0 and v1 are dead at the return.
+    searchRow.addInstructionsAtControlFlowLabelChecked(
+        searchReturn,
+        """
+            move-object/from16 v0, p1
+            iget-object v0, v0, ${searchScore.smali}
+            move-object/from16 v1, p3
+            invoke-static { v0, v1 }, $SPOILER_FREE->maskSearchScore(Ljava/lang/Object;Ljava/lang/Object;)V
+        """,
     )
 
     sofascoreControls.register(SPOILER_NOTIFICATIONS)

@@ -164,6 +164,46 @@ object Constants {
     // "PREF_FEED_UPDATE_ON_VERSION") return false. All three fingerprints OK-unique in FingerprintProbe;
     // smoke test, a CLI run without -f (the four patches + Patch settings: 5 Applied) and apkanalyzer
     // dumps of the three changed methods pass.
+    // 2026-11-23 Spoiler-free mode phase 3, same target 26.11.09 (static only, runtime NOT run: no
+    // emulator). Match page surfaces ask one page decision, SpoilerFree.pageHides(Context) (unwrapped
+    // to the Activity, its noted match, the sofascore.spoiler_match_page rule). Tabs: the tab builder
+    // (MatchTabBuilderFingerprint: "DEV_MODE_SHORTEN_AI_RELEVANCE" / "PREF_AI_TAB_OPEN_COUNT" plus the
+    // EventHeadData component1/component2 calls, OK-unique in FingerprintProbe) notes the Event after
+    // component1() and drops Commentary, AI insights, Overs, Scorecard, Games, Lineups, Box score,
+    // Statistics, MMA statistics, Play-by-play, Graphs and Media (by enum constant name, checked
+    // against the tab enum's <clinit>) just before the pager adapter's (List)V call; navigateToTab
+    // (the shared guard's site, found with a wider window) answers Boolean.FALSE for a dropped tab.
+    // Incidents (the sports whose Details tab uses this incidents adapter and its subclasses: football,
+    // basketball, ice hockey and the adapter's other users): the adapter fill method (the one
+    // (List, ?, X, Z, Long)V calling a static (Context, Incident, X) row builder) gets a new empty
+    // list for a hidden page; both period
+    // groupings ((ArrayList, Event)LinkedHashMap reading PeriodIncident and Incident.getHomeScore$default,
+    // one method and its override) clear their input; ShareMatchDetailsModal (kept name) passes all
+    // seven reads of its only ()ArrayList method through shareIncidents. Search (spoiler_lists): the
+    // one (binding, I, Event)V method loading R.string.match_result_template hides its score TextView
+    // before its return. Class-scan finders throw unless their count is exact (no FingerprintProbe
+    // row). The smoke test finds the tab builder as the patch does; the fill, grouping, share, search
+    // and navigateToTab sites it finds by their SpoilerFree call, then checks their shape and that the
+    // rest of each method equals stock. Patch order: the CLI (which orders patches itself) ran Hide
+    // match tabs (the navigateToTab guard) before Spoiler-free mode, the smoke test applies the bundle's
+    // patch set through the same patcher (one @Test, so no reversed-order variant), and the CLI
+    // also ran Spoiler-free mode without the guard; Spoiler-free before the guard was judged by
+    // reading the finder windows (the guard looks 6 instructions on, the Spoiler-free check sits after
+    // the activity cast at +3), not run. Tabs come back at the next head refresh after full time, not
+    // at once (inferred); likewise marking a match on its open page, or a kick-off while it is open,
+    // changes tabs and incidents only at the next head data or incidents delivery, and un-marking a
+    // match whose page is open brings them back only when the page is reopened (the swipe refresh is
+    // disabled in the tab builder). The spoiler_match_page Patch settings row now reads "Hides the
+    // score, tabs and goals of a marked match's page until full time." (id, Manager name and
+    // description unchanged). Not covered: the esports Details game rows (an adapter filled through
+    // the adapter base's list setter from EsportsGamesResponse) and the other Details adapters built
+    // in EventDetailsFragment for tennis, volleyball, darts, table tennis, badminton, aussie rules and
+    // others (26.11.09: k17, zrh, bei, ot5; not traced), baseball and ice hockey period tables, the Details tab's football momentum graph (not traced,
+    // goal markers may remain), Standings / Knockout tabs, featured players and
+    // FeaturedMatchView, the volleyball collapsed score while scrolling, chat text, team form (only
+    // finished matches, matters with Keep final scores hidden), standings form, basic event data and
+    // feed cards, the ongoing match notification. Smoke test, extension unit tests and a CLI run
+    // without -f.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",

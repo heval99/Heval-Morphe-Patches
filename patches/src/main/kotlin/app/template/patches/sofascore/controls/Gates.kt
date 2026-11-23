@@ -16,6 +16,7 @@ import app.template.patches.shared.requireNoBranchTargetAt
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -99,6 +100,55 @@ internal fun BytecodePatchContext.eventTabEnum(): ClassDef {
 }
 
 /**
+ * EventActivity's navigateToTab site (a Function1 lambda's invoke): the `check-cast vT, <tab enum>`
+ * and the check-cast of the receiver to EventActivity that follows it within [window] instructions.
+ */
+internal class NavigateToTabSite(
+    val method: MutableMethod,
+    val tabCast: Int,
+    val tabRegister: Int,
+    val activityCast: Int,
+    val activityRegister: Int,
+)
+
+/**
+ * The one navigateToTab site, see [NavigateToTabSite]. The guard below looks within six
+ * instructions; Spoiler-free mode looks further, because the guard (5 instructions right after the
+ * tab cast) may already be in place when it runs.
+ */
+internal fun BytecodePatchContext.navigateToTabSite(window: Int): NavigateToTabSite {
+    val tabEnum = eventTabEnum().type
+    fun Instruction.castsTo(type: String) =
+        opcode == Opcode.CHECK_CAST && ((this as ReferenceInstruction).reference as TypeReference).type == type
+    fun Method.castsTo(type: String) = implementation?.instructions?.any { it.castsTo(type) } == true
+
+    val candidates = mutableListOf<ClassDef>()
+    classDefForEach { classDef ->
+        if (FUNCTION1 in classDef.interfaces &&
+            classDef.methods.any { it.name == "invoke" && it.castsTo(tabEnum) && it.castsTo(EVENT_ACTIVITY) }
+        ) {
+            candidates += classDef
+        }
+    }
+
+    val sites = candidates.flatMap { classDef ->
+        mutableClassDefBy(classDef).methods.filter { it.name == "invoke" && it.implementation != null }.flatMap { method ->
+            val insns = method.instructions
+            insns.indices.filter { insns[it].castsTo(tabEnum) }.mapNotNull { i ->
+                val activity = (i + 1..minOf(i + window, insns.lastIndex)).firstOrNull { insns[it].castsTo(EVENT_ACTIVITY) }
+                    ?: return@mapNotNull null
+                NavigateToTabSite(
+                    method, i, (insns[i] as OneRegisterInstruction).registerA,
+                    activity, (insns[activity] as OneRegisterInstruction).registerA,
+                )
+            }
+        }
+    }
+    return sites.singleOrNull()
+        ?: throw PatchException("Expected one navigateToTab tab cast, found ${sites.map { "${it.method.definingClass}@${it.tabCast}" }}")
+}
+
+/**
  * Keeps a hidden match page tab from coming back. EventActivity's navigateToTab (a function
  * reference whose body R8 inlined into a shared Function1 lambda) inserts a tab that the page does
  * not have and selects it; the Details cards call it. Right after the lambda casts its argument to
@@ -114,48 +164,19 @@ internal val eventTabGuardPatch = bytecodePatch(
     dependsOn(sofascoreControls.patch)
 
     execute {
-        val tabEnum = eventTabEnum().type
-
-        fun Method.castsTo(type: String) = implementation?.instructions?.any {
-            it.opcode == Opcode.CHECK_CAST && ((it as ReferenceInstruction).reference as TypeReference).type == type
-        } == true
-
-        val candidates = mutableListOf<ClassDef>()
-        classDefForEach { classDef ->
-            if (FUNCTION1 in classDef.interfaces &&
-                classDef.methods.any { it.name == "invoke" && it.castsTo(tabEnum) && it.castsTo(EVENT_ACTIVITY) }
-            ) {
-                candidates += classDef
-            }
-        }
-
         // The site: check-cast vT, <tab enum> followed within six instructions by a check-cast to
         // EventActivity (the function reference's receiver).
-        data class Site(val method: MutableMethod, val index: Int, val register: Int)
-        val sites = candidates.flatMap { classDef ->
-            mutableClassDefBy(classDef).methods.filter { it.name == "invoke" && it.implementation != null }.flatMap { method ->
-                val insns = method.instructions
-                insns.indices.filter { i ->
-                    insns[i].opcode == Opcode.CHECK_CAST &&
-                        ((insns[i] as ReferenceInstruction).reference as TypeReference).type == tabEnum &&
-                        (i + 1..minOf(i + 6, insns.lastIndex)).any { j ->
-                            insns[j].opcode == Opcode.CHECK_CAST &&
-                                ((insns[j] as ReferenceInstruction).reference as TypeReference).type == EVENT_ACTIVITY
-                        }
-                }.map { Site(method, it, (insns[it] as OneRegisterInstruction).registerA) }
-            }
-        }
-        val site = sites.singleOrNull()
-            ?: throw PatchException("Expected one navigateToTab tab cast, found ${sites.map { "${it.method.definingClass}@${it.index}" }}")
+        val site = navigateToTabSite(window = 6)
+        val register = site.tabRegister
 
-        val at = site.index + 1
+        val at = site.tabCast + 1
         site.method.requireNoBranchTargetAt(at, "navigateToTab guard")
-        val scratch = site.method.findFreeRegister(at, site.register)
-        if (site.register > 255 || scratch > 255) throw PatchException("navigateToTab guard: registers above v255")
+        val scratch = site.method.findFreeRegister(at, register)
+        if (register > 255 || scratch > 255) throw PatchException("navigateToTab guard: registers above v255")
         site.method.addInstructionsWithLabelsChecked(
             at,
             """
-                invoke-static/range { v${site.register} .. v${site.register} }, $SOFASCORE_CONTROLS->isEventTabHidden(Ljava/lang/Enum;)Z
+                invoke-static/range { v$register .. v$register }, $SOFASCORE_CONTROLS->isEventTabHidden(Ljava/lang/Enum;)Z
                 move-result v$scratch
                 if-eqz v$scratch, :heval_stock
                 sget-object v$scratch, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;

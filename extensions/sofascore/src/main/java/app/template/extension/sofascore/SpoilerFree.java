@@ -2,6 +2,7 @@ package app.template.extension.sofascore;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -33,8 +34,10 @@ import app.template.extension.hevalcontrols.HevalSettings;
  * a match on its match page or a whole competition on its page, and Sofascore then hides that
  * match's score where the user chose to (one Patch settings switch per surface, each on by default
  * and each depending on the master switch): {@value #NOTIFICATIONS} drops its pushes,
- * {@value #LISTS} blanks the score and status cells of its match list rows, {@value #WIDGET}
- * blanks the scores of its home-screen widget row and shows the kickoff time as its status.
+ * {@value #LISTS} blanks the score and status cells of its match list rows (and hides its search
+ * result score), {@value #WIDGET} blanks the scores of its home-screen widget row and shows the
+ * kickoff time as its status, {@value #MATCH_PAGE} hides the match page's header score, score
+ * tables, score tabs and incidents (and the share card's) until full time.
  *
  * <p>A marked match is hidden only until full time: once its status is "finished" its score shows
  * again on its own, unless {@value #KEEP_FINAL_HIDDEN} (off by default, depending on the master
@@ -605,6 +608,215 @@ public final class SpoilerFree {
             return state.masked ? View.GONE : visibility;
         } catch (Throwable failure) {
             return visibility;
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Phase 3: match page tabs, incidents, the share card's incidents and search results.
+    // Which screen each hook reaches is read from the app's code (static analysis), not
+    // observed on a device.
+    // ---------------------------------------------------------------------------------------
+
+    /**
+     * The match page tabs a hidden page drops, by tab enum constant name (the patch checks they
+     * exist): every tab that shows the score or how the match goes. Details, the prematch tabs, odds,
+     * standings, the knockout tree, matches and contribute stay.
+     */
+    static final String[] SPOILER_TABS = {
+        "COMMENTARY", "AI_INSIGHTS", "OVERS", "SCORECARD", "GAMES", "LINEUPS", "BOX_SCORE", "STATISTICS",
+        "MMA_STATISTICS", "HOCKEY_PLAY_BY_PLAY", "GRAPHS", "MEDIA",
+    };
+
+    /** Whether a hidden page drops the tab named {@code name}. */
+    static boolean dropsTab(String name) {
+        if (name == null) return false;
+        for (String tab : SPOILER_TABS) {
+            if (tab.equals(name)) return true;
+        }
+        return false;
+    }
+
+    /** Removes the tabs a hidden page drops from {@code tabs} (enum constants), in place; pure. */
+    static void removeSpoilerTabs(List<?> tabs) {
+        for (int i = tabs.size() - 1; i >= 0; i--) {
+            Object tab = tabs.get(i);
+            if (tab instanceof Enum && dropsTab(((Enum<?>) tab).name())) tabs.remove(i);
+        }
+    }
+
+    /**
+     * The match page rule of {@link #onHeader} for an Event: {@value #MATCH_PAGE} is on, the shared
+     * decision hides the score and the match has started.
+     */
+    static boolean matchPageHides(Object event) {
+        return event != null && HevalSettings.isEnabled(MATCH_PAGE) && hidesScore(event) && !NOT_STARTED.equals(statusType(event));
+    }
+
+    /** The Activity behind {@code host} (a Context, unwrapped through ContextWrapper), or null. */
+    static Activity activityOf(Object host) {
+        Object current = host;
+        for (int depth = 0; current != null && depth < 16; depth++) {
+            if (current instanceof Activity) return (Activity) current;
+            if (!(current instanceof ContextWrapper)) return null;
+            current = ((ContextWrapper) current).getBaseContext();
+        }
+        return null;
+    }
+
+    /**
+     * The page decision for a match page surface that only has a Context (or the activity): the
+     * match of the page behind it (noted by {@link #onMatch} or {@link #onHeadData}) with the rule of
+     * {@link #matchPageHides}. False (stock) for every other screen and on any failure.
+     */
+    public static boolean pageHides(Object host) {
+        try {
+            Activity activity = activityOf(host);
+            Page page = activity == null ? null : pages.get(activity);
+            // Only a match page's subject counts (a competition page's subject is a UniqueTournament).
+            return page != null && isEvent(page.subject) && matchPageHides(page.subject);
+        } catch (Throwable failure) {
+            return false;
+        }
+    }
+
+    /**
+     * Patched into the match page's tab builder right after it takes the Event out of the head data
+     * (it may run before the observer that calls {@link #onMatch}), behind the master switch read here:
+     * notes the Event as the page's match, so the tab filter and the incidents see it.
+     */
+    public static void onHeadData(Object activity, Object event) {
+        try {
+            if (HevalSettings.isEnabled(FEATURE_ID)) setSubject(activity, event, true);
+        } catch (Throwable failure) {
+            Log.w(TAG, "Spoiler-free head data not noted: " + failure.getClass().getName());
+        }
+    }
+
+    /**
+     * Patched into the tab builder just before it hands the tab list to the pager adapter: removes
+     * {@link #SPOILER_TABS} from the list (the builder's own ArrayList) while the page hides the score.
+     * The tabs come back when the builder runs again after full time.
+     */
+    public static void filterTabs(Object activity, List<?> tabs) {
+        try {
+            if (tabs != null && pageHides(activity)) removeSpoilerTabs(tabs);
+        } catch (Throwable failure) {
+            HevalSettings.reportFailure(MATCH_PAGE, failure);
+        }
+    }
+
+    /**
+     * Patched into navigateToTab after it casts its receiver to the activity: true makes it answer
+     * "not navigated" for a tab {@link #filterTabs} removed, so a Details card cannot add it back.
+     */
+    public static boolean blocksTab(Enum<?> tab, Object activity) {
+        try {
+            return tab != null && dropsTab(tab.name()) && pageHides(activity);
+        } catch (Throwable failure) {
+            return false;
+        }
+    }
+
+    /**
+     * Patched into the start of the incidents adapter's fill method with the adapter's Context and the
+     * incidents: a new empty list for a hidden page (goals, cards, period rows and the running score
+     * all come from it), else {@code incidents} unchanged. The stock list is never changed (it may
+     * be the response's own list or an immutable empty one).
+     */
+    public static List<?> incidents(Context context, List<?> incidents) {
+        try {
+            return incidentsFor(incidents, incidents != null && pageHides(context));
+        } catch (Throwable failure) {
+            return incidents;
+        }
+    }
+
+    /** A new empty list when {@code hidden}, else {@code incidents}; null stays null and the input is never changed. Pure. */
+    static List<?> incidentsFor(List<?> incidents, boolean hidden) {
+        return incidents != null && hidden ? new ArrayList<Object>() : incidents;
+    }
+
+    /** Clears {@code incidents} when {@code hidden}. Pure apart from the list. */
+    static void clearWhen(ArrayList<?> incidents, boolean hidden) {
+        if (incidents != null && hidden) incidents.clear();
+    }
+
+    /** {@link #incidentsFor} for the share modal's ArrayList. Pure. */
+    static ArrayList<?> shareIncidentsFor(ArrayList<?> incidents, boolean hidden) {
+        return incidents != null && hidden ? new ArrayList<Object>() : incidents;
+    }
+
+    /**
+     * Patched into the start of the period incidents grouping (basketball and ice hockey adapters)
+     * with the ArrayList its caller has just built and the match: cleared while the match page rule
+     * hides the score.
+     */
+    public static void clearIfHidden(ArrayList<?> incidents, Object event) {
+        try {
+            if (incidents != null) clearWhen(incidents, matchPageHides(event));
+        } catch (Throwable failure) {
+            HevalSettings.reportFailure(MATCH_PAGE, failure);
+        }
+    }
+
+    private static final String EVENT_CLASS = "com.sofascore.model.mvvm.model.Event";
+
+    /** Whether {@code subject} is Sofascore's Event (or a subclass such as FootballEvent), by class name. */
+    static boolean isEvent(Object subject) {
+        for (Class<?> type = subject == null ? null : subject.getClass(); type != null; type = type.getSuperclass()) {
+            if (EVENT_CLASS.equals(type.getName())) return true;
+        }
+        return false;
+    }
+    private static final Map<Class<?>, Method> eventGetters = new HashMap<>();
+
+    /** The match of the share modal: its only no-argument method returning Event (the patch checks it). */
+    static Object modalEvent(Object modal) throws Exception {
+        if (modal == null) return null;
+        Class<?> type = modal.getClass();
+        Method getter;
+        synchronized (eventGetters) {
+            getter = eventGetters.get(type);
+            if (getter == null && !eventGetters.containsKey(type)) {
+                for (Method method : type.getDeclaredMethods()) {
+                    if (method.getParameterTypes().length == 0 && EVENT_CLASS.equals(method.getReturnType().getName())
+                        && !Modifier.isStatic(method.getModifiers())) {
+                        method.setAccessible(true);
+                        getter = method;
+                        break;
+                    }
+                }
+                eventGetters.put(type, getter);
+            }
+        }
+        return getter == null ? null : getter.invoke(modal);
+    }
+
+    /**
+     * Patched after every read of the share modal's incidents with the modal: a new empty list for a
+     * hidden match (the share card then has no goal rows or scorers), else {@code incidents}.
+     */
+    public static ArrayList<?> shareIncidents(Object modal, ArrayList<?> incidents) {
+        try {
+            return incidents == null ? null : shareIncidentsFor(incidents, matchPageHides(modalEvent(modal)));
+        } catch (Throwable failure) {
+            HevalSettings.reportFailure(MATCH_PAGE, failure);
+            return incidents;
+        }
+    }
+
+    /**
+     * Patched before the search result row binder returns, behind {@value #LISTS} (read here): the
+     * score view is INVISIBLE for a match whose score is hidden. The binder sets that view's
+     * visibility on every bind, so a recycled row needs no restore.
+     */
+    public static void maskSearchScore(Object score, Object event) {
+        try {
+            if (!(score instanceof View) || !HevalSettings.isEnabled(LISTS) || !hidesScore(event)) return;
+            View view = (View) score;
+            if (view.getVisibility() == View.VISIBLE) view.setVisibility(View.INVISIBLE);
+        } catch (Throwable failure) {
+            HevalSettings.reportFailure(LISTS, failure);
         }
     }
 

@@ -397,11 +397,11 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.slower_widget_refresh` | Slower widget refresh | off | yes | widget refresh interval, in minutes (`widgetRefreshMinutes`) |
 | `sofascore.hidden_countries` (list) | Hide countries | off | yes | SportCategoriesResponse.getCategories (`filterCategories`), CategoriesForDateResponse.getCategories (`filterCategoryWrappers`), SearchResponse.getResults (`filterSearchResults`), the sportLiveEvents and getIndexedEventsPage request returns (`filterEventList`), the categoryScheduledEvents request return (`filterCategoryEvents`), seeds by `CountryFilter.init` at the end of ReleaseApp.onCreate |
 | `sofascore.hidden_competitions` (list) | Hide competitions | off | yes | the same shared sites minus the leagues list, plus UniqueTournamentGroupResponse.getUniqueTournaments (`filterUniqueTournaments`); icons by `CompetitionFilter.init` (called from `CountryFilter.init`) |
-| `sofascore.spoiler_free` | Spoiler-free mode | on | no | EventActivity and LeagueActivity onCreateOptionsMenu (`addMatchItem`, `addCompetitionItem`) and their (Event)V / (UniqueTournament)V methods (`onMatch`, `onCompetition`); master of the seven rows below |
+| `sofascore.spoiler_free` | Spoiler-free mode | on | no | EventActivity and LeagueActivity onCreateOptionsMenu (`addMatchItem`, `addCompetitionItem`) and their (Event)V / (UniqueTournament)V methods (`onMatch`, `onCompetition`), and the tab builder's Event (`onHeadData`, read in Java, 2026-11-23); master of the seven rows below |
 | `sofascore.spoiler_notifications` | Spoiler-free mode | on | no | FCMListenerService.onMessageReceived (`blocksPush`; the full-time push passes unless `spoiler_keep_final`) |
-| `sofascore.spoiler_lists` | Spoiler-free mode | on | no | EventListScoreTextView.setText (`scoreText`), the match row binder's start (`markRow`) |
+| `sofascore.spoiler_lists` | Spoiler-free mode | on | no | EventListScoreTextView.setText (`scoreText`), the match row binder's start (`markRow`); read in Java: the search row binder's return (`maskSearchScore`, 2026-11-23) |
 | `sofascore.spoiler_widget` | Spoiler-free mode | on | no | the widget row builder's return (`maskWidgetRow`) |
-| `sofascore.spoiler_match_page` | Spoiler-free mode | on | no | read in Java: every match header setEvent start (`onHeader`), the header base's setResultView (`onResultView`), setFootballGoals (gate, `hidesHeaderGoals`), the Details module base's setVisibility (`moduleVisibility`), the period score tables' and points graph's binds (`maskModule`), the share header bind (`maskShareHeader`) (2026-11-22) |
+| `sofascore.spoiler_match_page` | Spoiler-free mode | on | no | read in Java: every match header setEvent start (`onHeader`), the header base's setResultView (`onResultView`), setFootballGoals (gate, `hidesHeaderGoals`), the Details module base's setVisibility (`moduleVisibility`), the period score tables' and points graph's binds (`maskModule`), the share header bind (`maskShareHeader`) (2026-11-22); the tab builder (`filterTabs`), navigateToTab (`blocksTab`), the incidents adapter fill (`incidents`), the period groupings (`clearIfHidden`) and the share modal's incident reads (`shareIncidents`) (2026-11-23) |
 | `sofascore.spoiler_keep_final` | Spoiler-free mode | off | no | no gate of its own: read by the shared decision `SpoilerFree.hidesScore` (lists, Compose rows, widget, match page) and the push rule; off = a marked match shows its score (and its full-time push) once its status is `finished` (2026-11-22) |
 | `sofascore.spoiler_events` (list) | Spoiler-free mode | off | no | read by every spoiler hook; filled by the match page item |
 | `sofascore.spoiler_competitions` (list) | Spoiler-free mode | off | no | read by every spoiler hook; filled by the competition page item |
@@ -522,6 +522,40 @@ screen each hook reaches is read from the code):
 - Not covered: the Incidents list, baseball and ice hockey period tables, football momentum,
   statistics, lineups, commentary, featured players, the volleyball collapsed score while scrolling,
   chat messages, and the rest listed above.
+
+Phase 3 (2026-11-23, Sofascore 26.11.09, smoke test and CLI run only, not run on a device; which
+screen each hook reaches is read from the code):
+- One page decision, `SpoilerFree.pageHides(Context)`: the Context is unwrapped to its Activity and
+  the match noted for that page decides with the match page rule (`sofascore.spoiler_match_page` on,
+  `hidesScore`, not `notstarted`). The tab builder notes the match itself (`onHeadData`, master
+  switch), because it can run before the observer that calls `onMatch`.
+- Tabs (`sofascore.spoiler_match_page`): a hidden page drops Commentary, AI insights, Overs,
+  Scorecard, Games, Lineups, Box score, Statistics, MMA statistics, Play-by-play, Graphs and Media
+  (`filterTabs`, by enum constant name). Details, the prematch tabs, odds, Standings, Knockout,
+  Matches and Contribute stay. navigateToTab answers "not navigated" for a dropped tab (`blocksTab`).
+  The tabs come back at the next refresh of the match head after full time, not at once (inferred).
+- Incidents (same switch), for the sports whose Details tab uses the incidents adapter and its
+  subclasses (football, basketball, ice hockey and the adapter's other users): the adapter gets an
+  empty list for a hidden page (`incidents`; goals, cards, period rows and the running score), and
+  the basketball/ice hockey period grouping clears its input (`clearIfHidden`). The share card's incident rows come from a new empty list too
+  (`shareIncidents`, the modal's match read through its only ()Event method).
+- Search results (`sofascore.spoiler_lists`): the score of a hidden match is INVISIBLE
+  (`maskSearchScore`, before the row binder returns).
+- Timing gap: tabs and incidents change only at the app's next delivery of head data or incidents,
+  so marking a match on its open page, or a kick-off while the page is open, applies then, not at once.
+  Un-marking a match whose page is open: its tabs and incidents come back only when the page is
+  reopened (the swipe refresh is disabled in the tab builder).
+- The match page row now reads "Hides the score, tabs and goals of a marked match's page until full
+  time." (same id; the Manager name and description are unchanged).
+- Not covered: the esports Details game rows (an adapter filled through the adapter base's list
+  setter from EsportsGamesResponse) and the other Details adapters built in EventDetailsFragment for
+  tennis, volleyball, darts, table tennis, badminton, aussie rules and others (26.11.09: k17, zrh,
+  bei, ot5; not traced), baseball and ice hockey period tables, the Details tab's football momentum
+  graph (not traced, goal markers may remain), Standings and Knockout (finished results only), featured players and featured match views, the
+  volleyball collapsed score while scrolling, chat message text, team form (finished matches only, so
+  it matters only with Keep final scores hidden), standings form, basic event data and feed cards,
+  favourites outside the Compose rows, the ongoing match notification and the winner colour of team
+  names.
 
 Not converted: Disable ads,
 Enable Premium, Disable telemetry, Disable Facebook SDK, GmsCore support and Spoof signature.
