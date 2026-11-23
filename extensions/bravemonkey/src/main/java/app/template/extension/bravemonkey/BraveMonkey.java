@@ -19,6 +19,7 @@ import android.os.SystemClock;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,11 +41,16 @@ public final class BraveMonkey {
     private static final AtomicBoolean INSTALLED = new AtomicBoolean();
     private static final AtomicBoolean STARTED = new AtomicBoolean();
     private static final long PROMPT_DEDUPE_MS = 3000;
+    /** At most one install review launch from a page per this long, whatever the URL. */
+    private static final long PROMPT_MIN_GAP_MS = 30_000;
 
     private static volatile Context appContext;
     private static Handler main;
     private static String lastPromptUrl;
     private static long lastPromptAt;
+    private static long lastAnyPromptAt = Long.MIN_VALUE / 2;
+    /** The activity that is resumed right now (null while the app is in the background). */
+    private static volatile WeakReference<Activity> resumed;
 
     private BraveMonkey() { }
 
@@ -55,18 +61,21 @@ public final class BraveMonkey {
             appContext = app;
             app.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
                 @Override public void onActivityResumed(Activity activity) {
+                    resumed = new WeakReference<>(activity);
                     try {
                         if (!STARTED.compareAndSet(false, true)) return;
                         UserscriptShortcut.publish(app);
                         MonkeyStore.warmUp(app);
-                        app.unregisterActivityLifecycleCallbacks(this);
                     } catch (Throwable error) {
                         Logger.e("start failed", error);
                     }
                 }
                 @Override public void onActivityCreated(Activity activity, Bundle state) { }
                 @Override public void onActivityStarted(Activity activity) { }
-                @Override public void onActivityPaused(Activity activity) { }
+                @Override public void onActivityPaused(Activity activity) {
+                    WeakReference<Activity> current = resumed;
+                    if (current != null && current.get() == activity) resumed = null;
+                }
                 @Override public void onActivityStopped(Activity activity) { }
                 @Override public void onActivitySaveInstanceState(Activity activity, Bundle state) { }
                 @Override public void onActivityDestroyed(Activity activity) { }
@@ -80,11 +89,18 @@ public final class BraveMonkey {
     public static void onPageLoad(Object tab) {
         try {
             if (tab == null || appContext == null) return;
-            if (Looper.myLooper() != Looper.getMainLooper()) {
-                mainHandler().post(() -> onPageLoad(tab));
-                return;
-            }
-            handlePageLoad(tab);
+            // Never run the injection inside Brave's native-to-Java load callback (it would call
+            // Tab.loadUrl before the tab's own observers ran): always post it. When called on the
+            // main thread the URL is read now, and the post is dropped if the tab moved on.
+            final String seen = Looper.myLooper() == Looper.getMainLooper() ? BraveBridge.urlOf(tab) : null;
+            mainHandler().post(() -> {
+                try {
+                    if (seen != null && !seen.equals(BraveBridge.urlOf(tab))) return;
+                    handlePageLoad(tab);
+                } catch (Throwable error) {
+                    Logger.e("page load failed", error);
+                }
+            });
         } catch (Throwable error) {
             Logger.e("onPageLoad failed", error);
         }
@@ -193,10 +209,16 @@ public final class BraveMonkey {
     }
 
     private static void promptDirectInstall(Context context, String url) {
+        // A page can offer an install review only while Brave is in the foreground, and at most
+        // once per PROMPT_MIN_GAP_MS (plus the per-URL dedupe).
+        WeakReference<Activity> foreground = resumed;
+        if (foreground == null || foreground.get() == null) return;
         long now = SystemClock.elapsedRealtime();
         if (url.equals(lastPromptUrl) && now - lastPromptAt < PROMPT_DEDUPE_MS) return;
+        if (now - lastAnyPromptAt < PROMPT_MIN_GAP_MS) return;
         lastPromptUrl = url;
         lastPromptAt = now;
+        lastAnyPromptAt = now;
         installFromUrl(null, url);
     }
 

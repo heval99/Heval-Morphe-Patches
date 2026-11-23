@@ -37,6 +37,27 @@ public class BraveBridgeTest {
     }
 
     @Test
+    public void aFragmentThatLooksLikeAnotherUrlDoesNotWin() {
+        String spec = "https://evil.example/#https://bank.example/";
+        StringBuilder nul = new StringBuilder(spec);
+        nul.append('\u0000').append(spec);
+        List<String> values = Arrays.asList("evil.example", "/", "https://bank.example/", spec, spec, nul.toString());
+        assertEquals(spec, BraveBridge.pickUrl(values));
+    }
+
+    @Test
+    public void aQueryThatLooksLikeAnotherUrlDoesNotWin() {
+        String spec = "https://evil.example/p?https://x";
+        assertEquals(spec, BraveBridge.pickUrl(Arrays.asList("evil.example", "/p", "https://x", spec, "https")));
+    }
+
+    @Test
+    public void inconsistentCandidatesFailClosed() {
+        // The longest value does not contain the other http(s) candidate.
+        assertNull(BraveBridge.pickUrl(Arrays.asList("https://bank.example/", "https://evil.example/page")));
+    }
+
+    @Test
     public void rejectsBareSchemeAndNulSerialisation() {
         assertNull(BraveBridge.pickUrl(Arrays.asList("http", "10.0.2.2", null, "")));
         assertNull(BraveBridge.pickUrl(Arrays.asList("https://a.com/\u0000x")));

@@ -183,6 +183,19 @@ val userscriptsPatch = bytecodePatch(
         ) {
             throw PatchException("${menu.name}: the Exit row no longer has the expected shape")
         }
+        // Every register relation the clone relies on, so a changed row fails here, not at runtime:
+        // init(newRow, factoryResult, zero), add(list, newRow), and the registers the clone writes
+        // (new row, factory arguments 1-4, the result) are distinct and none is the disabled flag
+        // (first + 5), the zero register, the list or the iget object.
+        val written = setOf(created.first, first + 1, first + 2, first + 3, first + 4, moveResult)
+        val ok = init.registerCount == 3 && init.registerC == created.first && init.registerD == moveResult &&
+            add.registerCount == 2 && add.registerD == created.first &&
+            written.size == 6 &&
+            first + 5 !in written && init.registerE !in written && add.registerC !in written &&
+            (iget as TwoRegisterInstruction).registerB !in written &&
+            (menuInsns[loadIndex + 1] as? OneRegisterInstruction)?.registerA == moveResult &&
+            menuInsns[loadIndex + 1].opcode == Opcode.MOVE_RESULT_OBJECT
+        if (!ok) throw PatchException("${menu.name}: the Exit row registers do not relate as the clone assumes")
         val newReg = created.first
         val igetRef = (iget as Instruction).ref()
         val row = """

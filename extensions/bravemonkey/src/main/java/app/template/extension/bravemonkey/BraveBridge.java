@@ -23,7 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *   <li>{@link #run}: the renamed {@code Tab.loadUrl(LoadUrlParams)} with
  *       {@code new LoadUrlParams(0, "javascript:" + encoded)}; the page runs it in its MAIN world.</li>
  *   <li>{@link #urlOf}: {@code Tab.getUrl()} returns a GURL whose getters are obfuscated; the spec is
- *       the shortest http(s) string among its no-arg String getters without a NUL.</li>
+ *       the LONGEST http(s) string among its no-arg String getters without a NUL (other getters
+ *       return the fragment, query, path or host, all contained in the spec); every other kept
+ *       candidate must be contained in it or the URL is rejected.</li>
  *   <li>{@link #isIncognito}: kept {@code isIncognito()}; a reflection failure counts as incognito.</li>
  * </ul>
  * Call {@link #run}, {@link #urlOf} and {@link #isIncognito} on the main thread. The pure helpers
@@ -250,17 +252,26 @@ final class BraveBridge {
     // ---------------------------------------------------------------- pure helpers (JVM tested)
 
     /**
-     * The GURL spec among its getter values: the shortest one starting with "http://" or
-     * "https://" that contains no NUL (the longest value is a NUL-joined serialisation and one
-     * candidate is just the scheme "http").
+     * The GURL spec among its getter values. Getters also return the fragment, query, path and host
+     * (a page https://evil.example/#https://bank.example/ has a getter returning
+     * "https://bank.example/"), so the spec is the LONGEST value that starts with "http://" or
+     * "https://" and has no NUL (the NUL-joined serialisation is excluded by that rule). The full
+     * spec contains every other component, so the choice must contain every other kept candidate;
+     * otherwise the set is inconsistent and the result is null (fail closed).
      */
     static String pickUrl(Iterable<String> candidates) {
-        String best = null;
         if (candidates == null) return null;
+        List<String> kept = new ArrayList<>();
+        String best = null;
         for (String s : candidates) {
             if (s == null || s.indexOf('\u0000') >= 0) continue;
             if (!(s.startsWith("http://") || s.startsWith("https://"))) continue;
-            if (best == null || s.length() < best.length()) best = s;
+            kept.add(s);
+            if (best == null || s.length() > best.length()) best = s;
+        }
+        if (best == null) return null;
+        for (String s : kept) {
+            if (!best.contains(s)) return null;
         }
         return best;
     }

@@ -1172,7 +1172,7 @@ object Constants {
         )
     )
 
-    // Same app, used only by the experimental Brave patches (Disable telemetry, Disable ads,
+    // Same app, used by the experimental Brave patches (Disable telemetry, Disable ads, Userscripts,
     // Hide promotional prompts), so Morphe Manager flags them as experimental. Researched
     // 2026-10-07 against 1.96.61 (versionCode 429606104): smoke-tested, CLI-applied and
     // decompile-checked, and runtime-checked on the emulator with the x86_64 1.96.61 build
@@ -1181,7 +1181,7 @@ object Constants {
     // field-tested by users.
     // 2026-11-07: updated to 1.99.55 together with the stable entry; all patches apply unchanged; smoke + CLI without -f.
     // 2026-11-12: updated to 1.99.56 together with the stable entry; all patches apply unchanged; smoke + CLI without -f.
-    // 2026-11-23: "Userscripts" (opt-in, extensions/bravemonkey) added on 1.100.58. Anchors, all matched by shape or
+    // 2026-11-23: "Userscripts" (opt-in, extensions/bravemonkey; fixed menu id 0x0b3a1001, title looked up by name at runtime) added on 1.100.58. Anchors, all matched by shape or
     // kept strings: SplitChromeApplication.onCreate (install); the TabWebContentsObserver primary-main-frame load
     // callback, (Page, L, GURL, Z, I)V with the (Tab, GURL)V observer dispatch and a TabImpl field read (page loaded,
     // the TabImpl register is read, not overwritten); the page menu builder ("add_to_playlist_button" +
