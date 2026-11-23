@@ -29,6 +29,10 @@ import app.template.patches.sofascore.countries.COMPETITION_FILTER
 import app.template.patches.sofascore.countries.COUNTRY_FILTER
 import app.template.patches.sofascore.countries.HIDDEN_COUNTRIES
 import app.template.patches.sofascore.countries.NETWORK_COROUTINE_API
+import app.template.patches.sofascore.countries.COLLAPSIBLE_CATEGORY_PREFIX
+import app.template.patches.sofascore.countries.QUICK_HIDE
+import app.template.patches.sofascore.countries.QUICK_HIDE_CLASS
+import app.template.patches.sofascore.countries.VIEW_HOLDER
 import app.template.patches.sofascore.spoiler.EVENT_ACTIVITY
 import app.template.patches.sofascore.spoiler.LEAGUE_ACTIVITY
 import app.template.patches.sofascore.spoiler.SCORE_TEXT_VIEW
@@ -161,6 +165,7 @@ private val HEVAL_FEATURES: List<HevalFeature> = listOf(HIDE_AI_INSIGHTS) +
     PROMO_SECTION_FEATURES.map { it.second } +
     ANIMATION_FEATURES +
     SLOWER_WIDGET_REFRESH +
+    QUICK_HIDE +
     HIDDEN_COUNTRIES +
     HIDDEN_COMPETITIONS +
     HIDE_MATCH_CHAT +
@@ -901,7 +906,11 @@ class SofascoreSmokeTest {
         assertUpdateChatAndTabs(classes, byType)
 
         // Spoiler-free mode (2026-11-08): push gate, menu items, list rows and widget.
-        assertSpoilerFree(byType, originalClasses(apk))
+        val stockClasses = originalClasses(apk)
+        assertSpoilerFree(byType, stockClasses)
+
+        // Hide from pages (2026-11-23): the Leagues tab's country row hook (the page gates are in assertSpoilerFree).
+        assertQuickHideRow(classes, stockClasses)
 
         // AMOLED black (2026-11-09): the night cards and elevated surfaces are near black.
         assertAmoledBlack()
@@ -1112,17 +1121,27 @@ class SofascoreSmokeTest {
         }
         check(pushInsns.branchTarget(8) == pushTarget) { "a push that is not blocked does not reach the stock code" }
 
-        // 2. and 3. The menu items and the page subjects (master switch).
+        // 2. and 3. The menu items and the page subjects (master switch). LeagueActivity's two methods
+        // also carry the "Hide from pages" gates (2026-11-23), chained with Spoiler-free's in either order.
         val menu = listOf("Landroid/view/Menu;")
-        for ((type, subject, helpers) in listOf(
-            Triple(EVENT_ACTIVITY, "Lcom/sofascore/model/mvvm/model/Event;", "addMatchItem" to "onMatch"),
-            Triple(LEAGUE_ACTIVITY, "Lcom/sofascore/model/mvvm/model/UniqueTournament;", "addCompetitionItem" to "onCompetition"),
-        )) {
-            val (onMenu, stockMenu) = pair(type) { it.name == "onCreateOptionsMenu" && it.params() == menu }
-            assertHook(onMenu, stockMenu, SPOILER_FREE_MODE.id, listOf(Opcode.INVOKE_STATIC_RANGE), helpers.first)
-            val (setter, stockSetter) = pair(type) { it.returnType == "V" && it.params() == listOf(subject) && !it.isStatic() }
-            assertHook(setter, stockSetter, SPOILER_FREE_MODE.id, listOf(Opcode.INVOKE_STATIC_RANGE), helpers.second)
+        val (matchMenu, stockMatchMenu) = pair(EVENT_ACTIVITY) { it.name == "onCreateOptionsMenu" && it.params() == menu }
+        assertHook(matchMenu, stockMatchMenu, SPOILER_FREE_MODE.id, listOf(Opcode.INVOKE_STATIC_RANGE), "addMatchItem")
+        val (matchSetter, stockMatchSetter) = pair(EVENT_ACTIVITY) {
+            it.returnType == "V" && it.params() == listOf("Lcom/sofascore/model/mvvm/model/Event;") && !it.isStatic()
         }
+        assertHook(matchSetter, stockMatchSetter, SPOILER_FREE_MODE.id, listOf(Opcode.INVOKE_STATIC_RANGE), "onMatch")
+        val (leagueMenu, stockLeagueMenu) = pair(LEAGUE_ACTIVITY) { it.name == "onCreateOptionsMenu" && it.params() == menu }
+        assertChainedPageGates(leagueMenu, stockLeagueMenu, mapOf(
+            SPOILER_FREE_MODE.id to (SPOILER_FREE to "addCompetitionItem"),
+            QUICK_HIDE.id to (QUICK_HIDE_CLASS to "addLeagueItems"),
+        ))
+        val (leagueSetter, stockLeagueSetter) = pair(LEAGUE_ACTIVITY) {
+            it.returnType == "V" && it.params() == listOf("Lcom/sofascore/model/mvvm/model/UniqueTournament;") && !it.isStatic()
+        }
+        assertChainedPageGates(leagueSetter, stockLeagueSetter, mapOf(
+            SPOILER_FREE_MODE.id to (SPOILER_FREE to "onCompetition"),
+            QUICK_HIDE.id to (QUICK_HIDE_CLASS to "onLeague"),
+        ))
 
         // 4. List rows: setText filters its text through scoreText into p1, and the row binder marks
         // every score cell the stock binder reads for the row's Event.
@@ -1573,6 +1592,90 @@ class SofascoreSmokeTest {
         // No jump may skip the filter: nothing branches straight to a return.
         val targets = insns.indices.filter { insns[it] is OffsetInstruction }.map { insns.branchTarget(it) }.toSet()
         check(returns.none { it in targets }) { "a branch skips the main tab filter" }
+    }
+
+    /**
+     * [method] starts with one page gate per [gates] entry (feature id -> helper class and name), in
+     * any order: the gate, then `invoke-static/range { p0 .. p1 }` of the helper; each gate's stock
+     * branch lands on the next gate and the last one on the stock code, which is unchanged.
+     */
+    private fun assertChainedPageGates(method: Method, stockMethod: Method, gates: Map<String, Pair<String, String>>) {
+        val label = "${method.definingClass}->${method.name}"
+        val insns = method.instructions()
+        val p0 = method.implementation!!.registerCount - 1 - method.parameterTypes.size
+        val seen = mutableListOf<String>()
+        var at = 0
+        repeat(gates.size) {
+            val id = insns.getOrNull(at)?.stringOrNull() ?: error("$label: no gate at $at")
+            val (owner, helper) = gates[id] ?: error("$label: unexpected gate \"$id\" at $at")
+            val target = assertGate(method, id, label, at)
+            val call = insns[at + 4]
+            check(call.opcode == Opcode.INVOKE_STATIC_RANGE && call.call()?.definingClass == owner && call.call()?.name == helper &&
+                (call as RegisterRangeInstruction).startRegister == p0 && call.registerCount == 2
+            ) { "$label: the \"$id\" gate does not call $owner->$helper(p0, p1); got ${call.opcode} ${call.call()}" }
+            check(target == at + 5) { "$label: the \"$id\" gate does not fall through to the next code" }
+            seen += id
+            at += 5
+        }
+        check(seen.toSet() == gates.keys) { "$label: gates $seen, expected ${gates.keys}" }
+        check(insns.drop(at).map { it.opcode }.filter { it != Opcode.NOP } == stockMethod.instructions().map { it.opcode }.filter { it != Opcode.NOP }) {
+            "$label: the stock code after the gates changed"
+        }
+        println("$label: page gates in order $seen")
+    }
+
+    /**
+     * Hide from pages (2026-11-23), the Leagues tab's country row: the binder of the holder that keeps
+     * the category_header_cell binding (found like the patch: the (I, I, Object)V method that casts to
+     * the CollapsibleCategory model and reads its Category) starts with the QuickHide row hook, and its
+     * stock code follows unchanged. The page gates are checked in assertSpoilerFree.
+     */
+    private fun assertQuickHideRow(classes: List<ClassDef>, stock: List<ClassDef>) {
+        check(QUICK_HIDE_CLASS in classes.map { it.type }) { "QuickHide is not in the patched dex" }
+        check(QUICK_HIDE.id == "sofascore.quick_hide" && !QUICK_HIDE.default) { "the Hide from pages switch changed its id or default" }
+        val callers = classes.flatMap { it.methods }.filter { m ->
+            m.instructions().any { it.call()?.let { c -> c.definingClass == QUICK_HIDE_CLASS && c.name == "onCountryRow" } == true }
+        }
+        check(callers.size == 1) { "${callers.size} methods call QuickHide.onCountryRow, expected one" }
+        val row = callers.single()
+        val label = "${row.definingClass}->${row.name}"
+        check(row.returnType == "V" && row.params() == listOf("I", "I", "Ljava/lang/Object;") && !row.isStatic()) { "$label has the wrong shape" }
+        val stockRow = stock.single { it.type == row.definingClass }.methods.single { it.name == row.name && it.params() == row.params() }
+        check(row.implementation!!.registerCount == stockRow.implementation!!.registerCount) { "$label: the register count changed" }
+
+        // The model it reads: the class the stock binder casts to whose toString starts with the prefix.
+        val byType = stock.associateBy { it.type }
+        val model = stockRow.instructions().filter { it.opcode == Opcode.CHECK_CAST }
+            .mapNotNull { ((it as ReferenceInstruction).reference as? TypeReference)?.type }
+            .filter { type ->
+                byType[type]?.methods?.singleOrNull { it.name == "toString" && it.parameterTypes.isEmpty() }
+                    ?.strings()?.firstOrNull()?.startsWith(COLLAPSIBLE_CATEGORY_PREFIX) == true
+            }.distinct().single()
+        val categoryField = byType.getValue(model).fields.single { it.type == "Lcom/sofascore/model/mvvm/model/Category;" && !AccessFlags.STATIC.isSet(it.accessFlags) }
+
+        val insns = row.instructions()
+        val registers = row.implementation!!.registerCount
+        val p0 = registers - 4
+        val expected = listOf(
+            Opcode.MOVE_OBJECT_FROM16, Opcode.IGET_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.INSTANCE_OF, Opcode.IF_EQZ,
+            Opcode.CHECK_CAST, Opcode.IGET_OBJECT, Opcode.GOTO, Opcode.CONST_4, Opcode.INVOKE_STATIC,
+        )
+        check(insns.take(expected.size).map { it.opcode } == expected) { "$label: the row hook is ${insns.take(expected.size).map { it.opcode }}" }
+        check((insns[0] as TwoRegisterInstruction).let { it.registerA == 0 && it.registerB == p0 }) { "$label: the hook does not read p0" }
+        check(insns[1].field()?.let { it.definingClass == VIEW_HOLDER && it.name == "itemView" } == true) { "$label: the hook does not read itemView" }
+        check((insns[2] as TwoRegisterInstruction).let { it.registerA == 1 && it.registerB == p0 + 3 }) { "$label: the hook does not read p3 (the item)" }
+        check(((insns[3] as ReferenceInstruction).reference as TypeReference).type == model) { "$label: the hook does not test for $model" }
+        check(insns.branchTarget(4) == 8) { "$label: a row that is not a country does not pass null" }
+        check(((insns[5] as ReferenceInstruction).reference as TypeReference).type == model) { "$label: the hook does not cast to $model" }
+        check(insns[6].field()?.let { it.definingClass == model && it.name == categoryField.name } == true) { "$label: the hook does not read the row's Category" }
+        check(insns.branchTarget(7) == 9) { "$label: the country path does not reach the call" }
+        val call = insns[9] as FiveRegisterInstruction
+        check(call.registerCount == 2 && call.registerC == 0 && call.registerD == 1 &&
+            insns[9].call()?.let { it.definingClass == QUICK_HIDE_CLASS && it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/view/View;", "Ljava/lang/Object;") } == true
+        ) { "$label: the hook does not call QuickHide.onCountryRow(itemView, category)" }
+        check(insns.drop(expected.size).map { it.opcode }.filter { it != Opcode.NOP } == stockRow.instructions().map { it.opcode }.filter { it != Opcode.NOP }) {
+            "$label: the stock binder changed after the hook"
+        }
     }
 
     private fun assertHideCountries(classes: List<ClassDef>, byType: Map<String, ClassDef>, diagnostics: String) {

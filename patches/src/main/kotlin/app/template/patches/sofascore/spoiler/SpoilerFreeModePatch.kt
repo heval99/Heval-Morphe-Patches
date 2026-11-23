@@ -720,6 +720,8 @@ private fun BytecodePatchContext.searchRow(): Pair<MutableMethod, FieldReference
 //    hands the Event over. The item handles its own click (EventActivity has no
 //    onOptionsItemSelected).
 // 3. Competition page (master): the same with LeagueActivity and its only (UniqueTournament)V method.
+//    "Hide from pages" (countries/QuickHideHooks.kt, 2026-11-23) gates the same two methods at index 0;
+//    whichever runs second goes first and falls through into the other's gate.
 // 4. Match list rows (sofascore.spoiler_lists): at the start of the row binder every score cell
 //    (EventListScoreTextView: scores, period scores, aggregate, penalties and the status cell) is
 //    marked for the row's Event, and EventListScoreTextView.setText answers "" for a marked cell, so

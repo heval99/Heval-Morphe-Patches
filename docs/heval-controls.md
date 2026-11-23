@@ -397,6 +397,7 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.slower_widget_refresh` | Slower widget refresh | off | yes | widget refresh interval, in minutes (`widgetRefreshMinutes`) |
 | `sofascore.hidden_countries` (list) | Hide countries | off | yes | SportCategoriesResponse.getCategories (`filterCategories`), CategoriesForDateResponse.getCategories (`filterCategoryWrappers`), SearchResponse.getResults (`filterSearchResults`), the sportLiveEvents and getIndexedEventsPage request returns (`filterEventList`), the categoryScheduledEvents request return (`filterCategoryEvents`), seeds by `CountryFilter.init` at the end of ReleaseApp.onCreate |
 | `sofascore.hidden_competitions` (list) | Hide competitions | off | yes | the same shared sites minus the leagues list, plus UniqueTournamentGroupResponse.getUniqueTournaments (`filterUniqueTournaments`); icons by `CompetitionFilter.init` (called from `CountryFilter.init`) |
+| `sofascore.quick_hide` | Hide countries or Hide competitions (no patch of its own) | off | no | LeagueActivity onCreateOptionsMenu and its (UniqueTournament)V method (index 0 gates, chained with Spoiler-free's: `addLeagueItems`, `onLeague`); the Leagues tab's country row binder start, not gated (`onCountryRow`, reads the switch on every bind) (2026-11-23) |
 | `sofascore.spoiler_free` | Spoiler-free mode | on | no | EventActivity and LeagueActivity onCreateOptionsMenu (`addMatchItem`, `addCompetitionItem`) and their (Event)V / (UniqueTournament)V methods (`onMatch`, `onCompetition`), and the tab builder's Event (`onHeadData`, read in Java, 2026-11-23); master of the seven rows below |
 | `sofascore.spoiler_notifications` | Spoiler-free mode | on | no | FCMListenerService.onMessageReceived (`blocksPush`; the full-time push passes unless `spoiler_keep_final`) |
 | `sofascore.spoiler_lists` | Spoiler-free mode | on | no | EventListScoreTextView.setText (`scoreText`), the match row binder's start (`markRow`); read in Java: the search row binder's return (`maskSearchScore`, 2026-11-23) |
@@ -471,6 +472,20 @@ the user looks for. A picked competition is reported wherever it is filtered, so
 saved. Not filtered: pinned/favourite leagues fetched by their own requests, team/player/tournament
 pages, the widget and notifications. No static seed: Sofascore has no bundled competition list (one
 could be baked at patch time only from a hand-made list, which would go stale).
+
+Hide from pages (2026-11-23, owner request; `sofascore/countries/QuickHideHooks.kt`, `QuickHide` in
+`extensions/sofascore`) is a switch, off by default because a mistaken tap would hide an entry. It is
+registered by the shared list hooks, so it is listed whenever Hide countries or Hide competitions is in
+(no dependency, so one list is enough), and each action is offered only while its list's patch is in
+(`CountryFilter.patched()`, `CompetitionFilter.patched()`). A competition's page gets two overflow items,
+"Hide this competition" and "Hide country: <name>" (shown only while the entry is not hidden yet), and a
+country row of the Leagues tab gets a long press. Each asks "Hide <name>? You can undo it in Patch
+settings.", then saves the key with `HevalSettings.setHidden` (the lists' own keys: the UniqueTournament
+id, the category's alpha2 or `slug:<slug>`), reports the label to the picker and shows "Hidden. Refresh or
+restart to update lists"; the competition page then closes. Un-hiding is the normal picker. Not covered:
+the Matches tab's country headers (their Compose row model has no category id) and the competition rows
+inside an expanded country of the Leagues tab (a holder shared by several row kinds). Static analysis
+only; not run on a device.
 
 A hidden sport never empties the sport list: if every sport is hidden, the filter returns the full
 list, and a hidden home sport falls back to the first visible one.

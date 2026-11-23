@@ -204,6 +204,21 @@ object Constants {
     // finished matches, matters with Keep final scores hidden), standings form, basic event data and
     // feed cards, the ongoing match notification. Smoke test, extension unit tests and a CLI run
     // without -f.
+    // 2026-11-23 on 26.11.09 (owner request; static only, runtime NOT run): new Patch settings switch
+    // sofascore.quick_hide ("Hide from pages", off by default, no Manager patch of its own), added by
+    // the shared list hooks, so it comes with Hide countries or Hide competitions and offers only the
+    // actions whose list patch is in. LeagueActivity's onCreateOptionsMenu and its only
+    // (UniqueTournament)V method get a gate at index 0 (chained with Spoiler-free's: the smoke test
+    // and the CLI run gave Spoiler-free's gate first; the other order is the same chain by
+    // construction, not exercised) for "Hide this competition" / "Hide country: <name>"; the Leagues
+    // tab's country row binder (the (I, I, Object)V method of the RecyclerView.ViewHolder holding the
+    // category_header_cell binding, which casts to the CollapsibleCategory model and reads its one
+    // Category field; 26.11.09: ze4.e, model af4) starts with QuickHide.onCountryRow(itemView,
+    // category) for a long press. The Leagues tab's ItemTouchHelper does not start a drag on a long
+    // press (isLongPressDragEnabled is inlined false for its callback), so the long press is free. No
+    // new Fingerprint: the sites are shape scans that fail unless exactly one matches. Smoke test,
+    // extension unit tests, CLI runs without -f (four patches; Hide competitions alone) and
+    // apkanalyzer dumps (registers 5, 5 and 22 unchanged) pass.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",

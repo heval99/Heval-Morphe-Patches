@@ -21,6 +21,7 @@ import app.template.patches.sofascore.betting.HIDE_BETTING_CONTENT
 import app.template.patches.sofascore.competitions.HIDDEN_COMPETITIONS
 import app.template.patches.sofascore.controls.SofascoreControlsCategory
 import app.template.patches.sofascore.countries.HIDDEN_COUNTRIES
+import app.template.patches.sofascore.countries.QUICK_HIDE
 import app.template.patches.sofascore.layout.HIDE_AI_INSIGHTS
 import app.template.patches.sofascore.layout.HIDE_MATCH_CHAT
 import app.template.patches.sofascore.layout.MAIN_TAB_FEATURES
@@ -202,7 +203,7 @@ class HevalControlsTest {
      */
     @Test
     fun sofascoreRowsKeepTheirIdsAndArePlain() {
-        val features = listOf(HIDE_AI_INSIGHTS, HIDE_MATCH_CHAT, HIDE_BETTING_CONTENT, HIDDEN_COUNTRIES, HIDDEN_COMPETITIONS,
+        val features = listOf(HIDE_AI_INSIGHTS, HIDE_MATCH_CHAT, HIDE_BETTING_CONTENT, HIDDEN_COUNTRIES, HIDDEN_COMPETITIONS, QUICK_HIDE,
             BLOCK_MARKETING_NOTIFICATIONS, DISABLE_RATING_PROMPTS, AMOLED_BLACK, SLOWER_WIDGET_REFRESH, TURN_OFF_VIDEO_AUTOPLAY,
             COMPACT_MATCH_LISTS, KEEP_SCREEN_ON, CLEAN_SHARE_LINKS, DISABLE_SCREENSHOT_PROMPT) +
             MAIN_TAB_FEATURES + MATCH_TAB_FEATURES.map { it.second } + SPORT_FEATURES.map { it.second } +
@@ -211,7 +212,7 @@ class HevalControlsTest {
             "baseball", "cricket", "motorsport", "american_football", "rugby", "badminton", "snooker", "darts", "futsal",
             "minifootball", "table_tennis", "beach_volley", "waterpolo", "cycling", "aussie_rules", "floorball", "bandy")
         val shipped = listOf(
-            "hide_ai_insights", "hide_match_chat", "hide_betting_content", "hidden_countries", "hidden_competitions",
+            "hide_ai_insights", "hide_match_chat", "hide_betting_content", "hidden_countries", "hidden_competitions", "quick_hide",
             "block_marketing_notifications", "disable_rating_prompts", "amoled_black", "slower_widget_refresh",
             "turn_off_video_autoplay", "compact_match_lists", "keep_screen_on", "clean_share_links", "disable_screenshot_prompt",
             "animations_off", "animations_fast", "spoiler_free", "spoiler_notifications", "spoiler_lists", "spoiler_widget",

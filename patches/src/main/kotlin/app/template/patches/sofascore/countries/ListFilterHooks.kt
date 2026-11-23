@@ -139,7 +139,12 @@ private fun filterSmali(register: Int, helper: String) =
 //     the same; 2026-11-22, 26.11.09: the default case of cil, which returns it through its own
 //     return-object, so the other case, queryCategoriesForData, is untouched),
 // plus CountryFilter.init before every return of ReleaseApp.onCreate (country seeds and the
-// pickers' icons).
+// pickers' icons), and (2026-11-23, owner request) the "Hide from pages" switch sofascore.quick_hide
+// (off by default; QuickHideHooks.kt): LeagueActivity's onCreateOptionsMenu and (UniqueTournament)V
+// method get "Hide this competition" / "Hide country: <name>" overflow items, and the Leagues tab's
+// country row binder gives the row a long press that hides its country, each after a confirmation.
+// Not covered: the Matches tab's Compose country headers (their row model carries no category id)
+// and the competition rows inside an expanded country of the Leagues tab (a multi-case holder).
 // Not hooked on purpose: the pinned leagues section of the Matches tab. It loads each pinned
 // league's matches with uniqueTournamentScheduledEvents (`api/v1/unique-tournament/{uid}/
 // scheduled-events/{date}`; 26.11.09: fcc, from the pinned_tournaments_table query), the same
@@ -175,6 +180,7 @@ internal val sofascoreListFiltersPatch = bytecodePatch(
         val onCreate = ReleaseAppOnCreateFingerprint.method
         val onCreateReturns = onCreate.instructions.indices.filter { onCreate.getInstruction(it).opcode == Opcode.RETURN_VOID }
         if (onCreateReturns.isEmpty()) throw PatchException("ReleaseApp.onCreate has no return-void")
+        val quickHide = quickHideSites()
 
         // 0. Country seeds and picker icons, registered at startup.
         onCreateReturns.sortedDescending().forEach { ret ->
@@ -193,5 +199,10 @@ internal val sofascoreListFiltersPatch = bytecodePatch(
             val (method, ret, register) = site
             method.addInstructionsAtControlFlowLabelChecked(ret, filterSmali(register, "$helper(Ljava/lang/Object;)Ljava/lang/Object;"))
         }
+
+        // 9. Hide from pages (QuickHideHooks.kt): the competition page's items and the Leagues tab's
+        //    country row long press. Registered here, once, whichever list patch is in.
+        quickHide.apply()
+        sofascoreControls.register(QUICK_HIDE)
     }
 }
