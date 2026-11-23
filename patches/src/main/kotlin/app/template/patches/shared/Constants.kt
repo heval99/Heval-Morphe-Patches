@@ -1181,6 +1181,14 @@ object Constants {
     // field-tested by users.
     // 2026-11-07: updated to 1.99.55 together with the stable entry; all patches apply unchanged; smoke + CLI without -f.
     // 2026-11-12: updated to 1.99.56 together with the stable entry; all patches apply unchanged; smoke + CLI without -f.
+    // 2026-11-23: "Userscripts" (opt-in, extensions/bravemonkey) added on 1.100.58. Anchors, all matched by shape or
+    // kept strings: SplitChromeApplication.onCreate (install); the TabWebContentsObserver primary-main-frame load
+    // callback, (Page, L, GURL, Z, I)V with the (Tab, GURL)V observer dispatch and a TabImpl field read (page loaded,
+    // the TabImpl register is read, not overwritten); the page menu builder ("add_to_playlist_button" +
+    // "customizable_brave_menu_item_id_"), whose Exit row is cloned for the new row; the menu row factory
+    // (Context, L, I, I, I, Z)PropertyModel; BraveActivity.onMenuOrKeyboardAction (TimerDialogFragment string).
+    // Verified: BraveUserscriptsSmokeTest on 1.100.58 and the CLI without -f. NOT verified: runtime on a device or
+    // emulator (menu row look without an icon, click, script injection, install links) - pending.
     val COMPATIBILITY_BRAVE_EXPERIMENTAL = Compatibility(
         name = "Brave Browser",
         packageName = "com.brave.browser",

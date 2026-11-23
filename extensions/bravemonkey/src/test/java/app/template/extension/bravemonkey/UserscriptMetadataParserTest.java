@@ -96,17 +96,13 @@ public class UserscriptMetadataParserTest {
         assertEquals(Collections.singletonList("https://a.com/*"), s.matches);
     }
 
-    /**
-     * The owner's Sorare script header (lines 1-9). RECONSTRUCTED from the fields named in the
-     * brief because the original file was not available to the porting agent; the @namespace and
-     * @description values are placeholders. Only the header is copied, never the script body.
-     */
+    /** The owner's Sorare script header, lines 1-9 of the real file (header only, never the script body). */
     private static final String SORARE_HEADER = String.join("\n",
             "// ==UserScript==",
             "// @name         Sorare duplicate-version dropper",
-            "// @namespace    https://sorare.com/",
+            "// @namespace    sorare-set-companion",
             "// @version      2.3.0",
-            "// @description  Drops duplicate versions on Sorare.",
+            "// @description  New Set (Divination), football and NBA (only the section you are in): keeps only the best version of each player and offers every other card of him for dropping after you review them. There is no collection bonus any more, so a second version is worth nothing. Pack check says KEEP or DELETE for every new card while you open a pack, as a badge right under the card on the page (2.3.0).",
             "// @match        https://sorare.com/*",
             "// @run-at       document-start",
             "// @grant        none",

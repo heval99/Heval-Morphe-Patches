@@ -90,6 +90,17 @@ public final class BraveMonkey {
         }
     }
 
+    /** String id of the menu row title, looked up by name (the patcher cannot name ids it adds). */
+    public static int titleId(Context context) {
+        try {
+            int id = context.getResources().getIdentifier("bravemonkey_userscripts", "string", context.getPackageName());
+            if (id != 0) return id;
+        } catch (Throwable error) {
+            Logger.e("titleId failed", error);
+        }
+        return android.R.string.untitled;
+    }
+
     public static void openManager(Activity activity) {
         try {
             Context context = activity != null ? activity : appContext;
