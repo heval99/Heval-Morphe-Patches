@@ -12,6 +12,10 @@ android {
 dependencies {
     // HevalSettings. compileOnly: one copy of the core, from hevalcontrols.mpe.
     compileOnly(project(":extensions:hevalcontrols:core"))
+
+    // JVM unit tests of Spoiler-free mode's failure handling: .\gradlew :extensions:scores365:testDebugUnitTest
+    testImplementation(project(":extensions:hevalcontrols:core"))
+    testImplementation(libs.junit)
 }
 
 // Pure-Java extension. AGP's built-in Kotlin adds kotlin-stdlib by default, which would grow the

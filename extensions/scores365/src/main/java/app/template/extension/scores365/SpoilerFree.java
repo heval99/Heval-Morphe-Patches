@@ -47,7 +47,9 @@ import java.util.Set;
  * the hot paths (list rows, the match header, each push) never touch the disk.
  *
  * <p>A mark only hides a match that has started: a match that has not started shows its kickoff
- * time anyway. Every hook fails open (stock behaviour) on any error.
+ * time anyway. An error while finding out whether a match is marked (or in a notification) gives
+ * stock behaviour; an error once a match is known to be marked keeps its score hidden. Each such
+ * error is logged once per call site ({@link SpoilerFailures}).
  */
 @SuppressWarnings("unused")
 public final class SpoilerFree {
@@ -157,6 +159,7 @@ public final class SpoilerFree {
         try {
             return surface >= 0 && surface < SURFACE_FEATURES.length && HevalSettings.isEnabled(SURFACE_FEATURES[surface]);
         } catch (Throwable failure) {
+            SpoilerFailures.report("isSurfaceOn", FEATURE_MASTER, failure);
             return false;
         }
     }
@@ -166,8 +169,14 @@ public final class SpoilerFree {
         try {
             return HevalSettings.isEnabled(FEATURE_MASTER);
         } catch (Throwable failure) {
+            SpoilerFailures.report("isMasterOn", FEATURE_MASTER, failure);
             return false;
         }
+    }
+
+    /** Tests only: replaces the in-memory marks (null drops them, so the next read loads the file again). */
+    static void useMarks(Set<String> matches, Set<String> competitions) {
+        snapshot = matches == null ? null : new Snapshot(new HashSet<>(matches), new HashSet<>(competitions));
     }
 
     /** Whether game {@code gameId} of competition {@code competitionId} (0 when unknown) is marked. */
@@ -226,23 +235,44 @@ public final class SpoilerFree {
         statusNotStarted = gameStatus.getReturnType().getMethod("getIsNotStarted");
     }
 
-    /** Whether {@code game} (a GameObj) is marked and has started; false on any doubt. */
-    private static boolean hidesGame(Object game) {
+    /**
+     * Whether {@code game} (a GameObj) is marked and has started. A failure while finding out
+     * whether it is marked shows the score (one error must not hide every score); once it is known
+     * to be marked, a failure hides it ({@link #startedMarkedGame}). Both are logged once.
+     */
+    static boolean hidesGame(Object game) {
+        if (game == null) return false;
         try {
-            if (game == null || snapshot().isEmpty()) return false;
+            if (snapshot().isEmpty()) return false;
             resolveGame(game);
             int id = (Integer) gameId.invoke(game);
             int competition = (Integer) gameCompetition.invoke(game);
             if (!isSpoilerGame(id, competition)) return false;
+        } catch (Throwable failure) {
+            SpoilerFailures.report("hidesGame.marks", FEATURE_MASTER, failure);
+            return false;
+        }
+        return startedMarkedGame(game);
+    }
+
+    /** For a marked game: whether it has started; fails closed (the user asked for no score). */
+    static boolean startedMarkedGame(Object game) {
+        try {
+            resolveGame(game);
             Object status = gameStatus.invoke(game);
             return status != null && !((Boolean) statusNotStarted.invoke(status));
         } catch (Throwable failure) {
-            return false;
+            SpoilerFailures.report("hidesGame.marked", FEATURE_MASTER, failure);
+            return true;
         }
     }
 
-    /** The kickoff time of {@code game} in the phone's time format, or "" when unknown. */
-    private static String kickoff(Object game) {
+    /**
+     * The kickoff time of {@code game} in the phone's time format, or "" when unknown. Only asked
+     * for a game whose score is hidden, so a failure answers a blank (a no-break space), never ""
+     * (the row formatter would then show the stock score).
+     */
+    static String kickoff(Object game) {
         try {
             Date start = (Date) gameStartTime.invoke(game);
             if (start == null) return "";
@@ -252,7 +282,8 @@ public final class SpoilerFree {
                     : java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT);
             return format.format(start);
         } catch (Throwable failure) {
-            return "";
+            SpoilerFailures.report("kickoff", FEATURE_MASTER, failure);
+            return NBSP;
         }
     }
 
@@ -279,6 +310,11 @@ public final class SpoilerFree {
      */
     public static boolean blocksNotification(Object notification) {
         if (!isSurfaceOn(SURFACE_NOTIFICATIONS)) return false;
+        return notificationMarked(notification);
+    }
+
+    /** Whether notification {@code notification} is about a marked game; false (and logged once) on a failure. */
+    static boolean notificationMarked(Object notification) {
         try {
             if (notification == null || snapshot().isEmpty()) return false;
             Object game = declaredField(notification, "Game");
@@ -293,6 +329,8 @@ public final class SpoilerFree {
             topCompetition.setAccessible(true);
             return isSpoilerGame(id, competition) || isSpoilerComp(topCompetition.getInt(notification));
         } catch (Throwable failure) {
+            // Never drop a notification because of an error.
+            SpoilerFailures.report("blocksNotification", SURFACE_FEATURES[SURFACE_NOTIFICATIONS], failure);
             return false;
         }
     }

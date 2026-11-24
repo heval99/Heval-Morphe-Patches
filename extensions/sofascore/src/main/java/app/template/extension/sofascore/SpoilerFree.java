@@ -137,6 +137,8 @@ public final class SpoilerFree {
             Object type = event == null ? null : CountryFilter.call(event, "getStatusType");
             return type instanceof String ? (String) type : null;
         } catch (Throwable failure) {
+            // Null hides a marked match (the safe side).
+            SpoilerFailures.report("statusType", FEATURE_ID, failure);
             return null;
         }
     }
@@ -146,16 +148,50 @@ public final class SpoilerFree {
      * competition) and not finished, or finished with {@value #KEEP_FINAL_HIDDEN} on. Read at every
      * call, so a match shows its score again at the first redraw after full time. The one decision
      * for every score hook (lists, widget, and the match page hooks still to come).
+     *
+     * <p>A failure while finding out whether the match is marked shows the score (one error must not
+     * hide every score in the app); once the match is known to be marked, a failure hides it (see
+     * {@link #markedHides}). Both are logged once.
      */
     public static boolean hidesScore(Object event) {
+        if (event == null) return false;
+        boolean match;
+        boolean competition;
         try {
-            if (event == null) return false;
-            boolean match = isMatchMarked(eventKey(event));
-            boolean competition = !match && isCompetitionMarked(competitionKey(event));
-            if (!match && !competition) return false;
-            return hidesScore(match, competition, statusType(event), HevalSettings.isEnabled(KEEP_FINAL_HIDDEN));
+            match = isMatchMarked(eventKey(event));
+            competition = !match && isCompetitionMarked(competitionKey(event));
         } catch (Throwable failure) {
+            SpoilerFailures.report("hidesScore.marks", FEATURE_ID, failure);
             return false;
+        }
+        if (!match && !competition) return false;
+        return markedHides(match, competition, event);
+    }
+
+    /** A setting read, so tests can make it fail. */
+    interface Flag {
+        boolean get();
+    }
+
+    private static final Flag KEEP_FINAL_SWITCH = new Flag() {
+        @Override
+        public boolean get() {
+            return HevalSettings.isEnabled(KEEP_FINAL_HIDDEN);
+        }
+    };
+
+    /** The decision for a match already known to be marked (by id or competition). */
+    static boolean markedHides(boolean match, boolean competition, Object event) {
+        return markedHides(match, competition, event, KEEP_FINAL_SWITCH);
+    }
+
+    /** {@link #markedHides(boolean, boolean, Object)}; fails closed: the user asked for no score. */
+    static boolean markedHides(boolean match, boolean competition, Object event, Flag keepFinalHidden) {
+        try {
+            return hidesScore(match, competition, statusType(event), keepFinalHidden.get());
+        } catch (Throwable failure) {
+            SpoilerFailures.report("hidesScore.marked", FEATURE_ID, failure);
+            return true;
         }
     }
 
@@ -188,6 +224,8 @@ public final class SpoilerFree {
             if (message == null) return false;
             return blocksPush(message.getString("notification"), SETTINGS_MARKS, HevalSettings.isEnabled(KEEP_FINAL_HIDDEN));
         } catch (Throwable failure) {
+            // Never drop a push because of an error.
+            SpoilerFailures.report("blocksPush", NOTIFICATIONS, failure);
             return false;
         }
     }
@@ -217,6 +255,8 @@ public final class SpoilerFree {
             boolean finalResult = icon instanceof String && FINISH_ICON.equals(icon);
             return keepFinalHidden || !finalResult;
         } catch (Throwable failure) {
+            // Never drop a push because of an error (unreadable JSON passes, like stock).
+            SpoilerFailures.report("blocksPush.json", NOTIFICATIONS, failure);
             return false;
         }
     }
@@ -247,6 +287,8 @@ public final class SpoilerFree {
             cell.text = text;
             return cell.masked ? "" : text;
         } catch (Throwable failure) {
+            // Only the cell lookup can fail: whether the row is marked is unknown.
+            SpoilerFailures.report("scoreText", LISTS, failure);
             return text;
         }
     }
@@ -320,8 +362,7 @@ public final class SpoilerFree {
             if (!(id instanceof Integer)) return;
             boolean match = isMatchMarked(key(id));
             boolean competition = !match && isCompetitionMarked(competitionKey(event));
-            boolean hidden = (match || competition)
-                && hidesScore(match, competition, statusType(event), HevalSettings.isEnabled(KEEP_FINAL_HIDDEN));
+            boolean hidden = (match || competition) && markedHides(match, competition, event);
             noteRow((Integer) id, match, hidden);
         } catch (Throwable failure) {
             HevalSettings.reportFailure(LISTS, failure);
@@ -366,12 +407,22 @@ public final class SpoilerFree {
         try {
             if (!HevalSettings.isEnabled(LISTS)) return timeLower;
             if (!rowHidden(eventId, isMatchMarked(eventId > 0 ? Integer.toString(eventId) : null))) return timeLower;
-            clearScores(home);
-            clearScores(away);
-            return null;
         } catch (Throwable failure) {
+            // Whether the row is hidden is unknown: stock.
             HevalSettings.reportFailure(LISTS, failure);
             return timeLower;
+        }
+        // The row hides its score: a failure on one line still clears the other and hides the status.
+        clearScoresOfLine(home);
+        clearScoresOfLine(away);
+        return null;
+    }
+
+    private static void clearScoresOfLine(Object line) {
+        try {
+            clearScores(line);
+        } catch (Throwable failure) {
+            SpoilerFailures.report("maskRow.clear", LISTS, failure);
         }
     }
 
@@ -539,6 +590,8 @@ public final class SpoilerFree {
             Boolean hidden = headers.get(header);
             return hidden != null && hidden;
         } catch (Throwable failure) {
+            // The header's decision could not be read.
+            SpoilerFailures.report("hidesHeaderGoals", MATCH_PAGE, failure);
             return false;
         }
     }
@@ -608,6 +661,8 @@ public final class SpoilerFree {
             state.requested = visibility;
             return state.masked ? View.GONE : visibility;
         } catch (Throwable failure) {
+            // The module's state could not be read.
+            SpoilerFailures.report("moduleVisibility", MATCH_PAGE, failure);
             return visibility;
         }
     }
@@ -676,6 +731,8 @@ public final class SpoilerFree {
             // Only a match page's subject counts (a competition page's subject is a UniqueTournament).
             return page != null && isEvent(page.subject) && matchPageHides(page.subject);
         } catch (Throwable failure) {
+            // The page's match could not be found (hidesScore handles its own failures).
+            SpoilerFailures.report("pageHides", MATCH_PAGE, failure);
             return false;
         }
     }
@@ -714,6 +771,7 @@ public final class SpoilerFree {
         try {
             return tab != null && dropsTab(tab.name()) && pageHides(activity);
         } catch (Throwable failure) {
+            SpoilerFailures.report("blocksTab", MATCH_PAGE, failure);
             return false;
         }
     }
@@ -728,6 +786,7 @@ public final class SpoilerFree {
         try {
             return incidentsFor(incidents, incidents != null && pageHides(context));
         } catch (Throwable failure) {
+            SpoilerFailures.report("incidents", MATCH_PAGE, failure);
             return incidents;
         }
     }
