@@ -6,6 +6,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import android.view.MenuItem;
+
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 
 import org.junit.Test;
@@ -291,5 +294,29 @@ public class SpoilerFreeTest {
         assertFalse(SpoilerFree.blocksPush("not json", MARKED, false));
         assertFalse(SpoilerFree.blocksPush("", MARKED, false));
         assertFalse(SpoilerFree.blocksPush((String) null, MARKED, false));
+    }
+
+    /** Stores a page whose item reaches its page (as a real MenuItem does); returns only a weak handle. */
+    private static WeakReference<Object> storePage() {
+        Object activity = new Object();
+        SpoilerFree.Page page = SpoilerFree.pageFor(activity);
+        page.setItem(PageLeakSupport.itemReaching(activity));
+        page.subject = new Object();
+        return new WeakReference<>(activity);
+    }
+
+    @Test
+    public void pageStateDoesNotKeepItsActivity() throws Exception {
+        assertTrue("a closed match or competition page stays reachable", PageLeakSupport.collected(storePage()));
+    }
+
+    @Test
+    public void pageStateKeepsItsItemWhileShown() {
+        Object activity = new Object();
+        MenuItem item = PageLeakSupport.itemReaching(activity);
+        SpoilerFree.Page page = SpoilerFree.pageFor(activity);
+        page.setItem(item);
+        assertSame(page, SpoilerFree.pageFor(activity));
+        assertSame(item, page.item());
     }
 }

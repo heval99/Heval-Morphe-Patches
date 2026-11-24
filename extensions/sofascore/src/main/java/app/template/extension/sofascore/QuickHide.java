@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -141,22 +142,44 @@ public final class QuickHide {
     // Competition page (LeagueActivity)
     // ---------------------------------------------------------------------------------------
 
-    /** The items and the competition of each open competition page. */
-    private static final class Page {
-        MenuItem competitionItem;
-        MenuItem countryItem;
+    /**
+     * The items and the competition of each open competition page. The items are held weakly: a
+     * MenuItem reaches its menu and so its Activity, and a value that strongly reaches its own
+     * WeakHashMap key never lets the entry clear (one leaked page per competition opened). The
+     * menu holds its items for as long as it is shown, so a cleared item is one no longer on screen.
+     */
+    static final class Page {
+        private WeakReference<MenuItem> competitionItem;
+        private WeakReference<MenuItem> countryItem;
         Object competition;
+
+        void setItems(MenuItem competition, MenuItem country) {
+            competitionItem = competition == null ? null : new WeakReference<>(competition);
+            countryItem = country == null ? null : new WeakReference<>(country);
+        }
+
+        MenuItem competitionItem() {
+            return competitionItem == null ? null : competitionItem.get();
+        }
+
+        MenuItem countryItem() {
+            return countryItem == null ? null : countryItem.get();
+        }
     }
 
-    private static final Map<Activity, Page> pages = new WeakHashMap<>();
+    /** Weakly keyed by the page's Activity (Object so the unit test can key it without android.jar). */
+    private static final Map<Object, Page> pages = new WeakHashMap<>();
 
     private static Page page(Object host) {
-        if (!(host instanceof Activity)) return null;
-        Activity activity = (Activity) host;
-        Page page = pages.get(activity);
+        return host instanceof Activity ? pageFor(host) : null;
+    }
+
+    /** The page state of {@code key}, created on first use. */
+    static Page pageFor(Object key) {
+        Page page = pages.get(key);
         if (page == null) {
             page = new Page();
-            pages.put(activity, page);
+            pages.put(key, page);
         }
         return page;
     }
@@ -169,29 +192,33 @@ public final class QuickHide {
         try {
             final Page page = page(host);
             if (page == null || menu == null) return;
-            final Activity activity = (Activity) host;
+            // Held weakly by the handlers too, so nothing here outlives the page.
+            final WeakReference<Activity> pageActivity = new WeakReference<>((Activity) host);
             menu.removeItem(COMPETITION_ITEM_ID);
             menu.removeItem(COUNTRY_ITEM_ID);
-            page.competitionItem = addItem(menu, COMPETITION_ITEM_ID, COMPETITION_TITLE, new Runnable() {
+            MenuItem competitionItem = addItem(menu, COMPETITION_ITEM_ID, COMPETITION_TITLE, new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        confirm(activity, competitionTarget(page.competition), true);
+                        Activity activity = pageActivity.get();
+                        if (activity != null) confirm(activity, competitionTarget(page.competition), true);
                     } catch (Throwable failure) {
                         Log.w(TAG, "Hide competition failed: " + failure.getClass().getName());
                     }
                 }
             });
-            page.countryItem = addItem(menu, COUNTRY_ITEM_ID, countryTitle(null), new Runnable() {
+            MenuItem countryItem = addItem(menu, COUNTRY_ITEM_ID, countryTitle(null), new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        confirm(activity, countryTarget(category(page.competition)), true);
+                        Activity activity = pageActivity.get();
+                        if (activity != null) confirm(activity, countryTarget(category(page.competition)), true);
                     } catch (Throwable failure) {
                         Log.w(TAG, "Hide country failed: " + failure.getClass().getName());
                     }
                 }
             });
+            page.setItems(competitionItem, countryItem);
             refresh(page);
         } catch (Throwable failure) {
             Log.w(TAG, "Hide items not added: " + failure.getClass().getName());
@@ -231,11 +258,13 @@ public final class QuickHide {
     /** Shows each item only while its action is offered for the page's competition. */
     private static void refresh(Page page) throws Exception {
         Object competition = page.competition;
-        if (page.competitionItem != null) page.competitionItem.setVisible(competitionTarget(competition) != null);
-        if (page.countryItem != null) {
+        MenuItem competitionItem = page.competitionItem();
+        if (competitionItem != null) competitionItem.setVisible(competitionTarget(competition) != null);
+        MenuItem countryItem = page.countryItem();
+        if (countryItem != null) {
             Target country = countryTarget(category(competition));
-            page.countryItem.setVisible(country != null);
-            if (country != null) page.countryItem.setTitle(countryTitle(country.name));
+            countryItem.setVisible(country != null);
+            if (country != null) countryItem.setTitle(countryTitle(country.name));
         }
     }
 

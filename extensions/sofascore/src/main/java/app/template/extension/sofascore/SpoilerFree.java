@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -836,21 +837,38 @@ public final class SpoilerFree {
     // Menu items
     // ---------------------------------------------------------------------------------------
 
-    /** The item and the subject (Event or UniqueTournament) of each open match or competition page. */
-    private static final class Page {
-        MenuItem item;
+    /**
+     * The item and the subject (Event or UniqueTournament) of each open match or competition page.
+     * The item is held weakly: a MenuItem reaches its menu and so its Activity, and a value that
+     * strongly reaches its own WeakHashMap key never lets the entry clear (one leaked page per page
+     * opened). The menu holds its item for as long as it is shown.
+     */
+    static final class Page {
+        private WeakReference<MenuItem> item;
         Object subject;
+
+        void setItem(MenuItem menuItem) {
+            item = menuItem == null ? null : new WeakReference<>(menuItem);
+        }
+
+        MenuItem item() {
+            return item == null ? null : item.get();
+        }
     }
 
-    private static final Map<Activity, Page> pages = new WeakHashMap<>();
+    /** Weakly keyed by the page's Activity (Object so the unit test can key it without android.jar). */
+    private static final Map<Object, Page> pages = new WeakHashMap<>();
 
     private static Page page(Object host) {
-        if (!(host instanceof Activity)) return null;
-        Activity activity = (Activity) host;
-        Page page = pages.get(activity);
+        return host instanceof Activity ? pageFor(host) : null;
+    }
+
+    /** The page state of {@code key}, created on first use. */
+    static Page pageFor(Object key) {
+        Page page = pages.get(key);
         if (page == null) {
             page = new Page();
-            pages.put(activity, page);
+            pages.put(key, page);
         }
         return page;
     }
@@ -882,7 +900,8 @@ public final class SpoilerFree {
         try {
             final Page page = page(host);
             if (page == null || menu == null) return;
-            final Activity activity = (Activity) host;
+            // Held weakly by the handler too, so nothing here outlives the page.
+            final WeakReference<Activity> pageActivity = new WeakReference<>((Activity) host);
             menu.removeItem(ITEM_ID);
             MenuItem item = menu.add(Menu.NONE, ITEM_ID, ITEM_ORDER, "Spoiler-free");
             item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
@@ -890,6 +909,8 @@ public final class SpoilerFree {
                 @Override
                 public boolean onMenuItemClick(MenuItem clicked) {
                     try {
+                        Activity activity = pageActivity.get();
+                        if (activity == null) return true;
                         toggle(activity, page, match);
                         refresh(page, match);
                     } catch (Throwable failure) {
@@ -898,7 +919,7 @@ public final class SpoilerFree {
                     return true;
                 }
             });
-            page.item = item;
+            page.setItem(item);
             refresh(page, match);
         } catch (Throwable failure) {
             Log.w(TAG, "Spoiler-free item not added: " + failure.getClass().getName());
@@ -918,7 +939,7 @@ public final class SpoilerFree {
 
     /** The item's title for the current subject; hidden while the subject is unknown. */
     private static void refresh(Page page, boolean match) throws Exception {
-        MenuItem item = page.item;
+        MenuItem item = page.item();
         if (item == null) return;
         Object subject = page.subject;
         String key = subjectKey(subject, match);
