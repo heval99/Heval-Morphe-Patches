@@ -53,7 +53,11 @@ internal fun Document.changePackageName(fromPackageName: String, toPackageName: 
 
     // Custom permissions declared or used under the app's package
     // (<package>.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION, <package>.permission.C2D_MESSAGE, ...).
-    for (tag in listOf("permission", "uses-permission")) {
+    // Permission groups and trees are owned per package too: a clone that keeps
+    // "<package>.permission-group" fails to install next to the original with
+    // "attempting to redeclare permission group ... already owned" (GitHub #179, Beeper).
+    // android:permissionGroup attributes are rewritten by the attribute pass below.
+    for (tag in listOf("permission", "uses-permission", "permission-group", "permission-tree")) {
         val elements = getElementsByTagName(tag)
         for (i in 0 until elements.length) {
             val name = (elements.item(i) as Element).getAttribute("android:name")
