@@ -1266,13 +1266,52 @@ class SofascoreSmokeTest {
             insn.call()?.let { it.definingClass == SPOILER_FREE && it.name == target.name && it.returnType == target.returnType &&
                 it.parameterTypes.map(CharSequence::toString) == target.params() } == true
         }
-        check(decision.callsMethod(pure) && decision.callsMethod(statusType)) { "hidesScore(Object) does not use the pure decision and the status" }
-        check(decision.strings().contains(SPOILER_KEEP_FINAL_HIDDEN.id)) { "hidesScore(Object) does not read ${SPOILER_KEEP_FINAL_HIDDEN.id}" }
+        // Fail-closed change (2026-11-24): the decision for a marked match lives in markedHides (which also
+        // reads the keep-final option through a Flag), so the checks follow calls, SpoilerFree field reads
+        // and SpoilerFree inner classes transitively instead of looking at one method body.
+        val helperPrefix = SPOILER_FREE.removeSuffix(";")
+        fun Method.reachable(): List<Method> {
+            val seen = LinkedHashSet<Method>()
+            fun visit(m: Method) {
+                if (!seen.add(m)) return
+                m.instructions().forEach { insn ->
+                    val ref = (insn as? ReferenceInstruction)?.reference
+                    val owner = when (ref) {
+                        is MethodReference -> ref.definingClass
+                        is FieldReference -> ref.definingClass
+                        is TypeReference -> ref.type
+                        else -> null
+                    }
+                    if (owner == null || !(owner == SPOILER_FREE || owner.startsWith("$helperPrefix\$"))) return@forEach
+                    val cls = byType[owner] ?: return@forEach
+                    when (ref) {
+                        is MethodReference -> cls.methods.filter { it.name == ref.name && it.params() == ref.parameterTypes.map(CharSequence::toString) && it.returnType == ref.returnType }
+                            .forEach(::visit)
+                        is FieldReference -> cls.methods.filter { it.name == "<clinit>" }.forEach(::visit)
+                        else -> cls.methods.forEach(::visit)
+                    }
+                }
+            }
+            visit(this)
+            return seen.toList()
+        }
+        fun Method.reaches(target: Method) = reachable().any { it.callsMethod(target) }
+        fun Method.reachedStrings() = reachable().flatMap { it.strings() }
+        val markedHides = helper.methods.filter { it.name == "markedHides" && it.returnType == "Z" }
+        check(markedHides.isNotEmpty()) { "SpoilerFree.markedHides is missing" }
+        // The marked-match decision itself: pure rule, status type and keep-final option, all on its path.
+        check(markedHides.any { it.callsMethod(pure) && it.callsMethod(statusType) }) { "markedHides does not use the pure decision and the status" }
+        check(markedHides.any { SPOILER_KEEP_FINAL_HIDDEN.id in it.reachedStrings() }) { "markedHides does not read ${SPOILER_KEEP_FINAL_HIDDEN.id}" }
+        // Every score hook reaches that decision.
+        check(decision.reaches(pure) && decision.reaches(statusType)) { "hidesScore(Object) does not reach the pure decision and the status" }
+        check(SPOILER_KEEP_FINAL_HIDDEN.id in decision.reachedStrings()) { "hidesScore(Object) does not reach ${SPOILER_KEEP_FINAL_HIDDEN.id}" }
+        check(decision.callsMethod(markedHides.first { it.params().size == 3 })) { "hidesScore(Object) does not decide through markedHides" }
         check("getStatusType" in statusType.strings()) { "statusType does not call Event.getStatusType" }
         val noteEvent = helperMethod("noteEvent", listOf("Ljava/lang/Object;"), "V")
-        check(noteEvent.callsMethod(pure) && noteEvent.callsMethod(statusType) && SPOILER_KEEP_FINAL_HIDDEN.id in noteEvent.strings()) {
+        check(noteEvent.reaches(pure) && noteEvent.reaches(statusType) && SPOILER_KEEP_FINAL_HIDDEN.id in noteEvent.reachedStrings()) {
             "noteEvent does not decide with the status and the keep-final-hidden option"
         }
+        check(noteEvent.callsMethod(markedHides.first { it.params().size == 3 })) { "noteEvent does not decide through markedHides" }
         check(helperMethod("markRow", listOf("Landroid/view/View;", "Ljava/lang/Object;"), "V").callsMethod(decision)) { "markRow does not use hidesScore(Object)" }
         check(helperMethod("maskWidgetRow", listOf(CONTEXT, "Landroid/widget/RemoteViews;", "Ljava/lang/Object;"), "V").callsMethod(decision)) {
             "maskWidgetRow does not use hidesScore(Object)"
