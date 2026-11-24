@@ -300,6 +300,7 @@ fun applyPatches(
     allPatches: Set<Patch>,
     filterByCompatibility: Boolean = true,
     versionCode: Int? = null,
+    onPatchedApk: (File) -> Unit = {},
 ): List<ClassDef> {
     val target = allPatches.filter { patch ->
         patch.name in patchNames &&
@@ -352,6 +353,7 @@ fun applyPatches(
         output
     }
 
+    onPatchedApk(patchedApk)
     val classes = patchedApkClasses(patchedApk)
     // No patch here removes a class, so every stock class must still be there; this fails if the
     // harness ever reads a partial dex set again.
