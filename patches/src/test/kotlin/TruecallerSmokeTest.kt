@@ -429,6 +429,7 @@ class TruecallerSmokeTest {
         assertHideMessagesTab(classes)
         assertHiddenSettingsRows(classes)
         assertToggleOverrides(classes)
+        assertHideAfterCallConfigGetters(classes)
         assertClassicCallLogSwipe(classes, byType)
         assertUseSmsVerification(classes)
         assertFixT9ContactSearch(classes, byType)
@@ -1322,6 +1323,55 @@ class TruecallerSmokeTest {
                 check(path.isReturnZero()) { "$label: the $premium helper does not answer false while Hide Premium tab is on" }
             }
         }
+    }
+
+    private fun assertHideAfterCallConfigGetters(classes: List<ClassDef>) {
+        // Hide after-call screen for contacts, issue #181: the seven phonebook getters of the server-driven
+        // FullscreenAcsConfig pass their field value through a static helper on the config class that
+        // gates on the feature and answers FacsBehavior.DO_NOTHING; every other getter (the *PbMissed
+        // ones included) keeps its two stock instructions.
+        val facs = "Lcom/truecaller/acs/util/FacsBehavior;"
+        val cls = classes.single { it.type == "Lcom/truecaller/incallui/utils/FullscreenAcsConfig;" }
+        val patched = setOf(
+            "getUnlockedPbIncomingAccept", "getUnlockedPbIncomingDismiss", "getUnlockedPbIncomingDismissNotification",
+            "getUnlockedPbOutgoing", "getLockedPbIncomingAccept", "getLockedPbIncomingDismiss", "getLockedPbOutgoing",
+        )
+        val getters = cls.methods.filter { it.name.startsWith("get") && it.parameters.isEmpty() && it.returnType == facs }
+        check(getters.map { it.name }.containsAll(patched + setOf("getUnlockedPbMissed", "getLockedPbMissed"))) {
+            "FullscreenAcsConfig getters not found: ${getters.map { it.name }}"
+        }
+        var helperRef: MethodReference? = null
+        for (getter in getters) {
+            val insns = getter.instructions()
+            if (getter.name !in patched) {
+                check(insns.size == 2 && insns[0].opcode == Opcode.IGET_OBJECT && insns[1].opcode == Opcode.RETURN_OBJECT) {
+                    "${getter.name} must stay stock; got ${insns.map { it.opcode }}"
+                }
+                continue
+            }
+            check(insns.size == 4 && insns[0].opcode == Opcode.IGET_OBJECT && insns[2].opcode == Opcode.MOVE_RESULT_OBJECT &&
+                insns[3].opcode == Opcode.RETURN_OBJECT && insns[1].opcode == Opcode.INVOKE_STATIC_RANGE
+            ) { "${getter.name} does not pass its field through the helper; got ${insns.map { it.opcode }}" }
+            val field = (insns[0] as OneRegisterInstruction).registerA
+            val call = insns[1] as RegisterRangeInstruction
+            check(call.startRegister == field && call.registerCount == 1 && (insns[2] as OneRegisterInstruction).registerA == field) {
+                "${getter.name}: the helper call does not use the field register"
+            }
+            val ref = call.call()!!
+            check(ref.definingClass == cls.type && ref.returnType == facs && ref.parameterTypes.map(CharSequence::toString) == listOf(facs)) {
+                "${getter.name}: unexpected helper $ref"
+            }
+            check(helperRef == null || (helperRef.name == ref.name)) { "the getters use different helpers" }
+            helperRef = ref
+        }
+        val helper = cls.methods.single { it.name == helperRef!!.name && it.parameterTypes.map(CharSequence::toString) == listOf(facs) }
+        val label = "${cls.type}.${helper.name}"
+        val stock = assertGate(helper, HIDE_AFTER_CALL_CONTACTS, label)
+        val insns = helper.instructions()
+        val doNothing = insns[4]
+        check(doNothing.opcode == Opcode.SGET_OBJECT && doNothing.field()?.let { it.definingClass == facs && it.name == "DO_NOTHING" } == true &&
+            insns[stock].opcode == Opcode.RETURN_OBJECT && stock == 5
+        ) { "$label does not answer FacsBehavior.DO_NOTHING while the feature is on" }
     }
 
     private fun assertToggleOverrides(classes: List<ClassDef>) {
