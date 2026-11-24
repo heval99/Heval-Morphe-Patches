@@ -13,6 +13,10 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
+import com.android.tools.smali.dexlib2.util.ReferenceUtil
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import kotlinx.coroutines.flow.toList
@@ -56,7 +60,69 @@ fun ClassDef.method(name: String, parameters: List<String>? = null): Method =
                 method.parameterTypes.map(CharSequence::toString) == parameters)
     } ?: error("$type.$name(${parameters?.joinToString()}) not found")
 
-fun assertForcedBoolean(method: Method, expected: Boolean, label: String, diagnostics: String = "") {
+/**
+ * The unpatched classes of the APK the last [applyPatches] call patched, so the assertion helpers can
+ * prove a method was CHANGED rather than just look like a forced one (a method that already starts
+ * with `const/4 v0, 0x1; return v0` or `return-void` in the stock app would otherwise pass without
+ * the patch). Each test class runs in its own JVM (forkEvery = 1), so one global is enough.
+ */
+object StockMethods {
+    private var byType: Map<String, ClassDef>? = null
+
+    fun register(stock: Collection<ClassDef>) {
+        byType = stock.associateBy { it.type }
+    }
+
+    fun clear() {
+        byType = null
+    }
+
+    /** True once a stock snapshot is registered (always the case after [applyPatches]). */
+    val available: Boolean get() = byType != null
+
+    /** The stock method with the same class, name, parameters and return type, or null. */
+    fun find(method: Method): Method? =
+        byType?.get(method.definingClass)?.methods?.firstOrNull {
+            it.name == method.name && it.returnType == method.returnType &&
+                it.parameterTypes.map(CharSequence::toString) == method.parameterTypes.map(CharSequence::toString)
+        }
+}
+
+/** Opcode, registers, literal and reference of every instruction: equal lists mean identical code. */
+private fun Method.instructionSignature(): List<String> = instructions().map { insn ->
+    buildString {
+        append(insn.opcode)
+        if (insn is OneRegisterInstruction) append(" a=").append(insn.registerA)
+        if (insn is TwoRegisterInstruction) append(" b=").append(insn.registerB)
+        if (insn is ThreeRegisterInstruction) append(" c=").append(insn.registerC)
+        if (insn is NarrowLiteralInstruction) append(" n=").append(insn.narrowLiteral)
+        if (insn is WideLiteralInstruction) append(" w=").append(insn.wideLiteral)
+        if (insn is ReferenceInstruction) append(" r=").append(ReferenceUtil.getReferenceString(insn.reference))
+    }
+}
+
+/**
+ * Negative control (audit 2026-11): fails when [method] has exactly the instructions it had in the
+ * stock APK, i.e. the patch did not change it. A method the patch created (absent from the stock
+ * snapshot) counts as changed. Skipped when no stock snapshot was registered (helper unit tests).
+ */
+fun assertChangedFromStock(method: Method, label: String) {
+    if (!StockMethods.available) return
+    val stock = StockMethods.find(method) ?: return
+    assertTrue(
+        stock.instructionSignature() != method.instructionSignature(),
+        "$label is identical to the stock method; the patch did not change it (vacuous pass)"
+    )
+}
+
+fun assertForcedBoolean(
+    method: Method,
+    expected: Boolean,
+    label: String,
+    diagnostics: String = "",
+    requireChanged: Boolean = true,
+) {
+    if (requireChanged) assertChangedFromStock(method, label)
     val insns = method.instructions()
     val first = insns.getOrNull(0)
     val second = insns.getOrNull(1)
@@ -77,7 +143,14 @@ fun assertForcedBoolean(method: Method, expected: Boolean, label: String, diagno
     )
 }
 
-fun assertReturnsInt(method: Method, expected: Int, label: String, diagnostics: String = "") {
+fun assertReturnsInt(
+    method: Method,
+    expected: Int,
+    label: String,
+    diagnostics: String = "",
+    requireChanged: Boolean = true,
+) {
+    if (requireChanged) assertChangedFromStock(method, label)
     val insns = method.instructions()
     val first = insns.getOrNull(0)
     assertTrue(
@@ -102,10 +175,12 @@ fun assertReturnsMethodCall(
     targetName: String,
     label: String,
     diagnostics: String = "",
+    requireChanged: Boolean = true,
 ) {
+    if (requireChanged) assertChangedFromStock(method, label)
     val insns = method.instructions()
     val first = insns.getOrNull(0) as? ReferenceInstruction
-    val ref = first?.reference as? MethodReference
+    val ref =first?.reference as? MethodReference
     assertTrue(
         first?.opcode in setOf(
             Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE,
@@ -132,7 +207,13 @@ fun assertReturnsMethodCall(
 }
 
 /** Asserts the method was replaced by an immediate `return-void`. */
-fun assertReturnsEarlyVoid(method: Method, label: String, diagnostics: String = "") {
+fun assertReturnsEarlyVoid(
+    method: Method,
+    label: String,
+    diagnostics: String = "",
+    requireChanged: Boolean = true,
+) {
+    if (requireChanged) assertChangedFromStock(method, label)
     assertTrue(
         method.instructions().firstOrNull()?.opcode == Opcode.RETURN_VOID,
         "$label does not return immediately; first instruction is ${method.instructions().firstOrNull()?.opcode}\n$diagnostics"
@@ -214,7 +295,8 @@ fun assertMaxAdViewHidden(classes: List<ClassDef>) {
 }
 
 /** Asserts the method was replaced by `return FlowKt.flowOf(Boolean.TRUE)`. */
-fun assertReturnsTrueFlow(method: Method, label: String, diagnostics: String = "") {
+fun assertReturnsTrueFlow(method: Method, label: String, diagnostics: String = "", requireChanged: Boolean = true) {
+    if (requireChanged) assertChangedFromStock(method, label)
     val insns = method.instructions()
     val first = insns.getOrNull(0) as? ReferenceInstruction
     val field = first?.reference as? FieldReference
@@ -358,7 +440,9 @@ fun applyPatches(
     // No patch here removes a class, so every stock class must still be there; this fails if the
     // harness ever reads a partial dex set again.
     val types = classes.mapTo(HashSet()) { it.type }
-    val missing = patchedApkClasses(apk).map { it.type }.filter { it !in types }
+    val stock = patchedApkClasses(apk)
+    StockMethods.register(stock)
+    val missing = stock.map { it.type }.filter { it !in types }
     assertTrue(
         missing.isEmpty(),
         "${missing.size} stock classes are missing from the patched APK, e.g. ${missing.take(5)}"
