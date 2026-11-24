@@ -3078,6 +3078,15 @@ object Constants {
     //   apkFileType stays APKM and the signatures hash is kept. Probe: every fingerprint as before except
     //   the call log filter row, which gained a selected FilterType (kept type) and a click lambda and
     //   now has 14 parameters (ya.e). Smoke test + CLI without -f (36 patches Applied); runtime NOT_RUN.
+    // 2026-11-24 (#181, 26.45.5): "Hide after-call screen for contacts" also covers the server-driven
+    //   FullscreenAcsConfig (Firebase fullscreenAcsConfig_26137; kept class and getter names, class
+    //   com.truecaller.incallui.utils.FullscreenAcsConfig). Its phonebook getters (Unlocked: IncomingAccept,
+    //   IncomingDismiss, IncomingDismissNotification, Outgoing; Locked: IncomingAccept, IncomingDismiss,
+    //   Outgoing) are the answer for a saved contact that the callers act on without ever reaching the
+    //   rules the two featureShowACS* toggles gate. While the feature is on they answer FacsBehavior.DO_NOTHING
+    //   through a static helper added to the config class (the getters have no free register). *PbMissed and
+    //   the non-phonebook getters are untouched. Not covered: the WhatsApp after-call and the PACS
+    //   reminder notifications (not traced). Smoke test + CLI without -f verified; runtime NOT_RUN.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
