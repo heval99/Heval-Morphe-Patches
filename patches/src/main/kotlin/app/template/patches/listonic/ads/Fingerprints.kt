@@ -1,34 +1,28 @@
 package app.template.patches.listonic.ads
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.methodCall
-import app.morphe.patcher.opcode
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
-private const val ADCOMPANION = "Lcom/listonic/adcompanion/core/AdCompanion;"
+// AdCompanion's lock manager (class name rotated by R8): a(lock)V releases a lock and b(lock)V
+// engages one. Each logs an event class whose data-class toString names it ("LockReleased(lockType="
+// / "LockEngaged(lockType="), so the release method is the non-static (L)V that new-instances the
+// LockReleased class. The engage method builds LockEngaged and never matches.
+internal const val LOCK_RELEASED_EVENT_STRING = "LockReleased(lockType="
 
-// AdCompanion's lock manager (class name rotated by R8, so it is matched by shape): a(lock)V
-// releases a lock and b(lock)V engages one. Release is the one that returns when the lock is NOT
-// in the set (Set.contains, if-nez), then rebuilds the set, builds a LockReleased event from the
-// lock enum's name() and logs it through AdCompanion.logEvent$AdCompanion_core. Engage is the same
-// with if-eqz, so it has no if-nez and never matches.
-internal object LockReleaseFingerprint : Fingerprint(
+/** The lock manager's release method: the one non-static (L)V that creates a [releasedEvent]. */
+internal fun lockReleaseFingerprint(releasedEvent: String) = Fingerprint(
     returnType = "V",
     parameters = listOf("L"),
-    filters = listOf(
-        methodCall(definingClass = "Ljava/util/Set;", name = "contains"),
-        opcode(Opcode.IF_NEZ),
-        methodCall(definingClass = "Ljava/lang/Enum;", name = "name"),
-        methodCall(definingClass = ADCOMPANION, name = "logEvent\$AdCompanion_core"),
-    ),
     custom = { method, _ ->
-        !AccessFlags.STATIC.isSet(method.accessFlags) && method.implementation != null
+        !AccessFlags.STATIC.isSet(method.accessFlags) && method.implementation?.instructions?.any {
+            it.opcode == Opcode.NEW_INSTANCE && ((it as ReferenceInstruction).reference as TypeReference).type == releasedEvent
+        } == true
     },
 )
-
 // AdProviderRegistry.initializeEager(scope): launches one coroutine per ad provider (AppLovin
 // MAX, Google Mobile Ads, Amazon APS) that calls AdProviderCore.ensureInitialized. Class and
 // method name are kept by R8; the scope parameter type is obfuscated.

@@ -319,7 +319,8 @@ private fun BytecodePatchContext.forcePerformanceOff(app: String) {
     }
     if (readers.size != 1) {
         throw PatchException(
-            "Disable telemetry ($app): expected one Performance collection reader using $deactivated and $enabled, " +
+            "Disable telemetry ($app): expected one Performance collection reader, either one method using both $deactivated and $enabled, " +
+                "or (unshrunk SDK) ConfigResolver.getIsPerformanceCollectionEnabled(), " +
                 "found ${readers.map { it.method.label() }}",
         )
     }

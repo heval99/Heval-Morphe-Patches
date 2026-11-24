@@ -124,13 +124,26 @@ class ListonicSmokeTest {
 
         // 4. Clarity library statics.
         val clarity = klass("Lcom/microsoft/clarity/Clarity;")
-        for (m in clarity.methods.filter { it.name == "initialize" }) {
-            assertEquals(2, clarity.methods.count { it.name == "initialize" }, "both Clarity.initialize overloads")
-            assertEquals(Opcode.SGET_OBJECT, first(m), "Clarity.initialize must start with Boolean.FALSE")
+        fun assertReturnsBooleanFalse(method: Method, label: String) {
+            val insns = method.instructions()
+            val field = (insns[0] as? ReferenceInstruction)?.reference as? FieldReference
+            assertTrue(
+                insns[0].opcode == Opcode.SGET_OBJECT && field?.definingClass == "Ljava/lang/Boolean;" && field.name == "FALSE" &&
+                    insns[1].opcode == Opcode.RETURN_OBJECT,
+                "$label must start with sget-object Boolean.FALSE then return-object; got ${insns[0].opcode} $field, ${insns[1].opcode}",
+            )
         }
+        val clarityInitializers = clarity.methods.filter { it.name == "initialize" }
+        assertEquals(2, clarityInitializers.size, "both Clarity.initialize overloads")
+        clarityInitializers.forEach { assertReturnsBooleanFalse(it, "Clarity.initialize") }
         assertForcedBoolean(clarity.method("sendCustomEvent"), expected = false, label = "Clarity.sendCustomEvent")
-        assertEquals(Opcode.SGET_OBJECT, first(clarity.method("setCurrentScreenName")), "Clarity.setCurrentScreenName")
+        assertReturnsBooleanFalse(clarity.method("setCurrentScreenName"), "Clarity.setCurrentScreenName")
 
+        // Firebase Performance (shared fallback shape): the only method it changes.
+        assertReturnsBooleanFalse(
+            klass("Lcom/google/firebase/perf/config/ConfigResolver;").method("getIsPerformanceCollectionEnabled"),
+            "ConfigResolver.getIsPerformanceCollectionEnabled",
+        )
         // 5. Gemius.
         assertReturnsEarlyVoid(klass("Lcom/gemius/sdk/GemiusSdk;").method("init"), "GemiusSdk.init")
         assertReturnsEarlyVoid(klass("Lcom/gemius/sdk/audience/AudienceEvent;").method("sendEvent"), "AudienceEvent.sendEvent")
