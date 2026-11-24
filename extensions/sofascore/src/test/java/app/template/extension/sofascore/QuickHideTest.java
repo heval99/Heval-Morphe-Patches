@@ -4,9 +4,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import android.view.MenuItem;
+
 import org.junit.Test;
+
+import java.lang.ref.WeakReference;
 
 /** "Hide from pages": when an action is offered, its keys, labels and texts. */
 public class QuickHideTest {
@@ -84,6 +89,32 @@ public class QuickHideTest {
             assertEquals(0x7e000000, id & 0xff000000);     // outside Sofascore's 0x7f ids
         }
         assertEquals("sofascore.quick_hide", QuickHide.FEATURE_ID);
+    }
+
+    /** Stores a page whose items reach their page (as a real MenuItem does); returns only a weak handle. */
+    private static WeakReference<Object> storePage() {
+        Object activity = new Object();
+        QuickHide.Page page = QuickHide.pageFor(activity);
+        page.setItems(PageLeakSupport.itemReaching(activity), PageLeakSupport.itemReaching(activity));
+        page.competition = new Object();
+        return new WeakReference<>(activity);
+    }
+
+    @Test
+    public void pageStateDoesNotKeepItsActivity() throws Exception {
+        assertTrue("a closed competition page stays reachable", PageLeakSupport.collected(storePage()));
+    }
+
+    @Test
+    public void pageStateKeepsItsItemsWhileShown() {
+        Object activity = new Object();
+        MenuItem competition = PageLeakSupport.itemReaching(activity);
+        MenuItem country = PageLeakSupport.itemReaching(activity);
+        QuickHide.Page page = QuickHide.pageFor(activity);
+        page.setItems(competition, country);
+        assertSame(page, QuickHide.pageFor(activity));
+        assertSame(competition, page.competitionItem());
+        assertSame(country, page.countryItem());
     }
 
     @Test
