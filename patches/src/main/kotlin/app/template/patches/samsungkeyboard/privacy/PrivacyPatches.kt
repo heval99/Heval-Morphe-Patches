@@ -158,6 +158,7 @@ private const val NO_GIF_TRACKING_ID = "samsungkeyboard.no_gif_tracking"
 val stopRemoteUpdatesPatch = bytecodePatch(
     name = "Stop remote updates",
     description = "Ignores keyboard policies pushed from Samsung's servers.",
+    default = false,
 ) {
     compatibleWith(COMPATIBILITY_SAMSUNG_KEYBOARD)
 

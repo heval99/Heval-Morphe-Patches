@@ -5622,6 +5622,10 @@ object Constants {
     // patcher's decoder writes its 48 format="float" items (the *_fraction, dead_zone_*, grip_zone* values) back as
     // plain strings. Harmless: the keyboard reads all 48 with getString + parseFloat (or appends them as text), and
     // the text equals what stock getString returned.
+    // 2026-11-24 (owner delegated, audit): "Stop remote updates" (drops Samsung policy/blocklist pushes) and "Always use
+    // GIPHY" (changes where typed GIF searches go) are now opt-in (default = false): they change behaviour, not only
+    // privacy, and no runtime evidence exists. Non-One UI support, Change package name, Change app name and Disable
+    // telemetry stay on. Runtime NOT_RUN.
     val COMPATIBILITY_SAMSUNG_KEYBOARD = Compatibility(
         name = "Samsung Keyboard",
         packageName = "com.samsung.android.honeyboard",

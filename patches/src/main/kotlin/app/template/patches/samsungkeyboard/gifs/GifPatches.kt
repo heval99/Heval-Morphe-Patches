@@ -63,6 +63,7 @@ private fun BytecodePatchContext.mutable(method: Method): MutableMethod =
 val alwaysUseGiphyPatch = bytecodePatch(
     name = "Always use GIPHY",
     description = "Shows GIPHY GIFs in every language.",
+    default = false,
 ) {
     compatibleWith(COMPATIBILITY_SAMSUNG_KEYBOARD)
     dependsOn(samsungKeyboardControls.patch)
