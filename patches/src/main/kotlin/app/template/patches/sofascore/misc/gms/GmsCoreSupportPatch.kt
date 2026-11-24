@@ -18,5 +18,9 @@ val gmsCoreSupportPatch = gmsCoreSupportPatch(
     mainActivityOnCreateFingerprint = StartActivityOnCreateFingerprint,
     compatibility = COMPATIBILITY_SOFASCORE,
     default = false,
+    // A clone has another package name, which breaks Firebase push (Spoof signature covers only the
+    // original package), so the Package name option is not offered (2026-11-24).
+    allowClone = false,
+    description = "Only for phones without Google Play services; notifications stop unless MicroG RE is installed.",
     dependencies = setOf(spoofSignaturePatch),
 )

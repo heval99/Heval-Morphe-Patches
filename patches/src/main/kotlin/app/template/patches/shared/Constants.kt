@@ -219,6 +219,14 @@ object Constants {
     // new Fingerprint: the sites are shape scans that fail unless exactly one matches. Smoke test,
     // extension unit tests, CLI runs without -f (four patches; Hide competitions alone) and
     // apkanalyzer dumps (registers 5, 5 and 22 unchanged) pass.
+    // 2026-11-24 (owner-approved, static only, runtime NOT_RUN): push notifications were failing, so
+    // "Spoof signature" is now on by default ("Needed for match notifications and Google sign-in.";
+    // Firebase sends the Play certificate as X-Android-Cert). "GmsCore support" stays off by default
+    // and its description now warns "Only for phones without Google Play services; notifications stop
+    // unless MicroG RE is installed." (it reroutes the push strings to MicroG RE). Its clone option is
+    // gone (allowClone = false): Spoof signature covers only com.sofascore.results, so a clone
+    // package breaks Firebase. Still NOT_RUN: the owner-reported "works with Spoof signature alone on
+    // real Play services" versus "needs GmsCore + MicroG RE" conflict.
     val COMPATIBILITY_SOFASCORE = Compatibility(
         name = "Sofascore", // App name as it appears in the Android launcher.
         packageName = "com.sofascore.results",
