@@ -5718,4 +5718,48 @@ object Constants {
         // 2026-11-22: updated to version 4.66.2 (versionCode 1744165592, same signer); BeeperSmokeTest passes, anchors unchanged. APK from Play; smoke test, CLI 2.1.1 without -f and a 58-method whole-APK diff (incl. GmsCore support) done; not run on a device.
         targets = listOf(AppTarget(version = "4.66.2", versionCode = 1744165592))
     )
+
+    // Checked 2026-11-23 against Listonic 9.25.2 (versionCode 240092502; Google Play arm64-v8a split
+    // set merged with APKEditor, unsigned). Signer of the original base split: CN=Listonic, cert
+    // SHA-256 a466547928e0...a859d9b (agrees between Play and APKPure; there is no published developer
+    // certificate to compare it with). Native Kotlin/Compose app, R8; no PairIP, Play Integrity or
+    // root checks.
+    //   - Disable ads: the app's own ad layer is Listonic's AdCompanion library
+    //     (com.listonic.adcompanion.*, class names kept). AdCompanion.getLocks() holds a lock set;
+    //     ListonicApplication.onCreate engages the PREMIUM lock (and REWARDED), and a collector
+    //     releases PREMIUM only when RevenueCat reports no premium. While PREMIUM is held every ad
+    //     type is filtered out of the display, fullscreen and text-ad paths. The release method is
+    //     found by its shape (non-static (L)V that tests Set.contains with if-nez, then logs the
+    //     lock event through AdCompanion.logEvent$AdCompanion_core) and returns at once, so the
+    //     startup lock stays; the engage method is left alone. The PREMIUM lock blocks every ad type, rewarded ones included (the REWARDED lock blocks every format except REWARDED), so a "watch an ad to earn" offer (the RewardedAdOffer composable) may still show but its ad never loads.
+    //     AdProviderRegistry.initializeEager (kept name) only warms provider init up in launched
+    //     coroutines (AppLovin MAX, next-gen Google Mobile Ads, Amazon APS); every real load calls
+    //     AdProviderCore.ensureInitialized itself, so skipping it hangs nothing and no ad SDK or
+    //     its network traffic starts. The AppConfiguration constructor (toString holds
+    //     "AppConfiguration(theme=") gets isAdsEnabled forced to false: the only reader feeds the
+    //     BottomAdBanner composable's "hidden" flag, so the bottom banner slot is not reserved.
+    //   - Enable Premium: not shipped. Entitlement is RevenueCat CustomerInfo cached in DataStore,
+    //     which RevenueCat validates against its server, so the gate is server-side.
+    //   - Disable telemetry (2026-11-24): no manifest edit (rule 12), the values are forced in the SDKs:
+    //     Firebase Analytics (deactivated, adid off), Crashlytics, Sessions and Performance through the
+    //     shared helper; the TikTok Business SDK wrapper (start, beginTracking, track, setConsent);
+    //     the AdShift attribution wrapper (initialize, start, stop, handleAppLinkIntent; the device id
+    //     reads null, which its one caller checks; the app's deep-link callback is a no-op default, so
+    //     app links still open normally); Microsoft Clarity (both initialize overloads return FALSE,
+    //     sendCustomEvent false, setCurrentScreenName FALSE); Gemius (GemiusSdk.init,
+    //     AudienceEvent.sendEvent); Facebook SDK auto-logged events and advertiser id off (it stays for
+    //     login). Anchors: kept app wrapper and library class names plus the Firebase key strings.
+    //     Deliberately left: push (Firebase Messaging), consent/UMP, RevenueCat purchases, the AdShift
+    //     ActivityTrackerInitializer (androidx.startup entry; only tracks the current activity locally,
+    //     no traffic once AdShift is never initialised) and PromotionsEventWorker (first-party promotion
+    //     view/click events posted to Listonic's own API; its Result type is obfuscated, so not hooked).
+    // Smoke-tested and bytecode-verified; NOT run on a device.
+    val COMPATIBILITY_LISTONIC = Compatibility(
+        name = "Listonic",
+        packageName = "com.l",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE8472C,
+        signatures = setOf("a466547928e013613e4d99bb06743c45a45bc4dfdeb51aee8974e9d99a859d9b"), // CN=Listonic
+        targets = listOf(AppTarget(version = "9.25.2", versionCode = 240092502))
+    )
 }
