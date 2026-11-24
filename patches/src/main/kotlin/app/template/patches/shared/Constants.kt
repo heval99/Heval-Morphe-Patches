@@ -1337,7 +1337,10 @@ object Constants {
     // themselves). Re-verified against the same APK on 2026-10-06 - AquaMailSmokeTest
     // asserts the snapshot prefix in the emitted bytecode.
     // 2026-10-12 APK-finder audit: only distributed as a split bundle (APKMirror BUNDLE /
-    // APKPure-Uptodown XAPK), so apkFileType is APKM; any "universal APK" note below is outdated.
+    // APKPure-Uptodown XAPK), so apkFileType is APKM.
+    // 2026-10-29: updated to version 2.8.1 (versionCode 200801029, arm64 Play build via gplaydl,
+    // merged split bundle, same signer O=Hypnotica). Enable Premium applies unchanged: smoke test
+    // green and CLI without -f applied it.
     val COMPATIBILITY_AQUAMAIL = Compatibility(
         name = "Aqua Mail",
         packageName = "org.kman.AquaMail",
@@ -2254,7 +2257,7 @@ object Constants {
     // from the account backend) and local purchases are RSA-verified in
     // BillingRepository, so there is no client-side gate to force.
     // 2026-10-12 APK-finder audit: only distributed as a split bundle (APKMirror BUNDLE /
-    // APKPure-Uptodown XAPK), so apkFileType is APKM; any "universal APK" note below is outdated.
+    // APKPure-Uptodown XAPK), so apkFileType is APKM.
     // 2026-10-12: the real versionName carries a build suffix; the bare version made
     // Manager/CLI treat the patches as incompatible.
     // 2026-10-14: Disable ads also neutralises the other MobileAds statics (rule 9).
@@ -3360,8 +3363,10 @@ object Constants {
         targets = listOf(AppTarget(version = "6.7.8", versionCode = 678))
     )
 
-    // Added 2026-10-14 from a user request (ads only: subscribers see ads too, and the paywall
-    // is decided server-side, so it is out of scope). Verified against wsj.reader_sp 6.43.0.33886
+    // Current verified target: see `targets` below and its dated update notes. The notes up to
+    // 2026-10-25 are history.
+    // History: added 2026-10-14 from a user request (ads only: subscribers see ads too, and the paywall
+    // is decided server-side, so it is out of scope). Verified then against wsj.reader_sp 6.43.0.33886
     // (versionCode 643003886, universal APK, signer CN=Wall Street Journal Digital Network, no
     // packer or PairIP). Disable ads anchors on kept class names and method shape only, never on
     // the hashed Compose / value-class suffixes: every SectionAdPlacementStrategy implementation
@@ -4699,7 +4704,7 @@ object Constants {
         targets = listOf(AppTarget(version = "3.9.6", versionCode = 30537))
     )
 
-    // Verified 2026-10-27 against com.twodoor.bookly 2.4.2 (versionCode 505, APKPure XAPK merged with
+    // Current verified target: see `targets` below (2.4.5). History: first verified 2026-10-27 against com.twodoor.bookly 2.4.2 (versionCode 505, APKPure XAPK merged with
     // APKEditor; signer CN=Iancu Tudor, OU=TwoDoor, O=TwoDoor, cert SHA-256 abe821f2...2255). Kotlin
     // app with readable app packages, RevenueCat for the lifetime entitlement (active product id
     // "chest_of_diamonds_3000") and Superwall for the paywall UI. The billing client's RevenueCat

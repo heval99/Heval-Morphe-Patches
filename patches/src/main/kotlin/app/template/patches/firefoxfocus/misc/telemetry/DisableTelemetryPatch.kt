@@ -39,9 +39,13 @@ val disableTelemetryPatch = bytecodePatch(
         // observer's ping) and requestDataDeletion (the deletion-request ping the Settings switch
         // sends when it is turned off; R8 inlined stop() into the switch).
         val stubbed = mutableSetOf<String>()
+        // Collect first: mutating classes while iterating them is not allowed.
+        val apiImplementations = mutableListOf<String>()
         classDefForEach { classDef ->
-            if (USAGE_REPORTING_API !in classDef.interfaces) return@classDefForEach
-            mutableClassDefBy(classDef).methods
+            if (USAGE_REPORTING_API in classDef.interfaces) apiImplementations += classDef.type
+        }
+        apiImplementations.forEach { type ->
+            mutableClassDefBy(type).methods
                 .filter { it.name in USAGE_PING_METHODS && it.returnType == "V" && it.implementation != null }
                 .forEach {
                     it.returnEarly()
