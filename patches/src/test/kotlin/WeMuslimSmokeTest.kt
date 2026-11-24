@@ -110,10 +110,14 @@ class WeMuslimSmokeTest {
             "AreyoumySnowman?",
             "925906699745-gqq5o2nosortc7e97q5t9kroiruvrooo.apps.googleusercontent.com",
             "muslim-376506",
-            "AIzaSyDq3pQfR6tWozuv1mDJO6tiVRBc7iddqTM",
         )) {
             assertTrue(value in emittedStrings, "dumped AthanEncryption value is missing: $value")
         }
+        // The dumped Google API key is checked by shape, not by value (keeps a third party key out of the repo).
+        assertTrue(
+            emittedStrings.any { it.startsWith("AIzaSy") && it.length == 39 },
+            "dumped AthanEncryption Google API key is missing",
+        )
 
         // Disable ads, step 1: the single IWalletExport implementation answers NO_ADS itself, in
         // both forms. Found like the patch: by the kept interface, then by method shape.

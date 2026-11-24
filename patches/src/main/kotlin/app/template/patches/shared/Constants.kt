@@ -3308,7 +3308,7 @@ object Constants {
         targets = listOf(AppTarget(version = "26.11.07", versionCode = 682))
     )
 
-    // Added 2026-10-14 from the request queue ("the ads mess with the UI"). Verified
+    // Added 2026-10-14 on owner request ("the ads mess with the UI"). Verified
     // against cc.dreamspark.intervaltimer 2.3.30 (versionCode 239030, single APK, no native code,
     // signer CN=Su-Au Hwang O=dreamspark.cc). The only entitlement is "ad-free" (adbuster), synced
     // from the server into two R8-renamed JSON models, AppInstallation and User. Disable ads forces
@@ -3336,7 +3336,7 @@ object Constants {
         targets = listOf(AppTarget(version = "2.3.31", versionCode = 239031))
     )
 
-    // Added 2026-10-14 from the request queue (ads only: premium is an account role from
+    // Added 2026-10-14 on owner request (ads only: premium is an account role from
     // the server's /api/mv4, so it cannot be unlocked locally). Verified against
     // com.astrapaging.vff 6.7.8 (versionCode 678, APKPure XAPK merged, arm64-v8a only, signer
     // CN=Astra Paging Ltd.). Capacitor/Angular hybrid; PairIP license check only (no VMRunner /
@@ -3437,7 +3437,7 @@ object Constants {
         targets = listOf(AppTarget(version = "4.2.31.1", versionCode = 539))
     )
 
-    // Added 2026-10-14 from the request queue (ads, analytics, upgrade banners); restored
+    // Added 2026-10-14 on owner request (ads, analytics, upgrade banners); restored
     // 2026-10-19 with a native-encryption bypass. Verified against com.fyxtech.muslim 3.5.4
     // (versionCode 149, apkcube bundle merged, arm64-v8a only, developer signer CN=athan O=yalla,
     // SHA-256 5d8c442d...ee0c; first written for 3.5.0). Premium membership is server-side
@@ -3534,7 +3534,7 @@ object Constants {
         targets = listOf(AppTarget(version = "3.5.5", versionCode = 151))
     )
 
-    // Added 2026-10-14 from the request queue: ads only. Pro and paywalled content are
+    // Added 2026-10-14 on owner request: ads only. Pro and paywalled content are
     // server-side (entitlements and isPremium arrive from the server). Verified against
     // com.divum.MoneyControl 14.6.2 (versionCode 637, APKMirror bundle merged, arm64-v8a only,
     // signer CN=Ganapathy, O=Divum Corporate Services). App classes keep their names, members
@@ -5439,9 +5439,9 @@ object Constants {
     // arm64-v8a split set merged with APKEditor; signer CN=Bjarne Lundgren, OU=Digital, O=TV 2,
     // cert SHA-256 ed472cfc...e819 - the same key as TV 2 Nyheder). Native Kotlin app.
     //   - Disable telemetry: Google Analytics for Firebase (the full measurement SDK is bundled) is
-    //     switched off through the manifest switches, and the Bugsnag start call inside
-    //     BugsnagContentProvider.onCreate is dropped through the shared helper. Firebase Messaging
-    //     (push) is left alone.
+    //     switched off through the manifest switches. Bugsnag stays on: this app builds the Client
+    //     inline in PlayApplication.onCreate, so there is no start call to drop (unlike TV 2
+    //     Nyheder). Firebase Messaging (push) is left alone.
     //   - No ads and no billing client: the only play-services-ads classes are the advertising-ID
     //     client pulled in by Analytics, and the subscription is a TV 2 account state, so there is
     //     nothing for Disable ads or Enable Premium to hook.
