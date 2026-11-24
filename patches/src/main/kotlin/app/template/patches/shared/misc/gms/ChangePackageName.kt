@@ -27,11 +27,13 @@
 // Modified for Heval's Morphe Patches (2026-10-11): derived from the manifest part of
 // app.morphe.patches.all.misc.clone.cloneAppPatch. A plain function used by the optional package
 // rename of "GmsCore support". Only the app's own permissions and provider authorities (those
-// under "<package>.") are renamed; foreign ones and @string authorities are left alone, and the
-// per-app overrides and getPackageName() hooks of the original are dropped.
+// under "<package>." or equal to it) are renamed; foreign ones are left alone, an @string authority
+// throws a PatchException, and the per-app overrides and getPackageName() hooks of the original
+// are dropped.
 
 package app.template.patches.shared.misc.gms
 
+import app.morphe.patcher.patch.PatchException
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
@@ -65,7 +67,9 @@ internal fun Document.changePackageName(fromPackageName: String, toPackageName: 
         }
     }
 
-    // Provider authorities under the app's package (androidx-startup, fileprovider, ...).
+    // Provider authorities under the app's package (androidx-startup, fileprovider, ...), including
+    // one that is exactly the package name. Authorities are global: a clone that keeps one fails
+    // with INSTALL_FAILED_CONFLICTING_PROVIDER next to the original.
     val providers = getElementsByTagName("provider")
     for (i in 0 until providers.length) {
         val provider = providers.item(i) as Element
@@ -73,7 +77,23 @@ internal fun Document.changePackageName(fromPackageName: String, toPackageName: 
         provider.setAttribute(
             "android:authorities",
             authorities.joinToString(";") { authority ->
-                if (authority.startsWith(ownPrefix)) rename(authority).also { renamed[authority] = it } else authority
+                if (authority.startsWith("@")) {
+                    // A resource reference cannot be renamed here (the value lives in resources
+                    // and the owner is unknown), so fail loudly instead of a clone that cannot install.
+                    throw PatchException(
+                        "Cannot rename provider authority '$authority' (resource reference) for the clone package",
+                    )
+                }
+                if (authority == fromPackageName) {
+                    // Not added to the returned map: the map also rewrites bytecode string constants and
+                    // attributes equal to the key, and an exact package-name string is far more common
+                    // (identity checks, process names) than an authority hard-coded as the bare package.
+                    rename(authority)
+                } else if (authority.startsWith(ownPrefix)) {
+                    rename(authority).also { renamed[authority] = it }
+                } else {
+                    authority
+                }
             },
         )
     }
