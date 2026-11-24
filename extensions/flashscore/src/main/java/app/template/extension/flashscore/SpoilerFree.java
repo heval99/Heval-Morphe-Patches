@@ -118,6 +118,8 @@ public final class SpoilerFree {
         try {
             return isMarked(eventId);
         } catch (Throwable failure) {
+            // Never drop a push because of an error.
+            SpoilerFailures.report("blocksPush", NOTIFICATIONS, failure);
             return false;
         }
     }
