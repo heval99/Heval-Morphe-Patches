@@ -505,9 +505,15 @@ object Constants {
             // scheduler builds PeriodicWorkRequest.Builder(Class, 30, TimeUnit.MINUTES), hooked by SofascoreControls.widgetRefreshMinutes).
             // Smoke test (real matcher) green; CLI without -f, all 31 patches Applied; changed sites checked
             // with apkanalyzer; aapt2 string diff on 26.11.09 showed no changed values (checked 2026-11-18); not run on a device.
+            // 2026-11-24: updated to version 26.11.16 (versionCode 261116002, Google Play arm64-v8a, signer
+            // CN=Sofa Score unchanged). Two sites moved: Disable ads (the ad SDK start-up Thread.start is
+            // now in the invokeSuspend of the coroutine the consent method launches; found by the
+            // VunglePrivacySettings.setGDPRStatus + Thread.start calls) and Hide sports (the rows
+            // query is held by two lambda classes, the selected-sport query by one). Smoke test (real
+            // matcher) and CLI patch without -f checked on it; not run on a device.
             AppTarget(
-                version = "26.11.09",
-                versionCode = 261109002
+                version = "26.11.16",
+                versionCode = 261116002
             )
         )
     )

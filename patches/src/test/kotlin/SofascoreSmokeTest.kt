@@ -398,7 +398,7 @@ class SofascoreSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.11.09",
+            version = "26.11.16",
             patchNames = SOFASCORE_PATCHES,
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -636,39 +636,43 @@ class SofascoreSmokeTest {
         ) { ref, _ -> ref.definingClass == USER_ACCOUNT && ref.name == "getHasServerAds" }
 
         // Disable ads: ReleaseApp's consent method (no-arg void holding the consent-type strings)
-        // no longer starts the ad SDK start-up thread, and keeps its Firebase consent code. Since
-        // 26.10.26 it is declared by ReleaseApp's R8-renamed superclass, so search the whole chain.
+        // keeps its Firebase consent code. Since 26.10.26 it is declared by ReleaseApp's R8-renamed
+        // superclass, so search the whole chain.
         val appChain = generateSequence(RELEASE_APP) { byType[it]?.superclass }.mapNotNull { byType[it] }.toList()
         val consentMethod = appChain.flatMap { it.methods }.filter { m ->
             m.returnType == "V" && m.parameterTypes.isEmpty() &&
                 m.strings().containsAll(listOf("ad_personalization", "analytics_storage"))
         }.singleOrNull() ?: error("no single ReleaseApp consent method\n$diagnostics")
-        val consentInsns = consentMethod.instructions()
         fun Method.calls(owner: String, name: String) = instructions().count { insn ->
             val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
             ref != null && ref.definingClass == owner && ref.name == name
         }
-        assertTrue(
-            consentMethod.calls("Ljava/lang/Thread;", "start") == 0,
-            "ReleaseApp.${consentMethod.name}() still calls Thread.start()\n$diagnostics"
-        )
         assertTrue(
             consentMethod.strings().containsAll(CONSENT_TYPES) &&
                 consentMethod.calls("Landroid/os/BaseBundle;", "putString") >= CONSENT_TYPES.size &&
                 consentMethod.calls("Lcom/google/firebase/analytics/FirebaseAnalytics;", "getInstance") == 1,
             "ReleaseApp.${consentMethod.name}() lost its Firebase consent code\n$diagnostics"
         )
-        // The thread is still built but never started: its constructor is followed by return-void.
-        val threadInit = consentInsns.indexOfLast { insn ->
+        // The ad SDK start-up (since 26.11.16 the invokeSuspend of the coroutine the consent method
+        // launches; found by its Vungle setGDPRStatus call, as the patch does) builds the thread
+        // but never starts it: its constructor is followed by the Unit load and return-object.
+        val startup = classes.flatMap { it.methods }.filter { m ->
+            m.implementation != null && m.calls("Lcom/vungle/ads/VunglePrivacySettings;", "setGDPRStatus") > 0
+        }.singleOrNull() ?: error("no single ad SDK start-up method\n$diagnostics")
+        val startupInsns = startup.instructions()
+        assertTrue(
+            startup.calls("Ljava/lang/Thread;", "start") == 0,
+            "${startup.definingClass}->${startup.name} still calls Thread.start()\n$diagnostics"
+        )
+        val threadInit = startupInsns.indexOfLast { insn ->
             val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
             ref?.definingClass == "Ljava/lang/Thread;" && ref.name == "<init>"
         }
         assertTrue(
-            threadInit >= 0 && consentInsns.getOrNull(threadInit + 1)?.opcode == Opcode.RETURN_VOID,
-            "ReleaseApp.${consentMethod.name}(): Thread.<init> is not followed by return-void; got " +
-                "${consentInsns.getOrNull(threadInit + 1)?.opcode}\n$diagnostics"
+            threadInit >= 0 && startupInsns.drop(threadInit + 1).take(2).any { it.opcode == Opcode.RETURN_OBJECT },
+            "${startup.definingClass}->${startup.name}: Thread.<init> is not followed by return-object; got " +
+                "${startupInsns.drop(threadInit + 1).take(2).map { it.opcode }}\n$diagnostics"
         )
-
         // Disable ads, rule 9: with init skipped, every MobileAds static void returns at once
         // (openDebugMenu is reachable from the hidden developer options).
         val mobileAds = require("Lcom/google/android/gms/ads/MobileAds;")
@@ -850,11 +854,13 @@ class SofascoreSmokeTest {
         // sits alone in another, loaded once above a switch and prepared by two of its cases.
         val rowsAndSelected = "SELECT * FROM sport_order ORDER BY sportOrder ASC, SELECT sportName FROM sport_order WHERE isSelected = 1"
         val namesOnly = "SELECT sportName FROM sport_order ORDER BY sportOrder ASC"
-        assertReturnFilter("filterSportOrders", mapOf(rowsAndSelected to 1))
+        // 26.11.16: the rows query is also held alone by a second lambda class (rowsOnly).
+        val rowsOnly = "SELECT * FROM sport_order ORDER BY sportOrder ASC"
+        assertReturnFilter("filterSportOrders", mapOf(rowsAndSelected to 1, rowsOnly to 1))
         assertReturnFilter("filterSportNames", mapOf(namesOnly to 2))
-        // Two selected-sport cases (the former rows+selected and names+selected lambdas, one class
-        // since 26.11.09), and the three returns of the PREF_HOME_SPORT_V2 getter.
-        assertReturnFilter("visibleSport", mapOf(rowsAndSelected to 2, "PREF_HOME_SPORT_V2" to 3))
+        // One selected-sport case since 26.11.16 (two before: rows+selected and names+selected),
+        // and the three returns of the PREF_HOME_SPORT_V2 getter.
+        assertReturnFilter("visibleSport", mapOf(rowsAndSelected to 1, "PREF_HOME_SPORT_V2" to 3))
 
         // Hide promo sections: Remote Config getBoolean (the instance (String)Z reading the value
         // handler's Patterns; the handler is found by its TRUE regex) asks hidePromoSection(key)

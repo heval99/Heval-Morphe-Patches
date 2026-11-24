@@ -1,9 +1,7 @@
 package app.template.patches.sofascore.ads
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.StringComparisonType
 import app.morphe.patcher.methodCall
-import app.morphe.patcher.string
 
 internal const val USER_ACCOUNT_CLASS = "Lcom/sofascore/local_persistance/UserAccount;"
 
@@ -56,21 +54,17 @@ internal const val UNITY_ADS_INITIALIZER = "Lcom/unity3d/services/core/configura
 internal const val RELEASE_APP_CLASS = "Lcom/sofascore/results/ReleaseApp;"
 
 /**
- * ReleaseApp (the manifest Application class, unobfuscated) sets the Firebase consent mode in a
- * no-arg void method holding the consent-type strings, then ends with
- * `new Thread(new <runnable>(this, 1)).start()`; that thread sets the ad SDKs' consent and starts
- * Mintegral, Unity, Moloco, Pangle, Equativ, Nimbus, AppHarbr and MobileAds.initialize.
- * Since 26.10.26 R8 moves the method into ReleaseApp's (obfuscated, abstract) superclass, so the
- * fingerprint has no defining class; the Thread.start() call separates it from the shared R8
- * runnable's run()V, which holds the same strings. Disable ads checks that the match is declared
- * by ReleaseApp or one of its superclasses.
+ * The ad SDK start-up: a method that sets the ad SDKs' consent (Vungle's setGDPRStatus) and ends
+ * with `new Thread(new <runnable>(context, 1)).start()`; that thread sets the remaining consent and
+ * starts Mintegral, Unity, Moloco, Pangle, Equativ, Nimbus, AppHarbr and MobileAds.initialize.
+ * It sat in ReleaseApp's consent method up to 26.11.09; since 26.11.16 R8 moved it into the
+ * coroutine that method launches (invokeSuspend), so the anchor is the library calls
+ * (VunglePrivacySettings.setGDPRStatus, called from this one method, plus Thread.start) and not a
+ * class or return type.
  */
 object AdSdkStartupFingerprint : Fingerprint(
-    returnType = "V",
-    parameters = listOf(),
-    strings = listOf(
-        string("ad_personalization", StringComparisonType.CONTAINS),
-        string("analytics_storage", StringComparisonType.CONTAINS),
+    filters = listOf(
+        methodCall(definingClass = "Lcom/vungle/ads/VunglePrivacySettings;", name = "setGDPRStatus"),
+        methodCall(definingClass = "Ljava/lang/Thread;", name = "start"),
     ),
-    filters = listOf(methodCall(definingClass = "Ljava/lang/Thread;", name = "start")),
 )
