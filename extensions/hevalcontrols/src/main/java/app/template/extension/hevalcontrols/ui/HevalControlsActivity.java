@@ -1315,14 +1315,80 @@ public final class HevalControlsActivity extends Activity {
         views.divider(profileCard);
     }
 
+    /** Calm mode is applied only after the current choices are saved as the "Before Calm mode" profile (CalmMode). */
     private void applyCalm(Map<String, Boolean> calm) {
-        boolean saved = profiles.save("Before Calm mode", SettingsTransfer.export(Registry.get()));
-        if (HevalSettings.applyChoices(calm, null)) {
-            rebuildProfiles();
-            refresh();
-            toast("Calm mode is on (" + calm.size() + " settings)" + (saved ? ". Your earlier choices are saved as Before Calm mode." : ""));
-        } else {
-            toast("Could not turn Calm mode on");
+        CalmMode.ProfileStore store = new CalmMode.ProfileStore() {
+            @Override
+            public String get(String name) {
+                return profiles.get(name);
+            }
+
+            @Override
+            public int count() {
+                return profiles.names().size();
+            }
+
+            @Override
+            public boolean save(String name, String text) {
+                return profiles.save(name, text);
+            }
+        };
+        CalmMode.Settings settings = new CalmMode.Settings() {
+            @Override
+            public boolean isChosen(String featureId) {
+                return HevalSettings.isChosen(featureId);
+            }
+
+            @Override
+            public String export() {
+                try {
+                    return SettingsTransfer.export(Registry.get());
+                } catch (Throwable failure) {
+                    return null;
+                }
+            }
+
+            @Override
+            public boolean applyChoices(Map<String, Boolean> switches) {
+                return HevalSettings.applyChoices(switches, null);
+            }
+        };
+        switch (CalmMode.activate(calm, store, settings, Profiles.MAX_PROFILES)) {
+            case APPLIED:
+                rebuildProfiles();
+                refresh();
+                toast("Calm mode is on (" + calm.size() + " settings). Your earlier choices are saved as "
+                        + CalmMode.BACKUP_NAME + ".");
+                break;
+            case ALREADY_CALM:
+                toast("Calm mode is already on" + (profiles.get(CalmMode.BACKUP_NAME) != null
+                        ? ". Apply the profile " + CalmMode.BACKUP_NAME + " to go back." : "."));
+                break;
+            case STORE_FULL:
+                calmNotOn("There are already " + Profiles.MAX_PROFILES + " profiles, so your current choices can't be"
+                        + " saved as " + CalmMode.BACKUP_NAME + ". Delete a profile below, then try again.");
+                break;
+            case BACKUP_FAILED:
+                calmNotOn("Your current choices could not be saved as " + CalmMode.BACKUP_NAME
+                        + ", so nothing was changed. Try again.");
+                break;
+            default:
+                rebuildProfiles();
+                toast("Could not turn Calm mode on. Your choices are saved as " + CalmMode.BACKUP_NAME + ".");
+                break;
+        }
+    }
+
+    /** Says why Calm mode was not turned on (a dialog: the reason is too long for a toast). */
+    private void calmNotOn(String reason) {
+        try {
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("Calm mode is not on")
+                    .setMessage(reason)
+                    .setPositiveButton("OK", null)
+                    .show();
+        } catch (Throwable failure) {
+            toast("Calm mode is not on");
         }
     }
 
