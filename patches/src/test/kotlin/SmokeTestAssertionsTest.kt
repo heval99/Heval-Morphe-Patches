@@ -4,6 +4,12 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction21s
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction22b
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction35c
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11n
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11x
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
@@ -115,6 +121,96 @@ class SmokeTestAssertionsTest {
             assertReturnsInt(method("const/4 v2, 0x1\nreturn v2"), 1, "opted out", requireChanged = false)
         } finally {
             StockMethods.clear()
+        }
+    }
+
+    // --- assertMaxAdViewHidden -------------------------------------------------------------
+
+    private val viewType = "Lcom/applovin/mediation/ads/MaxAdView;"
+    private fun visibilityRef(owner: String) = ImmutableMethodReference(owner, "setVisibility", listOf("I"), "V")
+    private fun invoke(opcode: Opcode, owner: String, a: Int, b: Int) =
+        ImmutableInstruction35c(opcode, 2, a, b, 0, 0, 0, visibilityRef(owner))
+
+    /** setVisibility(I): v0 = this, v1 = p1. */
+    private fun setVisibility(vararg insns: Instruction) = ImmutableMethod(
+        viewType, "setVisibility", listOf(ImmutableMethodParameter("I", null, null)), "V",
+        AccessFlags.PUBLIC.value, null, null, ImmutableMethodImplementation(2, insns.toList(), null, null),
+    )
+
+    /** <init>(Context): v1 = this, v2 = p1, v0 is a local. */
+    private fun constructor(vararg insns: Instruction) = ImmutableMethod(
+        viewType, "<init>", listOf(ImmutableMethodParameter("Landroid/content/Context;", null, null)), "V",
+        AccessFlags.PUBLIC.value or AccessFlags.CONSTRUCTOR.value, null, null,
+        ImmutableMethodImplementation(3, insns.toList(), null, null),
+    )
+
+    private fun view(setVisibility: ImmutableMethod, constructor: ImmutableMethod) = ImmutableClassDef(
+        viewType, AccessFlags.PUBLIC.value, "Landroid/view/ViewGroup;", null, null, null, null,
+        listOf(setVisibility, constructor),
+    )
+
+    private val goodSetVisibility get() = setVisibility(
+        ImmutableInstruction21s(Opcode.CONST_16, 1, 8),
+        invoke(Opcode.INVOKE_SUPER, "Landroid/view/ViewGroup;", 0, 1),
+        ImmutableInstruction10x(Opcode.RETURN_VOID),
+    )
+    private val goodConstructor get() = constructor(
+        ImmutableInstruction21s(Opcode.CONST_16, 2, 8),
+        invoke(Opcode.INVOKE_VIRTUAL, viewType, 1, 2),
+        ImmutableInstruction10x(Opcode.RETURN_VOID),
+    )
+
+    @Test
+    fun `banner assertion accepts the real shape`() {
+        assertMaxAdViewHidden(view(goodSetVisibility, goodConstructor))
+    }
+
+    @Test
+    fun `banner assertion rejects a setVisibility that produces 8 by arithmetic`() {
+        assertThrows<AssertionError> {
+            assertMaxAdViewHidden(
+                view(
+                    setVisibility(
+                        ImmutableInstruction22b(Opcode.ADD_INT_LIT8, 1, 0, 8),
+                        invoke(Opcode.INVOKE_SUPER, "Landroid/view/ViewGroup;", 0, 1),
+                        ImmutableInstruction10x(Opcode.RETURN_VOID),
+                    ),
+                    goodConstructor,
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun `banner assertion rejects a constructor that passes a different register than the one holding 8`() {
+        assertThrows<AssertionError> {
+            assertMaxAdViewHidden(
+                view(
+                    goodSetVisibility,
+                    constructor(
+                        ImmutableInstruction21s(Opcode.CONST_16, 0, 8),
+                        invoke(Opcode.INVOKE_VIRTUAL, viewType, 1, 2),
+                        ImmutableInstruction10x(Opcode.RETURN_VOID),
+                    ),
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun `banner assertion rejects a setVisibility that overwrites the 8 before the call`() {
+        assertThrows<AssertionError> {
+            assertMaxAdViewHidden(
+                view(
+                    setVisibility(
+                        ImmutableInstruction21s(Opcode.CONST_16, 1, 8),
+                        ImmutableInstruction11n(Opcode.CONST_4, 1, 0),
+                        invoke(Opcode.INVOKE_SUPER, "Landroid/view/ViewGroup;", 0, 1),
+                        ImmutableInstruction10x(Opcode.RETURN_VOID),
+                    ),
+                    goodConstructor,
+                ),
+            )
         }
     }
 
