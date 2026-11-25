@@ -5179,7 +5179,7 @@ object Constants {
         // Analytics manifest flag, NPAW and Nielsen initializers, Cronos dispatcher) match
         // uniquely; ViaplaySmokeTest passes. 26.44.0 dropped (latest verified version only).
         // 2026-11-25: updated to version 26.46.0 (versionCode 2646000; Google Play, arm64-v8a, same
-        // signer); anchors unchanged, smoke-verified. 26.45.0 dropped.
+        // signer); no patch code changed (no separate old-vs-new anchor diff was run: the smoke test and a CLI run without -f matched every anchor). 26.45.0 dropped.
         targets = listOf(AppTarget(version = "26.46.0", versionCode = 2646000))
     )
 
@@ -5218,7 +5218,7 @@ object Constants {
         // and disassembled from the CLI-patched APK; no ad break has been watched at runtime, so it
         // stays experimental. 2026-11-13: updated to version 26.45.0 (versionCode 2645000), anchors
         // unchanged; smoke-verified. 26.44.0 dropped (latest verified version only).
-        // 2026-11-25: updated to version 26.46.0 (versionCode 2646000), anchors unchanged;
+        // 2026-11-25: updated to version 26.46.0 (versionCode 2646000), no patch code changed (no separate anchor diff; see the main entry);
         // smoke-verified. 26.45.0 dropped.
         targets = listOf(AppTarget(version = "26.46.0", versionCode = 2646000, isExperimental = true))
     )
