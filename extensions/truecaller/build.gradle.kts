@@ -13,6 +13,11 @@ android {
 dependencies {
     // HevalSettings and AppContext. compileOnly: one copy of the core, from hevalcontrols.mpe.
     compileOnly(project(":extensions:hevalcontrols:core"))
+
+    // JVM unit tests of the plain-Java seams (AfterCallSavedContactsTest):
+    // .\gradlew :extensions:truecaller:testDebugUnitTest
+    testImplementation(libs.junit)
+    testImplementation(project(":extensions:hevalcontrols:core"))
 }
 
 // Pure-Java extension. AGP's built-in Kotlin adds kotlin-stdlib by default, which would grow the

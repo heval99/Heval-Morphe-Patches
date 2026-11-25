@@ -430,6 +430,7 @@ class TruecallerSmokeTest {
         assertHiddenSettingsRows(classes)
         assertToggleOverrides(classes)
         assertHideAfterCallConfigGetters(classes)
+        assertHideAfterCallSavedContacts(classes, byType)
         assertClassicCallLogSwipe(classes, byType)
         assertUseSmsVerification(classes)
         assertFixT9ContactSearch(classes, byType)
@@ -1372,6 +1373,85 @@ class TruecallerSmokeTest {
         check(doNothing.opcode == Opcode.SGET_OBJECT && doNothing.field()?.let { it.definingClass == facs && it.name == "DO_NOTHING" } == true &&
             insns[stock].opcode == Opcode.RETURN_OBJECT && stock == 5
         ) { "$label does not answer FacsBehavior.DO_NOTHING while the feature is on" }
+    }
+
+    private fun assertHideAfterCallSavedContacts(classes: List<ClassDef>, byType: Map<String, ClassDef>) {
+        // Hide after-call screen for contacts, issue #181 (second part): a number that Android's contacts
+        // lookup finds counts as a saved contact too. Each Contact.k0() test (kl.b twice, bf.c's first)
+        // runs its result through the static helper HistoryEvent.morpheOrSaved (added by the patch, so
+        // absent in the stock APK) at the join where the null-contact path meets it, so a null contact
+        // is covered and the branch from the invoke now lands on the helper call.
+        val history = "Lcom/truecaller/data/entity/HistoryEvent;"
+        val contact = "Lcom/truecaller/data/entity/Contact;"
+        val extension = "Lapp/template/extension/truecaller/AfterCallSavedContacts;"
+        check(extension in byType) { "the AfterCallSavedContacts extension class is not merged" }
+        val helper = byType.getValue(history).methods.single { it.name == "morpheOrSaved" }
+        // Public: the rules and behaviour methods are other classes (a private helper would throw IllegalAccessError).
+        check(AccessFlags.PUBLIC.isSet(helper.accessFlags) && AccessFlags.STATIC.isSet(helper.accessFlags) &&
+            helper.returnType == "Z" && helper.params() == listOf("Z", history)
+        ) {
+            "unexpected helper signature ${helper.params()}${helper.returnType}"
+        }
+        val helperCode = helper.instructions()
+        check(helperCode.map { it.opcode } == listOf(
+            Opcode.IF_NEZ, Opcode.IGET_OBJECT, Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.RETURN,
+        )) { "unexpected helper body ${helperCode.map { it.opcode }}" }
+        val extensionCall = helperCode[3].call()!!
+        check(extensionCall.definingClass == extension && extensionCall.name == "isSaved" &&
+            extensionCall.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", "Ljava/lang/String;") &&
+            extensionCall.returnType == "Z"
+        ) { "the helper does not call AfterCallSavedContacts.isSaved(String, String)" }
+        val fields = listOf(helperCode[1], helperCode[2]).map { it.field()!! }
+        check(fields.all { it.definingClass == history && it.type == "Ljava/lang/String;" } && fields[0].name != fields[1].name) {
+            "the helper does not read two String fields of HistoryEvent"
+        }
+
+        fun Instruction.isHelperCall() = opcode == Opcode.INVOKE_STATIC && call()?.let {
+            it.definingClass == history && it.name == "morpheOrSaved"
+        } == true
+
+        fun assertSites(label: String, method: Method, expected: Int) {
+            val insns = method.instructions()
+            val tests = insns.withIndex().filter { (_, insn) ->
+                insn.opcode == Opcode.INVOKE_VIRTUAL && insn.call()?.let {
+                    it.definingClass == contact && it.returnType == "Z" && it.parameterTypes.isEmpty()
+                } == true
+            }.map { it.index }
+            check(tests.size == 2) { "$label: expected 2 Contact boolean tests, found ${tests.size}" }
+            val hooks = insns.withIndex().filter { it.value.isHelperCall() }.map { it.index }
+            check(hooks.size == expected) { "$label: expected $expected helper calls, found ${hooks.size}" }
+            for ((site, hook) in hooks.withIndex()) {
+                val test = tests[site]
+                val result = (insns[test + 1] as OneRegisterInstruction).registerA
+                check(insns[test + 1].opcode == Opcode.MOVE_RESULT) { "$label: no move-result after the Contact test" }
+                // The invoke's own branch lands on the helper call, not past it.
+                check(insns[test + 2].opcode in setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32) && insns.branchTarget(test + 2) == hook) {
+                    "$label: the Contact test at $test does not jump to the helper call at $hook"
+                }
+                // The null-contact path falls into the helper call after writing the register.
+                check((insns[hook - 1] as? OneRegisterInstruction)?.registerA == result && hook - 1 > test + 2) {
+                    "$label: the null-contact path does not write v$result right before the helper call"
+                }
+                val call = insns[hook] as FiveRegisterInstruction
+                check(call.registerCount == 2 && call.registerC == result) { "$label: the helper call does not take the test result first" }
+                val moved = insns[hook + 1]
+                check(moved.opcode == Opcode.MOVE_RESULT && (moved as OneRegisterInstruction).registerA == result) {
+                    "$label: the helper call is not followed by move-result v$result"
+                }
+                check(call.registerD <= 15 && call.registerC <= 15) { "$label: helper call register above v15" }
+            }
+        }
+
+        val rules = classes.methodsWhere { _, method ->
+            method.returnType == "Z" && method.params().let { it.size == 4 && it[0] == history } &&
+                method.strings().any { it.startsWith("ACS for phonebook contacts is disabled or ACS for all incoming") }
+        }.single().second
+        assertSites("caller-ID rules", rules, 2)
+        val behavior = classes.methodsWhere { _, method ->
+            method.returnType == "Lcom/truecaller/acs/util/FacsBehavior;" && method.params().let { it.size == 4 && it[0] == history } &&
+                method.strings().contains("afterCallForPbContacts")
+        }.single().second
+        assertSites("after-call behaviour", behavior, 1)
     }
 
     private fun assertToggleOverrides(classes: List<ClassDef>) {
