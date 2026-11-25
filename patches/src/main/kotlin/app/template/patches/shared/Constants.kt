@@ -3375,13 +3375,16 @@ object Constants {
     // the map with no paywall, no consent form, no banner or bottom strip; panning, a vessel page and
     // the login form work; 3 cold starts, no crash.
     // Disable license check is a pre-rule licence bypass the owner kept (2026-10-19).
+    // Updated to version 6.8.0 (680) 2026-11-25: Google Play arm64 build, signer matches the hash
+    // below; the same anchors (LicenseClient.checkLicense, AdvertPlugin handlers, MobileAds statics)
+    // are asserted by VesselFinderSmokeTest. Runtime not re-run on 6.8.0.
     val COMPATIBILITY_VESSELFINDER = Compatibility(
         name = "VesselFinder",
         packageName = "com.astrapaging.vff",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x112D5A,
         signatures = setOf("d24b40de530cd622a604740c9dd036475ee6acfb326d29e34a06adcd1f6c6a1f"), // CN=Astra Paging Ltd., O=Astra Paging Ltd.
-        targets = listOf(AppTarget(version = "6.7.8", versionCode = 678))
+        targets = listOf(AppTarget(version = "6.8.0", versionCode = 680))
     )
 
     // Current verified target: see `targets` below and its dated update notes. The notes up to
