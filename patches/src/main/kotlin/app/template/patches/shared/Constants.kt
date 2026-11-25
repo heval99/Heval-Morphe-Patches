@@ -5670,6 +5670,12 @@ object Constants {
     // GIPHY" (changes where typed GIF searches go) are now opt-in (default = false): they change behaviour, not only
     // privacy, and no runtime evidence exists. Non-One UI support, Change package name, Change app name and Disable
     // telemetry stay on. Runtime NOT_RUN.
+    // 2026-11-25 (GitHub #176): Change package name now carries, on its own, the fixes the renamed keyboard needs on any
+    // ROM (shared patch renamedPackageFixesPatch, also a dependency of the non-One UI patch, so that one is unchanged):
+    // the clipboard caller allow-list and the two provider Samsung-signer checks (found by their log strings), the
+    // dialogs' window type and flags (Window.setType/setFlags through OneUi), the onCreate keyboardCreated hook and the
+    // Resources.getIdentifier stock-package retry. Verified on 5.9.40.75 by the smoke test (rename alone, non-One UI
+    // off; stock APK asserted to lack them) and a CLI patch without -f. Runtime NOT_RUN.
     val COMPATIBILITY_SAMSUNG_KEYBOARD = Compatibility(
         name = "Samsung Keyboard",
         packageName = "com.samsung.android.honeyboard",
