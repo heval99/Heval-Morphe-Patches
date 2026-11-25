@@ -92,7 +92,7 @@ class GuardianSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "6.241.23504",
+            version = "6.242.23548",
             patchNames = setOf("Disable article limit", "Disable ads", "Disable telemetry", "Spoof signature"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
