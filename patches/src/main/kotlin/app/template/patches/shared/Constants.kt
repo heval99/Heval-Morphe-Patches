@@ -1344,13 +1344,16 @@ object Constants {
     // 2026-10-29: updated to version 2.8.1 (versionCode 200801029, arm64 Play build via gplaydl,
     // merged split bundle, same signer O=Hypnotica). Enable Premium applies unchanged: smoke test
     // green and CLI without -f applied it.
+    // 2026-11-25: updated to version 2.8.2 (versionCode 200802033, arm64 Play build via gplaydl, same
+    // signer O=Hypnotica). Disassembled LicenseManager, LicenseData and LockFeatures in 2.8.1 and 2.8.2:
+    // LicenseData and LockFeatures are identical and LicenseManager differs in 56 of 3507 lines (the first 20 read were R8-renamed call sites; the rest were not read).
     val COMPATIBILITY_AQUAMAIL = Compatibility(
         name = "Aqua Mail",
         packageName = "org.kman.AquaMail",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x00B0FF,
         signatures = setOf("da3a93962f82949130f2869637f7abbd0d8f4fff3527a089b06a1078acb7d684"), // CN=Kostya Vasilyev, O="Hypnotica, Inc."
-        targets = listOf(AppTarget(version = "2.8.1", versionCode = 200801029))
+        targets = listOf(AppTarget(version = "2.8.2", versionCode = 200802033))
     )
 
     // Verified 2026-09-17 against com.wunderground.android.weather 6.20.1
