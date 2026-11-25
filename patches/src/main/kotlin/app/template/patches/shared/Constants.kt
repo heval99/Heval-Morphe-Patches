@@ -4197,13 +4197,17 @@ object Constants {
     // 2026-11-07: updated to 2.3.608 (Play arm64 build via gplaydl, versionCode 928, same signer;
     // the fixture is now arm64 instead of the old armeabi-v7a APKPure XAPK), all patches apply unchanged; smoke + CLI without -f.
     // Runtime not run yet; smoke test and CLI run only.
+    // 2026-11-25: updated to 2.3.646 (Play arm64 build via gplaydl, versionCode 966, same signer 87a49808...b2d0).
+    // Anchor diff against 2.3.608: every string anchor is still OK-unique; only R8 renames (plugin w9 -> zj, UXCam
+    // handler T7/g.u -> wg/c.m, Branch n3/x -> q7/z); the Branch fingerprint still matches its two readers. Smoke test
+    // passes; CLI without -f changed 14 classes (helper, 8 load prologues, UXCam, Airship, Branch, manifest).
     val COMPATIBILITY_FOOTBALL433 = Compatibility(
         name = "433",
         packageName = "com.football433",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF1FF00, // The adaptive icon's neon yellow background.
         signatures = setOf("87a49808a3bbed73e6af698a594f2ef984d35a36bda298eb400a5b2ed29fb2d0"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "2.3.608", versionCode = 928))
+        targets = listOf(AppTarget(version = "2.3.646", versionCode = 966))
     )
 
     // Same app, used only by "Disable telemetry", so Morphe Manager flags it as experimental
@@ -4227,13 +4231,14 @@ object Constants {
     // apart there; Airship push work still runs, as intended. Stays experimental.
     // 2026-10-23: moved to 2.3.585 with the main entry (telemetry anchors unchanged apart from R8 renames).
     // 2026-11-07: updated to 2.3.608 together with the main entry; all patches apply unchanged; smoke + CLI without -f.
+    // 2026-11-25: updated to 2.3.646 together with the main entry (see there for the anchor diff).
     val COMPATIBILITY_FOOTBALL433_EXPERIMENTAL = Compatibility(
         name = "433",
         packageName = "com.football433",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xF1FF00,
         signatures = setOf("87a49808a3bbed73e6af698a594f2ef984d35a36bda298eb400a5b2ed29fb2d0"), // Google Play app signing key
-        targets = listOf(AppTarget(version = "2.3.608", versionCode = 928, isExperimental = true))
+        targets = listOf(AppTarget(version = "2.3.646", versionCode = 966, isExperimental = true))
     )
 
     // Written 2026-10-17 against com.mail.mobile.android.mail 9.18.3 (versionCode
