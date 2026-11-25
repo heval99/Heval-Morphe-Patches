@@ -8,7 +8,8 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 // method answers "does this placement show ads": it returns false for Pro users, then looks the
 // placement up in the remote AdDeploy list. Every ad load/show path consults it, so forceable
 // false is the app's own "no ads" experience (what a Pro user already gets). The class name is
-// readable; the member name rotates, so the body's call to the Pro gate is the anchor.
+// readable; the Pro gate's class and method name rotate (billing/d.d in 1.722.1225, billing/c.d in
+// 1.730.1226), so the anchor is the body's call to a static boolean(Context) in the billing package.
 internal object AdSupportedFingerprint : Fingerprint(
     returnType = "Z",
     parameters = listOf("Ljava/lang/String;"),
@@ -17,8 +18,7 @@ internal object AdSupportedFingerprint : Fingerprint(
             method.implementation != null &&
             method.implementation!!.instructions.any { insn ->
                 val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
-                ref?.definingClass == "Lcom/camerasideas/instashot/store/billing/d;" &&
-                    ref.name == "d" &&
+                ref?.definingClass?.startsWith("Lcom/camerasideas/instashot/store/billing/") == true &&
                     ref.returnType == "Z" &&
                     ref.parameterTypes.map(CharSequence::toString) ==
                     listOf("Landroid/content/Context;")

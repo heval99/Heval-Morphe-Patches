@@ -1894,13 +1894,18 @@ object Constants {
     //     referenced by any dex class.
     // Smoke-tested and bytecode-verified; the native kill site is asserted in the emitted APK.
     // NOT run on a device.
+    // 2026-11-25: updated to version 1.730.1226 (versionCode 1226; Google Play arm64-v8a merge,
+    // same signer). All four patches' anchors re-verified by YouCutSmokeTest, including the single
+    // "mov w1, #9; bl kill" site in libisvideoengine.so. The Pro gate moved from store/billing/d
+    // to store/billing/c (same d(Context)Z, 82 callers); the Disable ads anchor now matches any
+    // static boolean(Context) in the billing package instead of the class name.
     val COMPATIBILITY_YOUCUT = Compatibility(
         name = "YouCut",
         packageName = "com.camerasideas.trimmer",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xE91E63,
         signatures = setOf("0920a10484a7528eb20e8662b91c01f7263cbf725a06dc507c99e3267eb38d74"),
-        targets = listOf(AppTarget(version = "1.722.1225", versionCode = 1225))
+        targets = listOf(AppTarget(version = "1.730.1226", versionCode = 1226))
     )
 
     // Verified 2026-10-06 against com.flyersoft.moonreader 10.7 (versionCode 1007000,
