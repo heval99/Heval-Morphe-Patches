@@ -117,6 +117,14 @@ class BtSmokeTest {
         val calls = method.implementation!!.instructions.mapNotNull {
             (it as? ReferenceInstruction)?.reference as? MethodReference
         }
+        // WebResourceRequest is an interface: getUrl must be invoke-interface (invoke-virtual fails ART linking).
+        check(
+            method.implementation!!.instructions.any {
+                val ref = (it as? ReferenceInstruction)?.reference as? MethodReference
+                it.opcode == Opcode.INVOKE_INTERFACE && ref?.definingClass == REQUEST && ref.name == "getUrl" &&
+                    ref.returnType == "Landroid/net/Uri;" && ref.parameterTypes.isEmpty()
+            },
+        ) { "$client: WebResourceRequest.getUrl is not called with invoke-interface" }
         check(calls.any { it.definingClass == AD_BLOCK && it.name == "emptyResponse" }) {
             "$client: the override does not return the empty response"
         }

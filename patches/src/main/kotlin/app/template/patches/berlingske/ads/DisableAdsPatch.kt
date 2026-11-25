@@ -117,7 +117,7 @@ val disableAdsPatch = bytecodePatch(
             addInstructionsWithLabelsChecked(
                 0,
                 """
-                    invoke-virtual {p2}, Landroid/webkit/WebResourceRequest;->getUrl()Landroid/net/Uri;
+                    invoke-interface {p2}, Landroid/webkit/WebResourceRequest;->getUrl()Landroid/net/Uri;
                     move-result-object v0
                     invoke-virtual {v0}, Landroid/net/Uri;->toString()Ljava/lang/String;
                     move-result-object v0
