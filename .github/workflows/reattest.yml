@@ -38,6 +38,8 @@ permissions:
 
 jobs:
   reattest:
+    # Run only from main (a dispatch from any other ref is skipped before any privileged step).
+    if: github.ref == 'refs/heads/main'
     name: Rebuild and attest ${{ inputs.tag }}
     runs-on: ubuntu-latest
     steps:
