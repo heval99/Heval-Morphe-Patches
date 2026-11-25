@@ -36,9 +36,10 @@ import java.nio.charset.StandardCharsets;
 public final class UserscriptEditorActivity extends Activity {
     static final String EXTRA_ID = "script_id";
     private static final int SAVE_SCRIPT = 51;
+    private static final String EXPORT_KEY = "editor";
     private Userscript script;
     private EditText source;
-    private String pendingExport;
+    private boolean saving;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -109,17 +110,20 @@ public final class UserscriptEditorActivity extends Activity {
         setContentView(root);
     }
 
+    // Off the UI thread: newly declared @require files are downloaded before anything is saved.
     private void save(boolean finishAfter) {
-        try {
-            script.source = source.getText().toString();
-            MonkeyStore.save(this, script);
-            Userscript saved = MonkeyStore.get(this, script.id);
+        if (saving) return;
+        saving = true;
+        Userscript request = script.copy();
+        request.source = source.getText().toString();
+        MonkeyStore.saveAsync(this, request, (ok, message, saved) -> runOnUiThread(() -> {
+            saving = false;
+            if (isFinishing() || isDestroyed()) return;
+            toast(message);
+            if (!ok) return;
             if (saved != null) script = saved;
-            toast("Saved " + script.name);
             if (finishAfter) finish();
-        } catch (Exception error) {
-            toast(MonkeyStore.safe(error));
-        }
+        }));
     }
 
     private void metadata() {
@@ -186,7 +190,7 @@ public final class UserscriptEditorActivity extends Activity {
     }
 
     private void export() {
-        pendingExport = source.getText().toString();
+        MonkeyStore.putPendingExport(EXPORT_KEY, source.getText().toString());
         String extension = Userscript.KIND_CSS.equals(script.kind)
                 ? ".user.css"
                 : ".user.js";
@@ -199,8 +203,9 @@ public final class UserscriptEditorActivity extends Activity {
 
     private void toggle() {
         try {
-            script.enabled = !script.enabled;
-            MonkeyStore.setEnabled(this, script.id, script.enabled);
+            boolean enabled = !script.enabled;
+            MonkeyStore.setEnabled(this, script.id, enabled);
+            script.enabled = enabled; // only after the store accepted it
             render();
         } catch (Exception error) {
             toast(MonkeyStore.safe(error));
@@ -220,8 +225,15 @@ public final class UserscriptEditorActivity extends Activity {
                     copy.name
             );
             copy.enabled = false;
-            MonkeyStore.save(this, copy);
-            toast("Duplicate created");
+            // Reuse the original's stored @require bodies; only new URLs are downloaded.
+            copy.requires.clear();
+            copy.requires.addAll(script.requires);
+            copy.requireSources.clear();
+            copy.requireSources.addAll(script.requireSources);
+            MonkeyStore.saveAsync(this, copy, (ok, message, saved) -> runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                toast(ok ? "Duplicate created" : message);
+            }));
         } catch (Exception error) {
             toast(MonkeyStore.safe(error));
         }
@@ -269,21 +281,28 @@ public final class UserscriptEditorActivity extends Activity {
 
     @Override protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
-        if (request != SAVE_SCRIPT
-                || result != RESULT_OK
-                || data == null
-                || data.getData() == null
-                || pendingExport == null) return;
-        Uri uri = data.getData();
-        String content = pendingExport;
-        pendingExport = null;
-        try (OutputStream output = getContentResolver().openOutputStream(uri)) {
-            if (output == null) throw new Exception("Cannot open the file");
-            output.write(content.getBytes(StandardCharsets.UTF_8));
-            toast("Script exported");
-        } catch (Exception error) {
-            toast(MonkeyStore.safe(error));
+        if (request != SAVE_SCRIPT) return;
+        // Held in MonkeyStore, so it survives a configuration change while the picker is open.
+        String content = MonkeyStore.takePendingExport(EXPORT_KEY);
+        if (result != RESULT_OK || data == null || data.getData() == null) return;
+        if (content == null) {
+            toast("Export was interrupted; please export again");
+            return;
         }
+        Uri uri = data.getData();
+        android.content.Context app = getApplicationContext();
+        MonkeyStore.runInBackground(() -> {
+            String message;
+            try (OutputStream output = app.getContentResolver().openOutputStream(uri)) {
+                if (output == null) throw new Exception("Cannot open the file");
+                output.write(content.getBytes(StandardCharsets.UTF_8));
+                message = "Script exported";
+            } catch (Throwable error) {
+                message = MonkeyStore.safe(error);
+            }
+            String shown = message;
+            runOnUiThread(() -> MonkeyUi.toast(app, shown));
+        });
     }
 
     private void add(LinearLayout row, String text, boolean primary, Runnable action) {
