@@ -5178,7 +5178,9 @@ object Constants {
         // All six Disable telemetry steps (Crashlytics gate, Firebase Performance check, Firebase
         // Analytics manifest flag, NPAW and Nielsen initializers, Cronos dispatcher) match
         // uniquely; ViaplaySmokeTest passes. 26.44.0 dropped (latest verified version only).
-        targets = listOf(AppTarget(version = "26.45.0", versionCode = 2645000))
+        // 2026-11-25: updated to version 26.46.0 (versionCode 2646000; Google Play, arm64-v8a, same
+        // signer); anchors unchanged, smoke-verified. 26.45.0 dropped.
+        targets = listOf(AppTarget(version = "26.46.0", versionCode = 2646000))
     )
 
     // Same app, used only by "Skip ads", so Morphe Manager flags it as experimental (2026-10-29,
@@ -5216,7 +5218,9 @@ object Constants {
         // and disassembled from the CLI-patched APK; no ad break has been watched at runtime, so it
         // stays experimental. 2026-11-13: updated to version 26.45.0 (versionCode 2645000), anchors
         // unchanged; smoke-verified. 26.44.0 dropped (latest verified version only).
-        targets = listOf(AppTarget(version = "26.45.0", versionCode = 2645000, isExperimental = true))
+        // 2026-11-25: updated to version 26.46.0 (versionCode 2646000), anchors unchanged;
+        // smoke-verified. 26.45.0 dropped.
+        targets = listOf(AppTarget(version = "26.46.0", versionCode = 2646000, isExperimental = true))
     )
 
     // Verified 2026-10-29 against dk.bold 6.5.2 (versionCode 261, owner-supplied APKCube .apks

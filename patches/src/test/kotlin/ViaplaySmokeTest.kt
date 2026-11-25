@@ -72,7 +72,7 @@ class ViaplaySmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "26.45.0",
+            version = "26.46.0",
             patchNames = setOf("Disable telemetry", "Skip ads"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
