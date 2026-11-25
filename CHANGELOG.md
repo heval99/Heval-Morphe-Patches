@@ -1,3 +1,71 @@
+## 3.3.0-dev.2 (2026-11-25)
+
+### 🆕 New apps
+- **Listonic** `9.25.2` - Disable ads, Disable telemetry
+
+### 📱 Brave Browser `1.100.58`
+- New: Userscripts
+- New: Userscript manager extension
+- Fixed: Use the full page address in Userscripts and harden the install prompt
+- Fixed: Make the userscript store crash-safe and its backups round-trip
+
+### 📱 Firefox Focus `160.0.1`
+- Fixed: Collect classes before mutating in Disable telemetry, refresh stale notes
+
+### 📱 Politiken `4.1.5`
+- Fixed: Use interface dispatch for WebResourceRequest.getUrl in the WebView ad blocker
+
+### 📱 RTÉ News `10.0.2`
+- Fixed: Use interface dispatch for WebResourceRequest.getUrl in the WebView ad blocker
+
+### 📱 Samsung Keyboard `5.9.40.75`
+- Fixed: Make Stop remote updates and Always use GIPHY opt-in; record policy notes
+
+### 📱 Shazam `16.68.0-261112`
+- Fixed: Match the Spotify login redirect exactly instead of by string prefix
+
+### 📱 Sofascore `26.11.16`
+- Fixed: Turn Spoof signature on by default and warn about GmsCore and clones
+- Fixed: Stop QuickHide and SpoilerFree from leaking league activities
+
+### 📱 Truecaller `26.45.5`
+- Fixed: Hide the full-screen after-call for saved contacts too
+
+### ⬆️ Updated apps
+| App | From | To |
+|---|---|---|
+| 433 | `2.3.608` | `2.3.646` |
+| Aqua Mail | `2.8.1` | `2.8.2` |
+| Beeper | `4.66.2` | `4.67.0` |
+| CREX | `26.11.07` | `26.11.08` |
+| Firefox | `160.0.1` | `161.0` |
+| FishBuddy | `11.0.137` | `11.0.153` |
+| Futbin | `27.15` | `27.17` |
+| GPS Map Camera Editor | `1.0.32` | `1.0.34` |
+| Librera | `10.0.35` | `10.1.18` |
+| Mango Launcher | `1.70` | `1.71` |
+| NotiAlarm | `1.3.31` | `1.3.35` |
+| OneFootball | `15.151.0` | `15.152.0` |
+| Pro Launcher | `v2.4.4` | `v2.4.5` |
+| Sofascore | `26.11.09` | `26.11.16` |
+| The Guardian | `6.241.23504` | `6.242.23548` |
+| VesselFinder | `6.7.8` | `6.8.0` |
+| Viaplay | `26.45.0` | `26.46.0` |
+| YouCut | `1.722.1225` | `1.730.1226` |
+
+### 🔧 Other
+- Fixed: Rename permission groups and trees when a clone changes the package
+- Fixed: First audit batch (issue template links, notes, unlock wording, test key)
+- Fixed: Log spoiler-check failures and fail closed for already-marked matches
+- Fixed: Rename a bare-package provider authority and fail on resource authorities in clones
+- Fixed: Keep the Calm restore point safe and keep cached icons offline
+- Fixed: Verify the exact stable asset, guard manual workflows, keep version-only notes
+
+### 🙏 Credits
+- MonkeyScript userscript manager from Alastor-Kaneki/Morphe-Patches (GPL-3.0-or-later; parts adapted from violentmonkey/violentmonkey, MIT)
+
+**Download:** [patches-3.3.0-dev.2.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v3.3.0-dev.2/patches-3.3.0-dev.2.mpp)
+
 ## 3.3.0-dev.1 (2026-11-23)
 
 ### 📱 Sofascore `26.11.09`
