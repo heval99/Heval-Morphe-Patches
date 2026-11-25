@@ -1068,7 +1068,7 @@ object Constants {
         targets = listOf(AppTarget(version = "10.5.1", versionCode = 2280))
     )
 
-    // Verified 2026-08-20 against FishBuddy v11.0.84 (universal, Android 7.0+).
+    // Verified 2026-08-20 against FishBuddy v11.0.84 (Android 7.0+, split bundle).
     // Premium gate is User.hasPremium()Z (no.fishbuddy.app.data.models.User),
     // reads the server-populated `roles` HashMap for the "premium" entitlement.
     // Subscription managed via RevenueCat (no ad SDKs). Class + method names
@@ -1077,11 +1077,14 @@ object Constants {
     // Verified 2026-10-07 against 11.0.125 (versionCode 110125, APKPure): Enable Premium
     // applies unchanged; FishBuddySmokeTest passes.
     // 2026-10-12 APK-finder audit: only distributed as a split bundle (APKMirror BUNDLE /
-    // APKPure-Uptodown XAPK), so apkFileType is APKM; any "universal APK" note below is outdated.
+    // APKPure-Uptodown XAPK), so apkFileType is APKM.
     // 2026-10-19: older target 11.0.101 dropped (latest version only, owner); FishBuddySmokeTest
     // runs against 11.0.125.
     // 2026-10-25: updated to version 11.0.137 (versionCode 110137; APKPure XAPK merged, same
     // signer); FishBuddySmokeTest passes on patcher 2.0.0; anchors unchanged.
+    // 2026-11-25: updated to version 11.0.153 (versionCode 110153; Google Play via gplaydl, arm64-v8a,
+    // same signer). User.hasPremium() bytecode is identical to 11.0.137 (roles HashMap "premium" read).
+    // The app ships as a split bundle (APKM), not a universal APK.
     val COMPATIBILITY_FISHBUDDY = Compatibility(
         name = "FishBuddy",
         packageName = "no.fishbuddy_playground.app",
@@ -1089,7 +1092,7 @@ object Constants {
         appIconColor = 0x0288D1,
         signatures = setOf("dad0c2bd5066aeaf984967fd562e98ec7b4cced799ec9aab2a256d930eff389a"), // Google Play app signing key
         targets = listOf(
-            AppTarget(version = "11.0.137", versionCode = 110137)
+            AppTarget(version = "11.0.153", versionCode = 110153)
         )
     )
 
