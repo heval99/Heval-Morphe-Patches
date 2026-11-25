@@ -3,7 +3,17 @@ package app.template.patches.truecaller.layout
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.template.patches.shared.addInstructionsAtControlFlowLabelChecked
 import app.template.patches.shared.addInstructionsChecked
+import app.template.patches.shared.addInstructionsWithLabelsChecked
+import app.template.patches.truecaller.shared.toStringFields
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import app.template.patches.shared.hevalcontrols.HevalFeature
 import app.template.patches.shared.hevalcontrols.addHevalGate
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -30,6 +40,20 @@ val hideAfterCallForContactsPatch = truecallerControls.featurePatch(
     ),
     default = false,
 ) {
+    // Resolve every hook site before the first edit: a failure leaves the feature neither half-applied nor listed.
+    val numberFields = toStringFields(HistoryEventToStringFingerprint.method, HISTORY_EVENT)
+    fun numberField(label: String) = numberFields.filter { (name, field) -> name == label && field.type == "Ljava/lang/String;" }
+        .map { it.second }.singleOrNull()
+        ?: throw PatchException("HistoryEvent.$label field not found exactly once")
+    val normalizedField = numberField("normalizedNumber")
+    val rawField = numberField("rawNumber")
+    val rules = AcsRulesFingerprint.method
+    val behavior = FacsBehaviorFingerprint.method
+    // kl.b tests the contact twice (the phonebook rule for incoming and outgoing calls); bf.c's first
+    // test is the isPhonebook flag that wins over its second (non-phonebook identified) one.
+    val ruleSites = rules.savedContactSites(2, 2)
+    val behaviorSites = behavior.savedContactSites(2, 1)
+
     // The after-call rules show the screen for a phonebook contact only when the user's
     // "afterCallForPbContacts" setting AND "featureShowACSAllIncoming" (incoming) or
     // "featureShowACSAllOutgoing" (outgoing) are on. Both toggles now read as off, so
@@ -67,9 +91,93 @@ val hideAfterCallForContactsPatch = truecallerControls.featurePatch(
             """,
         )
     }
+
+    // Issue #181 (second part): Truecaller calls a number a saved contact only when its own contact
+    // store has an exact match (Contact.k0()), so a contact saved without a country code still counted as
+    // unknown. While the feature is on, Android's contacts lookup is asked too (the extension; the
+    // number fields are read by a static helper on HistoryEvent, so the sites need only two registers).
+    val orSaved = addOrSavedHelper(mutableClassDefBy(HISTORY_EVENT), normalizedField, rawField)
+    for ((method, sites) in listOf(rules to ruleSites, behavior to behaviorSites)) {
+        // Last site first: an insert shifts the indices after it.
+        for (site in sites.sortedByDescending { it.join }) {
+            method.addInstructionsAtControlFlowLabelChecked(
+                site.join,
+                """
+                    invoke-static { v${site.result}, v${site.event} }, $orSaved
+                    move-result v${site.result}
+                """.trimIndent(),
+            )
+        }
+    }
 }
 
-private const val FULLSCREEN_ACS_CONFIG = "Lcom/truecaller/incallui/utils/FullscreenAcsConfig;"
+/** A `Contact.k0()` test: [join] is where the test's result (in [result]) meets the null-contact path. */
+private class SavedContactSite(val join: Int, val result: Int, val event: Int)
+
+/**
+ * The tests of "is this a saved contact" in this method: `invoke-virtual Contact.<no-arg Z>`,
+ * `move-result vR`, `goto :join`, preceded by the `iget-object HistoryEvent.contact` that gives the
+ * HistoryEvent register. A null contact skips the invoke and reaches the join with false, so the hook
+ * goes at the join and not at the invoke. Exactly [expected] tests must exist; the first [hooked] (in code
+ * order) must have the move-result and goto shape and are returned, the others are left alone.
+ */
+private fun MutableMethod.savedContactSites(expected: Int, hooked: Int): List<SavedContactSite> {
+    val name = "$definingClass->$name"
+    val code = implementation ?: throw PatchException("$name has no code")
+    val instructions = code.instructions
+    val calls = instructions.withIndex().filter { (_, instruction) ->
+        val call = (instruction as? ReferenceInstruction)?.reference as? MethodReference
+        instruction.opcode == Opcode.INVOKE_VIRTUAL && call != null && call.definingClass == CONTACT &&
+            call.returnType == "Z" && call.parameterTypes.isEmpty()
+    }
+    if (calls.size != expected) throw PatchException("$name: found ${calls.size} Contact boolean tests, expected $expected")
+    return calls.take(hooked).map { (index, _) ->
+        val result = instructions.getOrNull(index + 1)
+        val jump = instructions.getOrNull(index + 2)
+        if (result?.opcode != Opcode.MOVE_RESULT || jump !is BuilderOffsetInstruction ||
+            (jump.opcode != Opcode.GOTO && jump.opcode != Opcode.GOTO_16 && jump.opcode != Opcode.GOTO_32)
+        ) throw PatchException("$name: the Contact test at $index is not followed by move-result and goto")
+        val contact = instructions.subList(maxOf(0, index - 6), index).lastOrNull {
+            val field = (it as? ReferenceInstruction)?.reference as? FieldReference
+            it.opcode == Opcode.IGET_OBJECT && field?.definingClass == HISTORY_EVENT && field.type == CONTACT
+        } as? TwoRegisterInstruction ?: throw PatchException("$name: no HistoryEvent.contact read before the Contact test at $index")
+        SavedContactSite(jump.target.location.index, (result as OneRegisterInstruction).registerA, contact.registerB)
+    }
+}
+
+private const val OR_SAVED_NAME = "morpheOrSaved"
+private const val SAVED_CONTACTS_EXTENSION = "Lapp/template/extension/truecaller/AfterCallSavedContacts;"
+
+/**
+ * Adds `static (Z, HistoryEvent)Z` to HistoryEvent: the argument when it is true, else the extension's
+ * answer for the event's normalized and raw number (false while the feature is off).
+ */
+private fun addOrSavedHelper(cls: MutableClass, normalized: FieldReference, raw: FieldReference): MethodReference {
+    val reference = ImmutableMethodReference(cls.type, OR_SAVED_NAME, listOf("Z", HISTORY_EVENT), "Z")
+    val helper = ImmutableMethod(
+        cls.type, OR_SAVED_NAME,
+        listOf(ImmutableMethodParameter("Z", null, null), ImmutableMethodParameter(HISTORY_EVENT, null, null)), "Z",
+        // Public: it is called from other classes (the rules and the behaviour method).
+        AccessFlags.PUBLIC.value or AccessFlags.STATIC.value or AccessFlags.SYNTHETIC.value,
+        null, null, MutableMethodImplementation(5),
+    ).toMutable()
+    helper.addInstructionsWithLabelsChecked(
+        0,
+        """
+            if-nez p0, :done
+            iget-object v0, p1, ${normalized.definingClass}->${normalized.name}:${normalized.type}
+            iget-object v1, p1, ${raw.definingClass}->${raw.name}:${raw.type}
+            invoke-static { v0, v1 }, $SAVED_CONTACTS_EXTENSION->isSaved(Ljava/lang/String;Ljava/lang/String;)Z
+            move-result p0
+            :done
+            return p0
+        """.trimIndent(),
+    )
+    cls.methods.add(helper)
+    return reference
+}
+
+private const val FULLSCREEN_ACS_CONFIG= "Lcom/truecaller/incallui/utils/FullscreenAcsConfig;"
 private const val FACS_BEHAVIOR = "Lcom/truecaller/acs/util/FacsBehavior;"
 
 // Phonebook-contact behaviours of calls that were answered, dismissed or placed; the *PbMissed ones

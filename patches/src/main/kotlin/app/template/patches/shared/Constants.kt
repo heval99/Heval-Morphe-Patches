@@ -3132,6 +3132,17 @@ object Constants {
     //   through a static helper added to the config class (the getters have no free register). *PbMissed and
     //   the non-phonebook getters are untouched. Not covered: the WhatsApp after-call and the PACS
     //   reminder notifications (not traced). Smoke test + CLI without -f verified; runtime NOT_RUN.
+    // 2026-11-25 (#181, 26.45.5): the same feature now also counts a number that Android's contacts lookup
+    //   finds as a saved contact, because Contact.k0() (a phonebook id on Truecaller's own store) is false
+    //   for a contact saved without a country code. Found by shape and log text: the caller-ID rules method
+    //   ("ACS for phonebook contacts is disabled or ACS for all incoming ..." log text, HistoryEvent,
+    //   FilterMatch, Z, Z -> Z) and the FacsBehavior method (string afterCallForPbContacts + a
+    //   FullscreenAcsConfig getter call). Three of the four Contact no-arg boolean tests (both in the rules method, the first in the behaviour method) get their result
+    //   passed through a helper added to HistoryEvent at the join where the null-contact path meets it
+    //   (rules: both tests; behaviour: the first, the isPhonebook flag); the helper calls the extension
+    //   AfterCallSavedContacts.isSaved(normalizedNumber, rawNumber) (HistoryEvent fields found through its
+    //   toString labels), which needs READ_CONTACTS. Verified: bytecode only (smoke test + CLI without -f);
+    //   runtime NOT_RUN.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",

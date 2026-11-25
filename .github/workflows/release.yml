@@ -62,7 +62,7 @@ jobs:
             :patches:test :extensions:webviewads:testDebugUnitTest :extensions:fotmob:testDebugUnitTest \
             :extensions:sofascore:testDebugUnitTest :extensions:wemuslim:testDebugUnitTest \
             :extensions:bravemonkey:testDebugUnitTest :extensions:flashscore:testDebugUnitTest \
-            :extensions:scores365:testDebugUnitTest \
+            :extensions:scores365:testDebugUnitTest :extensions:truecaller:testDebugUnitTest \
             :extensions:hevalcontrols:core:testDebugUnitTest :extensions:hevalcontrols:testDebugUnitTest
           python3 -m unittest discover -s .github/scripts/tests
           rm -f patches/build/libs/*.mpp

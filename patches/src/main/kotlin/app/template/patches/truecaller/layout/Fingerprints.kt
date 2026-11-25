@@ -79,7 +79,44 @@ internal object SurveyEligibilityFingerprint : Fingerprint(
     custom = { method, _ -> method.implementation != null },
 )
 
-internal const val FAMILY_MEMBER_ROLE = "Lcom/truecaller/familyprotect/api/model/Family\$MemberRole;"
+internal const val HISTORY_EVENT = "Lcom/truecaller/data/entity/HistoryEvent;"
+internal const val CONTACT = "Lcom/truecaller/data/entity/Contact;"
+private const val FULLSCREEN_ACS_CONFIG_TYPE = "Lcom/truecaller/incallui/utils/FullscreenAcsConfig;"
+private const val FACS_BEHAVIOR_TYPE = "Lcom/truecaller/acs/util/FacsBehavior;"
+
+// toString() of HistoryEvent (kept class name, R8-renamed fields): the labels name the normalizedNumber
+// and rawNumber fields.
+internal object HistoryEventToStringFingerprint : Fingerprint(
+    definingClass = HISTORY_EVENT,
+    name = "toString",
+    returnType = "Ljava/lang/String;",
+    parameters = listOf(),
+    filters = listOf(string("HistoryEvent:{id=", StringComparisonType.STARTS_WITH)),
+)
+
+// The caller-ID rules (kl.b in 26.45.5) that decide whether the after-call screen shows when
+// Truecaller is not the default dialer. A phonebook contact is Contact.k0() (R8 name); the method is
+// found by its log text for the phonebook rule and its shape.
+internal object AcsRulesFingerprint : Fingerprint(
+    returnType = "Z",
+    parameters = listOf(HISTORY_EVENT, "Lcom/truecaller/blocking/api/model/FilterMatch;", "Z", "Z"),
+    filters = listOf(
+        string("ACS for phonebook contacts is disabled or ACS for all incoming", StringComparisonType.STARTS_WITH),
+    ),
+)
+
+// The full-screen after-call behaviour for a call (bf.c in 26.45.5): reads "afterCallForPbContacts"
+// and the FullscreenAcsConfig getters, and answers a FacsBehavior.
+internal object FacsBehaviorFingerprint : Fingerprint(
+    returnType = FACS_BEHAVIOR_TYPE,
+    parameters = listOf(HISTORY_EVENT, "Z", "Z", "Z"),
+    filters = listOf(
+        string("afterCallForPbContacts"),
+        methodCall(definingClass = FULLSCREEN_ACS_CONFIG_TYPE, name = "getUnlockedPbIncomingAccept"),
+    ),
+)
+
+internal const val FAMILY_MEMBER_ROLE= "Lcom/truecaller/familyprotect/api/model/Family\$MemberRole;"
 
 // The bottom bar builder (xm6.g(SparseIntArray) in 26.39.6, cp6.g in 26.40.5, mr6.i in 26.44.6):
 // reads the CALLS / MESSAGES / SCAM_FEED badge counts, asks the tab assembler for the tab list and

@@ -311,7 +311,7 @@ with no saved choice for that switch; "Reset all to defaults" applies it, and a 
 | `truecaller.hide_family_button` | Hide family button | yes | toggle override |
 | `truecaller.show_caller_number` | Show caller number in call log | no | its subtitle helper (stock path) |
 | `truecaller.fix_t9_search` | Fix T9 contact search | yes | its refresh helper (stock path) |
-| `truecaller.hide_after_call_contacts` | Hide after-call screen for contacts | no | toggle overrides |
+| `truecaller.hide_after_call_contacts` | Hide after-call screen for contacts | no | toggle overrides, the seven phonebook config getters, and the saved-contact tests of the after-call rules also accept a number Android's contacts lookup finds (needs the Contacts permission) |
 | `truecaller.hide_business_media` | Hide business media | no | toggle overrides, screen entry gate, media helper |
 | `truecaller.hide_messages_tab` | Hide Messages tab | yes | its tabs helper, default tab getter, selectTab, bar helper |
 | `truecaller.hide_premium_tab` | Hide Premium tab | yes | its tabs helper, Settings `isPremiumItemVisible` store (value helper) |
