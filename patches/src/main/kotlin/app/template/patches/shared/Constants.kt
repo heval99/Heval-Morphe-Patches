@@ -1728,7 +1728,11 @@ object Constants {
             // (Flutter) and AbstractFeatureFlag.getValue (native); the visible effect is unproven at
             // runtime. Runtime NOT_RUN (owner declined emulator run 2026-11-14).
             // 2026-11-18: updated to version 15.151.0 (versionCode 1045059947, same signer).
-            AppTarget(version = "15.151.0", versionCode = 1045059947)
+            // 2026-11-25: updated to version 15.152.0 (versionCode 1045068677; Google Play, arm64-v8a
+            // split bundle merged; signer CN=Appsolute OU=SD, cert SHA-256 5099231f...56ab, matches).
+            // Disable ads, Disable telemetry and Hide betting content apply with no patch code change (smoke test plus a per-class stock-vs-patched apkanalyzer diff of the 45 changed classes);
+            // 15.151.0 dropped (latest verified version only). Runtime NOT_RUN.
+            AppTarget(version = "15.152.0", versionCode = 1045068677)
         )
     )
 
