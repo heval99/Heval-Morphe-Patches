@@ -38,11 +38,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * text icon at once and the image replaces it once loaded; any failure keeps the text icon, silently.
  *
  * <p>Downloads run on a small pool (3 background threads, newest request first, so the rows on screen
- * load before the ones scrolled past), over https only, with 5 s timeouts and at most
- * {@value #MAX_DOWNLOAD_BYTES} bytes per image. The image is decoded with {@code inSampleSize} and
- * scaled to fit the icon box, then kept in a {@value #MEMORY_CACHE_BYTES}-byte memory cache and as a
- * PNG in {@code getCacheDir()/heval_icons/<sha1(url)>.png} (at most {@value #DISK_CACHE_BYTES} bytes,
- * oldest written first out; a file older than 30 days is fetched again, and kept if that fails).
+ * load before the ones scrolled past), over https only (redirects are followed by hand, at most
+ * {@value ImageRefresh#MAX_REDIRECTS}, and only to https URLs checked before they are requested), with
+ * 5 s timeouts and at most {@value #MAX_DOWNLOAD_BYTES} bytes per image. The image is decoded with
+ * {@code inSampleSize} and scaled to fit the icon box, then kept in a {@value #MEMORY_CACHE_BYTES}-byte
+ * memory cache and as a PNG in {@code getCacheDir()/heval_icons/<sha1(url)>.png} (at most
+ * {@value #DISK_CACHE_BYTES} bytes, oldest written first out; a file older than 30 days is fetched
+ * again, and kept if that fails in any way, a timeout or an exception included).
  * A URL that failed is not retried until the next picker opens. Main-thread API; never throws.
  */
 final class OptionImageLoader {
@@ -208,8 +210,8 @@ final class OptionImageLoader {
         }
 
         private Bitmap load() throws Exception {
-            File dir = new File(context.getCacheDir(), DISK_DIR);
-            File file = new File(dir, sha1(url) + ".png");
+            final File dir = new File(context.getCacheDir(), DISK_DIR);
+            final File file = new File(dir, sha1(url) + ".png");
             Bitmap stale = null;
             if (file.isFile()) {
                 Bitmap cached = BitmapFactory.decodeFile(file.getPath());
@@ -218,47 +220,71 @@ final class OptionImageLoader {
                     stale = cached;
                 }
             }
-            byte[] bytes = download(url);
-            Bitmap bitmap = bytes == null ? null : decode(bytes, size);
-            if (bitmap == null) return stale;
-            save(dir, file, bitmap);
-            return bitmap;
+            // Any failure of the refresh (timeout, offline, bad image) keeps the stale copy.
+            return ImageRefresh.refreshOrStale(stale, new ImageRefresh.Fetch<Bitmap>() {
+                @Override
+                public Bitmap fetch() throws Exception {
+                    byte[] bytes = download(url);
+                    Bitmap bitmap = bytes == null ? null : decode(bytes, size);
+                    if (bitmap != null) save(dir, file, bitmap);
+                    return bitmap;
+                }
+            });
         }
     }
 
-    /** The body of a 200 answer over https, or null (other status, too big, not https after redirects). */
+    /**
+     * The body of a 200 answer over https, or null (other status, too big, a redirect to a non-https
+     * URL or more than {@link ImageRefresh#MAX_REDIRECTS} redirects). Redirects are followed by hand,
+     * and each hop's URL is checked for https before it is requested.
+     */
     private static byte[] download(String url) throws Exception {
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        try {
-            connection.setConnectTimeout(TIMEOUT_MS);
-            connection.setReadTimeout(TIMEOUT_MS);
-            connection.setInstanceFollowRedirects(true);
-            connection.setUseCaches(false);
-            connection.setRequestProperty("User-Agent", USER_AGENT);
-            connection.setRequestProperty("Accept", "image/*");
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) return null;
-            if (!"https".equalsIgnoreCase(connection.getURL().getProtocol())) return null;
-            int declared = connection.getContentLength();
-            if (declared > MAX_DOWNLOAD_BYTES) return null;
-            InputStream in = connection.getInputStream();
+        URL current = new URL(url);
+        for (int hop = 0; hop <= ImageRefresh.MAX_REDIRECTS; hop++) {
+            if (!ImageRefresh.isHttps(current)) return null;
+            HttpURLConnection connection = (HttpURLConnection) current.openConnection();
             try {
-                byte[] buffer = new byte[declared > 0 ? declared : 16 * 1024];
-                int length = 0;
-                while (true) {
-                    if (length == buffer.length) {
-                        if (length > MAX_DOWNLOAD_BYTES) return null;
-                        buffer = Arrays.copyOf(buffer, Math.min(buffer.length * 2, MAX_DOWNLOAD_BYTES + 1));
-                    }
-                    int read = in.read(buffer, length, buffer.length - length);
-                    if (read < 0) break;
-                    length += read;
+                connection.setConnectTimeout(TIMEOUT_MS);
+                connection.setReadTimeout(TIMEOUT_MS);
+                connection.setInstanceFollowRedirects(false);
+                connection.setUseCaches(false);
+                connection.setRequestProperty("User-Agent", USER_AGENT);
+                connection.setRequestProperty("Accept", "image/*");
+                int status = connection.getResponseCode();
+                if (ImageRefresh.isRedirect(status)) {
+                    current = ImageRefresh.redirectTarget(current, connection.getHeaderField("Location"));
+                    if (current == null) return null;
+                    continue;
                 }
-                return length > MAX_DOWNLOAD_BYTES ? null : Arrays.copyOf(buffer, length);
+                if (status != HttpURLConnection.HTTP_OK) return null;
+                return body(connection);
             } finally {
-                in.close();
+                connection.disconnect();
             }
+        }
+        return null;
+    }
+
+    /** The body of an answered connection, or null when it is over {@link #MAX_DOWNLOAD_BYTES}. */
+    private static byte[] body(HttpURLConnection connection) throws Exception {
+        int declared = connection.getContentLength();
+        if (declared > MAX_DOWNLOAD_BYTES) return null;
+        InputStream in = connection.getInputStream();
+        try {
+            byte[] buffer = new byte[declared > 0 ? declared : 16 * 1024];
+            int length = 0;
+            while (true) {
+                if (length == buffer.length) {
+                    if (length > MAX_DOWNLOAD_BYTES) return null;
+                    buffer = Arrays.copyOf(buffer, Math.min(buffer.length * 2, MAX_DOWNLOAD_BYTES + 1));
+                }
+                int read = in.read(buffer, length, buffer.length - length);
+                if (read < 0) break;
+                length += read;
+            }
+            return length > MAX_DOWNLOAD_BYTES ? null : Arrays.copyOf(buffer, length);
         } finally {
-            connection.disconnect();
+            in.close();
         }
     }
 

@@ -103,7 +103,7 @@ class HevalControlsPatcherTest {
         listOf(
             "HevalSettings;", "Registry;", "RegistryCodec;", "CrashGuard;", "InitProvider;", "PrefsStore;",
             "Sections;", "ui/HevalControlsActivity;", "ui/ListPicker;", "ui/OptionImageLoader;", "ui/Views;", "ui/Palette;",
-            "ui/Diagnostics;", "ui/Icons;",
+            "ui/Diagnostics;", "ui/Icons;", "ui/CalmMode;", "ui/ImageRefresh;",
         ).forEach { assertTrue("$EXTENSION$it" in byType, "$EXTENSION$it is not in the patched dex") }
 
         // Readability (2026-11-11): the secondary text colour, two-line descriptions, the row "on" marker,

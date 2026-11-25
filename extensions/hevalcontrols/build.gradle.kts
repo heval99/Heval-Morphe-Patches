@@ -13,6 +13,10 @@ dependencies {
     // Engine, registry codec and crash-guard logic. Nested under this extension project, so the
     // settings plugin includes it as a plain project (no .mpe of its own).
     implementation(project(":extensions:hevalcontrols:core"))
+
+    // JVM unit tests of the plain-Java UI seams (CalmModeTest, ImageRefreshTest):
+    // .\gradlew :extensions:hevalcontrols:testDebugUnitTest
+    testImplementation(libs.junit)
 }
 
 // Pure-Java extension. AGP's built-in Kotlin adds kotlin-stdlib by default, which would grow the

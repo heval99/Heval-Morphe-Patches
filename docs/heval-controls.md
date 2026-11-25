@@ -70,7 +70,8 @@ Java classes (package `app.template.extension.hevalcontrols`):
 | `PrefsStore`, `Store`, `AppContext` (core) | Store choices in SharedPreferences, and provide the context and process helpers. |
 | `InitProvider` | A non-exported ContentProvider that starts the engine and the crash guard before `Application.onCreate`. |
 | `ui.HevalControlsActivity`, `ui.Views`, `ui.Palette`, `ui.Diagnostics` | The settings screen, with every view built in code. |
-| `ui.ListPicker`, `ui.OptionImageLoader` | The picker of a list setting, and the loader and cache of its option images (see [List settings](#list-settings-pickers)). |
+| `ui.ListPicker`, `ui.OptionImageLoader`, `ui.ImageRefresh` | The picker of a list setting, and the loader and cache of its option images (see [List settings](#list-settings-pickers)). |
+| `ui.Profiles`, `ui.CalmMode` | Saved profiles, and the Calm mode decision (see Calm mode below). |
 
 The extension is pure Java (minSdk 23, no androidx, no kotlin-stdlib, no resources). An `.mpe`
 is a single dex file. Its resources and manifest are discarded, so every string and colour lives
@@ -995,12 +996,14 @@ separate interface, not a default method, so a provider without images needs no 
 extensions' desugaring. `ui.OptionImageLoader` draws a row's text icon at once and loads the image
 off the main thread: a pool of 3 background-priority daemon threads that takes the newest request
 first (rows on screen before the ones scrolled past), `HttpURLConnection` with a mobile browser
-User-Agent, 5 s connect and read timeouts, only a 200 answer that is still https after redirects,
-at most 256 KB. `BitmapFactory` decodes it with `inSampleSize` and the result is scaled to fit the
+User-Agent, 5 s connect and read timeouts, only a 200 answer over https, at most 256 KB. Redirects
+are followed by hand (2026-11-25): at most 3, and each `Location` must resolve to an https URL
+before it is requested, so an http hop is never contacted (`ImageRefresh.redirectTarget`). `BitmapFactory` decodes it with `inSampleSize` and the result is scaled to fit the
 32 dp column (an `ImageView` over the text icon in the same `FrameLayout`, so rows stay aligned).
 Cache: an `LruCache` of 4 MB of bitmaps, plus PNGs in `getCacheDir()/heval_icons/<sha1(url)>.png`
 (5 MB at most, the oldest written go first; a file older than 30 days is fetched again and kept if
-that fails). The image view is tagged with its URL, so a recycled row never gets the image of the
+that fails in any way, a timeout or an exception included, `ImageRefresh.refreshOrStale`; covered by
+`ImageRefreshTest`). The image view is tagged with its URL, so a recycled row never gets the image of the
 option it showed before. A failure keeps the emoji, silently, and is not retried until the picker
 opens again. The image is not focusable or spoken; the row is still read by its label. Sofascore:
 `https://img.sofascore.com/api/v1/country/{alpha2}/flag` for every two-letter key (slug keys have
@@ -1141,7 +1144,13 @@ not run on a device.
 **Calm mode** (2026-11-09) is a one-tap row at the top of the Profiles section, shown when the registry has
 at least one switch with the `calm` flag (`HevalFeature(calm = true)`, the twelfth registry field, `1`). It
 first saves the current choices as the profile "Before Calm mode" (replacing an older one), then turns every
-calm switch on in one write; nothing else changes, so turning it off is applying that profile. The flag is set
+calm switch on in one write; nothing else changes, so turning it off is applying that profile. Since
+2026-11-25 (`ui.CalmMode`, covered by `CalmModeTest`) Calm is applied only after that profile is saved: when
+there are already 20 profiles and none is called "Before Calm mode", or the save fails, nothing changes and
+the screen says why (delete a profile to free a slot). When every calm switch is already on (by the saved
+choice, ignoring pause and safe mode), a tap saves and writes nothing and only confirms, so a repeated tap
+never replaces the baseline with a state that is already calm. If some calm switches were turned off by
+hand after Calm, a new tap counts as a new activation and saves that state as the baseline. The flag is set
 on (checked against the code 2026-11-23):
 
 - FotMob (8): `spoiler_free`, `spoiler_notifications`, `spoiler_lists`, `spoiler_match_page`, `spoiler_widget`,
@@ -1194,6 +1203,7 @@ with lists. The Kotlin encoder test and the Java decoder test both read them.
 |---|---|---|
 | Core JVM unit tests | `.\gradlew :extensions:hevalcontrols:core:testDebugUnitTest` | Registry decode and versioning, defaults, toggle and persistence on a fake store, pause, safe mode, fail-open, dependencies, restart-pending, unknown ids, crash-guard counting and resume. `HevalSettingsListTest`: list picks, pause, safe mode, dependencies, reset, seen options (persistence, bounds, background batch) and seeds. |
 | Patch-side tests | `.\gradlew :patches:buildAndroid :patches:cleanTest :patches:test --tests "HevalControls*" --no-build-cache` | `HevalControlsTest` covers the encoder against both fixtures, that switch records keep eight fields, feature and list validation, the manifest components, the gate helpers and that the Truecaller host is available on every installer (Root Mount included). `HevalControlsPatcherTest` runs a test-only host, a switch and a list feature through the real patcher on `apks/nativecamera/base.apk` (skipped without it). |
+| UI JVM unit tests | `.\gradlew :extensions:hevalcontrols:testDebugUnitTest` | `CalmModeTest`: Calm is not applied when the profile store is full or the backup fails, and a repeated tap keeps the first baseline. `ImageRefreshTest`: a failing refresh keeps the stale image, redirects only to https. |
 | Lint | `.\gradlew :extensions:hevalcontrols:core:lintRelease :extensions:hevalcontrols:lintRelease` | Checks API levels against minSdk 23. |
 
 CI (`release.yml`) runs no tests. Consider adding the core unit-test task there.
