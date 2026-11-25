@@ -5560,13 +5560,17 @@ object Constants {
     // GpsMapCameraSmokeTest asserts every hook.
     // 2026-11-12: updated to version 1.0.32 (versionCode 90; same signer). All four fingerprints are
     // OK-unique on the real matcher; bytecode only, the emulator checks above were run on 1.0.31.
+    // 2026-11-25: updated to version 1.0.34 (versionCode 92; Play arm64-v8a, same signer). The five
+    // anchor methods (both canShowAds, isSubscribed, LicenseClient.checkLicense, SplashActivity.onCreate)
+    // were diffed against 1.0.32 with dexindex: same kept names and shape, only obfuscated or synthetic
+    // references inside them changed. GpsMapCameraSmokeTest passes; bytecode only, no runtime check.
     val COMPATIBILITY_GPSMAPCAMERA = Compatibility(
         name = "GPS Map Camera Editor",
         packageName = "com.gkfriend.gpsmapcameraeditor",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x3FA9E0,
         signatures = setOf("ad0e198835238d37a5519b4cc50173c2a28a556b8806c3ab963fcbd516238d37"),
-        targets = listOf(AppTarget(version = "1.0.32", versionCode = 90))
+        targets = listOf(AppTarget(version = "1.0.34", versionCode = 92))
     )
 
     // 2026-11-13: new app, ported from bearinmindcat/morphe-patches (GPL-3.0) commit 5f79152
