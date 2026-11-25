@@ -3735,13 +3735,16 @@ object Constants {
     // pushes stay off while Disable telemetry is on. The shared builder routes every getPackageInfo call through the signature
     // extension with the original Guardian cert (SHA-256 4965429e...a9e7d, matches signatures above).
     // Cause analysis is static; runtime is NOT_RUN (no owner-approved emulator run).
+    // 2026-11-25: updated to version 6.242.23548 (versionCode 23548; Play download via gplaydl,
+    // arm64 merge, same signer 4965429e...). GuardianSmokeTest passes (no separate old-vs-new dexindex diff was run; only obfuscated names rotated);
+    // CLI (no -f) applies all 3 patches + Spoof signature. Emulator not run.
     val COMPATIBILITY_GUARDIAN = Compatibility(
         name = "The Guardian",
         packageName = "com.guardian",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0x052962, // Guardian navy.
         signatures = setOf("4965429ead99251c84c2d557d4e6f36c7bc3b35c1ea18e1996bcca13e55a9e7d"), // CN=Android, O=Guardian News and Media
-        targets = listOf(AppTarget(version = "6.241.23504", versionCode = 23504))
+        targets = listOf(AppTarget(version = "6.242.23548", versionCode = 23548))
     )
 
     // Updated 2026-10-23 to com.yahoo.mobile.client.android.sportacular 12.26.1 (versionCode
