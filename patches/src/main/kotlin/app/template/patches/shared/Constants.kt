@@ -4828,7 +4828,8 @@ object Constants {
         // valueOf result to still be in the register handed to the flow's (Object, Object)Z setter.
         // The site must follow the read, its setter receiver must be the register the read loaded, and neither register may be rewritten before the setter.
         // MangoSmokeTest passes. APK from Play via gplay (1.64 was APKPure); smoke test, CLI 2.1.1 without -f and a 3-method whole-APK diff done; not run on a device.
-        targets = listOf(AppTarget(version = "1.70", versionCode = 70))
+        // 2026-11-25: updated to 1.71 (versionCode 71, same signer, Play via gplay arm64). No patch code changed (the Enable Premium constructor and writer shapes were not diffed between versions; the smoke test covers them): the billing client is still found by "billing_cached_is_pro" + "billing_had_pro" (unique in 1.70 and 1.71), LicenseClient.checkLicense unchanged. MangoSmokeTest passes, CLI 2.1.1 without -f applied both patches (2 changed classes); disassembly of the patched APK shows const/4 1 after the Set.contains result, a Boolean.TRUE store after the Boolean.valueOf write into the Pro flow, and checkLicense starting with return-void. Not run on a device.
+        targets = listOf(AppTarget(version = "1.71", versionCode = 71))
     )
 
     // Verified 2026-10-27 against ie.rte.news 10.0.2 (versionCode 440, APKPure XAPK merged with
