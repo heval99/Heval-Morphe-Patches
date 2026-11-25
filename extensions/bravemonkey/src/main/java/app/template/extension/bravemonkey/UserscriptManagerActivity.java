@@ -46,11 +46,18 @@ public final class UserscriptManagerActivity extends Activity {
 
     private LinearLayout list;
     private EditText search;
+    private static final String STATE_PENDING_EXPORT = "pending_export";
+    private static final String EXPORT_BACKUP = "backup";
+    private static final String EXPORT_SCRIPT = "script:";
+
     private TextView summary;
+    // What to export once the document picker returns: EXPORT_BACKUP or EXPORT_SCRIPT + id.
+    // Small, so it goes into the instance state; the content itself is rebuilt at write time.
     private String pendingExport;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
+        if (state != null) pendingExport = state.getString(STATE_PENDING_EXPORT);
         render();
     }
 
@@ -317,22 +324,30 @@ public final class UserscriptManagerActivity extends Activity {
         });
     }
 
+    // The size check runs before the file picker opens, so an oversized backup is refused before
+    // anything is written. The content is rebuilt at write time (see onActivityResult).
     private void backup() {
-        try {
-            pendingExport = MonkeyStore.backup(this);
-            startActivityForResult(
-                    new Intent(Intent.ACTION_CREATE_DOCUMENT)
-                            .setType("application/json")
-                            .addCategory(Intent.CATEGORY_OPENABLE)
-                            .putExtra(Intent.EXTRA_TITLE, "brave-userscripts-backup.json"),
-                    SAVE_EXPORT);
-        } catch (Exception error) {
-            toast(MonkeyStore.safe(error));
-        }
+        MonkeyStore.runInBackground(() -> {
+            try {
+                MonkeyStore.backup(this);
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    pendingExport = EXPORT_BACKUP;
+                    startActivityForResult(
+                            new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                                    .setType("application/json")
+                                    .addCategory(Intent.CATEGORY_OPENABLE)
+                                    .putExtra(Intent.EXTRA_TITLE, "brave-userscripts-backup.json"),
+                            SAVE_EXPORT);
+                });
+            } catch (Throwable error) {
+                callback().done(false, MonkeyStore.safe(error), null);
+            }
+        });
     }
 
     private void exportScript(Userscript script) {
-        pendingExport = script.source;
+        pendingExport = EXPORT_SCRIPT + script.id;
         String extension = Userscript.KIND_CSS.equals(script.kind)
                 ? ".user.css" : ".user.js";
         startActivityForResult(
@@ -405,6 +420,9 @@ public final class UserscriptManagerActivity extends Activity {
 
     @Override protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
+        if (request == SAVE_EXPORT && (result != RESULT_OK || data == null || data.getData() == null)) {
+            pendingExport = null;
+        }
         if (result != RESULT_OK || data == null || data.getData() == null) return;
         Uri uri = data.getData();
         if (request == PICK_IMPORT) {
@@ -415,11 +433,12 @@ public final class UserscriptManagerActivity extends Activity {
                     String text;
                     try (InputStream input = getContentResolver().openInputStream(uri)) {
                         if (input == null) throw new Exception("Cannot open the file");
-                        text = MonkeyStore.read(input, 16 * 1024 * 1024);
+                        text = MonkeyStore.read(input, ScriptDatabase.MAX_BACKUP_BYTES);
                     }
-                    if (MonkeyStore.isBackup(text)) {
-                        MonkeyStore.restore(this, text);
-                        callback().done(true, "Backup restored", null);
+                    if (ScriptDatabase.looksLikeBackup(text)) {
+                        // Whole file validated (format, version, every entry) before asking.
+                        List<Userscript> scripts = ScriptDatabase.parseBackup(text);
+                        runOnUiThread(() -> confirmRestore(scripts));
                     } else {
                         MonkeyStore.importText(this, text, name, "", callback());
                     }
@@ -428,16 +447,56 @@ public final class UserscriptManagerActivity extends Activity {
                 }
             });
         } else if (request == SAVE_EXPORT && pendingExport != null) {
-            String content = pendingExport;
+            String what = pendingExport;
             pendingExport = null;
-            try (OutputStream output = getContentResolver().openOutputStream(uri)) {
-                if (output == null) throw new Exception("Cannot open the file");
-                output.write(content.getBytes(StandardCharsets.UTF_8));
-                toast("Export saved");
-            } catch (Exception error) {
-                toast(MonkeyStore.safe(error));
-            }
+            android.content.Context app = getApplicationContext();
+            MonkeyStore.runInBackground(() -> {
+                String message;
+                try {
+                    // Rebuilt here so the request survives Activity recreation (even process death).
+                    String content;
+                    if (EXPORT_BACKUP.equals(what)) {
+                        content = MonkeyStore.backup(app);
+                    } else {
+                        Userscript script = MonkeyStore.get(app, what.substring(EXPORT_SCRIPT.length()));
+                        if (script == null) throw new Exception("The script no longer exists");
+                        content = script.source;
+                    }
+                    try (OutputStream output = app.getContentResolver().openOutputStream(uri)) {
+                        if (output == null) throw new Exception("Cannot open the file");
+                        output.write(content.getBytes(StandardCharsets.UTF_8));
+                    }
+                    message = "Export saved";
+                } catch (Throwable error) {
+                    message = MonkeyStore.safe(error);
+                }
+                callback().done(true, message, null);
+            });
         }
+    }
+
+    private void confirmRestore(List<Userscript> scripts) {
+        if (isFinishing() || isDestroyed()) return;
+        int installed = MonkeyStore.list(this).size();
+        new AlertDialog.Builder(this)
+                .setTitle("Restore backup?")
+                .setMessage("This replaces all " + installed + " installed script(s) with the "
+                        + scripts.size() + " script(s) in the backup.")
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton("Replace", (dialog, which) -> MonkeyStore.runInBackground(() -> {
+                    try {
+                        MonkeyStore.restore(this, scripts);
+                        callback().done(true, "Backup restored", null);
+                    } catch (Throwable error) {
+                        callback().done(false, MonkeyStore.safe(error), null);
+                    }
+                }))
+                .show();
+    }
+
+    @Override protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        if (pendingExport != null) state.putString(STATE_PENDING_EXPORT, pendingExport);
     }
 
     private String template(String kind) {

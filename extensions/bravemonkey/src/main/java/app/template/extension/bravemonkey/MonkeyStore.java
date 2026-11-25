@@ -10,22 +10,17 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,14 +39,16 @@ final class MonkeyStore {
     private static final int MAX_REDIRECTS = 5;
     private static final String PREFS = "app.template.bravemonkey";
     private static final String DIR = "bravemonkey";
-    private static final String BACKUP_FORMAT = "BraveUserscripts-backup";
     private static final Object LOCK = new Object();
+    private static final Map<String, String> PENDING_EXPORTS = new HashMap<>();
     private static final ExecutorService IO = Executors.newSingleThreadExecutor(r -> {
         Thread thread = new Thread(r, "BraveMonkey-io");
         thread.setDaemon(true);
         return thread;
     });
+    // Never mutated in place: every change builds a new list and swaps it in after the write.
     private static List<Userscript> cache;
+    private static ScriptDatabase database;
 
     private MonkeyStore() { }
 
@@ -81,36 +78,97 @@ final class MonkeyStore {
         }
     }
 
+    /**
+     * Saves without network access. {@code script} carries the previously stored {@code requires}
+     * and {@code requireSources}; its {@code source} is reparsed. Fails when the source declares a
+     * @require whose body is not stored yet (use {@link #saveAsync}).
+     */
     static void save(Context context, Userscript script) throws Exception {
+        Userscript parsed = reparseForSave(script);
+        List<String> bodies = ScriptDatabase.reconcileRequires(
+                script.requires, script.requireSources, parsed.requires);
+        if (!ScriptDatabase.missing(parsed.requires, bodies).isEmpty()) {
+            throw new Exception("New @require files must be downloaded first; save from the editor");
+        }
+        parsed.requireSources.addAll(bodies);
+        upsert(context, parsed);
+    }
+
+    /**
+     * Editor save on the IO thread: keeps stored @require bodies for URLs that are still declared
+     * (in declared order), drops removed ones and downloads new ones (https only). Nothing is
+     * saved when a download fails.
+     */
+    static void saveAsync(Context context, Userscript script, Callback callback) {
+        IO.execute(() -> {
+            try {
+                Userscript parsed = reparseForSave(script);
+                List<String> bodies = ScriptDatabase.reconcileRequires(
+                        script.requires, script.requireSources, parsed.requires);
+                for (int i = 0; i < bodies.size(); i++) {
+                    if (bodies.get(i) != null) continue;
+                    String url = parsed.requires.get(i);
+                    if (!ViolentmonkeyCompat.isHttps(url)) {
+                        throw new Exception("Not saved: @require must use https: " + Logger.redact(url));
+                    }
+                    try {
+                        bodies.set(i, fetch(url));
+                    } catch (Throwable error) {
+                        throw new Exception("Not saved: cannot download @require "
+                                + Logger.redact(url) + " (" + safe(error) + ")");
+                    }
+                }
+                parsed.requireSources.addAll(bodies);
+                upsert(context, parsed);
+                callback.done(true, "Saved " + parsed.name, get(context, parsed.id));
+            } catch (Throwable e) { callback.done(false, safe(e), null); }
+        });
+    }
+
+    private static Userscript reparseForSave(Userscript script) {
+        Userscript parsed = UserscriptMetadataParser.reparsePreservingState(script, script.source);
+        parsed.id = script.id == null || script.id.isEmpty() ? parsed.id : script.id;
+        parsed.enabled = script.enabled;
+        parsed.installUrl = script.installUrl;
+        return parsed;
+    }
+
+    private static void upsert(Context context, Userscript parsed) throws Exception {
         synchronized (LOCK) {
             ensureLoaded(context);
-            Userscript parsed = UserscriptMetadataParser.reparsePreservingState(script, script.source);
-            parsed.id = script.id == null || script.id.isEmpty() ? parsed.id : script.id;
-            parsed.enabled = script.enabled;
-            parsed.installUrl = script.installUrl;
-            parsed.requireSources.addAll(script.requireSources);
+            List<Userscript> next = new ArrayList<>(cache);
             boolean replaced = false;
-            for (int i = 0; i < cache.size(); i++) {
-                if (cache.get(i).id.equals(parsed.id)) { cache.set(i, parsed); replaced = true; break; }
+            for (int i = 0; i < next.size(); i++) {
+                if (next.get(i).id.equals(parsed.id)) { next.set(i, parsed); replaced = true; break; }
             }
-            if (!replaced) { parsed.sortOrder = cache.size(); cache.add(parsed); }
-            write(context);
+            if (!replaced) { parsed.sortOrder = next.size(); next.add(parsed); }
+            commit(context, next);
         }
     }
 
     static void remove(Context context, String id) throws Exception {
         synchronized (LOCK) {
             ensureLoaded(context);
-            for (int i = cache.size() - 1; i >= 0; i--) if (cache.get(i).id.equals(id)) cache.remove(i);
-            write(context);
+            List<Userscript> next = new ArrayList<>(cache);
+            for (int i = next.size() - 1; i >= 0; i--) if (next.get(i).id.equals(id)) next.remove(i);
+            commit(context, next);
         }
     }
 
     static void setEnabled(Context context, String id, boolean enabled) throws Exception {
         synchronized (LOCK) {
             ensureLoaded(context);
-            for (Userscript s : cache) if (s.id.equals(id)) s.enabled = enabled;
-            write(context);
+            List<Userscript> next = new ArrayList<>(cache.size());
+            for (Userscript s : cache) {
+                if (s.id.equals(id)) {
+                    Userscript changed = s.copy();
+                    changed.enabled = enabled;
+                    next.add(changed);
+                } else {
+                    next.add(s);
+                }
+            }
+            commit(context, next);
         }
     }
 
@@ -150,8 +208,8 @@ final class MonkeyStore {
 
     static void updateAll(Context context, Callback callback) {
         IO.execute(() -> {
-            int changed = 0;
             int failed = 0;
+            Map<String, Userscript> updates = new HashMap<>();
             try {
                 for (Userscript old : list(context)) {
                     String url = old.effectiveUpdateUrl();
@@ -172,47 +230,54 @@ final class MonkeyStore {
                             fresh.installedAt = old.installedAt;
                             fresh.sortOrder = old.sortOrder;
                             loadRequires(fresh);
-                            synchronized (LOCK) {
-                                ensureLoaded(context);
-                                for (int i = 0; i < cache.size(); i++) {
-                                    if (cache.get(i).id.equals(old.id)) cache.set(i, fresh);
-                                }
-                            }
-                            changed++;
+                            updates.put(old.id, fresh);
                         }
                     } catch (Throwable error) {
                         failed++;
                         Logger.w("update failed for " + Logger.redact(url) + ": " + Logger.describe(error));
                     }
                 }
-                synchronized (LOCK) { ensureLoaded(context); write(context); }
+                int changed = 0;
+                if (!updates.isEmpty()) {
+                    synchronized (LOCK) {
+                        ensureLoaded(context);
+                        List<Userscript> next = new ArrayList<>(cache.size());
+                        for (Userscript s : cache) {
+                            Userscript fresh = updates.get(s.id);
+                            if (fresh != null) changed++;
+                            next.add(fresh != null ? fresh : s);
+                        }
+                        commit(context, next);
+                    }
+                }
                 callback.done(true, changed + " script(s) updated"
                         + (failed > 0 ? ", " + failed + " failed" : ""), null);
             } catch (Throwable e) { callback.done(false, safe(e), null); }
         });
     }
 
+    /** Backup JSON; throws (nothing written) above {@link ScriptDatabase#MAX_BACKUP_BYTES}. */
     static String backup(Context context) throws Exception {
-        JSONObject root = new JSONObject();
-        root.put("format", BACKUP_FORMAT);
-        root.put("version", 1);
-        JSONArray a = new JSONArray();
-        for (Userscript s : list(context)) a.put(s.toJson());
-        root.put("scripts", a);
-        return root.toString(2);
+        return ScriptDatabase.backupJson(list(context));
     }
 
-    static boolean isBackup(String text) {
-        String trimmed = text == null ? "" : text.trim();
-        return trimmed.startsWith("{")
-                && (trimmed.contains(BACKUP_FORMAT) || trimmed.contains("MonkeyScript-backup"));
+    /** Replaces the whole collection with an already validated backup ({@link ScriptDatabase#parseBackup}). */
+    static void restore(Context context, List<Userscript> scripts) throws Exception {
+        List<Userscript> next = new ArrayList<>();
+        for (Userscript s : scripts) next.add(s.copy());
+        synchronized (LOCK) {
+            ensureLoaded(context);
+            commit(context, next);
+        }
     }
 
-    static void restore(Context context, String text) throws Exception {
-        JSONArray a = new JSONObject(text).getJSONArray("scripts");
-        List<Userscript> scripts = new ArrayList<>();
-        for (int i = 0; i < a.length(); i++) scripts.add(Userscript.fromJson(a.getJSONObject(i)));
-        synchronized (LOCK) { cache = scripts; write(context); }
+    /** Export text kept outside the Activity so a configuration change does not lose it. */
+    static void putPendingExport(String key, String content) {
+        synchronized (PENDING_EXPORTS) { PENDING_EXPORTS.put(key, content); }
+    }
+
+    static String takePendingExport(String key) {
+        synchronized (PENDING_EXPORTS) { return PENDING_EXPORTS.remove(key); }
     }
 
     static SharedPreferences prefs(Context c) {
@@ -248,40 +313,32 @@ final class MonkeyStore {
                     s.sortOrder = cache.get(i).sortOrder;
                 }
             }
-            if (at >= 0) cache.set(at, s); else { s.sortOrder = cache.size(); cache.add(s); }
-            write(context);
+            List<Userscript> next = new ArrayList<>(cache);
+            if (at >= 0) next.set(at, s); else { s.sortOrder = next.size(); next.add(s); }
+            commit(context, next);
         }
     }
 
     // Caller holds LOCK.
     private static void ensureLoaded(Context c) {
         if (cache != null) return;
-        cache = new ArrayList<>();
-        File f = new File(new File(c.getFilesDir(), DIR), "scripts.json");
-        if (!f.isFile()) return;
-        try {
-            JSONArray a = new JSONObject(readFile(f)).optJSONArray("scripts");
-            if (a != null) for (int i = 0; i < a.length(); i++) cache.add(Userscript.fromJson(a.getJSONObject(i)));
-        } catch (Throwable error) {
-            Logger.e("cannot read the script database", error);
-            cache.clear();
-        }
+        cache = database(c).current();
+    }
+
+    // Caller holds LOCK. Publishes next only after it is durably on disk; on failure the cache and
+    // scripts.json both keep the previous collection and the caller gets the exception.
+    private static void commit(Context c, List<Userscript> next) throws Exception {
+        ScriptDatabase db = database(c);
+        db.commit(next);
+        cache = db.current();
     }
 
     // Caller holds LOCK.
-    private static void write(Context c) throws Exception {
-        File dir = new File(c.getFilesDir(), DIR);
-        if (!dir.exists() && !dir.mkdirs()) throw new Exception("Cannot create script database");
-        JSONArray a = new JSONArray();
-        for (Userscript s : cache) a.put(s.toJson());
-        JSONObject r = new JSONObject();
-        r.put("scripts", a);
-        File tmp = new File(dir, "scripts.tmp"), out = new File(dir, "scripts.json");
-        try (FileOutputStream f = new FileOutputStream(tmp)) {
-            f.write(r.toString(2).getBytes(StandardCharsets.UTF_8));
+    private static ScriptDatabase database(Context c) {
+        if (database == null) {
+            database = new ScriptDatabase(new File(c.getFilesDir(), DIR), ScriptDatabase.REAL);
         }
-        if (out.exists() && !out.delete()) throw new Exception("Cannot replace script database");
-        if (!tmp.renameTo(out)) throw new Exception("Cannot save script database");
+        return database;
     }
 
     private static void loadRequires(Userscript s) throws Exception {
@@ -330,20 +387,7 @@ final class MonkeyStore {
     }
 
     static String read(InputStream in, int max) throws Exception {
-        ByteArrayOutputStream o = new ByteArrayOutputStream();
-        byte[] b = new byte[8192];
-        int n;
-        int total = 0;
-        while ((n = in.read(b)) != -1) {
-            total += n;
-            if (total > max) throw new Exception("File is too large");
-            o.write(b, 0, n);
-        }
-        return new String(o.toByteArray(), StandardCharsets.UTF_8);
-    }
-
-    private static String readFile(File f) throws Exception {
-        try (InputStream in = new FileInputStream(f)) { return read(in, 64 * 1024 * 1024); }
+        return ScriptDatabase.read(in, max);
     }
 
     static String fileName(String u) {
