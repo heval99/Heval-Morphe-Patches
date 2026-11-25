@@ -8,8 +8,8 @@ import java.io.File
 import java.util.zip.ZipFile
 
 private const val PKG = "com.camerasideas.trimmer"
-private const val VERSION = "1.722.1225"
-private const val VERSION_CODE = 1225
+private const val VERSION = "1.730.1226"
+private const val VERSION_CODE = 1226
 private const val LIB_ARM64 = "lib/arm64-v8a/libisvideoengine.so"
 
 private val PATCHES = setOf(
@@ -84,12 +84,19 @@ class YouCutSmokeTest {
             klass(type).method(name, params)
 
         // Enable Premium: the app-wide Pro gate returns true.
+        // Found by its preference-key string like the patch does (the class rotates: billing/d
+        // in 1.722.1225, billing/c in 1.730.1226).
+        val proGate = classes.flatMap { it.methods }.single { m ->
+            m.returnType == "Z" &&
+                m.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;") &&
+                m.implementation?.instructions?.any { insn ->
+                    ((insn as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)
+                        ?.reference as? com.android.tools.smali.dexlib2.iface.reference.StringReference)
+                        ?.string == "SubscribePro"
+                } == true
+        }
         assertForcedBoolean(
-            method(
-                "Lcom/camerasideas/instashot/store/billing/d;",
-                "d",
-                listOf("Landroid/content/Context;"),
-            ),
+            proGate,
             expected = true,
             label = "YouCut Pro gate",
             diagnostics = diagnostics,
