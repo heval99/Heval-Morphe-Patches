@@ -48,7 +48,7 @@ jobs:
 
       # Run the tests that need no APK before anything is released: the helper, registry and
       # bundle-selection tests, the extension unit tests (webviewads, fotmob, sofascore, wemuslim,
-      # bravemonkey, flashscore, scores365 and the Patch settings core) and the release-script tests. The
+      # bravemonkey, flashscore, scores365, the Patch settings core and the Patch settings UI) and the release-script tests. The
       # per-app smoke tests skip here (their APKs are gitignored), so they stay a local check.
       # A cold compile runs out of memory at Gradle's default heap, hence the explicit sizes.
       # The tests build a bundle with the CURRENT version number. It is deleted afterwards: the release
@@ -63,7 +63,7 @@ jobs:
             :extensions:sofascore:testDebugUnitTest :extensions:wemuslim:testDebugUnitTest \
             :extensions:bravemonkey:testDebugUnitTest :extensions:flashscore:testDebugUnitTest \
             :extensions:scores365:testDebugUnitTest \
-            :extensions:hevalcontrols:core:testDebugUnitTest
+            :extensions:hevalcontrols:core:testDebugUnitTest :extensions:hevalcontrols:testDebugUnitTest
           python3 -m unittest discover -s .github/scripts/tests
           rm -f patches/build/libs/*.mpp
 

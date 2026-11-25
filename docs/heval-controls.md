@@ -1206,7 +1206,9 @@ with lists. The Kotlin encoder test and the Java decoder test both read them.
 | UI JVM unit tests | `.\gradlew :extensions:hevalcontrols:testDebugUnitTest` | `CalmModeTest`: Calm is not applied when the profile store is full or the backup fails, and a repeated tap keeps the first baseline. `ImageRefreshTest`: a failing refresh keeps the stale image, redirects only to https. |
 | Lint | `.\gradlew :extensions:hevalcontrols:core:lintRelease :extensions:hevalcontrols:lintRelease` | Checks API levels against minSdk 23. |
 
-CI (`release.yml`) runs no tests. Consider adding the core unit-test task there.
+CI (`release.yml`, step "Test") runs both `:extensions:hevalcontrols:core:testDebugUnitTest` and
+`:extensions:hevalcontrols:testDebugUnitTest`, together with `:patches:test` (the HevalControls
+patch-side tests; the APK-based ones skip there) and the other extension tests. Lint is not run in CI.
 
 ## Known limits and next steps
 
@@ -1225,7 +1227,8 @@ CI (`release.yml`) runs no tests. Consider adding the core unit-test task there.
   screen counts differences from the process start.
 - **Hook failures** are kept in memory only, for the current process.
 - **Not built yet:** a launcher shortcut (LinkedIn replaces its own dynamic shortcuts, so one
-  added by us would be removed), search, import and export, profiles and translations.
+  added by us would be removed), a search over the settings screen, import and export, and
+  translations. Saved profiles (`ui.Profiles`) and Calm mode are built; see above.
 - **RTL:** in an RTL layout, LTR values such as "4.1.1261 (216900)" in the information card are
   reordered by bidi ("(216900) 4.1.1261"); they should be forced LTR.
 

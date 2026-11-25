@@ -22,7 +22,7 @@ utility apps.
 
 ## 🚀 Quick start
 
-1. Install [Morphe Manager](https://morphe.software).
+1. Install [Morphe Manager](https://morphe.software) 2.5.0 or newer (older versions cannot load these bundles).
 2. Tap **[Add to Morphe](https://morphe.software/add-source?github=heval99/Heval-Morphe-Patches)**,
    or add this repository as a patch source by hand:
    `https://github.com/heval99/Heval-Morphe-Patches`

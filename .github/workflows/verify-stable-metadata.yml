@@ -27,44 +27,19 @@ jobs:
     name: main points at a stable, downloadable bundle
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout the check script
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
       - name: Check main's patches-bundle.json
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          # Read through the API, not raw.githubusercontent.com: the raw CDN caches per path and
-          # ignores cache-busting query strings, so it can serve a stale file right after a release.
-          json="$(gh api "repos/${REPO}/contents/patches-bundle.json?ref=main" -H 'Accept: application/vnd.github.raw')"
-          version="$(jq -r '.version // ""' <<<"$json")"
-          download="$(jq -r '.download_url // ""' <<<"$json")"
-          echo "main channel: ${version} -> ${download}"
-
-          case "$version" in
-            "")
-              echo "::error::main's patches-bundle.json has no version"
-              exit 1
-              ;;
-            *-*)
-              echo "::error::main's patches-bundle.json advertises prerelease '${version}'"
-              exit 1
-              ;;
-          esac
-
-          expected="v${version}/patches-${version}.mpp"
-          case "$download" in
-            *"$expected"*) ;;
-            *)
-              echo "::error::main's download_url '${download}' does not point at ${expected}"
-              exit 1
-              ;;
-          esac
-
-          prerelease="$(gh release view "v${version}" --repo "$REPO" --json isPrerelease --jq '.isPrerelease')"
-          if [ "$prerelease" != "false" ]; then
-            echo "::error::GitHub release v${version} is marked as a prerelease (isPrerelease=${prerelease})"
-            exit 1
-          fi
-
-          curl -fsIL "$download" -o /dev/null
-          echo "OK: main advertises stable ${version}, its release is not a prerelease and its bundle is downloadable"
+          # The logic (and its unit tests) live in the script: the download_url must equal the
+          # release asset's exact browser_download_url, and the release must not be a prerelease.
+          # The checkout only supplies the script; the metadata is read from main through the API.
+          python3 .github/scripts/verify_stable_metadata.py "$REPO"
