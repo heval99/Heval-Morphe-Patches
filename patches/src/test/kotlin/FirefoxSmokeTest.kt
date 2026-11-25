@@ -95,7 +95,7 @@ class FirefoxSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "160.0.1",
+            version = "161.0",
             patchNames = setOf(
                 "Disable telemetry",
                 "Hide sponsored content",
@@ -219,8 +219,8 @@ class FirefoxSmokeTest {
         // ── Hide promotional prompts ───────────────────────────────────────────────────────
         // 1-3. No next message, no microsurveys, the notification worker succeeds at once.
         assertReturnsNull(
-            method("Lmozilla/components/service/nimbus/messaging/NimbusMessagingStorage;", "getNextMessage", listOf("Ljava/lang/String;", "Ljava/util/List;")),
-            "NimbusMessagingStorage.getNextMessage(String, List)",
+            method("Lmozilla/components/service/nimbus/messaging/NimbusMessagingStorage;", "getNextMessage", listOf("Ljava/lang/String;", "Ljava/util/List;", "Ljava/util/Map;")),
+            "NimbusMessagingStorage.getNextMessage(String, List, Map)",
         )
         assertForcedBoolean(settings.method("getMicrosurveyFeatureEnabled", emptyList()), false, "Settings.getMicrosurveyFeatureEnabled")
         assertReturnsNew(
@@ -319,7 +319,7 @@ class FirefoxSmokeTest {
         assertDohEntryHidden(classes.first { it.type == SETTINGS_FRAGMENT })
 
         // Fallback mode and another resolver: TRR first (2) and Increased protection.
-        val fallback = applyDnsFilterFallback(apk, workDir, PKG, "160.0.1")
+        val fallback = applyDnsFilterFallback(apk, workDir, PKG, "161.0")
         assertGeckoViewDnsForced(fallback, OTHER_DOH_URL, trrMode = 2)
         assertReturnsStatic(
             fallback.first { it.type == SETTINGS }.method("getDohSettingsMode", emptyList()),
