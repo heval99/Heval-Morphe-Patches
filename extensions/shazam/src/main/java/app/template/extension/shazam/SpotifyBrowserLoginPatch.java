@@ -11,7 +11,6 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Opens the Spotify login of Shazam's bundled Spotify Auth SDK (1.2.3) in a browser tab instead
@@ -86,9 +85,7 @@ public final class SpotifyBrowserLoginPatch {
         Login login = pending;
         // Only while the tab is open: the receiver is exported, so another app could fire it.
         if (login == null || uri == null || !login.left) return;
-        Locale locale = Locale.ENGLISH;
-        if (!uri.toString().toLowerCase(locale).startsWith(login.redirectUri.toLowerCase(locale))
-                || (login.state != null && !login.state.equals(uri.getQueryParameter("state")))) {
+        if (!RedirectMatcher.matches(login.redirectUri, uri.toString(), login.state)) {
             Log.w(TAG, "Ignoring a Spotify redirect that does not match the request");
             return;
         }
