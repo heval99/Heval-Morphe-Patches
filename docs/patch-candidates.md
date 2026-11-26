@@ -89,6 +89,12 @@ Triaged 2026-10-12; status per row.
 | PDF Reader | `pdf.pdfreader.viewer.editor.free` | **Pending 2026-10-12** - only APK found is an unverified Aptoide 2.1.6 (Play shows 2.1.5), signed by a self-signed "Jx Clarynx" cert that does not match the Play developer ("QR Code Scanner."). APKMirror and APKPure do not carry it. **2026-10-14: confirmed adware repack** (same signer and injected launcher-activity payload as the fake Futbin "27.5"); quarantined, never use it. Waiting for the genuine Play build from the owner's phone |
 | SmartWOD Timer | `net.smartwod.timer` | **Shipped 2026-10-12** - "Enable Premium" (RNIapModule.getAvailableItemsByType @ReactMethod hooked via `extensions/smartwod` to report lifetime (Premium+) and ad-free as owned; premium is decided in JS from react-native-iap results checking only productId) and "Disable ads" (1.46.9). Runtime-verified on a Play-certified emulator (Premium+ / Lifetime, no ads) |
 
+## Queued by owner (2026-11-26)
+
+| App | Package | Notes |
+|---|---|---|
+| Microsoft Teams | `com.microsoft.teams` | **Queued 2026-11-26, not triaged.** Added by the owner. Triage first (normal new-app flow): fetch the arm64 build from Google Play and record the signer, look for a licence/anti-tamper shield, ads, telemetry (Microsoft 1DS / App Center / Firebase), nags and any client-side gate. Sign-in goes through Microsoft's broker and Play Integrity, so check whether a re-signed build can sign in at all before building patches. |
+
 ## Recommended first batch
 
 Shazam + Simple Radio + Device Info HW + Pi Music Player: two trivial ad kills and two
