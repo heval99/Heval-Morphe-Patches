@@ -447,8 +447,82 @@ class TruecallerSmokeTest {
         assertHidePoorNetworkWarning(classes, apk)
         assertHideProfileMenuItems(classes, byType, allPatches, apk)
         // onGetCredential tests isAvailableOnDevice(int) in this build, so the routing applies.
-        assertGmsCoreSupport(classes, workDir, PKG, TRUECALLER_INIT, SIGNATURE_SHA1, expectCredentialRouting = true)
+        // The contact editor's account type sites keep "com.google" (#187); assertContactEditorKeepsGoogleAccountType
+        // pins exactly which methods those are.
+        assertGmsCoreSupport(
+            classes, workDir, PKG, TRUECALLER_INIT, SIGNATURE_SHA1, expectCredentialRouting = true,
+            keepsGoogleAccountType = { _, m ->
+                val strings = m.strings()
+                "phoneAccount" in strings || ("account_type" in strings && "account_name" in strings) ||
+                    (m.returnType == "Ljava/util/ArrayList;" && m.parameterTypes.isEmpty() &&
+                        m.instructions().any { it.call()?.name == "getAccountsByType" })
+            },
+        )
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
+        assertContactEditorKeepsGoogleAccountType(classes)
+    }
+
+    /**
+     * #187: the shared GmsCore string rewrite turns the exact "com.google" account type into
+     * "app.revanced". The contact editor's "Save to" list (getAccountsByType("com.google") returning an
+     * ArrayList) and its default-account mapper ("phoneAccount" next to "com.google") must keep the real
+     * Google account type, or no Google account is found and saving can fail. Every other
+     * getAccountsByType caller (Google sign-in, backup) keeps the rewrite. On a build where the rewrite
+     * hit the contact editor, the two exempt methods would hold "app.revanced" and no "com.google", so
+     * these checks fail there.
+     */
+    private fun assertContactEditorKeepsGoogleAccountType(classes: List<ClassDef>) {
+        fun Method.callsGetAccountsByType() = instructions().any {
+            it.call()?.let { c -> c.definingClass == "Landroid/accounts/AccountManager;" && c.name == "getAccountsByType" } == true
+        }
+        val vendor = "app.revanced"
+
+        // 1. The list builder keeps "com.google" and still calls getAccountsByType.
+        val (listClass, list) = classes.singleMethod("contact editor Google accounts list") { _, m ->
+            m.returnType == "Ljava/util/ArrayList;" && m.parameterTypes.isEmpty() && m.callsGetAccountsByType() &&
+                m.strings().any { it == "com.google" || it == vendor }
+        }
+        val listLabel = "${listClass.type}.${list.name}"
+        check("com.google" in list.strings() && vendor !in list.strings()) {
+            "$listLabel (contact editor accounts) lost its \"com.google\" account type: ${list.strings()}"
+        }
+
+        // 2. The default-account mapper sits in the same class (it also holds "phoneAccount") and keeps it.
+        val (mapperClass, mapper) = classes.singleMethod("contact editor default account mapper") { _, m ->
+            m.returnType == "Ljava/lang/Object;" && "phoneAccount" in m.strings() &&
+                m.strings().any { it == "com.google" || it == vendor }
+        }
+        check(mapperClass.type == listClass.type) { "the default account mapper is in ${mapperClass.type}, not ${listClass.type}" }
+        check("com.google" in mapper.strings() && vendor !in mapper.strings()) {
+            "${mapperClass.type}.${mapper.name} (default account mapper) lost its \"com.google\": ${mapper.strings()}"
+        }
+
+        // 3. The contact details loader (a merged coroutine case that reads the contacts provider's
+        // account_type / account_name columns) keeps it too.
+        val (readerClass, reader) = classes.singleMethod("contact account type reader") { _, m ->
+            m.returnType == "Ljava/lang/Object;" && "account_type" in m.strings() && "account_name" in m.strings() &&
+                m.strings().any { it == "com.google" || it == vendor }
+        }
+        check("com.google" in reader.strings() && vendor !in reader.strings()) {
+            "${readerClass.type}.${reader.name} (contact account reader) lost its \"com.google\": ${reader.strings()}"
+        }
+
+        // 4. The sign-in / backup lookups (GET_ACCOUNTS permission check, then getAccountsByType) are
+        // still rewritten: at least one exists, every one holds the vendor type and none "com.google".
+        val signIn = classes.methodsWhere { _, m ->
+            "android.permission.GET_ACCOUNTS" in m.strings() && m.callsGetAccountsByType()
+        }
+        check(signIn.isNotEmpty()) { "no GET_ACCOUNTS + getAccountsByType site found" }
+        for ((cls, m) in signIn) {
+            check(vendor in m.strings() && "com.google" !in m.strings()) {
+                "${cls.type}.${m.name} (sign-in/backup account lookup) is not rewritten to $vendor: ${m.strings()}"
+            }
+        }
+        // 5. No other getAccountsByType caller still holds "com.google" (library sites are rewritten too).
+        val leftovers = classes.methodsWhere { cls, m ->
+            !(cls.type == listClass.type && m == list) && m.callsGetAccountsByType() && "com.google" in m.strings()
+        }
+        check(leftovers.isEmpty()) { "getAccountsByType callers still holding \"com.google\": ${leftovers.map { (c, m) -> "${c.type}.${m.name}" }}" }
     }
 
     /**

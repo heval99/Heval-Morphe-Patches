@@ -3163,6 +3163,20 @@ object Constants {
     //   also overrides "featureVerifiedBusinessAwareness" and "featureBizPriorityCallAwareness" (the
     //   "Introducing Verified Business Caller ID" bottom sheet and its call log card) to off through the
     //   toggle resolvers. Verified: bytecode only (smoke test + CLI without -f); runtime NOT_RUN.
+    // 2026-11-26 (#187, 26.45.5): GmsCore support no longer rewrites the Google account type in the
+    //   contact editor. The shared string rewrite turns every exact "com.google" into "app.revanced", which
+    //   made the editor's "Save to" list (AccountManager.getAccountsByType("com.google") in an
+    //   ArrayList-returning no-arg method, uc.B) find no real Google account and broke its default-account
+    //   mapper (the method comparing "phoneAccount" and "com.google", uc.D), so "Save to Google account"
+    //   vanished and saving could fail ("Error while inserting contact"). A third site, the contact details
+    //   loader (vi1.invokeSuspend: reads the contacts provider's account_type/account_name and compares with
+    //   "com.google"), keeps it too. All three are found by shape (strings, plus the getAccountsByType call
+    //   for the list) and keep "com.google"; the sign-in/backup lookups (fsd.I, ksd.f5: GET_ACCOUNTS check,
+    //   then getAccountsByType) and library sites stay rewritten. Verified: smoke test (each site found in
+    //   the emitted dex; 365Scores smoke test unchanged) + CLI without -f and a dexindex check of the
+    //   patched APK: exactly those three methods still hold "com.google". INFERRED, not proven: the
+    //   Android 16 failure path (list falling back to Phone only while a cloud default account exists).
+    //   Runtime NOT_RUN.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
