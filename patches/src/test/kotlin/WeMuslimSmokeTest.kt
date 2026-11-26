@@ -71,6 +71,9 @@ class WeMuslimSmokeTest {
                 "Hide activity banners",
                 "Hide Ummah tab",
                 "Hide shortcut promotions",
+                "Hide Messages tab",
+                "Hide Me tab extras",
+                "Hide Ad-Free button",
             ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -381,5 +384,155 @@ class WeMuslimSmokeTest {
                 (moveResult as com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction).registerA == p1,
             "setDiscoverData does not move the filtered list back into p1; second is ${moveResult.opcode}",
         )
+
+        // Hide Messages tab (#135, 2026-11-26), step 1: the tab model (found by its type method that
+        // returns the five tab names) stores visible = false for type 3. Stock <init>(I)V has no
+        // add-int/lit8 at all; the patched one has add-int/lit8 p1, p1, -3; if-nez p1; iput-boolean p1.
+        val tabNames = listOf("home", "worship", "ummah", "message", "me")
+        val tabModel = classes.singleOrNull { c ->
+            c.methods.any { m ->
+                m.returnType == "Ljava/lang/String;" && m.params().isEmpty() && tabNames.all { m.referencesString(it) }
+            }
+        } ?: error("tab model class (type method with home/worship/ummah/message/me) not found")
+        val tabCtor = tabModel.methods.single { it.name == "<init>" && it.params() == listOf("I") }
+        val tabInsns = tabCtor.instructions()
+        val tabAdd = tabInsns.indexOfFirst { it.opcode == Opcode.ADD_INT_LIT8 }
+        assertTrue(tabAdd >= 0, "${tabCtor.label()} has no add-int/lit8 (Hide Messages tab step 1 missing)")
+        val tabP1 = tabCtor.implementation!!.registerCount - 1
+        val addInsn = tabInsns[tabAdd] as com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+        assertTrue(
+            (tabInsns[tabAdd] as NarrowLiteralInstruction).narrowLiteral == -3 &&
+                addInsn.registerA == tabP1 && addInsn.registerB == tabP1 &&
+                tabInsns[tabAdd - 1].opcode == Opcode.IGET &&
+                tabInsns[tabAdd + 1].opcode == Opcode.IF_NEZ &&
+                tabInsns[tabAdd + 2].opcode == Opcode.IPUT_BOOLEAN &&
+                tabInsns.last().opcode == Opcode.RETURN_VOID,
+            "${tabCtor.label()} does not store false for type 3 before returning",
+        )
+        val tabStore = (tabInsns[tabAdd + 2] as ReferenceInstruction).reference as FieldReference
+        val tabLoad = (tabInsns[tabAdd - 1] as ReferenceInstruction).reference as FieldReference
+        assertTrue(
+            tabStore.definingClass == tabModel.type && tabStore.type == "Z" && tabLoad.type == "I" &&
+                tabLoad.definingClass == tabModel.type,
+            "${tabCtor.label()} reads/stores the wrong fields: $tabLoad / $tabStore",
+        )
+        // The type method keeps mapping 3 to "message" (checked statically on 3.5.5: const/4 3 then
+        // if-eq to the const-string "message" block); the constant 3 above relies on it.
+
+        // Step 2: MainActivity's pager builder (found by the string "messageTab") no longer adds the
+        // message page: no ArrayList.add sits between the "messageTab" and "meTab" strings (stock has
+        // one), while the other four pages are still added.
+        val pagerBuilder = allMethods.singleOrNull {
+            it.implementation != null && it.returnType == "V" && it.referencesString("messageTab")
+        } ?: error("pager builder (string messageTab) not found or not unique")
+        val pagerInsns = pagerBuilder.instructions()
+        fun Int.isArrayListAdd() = (pagerInsns[this] as? ReferenceInstruction)?.reference.let {
+            it is MethodReference && it.definingClass == "Ljava/util/ArrayList;" && it.name == "add"
+        }
+        fun stringIndex(value: String) = pagerInsns.indexOfFirst {
+            ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == value
+        }
+        val messageName = stringIndex("messageTab")
+        val meName = stringIndex("meTab")
+        assertTrue(messageName in 0 until meName, "pager builder strings are out of order: $messageName / $meName")
+        assertTrue(
+            (messageName until meName).none { it.isArrayListAdd() },
+            "pager builder still adds the message page after \"messageTab\"",
+        )
+        assertTrue(
+            pagerInsns.indices.count { it.isArrayListAdd() } == 4,
+            "pager builder should still add four pages, adds ${pagerInsns.indices.count { it.isArrayListAdd() }}",
+        )
+
+        // Step 3: the unread dot. The count setter (layout class, (int, boolean)V, reads
+        // msgMainTabRedDotView) starts by hiding it and returning; the binding step hides it too.
+        fun Method.readsRedDot() = instructions().any {
+            ((it as? ReferenceInstruction)?.reference as? FieldReference)?.name == "msgMainTabRedDotView"
+        }
+        val navLayout = cls("Lcom/fyxtech/muslim/widget/mainnavigation/MainBottomNavigationLayout;")
+        fun Method.hidesRedDot(label: String) {
+            val body = instructions()
+            val call = body.indexOfFirst {
+                val ref = (it as? ReferenceInstruction)?.reference as? MethodReference
+                it.opcode == Opcode.INVOKE_VIRTUAL && ref?.definingClass == "Landroid/view/View;" && ref.name == "setVisibility"
+            }
+            assertTrue(call >= 0, "$label never calls View.setVisibility")
+            val gone = body.subList(0, call).lastOrNull { it.opcode == Opcode.CONST_16 } as? NarrowLiteralInstruction
+            assertTrue(gone?.narrowLiteral == 8, "$label does not load GONE before setVisibility")
+            assertTrue(body.getOrNull(call + 1)?.opcode.let { it == Opcode.RETURN_VOID }, "$label does not return after hiding the dot")
+        }
+        val dotSetter = navLayout.methods.single {
+            it.implementation != null && it.returnType == "V" && it.params() == listOf("I", "Z") && it.readsRedDot()
+        }
+        dotSetter.hidesRedDot("unread setter ${dotSetter.label()}")
+        val dotBind = navLayout.methods.single {
+            it.implementation != null && it.returnType == "V" && it.readsRedDot() &&
+                it.params() == listOf("Lcom/fyxtech/muslim/databinding/MainLayoutBottomNavigationBinding;")
+        }
+        // The binding step hides the dot through ViewHider.gone right after reading it into p1.
+        val viewHider = "Lapp/template/extension/wemuslim/ViewHider;"
+        assertTrue(classes.any { it.type == viewHider }, "$viewHider was not merged into the dex")
+        val bindInsns = dotBind.instructions()
+        val bindRead = bindInsns.indexOfFirst {
+            ((it as? ReferenceInstruction)?.reference as? FieldReference)?.name == "msgMainTabRedDotView"
+        }
+        val hideCall = (bindInsns.getOrNull(bindRead + 1) as? ReferenceInstruction)?.reference as? MethodReference
+        assertTrue(
+            bindRead >= 0 && bindInsns[bindRead + 1].opcode == Opcode.INVOKE_STATIC &&
+                hideCall?.definingClass == viewHider && hideCall.name == "gone",
+            "${dotBind.label()} does not hide the dot with ViewHider.gone right after reading it",
+        )
+
+        // Hide Me tab extras: each of the three views forces GONE in setVisibility and hides itself in
+        // every constructor (the same shape as the VipCardView check above; stock has no setVisibility).
+        for (type in listOf(
+            "Lcom/fyxtech/muslim/about/module/main/FriendsNumberView;",
+            "Lcom/fyxtech/muslim/about/point/card/MeMainBadgeCardView;",
+            "Lcom/fyxtech/muslim/about/module/main/ImportantFuncView;",
+            // Hide Ad-Free button: the same shape on the Home/Prayer top-bar pill.
+            "Lcom/fyxtech/muslim/worship/dailygolds/DailyGoldsView;",
+        )) {
+            val view = cls(type)
+            val visibility = view.method("setVisibility", listOf("I"))
+            val first = visibility.instructions().firstOrNull() as? NarrowLiteralInstruction
+            assertTrue(first != null && first.narrowLiteral == 8, "$type.setVisibility does not force GONE first")
+            val viewConstructors = view.methods.filter { it.name == "<init>" && it.implementation != null }
+            assertTrue(viewConstructors.isNotEmpty(), "$type has no constructor")
+            for (constructor in viewConstructors) {
+                val insns = constructor.instructions()
+                val thisRegister = constructor.implementation!!.registerCount - constructor.params().size - 1
+                // A constructor that reuses p0 (MeMainBadgeCardView) hides the view through
+                // ViewHider.gone(p0) right after its <init> call instead.
+                val reusesThis = insns.any {
+                    (it as? com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction)?.registerA == thisRegister &&
+                        (it.opcode.setsRegister() || it.opcode.setsWideRegister())
+                }
+                if (reusesThis) {
+                    val initIndex = insns.indexOfFirst {
+                        val ref = (it as? ReferenceInstruction)?.reference as? MethodReference
+                        it.opcode == Opcode.INVOKE_DIRECT && ref?.name == "<init>" &&
+                            (ref.definingClass == view.superclass || ref.definingClass == type) &&
+                            (it as? com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction)?.registerC == thisRegister
+                    }
+                    val gone = (insns.getOrNull(initIndex + 1) as? ReferenceInstruction)?.reference as? MethodReference
+                    assertTrue(
+                        initIndex >= 0 && insns[initIndex + 1].opcode == Opcode.INVOKE_STATIC &&
+                            gone?.definingClass == "Lapp/template/extension/wemuslim/ViewHider;" && gone.name == "gone",
+                        "${constructor.label()} reuses p0 but does not call ViewHider.gone right after <init>",
+                    )
+                    continue
+                }
+                val exits = insns.withIndex().filter { it.value.opcode == Opcode.RETURN_VOID }
+                assertTrue(exits.isNotEmpty(), "${constructor.label()} has no return-void")
+                for ((index, _) in exits) {
+                    val call = (insns.getOrNull(index - 1) as? ReferenceInstruction)?.reference as? MethodReference
+                    val literal = insns.getOrNull(index - 2) as? NarrowLiteralInstruction
+                    assertTrue(
+                        call?.definingClass == type && call.name == "setVisibility" && literal?.narrowLiteral == 8,
+                        "${constructor.label()} does not hide the view before returning (found $call)",
+                    )
+                }
+            }
+        }
     }
 }

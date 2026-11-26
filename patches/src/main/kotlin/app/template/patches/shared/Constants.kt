@@ -3585,6 +3585,25 @@ object Constants {
     // the Ummah page and MainBottomNavigationLayout hides its nav item (tabs are matched by type, not
     // index). Smoke test, CLI without -f and the patched bytecode verified; on the emulator (vs a control
     // with only the encryption fix) the patched build launches, the Ummah tab is gone, no crash.
+    // 2026-11-26 (#135, same 3.5.5 build): new opt-in "Hide Messages tab" and "Hide Me tab extras";
+    // bytecode only (smoke test, CLI without -f, apkanalyzer of each changed method), runtime NOT_RUN.
+    // Messages: the bottom-bar tab model (R8 name ecc; found by its type-to-string method returning
+    // "home"/"worship"/"ummah"/"message"/"me") has its visible flag stored false for type 3 at the end of
+    // <init>(I)V; the layout then numbers pages by visible tabs and ignores a hidden tab's select, and the
+    // MainActivity pager builder (anchored by the string "messageTab") no longer adds the message page
+    // (the ArrayList.add after that string is removed), so Me keeps its index (pages are looked up by type
+    // string). The unread dot (msgMainTabRedDotView) is forced GONE in the count setter (inline smali)
+    // and once in the layout's binding step (extensions/wemuslim ViewHider.gone right after the dot is
+    // read; both Messages and Me extras patches merge extensions/wemuslim). The tab-click lambda's `list.size() > 5` check only rebuilds a list that is
+    // too long, so a four-tab list never reaches it. Me extras: FriendsNumberView, MeMainBadgeCardView and
+    // ImportantFuncView (kept custom views of me_fragment_main) are forced GONE like VipCardView (shared
+    // forceViewGone; MeMainBadgeCardView's constructor reuses p0, so it is hidden through ViewHider.gone
+    // right after its super call; whether anything is constrained to vBadgeCard was not checked); the settings row, the RecyclerView menu rows, login header, prayer reminder check and
+    // FAQ stay. New opt-in "Hide Ad-Free button": DailyGoldsView (kept FrameLayout, @id/daily_golds_view in the
+    // Home and Prayer layouts, no branch ever hides it) is forced GONE with the same forceViewGone helper;
+    // cost: for paying members the crown, member-detail link and Giving Box claim chip go too (the Giving Box
+    // stays reachable through the Me row). NOT examined: the Me menu row list (recyclerviewContent,
+    // me_main_content_*), the "Messages" row on the Me tab (left as the way to messages), and the runtime.
     val COMPATIBILITY_WEMUSLIM = Compatibility(
         name = "WeMuslim",
         packageName = "com.fyxtech.muslim",
