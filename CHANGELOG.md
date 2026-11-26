@@ -1,3 +1,28 @@
+## 3.3.0-dev.3 (2026-11-26)
+
+### 🆕 New apps
+- **My Talking Tom** `26.5.4.9664` - Disable ads, Free purchases, Freeze pet meters
+- **My Talking Tom 2** `26.5.2.29411` - Disable ads
+
+### 📱 Samsung Keyboard `5.9.40.75`
+- Fixed: Keep clipboard and dialogs working with only Change package name on
+
+### 📱 Sofascore `26.11.16`
+- New: Hide gambling warning pop-up
+
+### 📱 Truecaller `26.45.5`
+- Fixed: Hide after-call screen for contacts saved in Android contacts too
+- New: Hide the default caller ID banner and the Verified Business announcement
+- Fixed: Keep the Google account type in the contact editor under GmsCore support
+
+### 📱 WeMuslim `3.5.5`
+- New: Hide Ad-Free button, Hide Me tab extras, Hide Messages tab
+
+### 📱 YouCut `1.730.1226`
+- Fixed: Accept APKs that also carry 32-bit libraries
+
+**Download:** [patches-3.3.0-dev.3.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v3.3.0-dev.3/patches-3.3.0-dev.3.mpp)
+
 ## 3.3.0-dev.2 (2026-11-25)
 
 ### 🆕 New apps

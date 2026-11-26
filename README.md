@@ -40,11 +40,11 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 [open an issue](https://github.com/heval99/Heval-Morphe-Patches/issues/new/choose).
 
 <!-- PATCHES_START EXPANDED -->
-> **[v3.3.0-dev.2](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v3.3.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**107** apps&nbsp;&nbsp;•&nbsp;&nbsp;**357** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-25
+> **[v3.3.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/releases/tag/v3.3.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;**109** apps&nbsp;&nbsp;•&nbsp;&nbsp;**365** patches&nbsp;&nbsp;•&nbsp;&nbsp;updated 2026-11-26
 
 🚫 ads&nbsp;&nbsp;🛡️ telemetry / tracking&nbsp;&nbsp;💎 premium / pro&nbsp;&nbsp;🔑 license check&nbsp;&nbsp;🔕 prompts / notifications&nbsp;&nbsp;🧪 experimental
 
-⚽ Sports & scores · 📰 News & finance · 💬 Messaging, email & calls · 🎵 Music, podcasts & radio · 📺 Video & TV · 📚 Books & reading · 🏋️ Health & fitness · 🗺️ Maps, weather & outdoors · 📝 Productivity & notes · 🌐 Browsers · 🏠 Launchers · 🛠️ Tools & utilities
+⚽ Sports & scores · 📰 News & finance · 💬 Messaging, email & calls · 🎵 Music, podcasts & radio · 📺 Video & TV · 📚 Books & reading · 🏋️ Health & fitness · 🗺️ Maps, weather & outdoors · 📝 Productivity & notes · 🌐 Browsers · 🏠 Launchers · 🛠️ Tools & utilities · 🎮 Games
 
 #### ⚽ Sports & scores <sub>20 apps</sub>
 
@@ -67,7 +67,7 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="assets/icons/com.livescore.png" width="20" height="20" alt=""> | **Livescore** | 🚫 🛡️ 🧩 3 | `10.5.1` | APK | [Play](https://play.google.com/store/apps/details?id=com.livescore) |
 | <img src="assets/icons/one.cricket.app.png" width="20" height="20" alt=""> | **OneCricket** | 🚫 1 | `26.10.01` | APKM | [Play](https://play.google.com/store/apps/details?id=one.cricket.app) |
 | <img src="assets/icons/de.motain.iliga.png" width="20" height="20" alt=""> | **OneFootball** | 🚫 🛡️ 🧩 3 | `15.152.0` | APKM | [Play](https://play.google.com/store/apps/details?id=de.motain.iliga) |
-| <img src="assets/icons/com.sofascore.results.png" width="20" height="20" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 30 | `26.11.16` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
+| <img src="assets/icons/com.sofascore.results.png" width="20" height="20" alt=""> | **Sofascore** | 🚫 🛡️ 💎 🔕 🧩 31 | `26.11.16` | APKM | [Play](https://play.google.com/store/apps/details?id=com.sofascore.results) |
 | <img src="assets/icons/de.transfermarkt.v2.png" width="20" height="20" alt=""> | **Transfermarkt** | 🚫 🛡️ 2 | `4.3.3` | APKM | [Play](https://play.google.com/store/apps/details?id=de.transfermarkt.v2) |
 | <img src="assets/icons/com.yahoo.mobile.client.android.sportacular.png" width="20" height="20" alt=""> | **Yahoo Sports** | 🚫 🧩 2 | `12.29.0` | APKM | [Play](https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.sportacular) |
 
@@ -211,7 +211,14 @@ versions may work but aren't guaranteed; if an app update breaks a patch,
 | <img src="https://img.shields.io/badge/-%20-FAF5FF?style=flat-square" height="14" alt=""> | **NotiAlarm** | 💎 🔑 2 | `1.3.35` | APKM | [Play](https://play.google.com/store/apps/details?id=com.soosu.notialarm) |
 | <img src="assets/icons/com.pocketcolorwheel.PCW.png" width="20" height="20" alt=""> | **Pocket Color Wheel** | 🚫 1 | `3.26` | APKM | [Play](https://play.google.com/store/apps/details?id=com.pocketcolorwheel.PCW) |
 | <img src="https://img.shields.io/badge/-%20-3E91FF?style=flat-square" height="14" alt=""> | **Samsung Keyboard** | 🛡️ 🧩 19 | `5.9.40.75` | APK | [Play](https://play.google.com/store/apps/details?id=com.samsung.android.honeyboard) |
-| <img src="assets/icons/com.fyxtech.muslim.png" width="20" height="20" alt=""> | **WeMuslim** | 🚫 🛡️ 💎 🧩 8 | `3.5.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.fyxtech.muslim) |
+| <img src="assets/icons/com.fyxtech.muslim.png" width="20" height="20" alt=""> | **WeMuslim** | 🚫 🛡️ 💎 🧩 11 | `3.5.5` | APKM | [Play](https://play.google.com/store/apps/details?id=com.fyxtech.muslim) |
+
+#### 🎮 Games <sub>2 apps</sub>
+
+| | App | Patches | Latest verified | Type | Google Play |
+|:-:|---|---|---|:-:|:-:|
+| <img src="https://img.shields.io/badge/-%20-F5A623?style=flat-square" height="14" alt=""> | **My Talking Tom** | 🚫 🧩 3 | `26.5.4.9664` | APKM | [Play](https://play.google.com/store/apps/details?id=com.outfit7.mytalkingtomfree) |
+| <img src="https://img.shields.io/badge/-%20-F5A623?style=flat-square" height="14" alt=""> | **My Talking Tom 2** | 🚫 1 | `26.5.2.29411` | APKM | [Play](https://play.google.com/store/apps/details?id=com.outfit7.mytalkingtom2) |
 
 ### 🔍 Patch details
 
@@ -457,7 +464,7 @@ Verified on: `15.152.0`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.sofascore.results.png" width="16" height="16" alt=""> <b>Sofascore</b> &nbsp;·&nbsp; 30 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
+<summary><img src="assets/icons/com.sofascore.results.png" width="16" height="16" alt=""> <b>Sofascore</b> &nbsp;·&nbsp; 31 patches &nbsp;·&nbsp; <code>com.sofascore.results</code></summary>
 
 Verified on: `26.11.16`
 
@@ -480,6 +487,7 @@ Verified on: `26.11.16`
 | 🧩 **Hide betting content** | Hides odds and betting content. | ➖ |
 | 🧩 **Hide competitions** | Hides the competitions you pick in Patch settings from match lists, leagues and search. | ➖ |
 | 🧩 **Hide countries** | Hides the countries you pick in Patch settings from match lists, leagues and search. | ➖ |
+| 🧩 **Hide gambling warning pop-up** | Skips the responsible-gambling pop-up (Spain) when you open a match with odds. | ➖ |
 | 🧩 **Hide main tabs** | Adds switches to hide tabs from the bottom bar. | ➖ |
 | 🧩 **Hide match chat** | Hides the Chat button on match and league pages. | ➖ |
 | 🧩 **Hide match tabs** | Adds switches to hide match page tabs. | ➖ |
@@ -807,7 +815,7 @@ Verified on: `26.45.5`
 | 🧩 **Disable auto-launch** | Stops Truecaller from opening itself in the background. | ✅ |
 | 🧩 **Disable call button haptics** | Stops the vibration when you answer or decline a call. | ➖ |
 | 🧩 **Disable contact upload** | Stops uploading your contacts. Chat can no longer find which contacts use it. | ✅ |
-| 🧩 **Disable nags** | Disables default dialer, permission, survey and profile reminder prompts. | ✅ |
+| 🧩 **Disable nags** | Disables default dialer, default caller ID, permission, survey and profile reminder prompts. | ✅ |
 | 🛡️ **Disable telemetry** | Disables analytics, tracking and crash reporting. | ✅ |
 | 🔕 **Disable update prompts** | Disables the update prompts. | ✅ |
 | 💎 **Enable Premium** | Unlocks premium features. Server features like Who viewed me stay locked. | ✅ |
@@ -1553,7 +1561,7 @@ Verified on: `5.9.40.75`
 
 </details>
 <details>
-<summary><img src="assets/icons/com.fyxtech.muslim.png" width="16" height="16" alt=""> <b>WeMuslim</b> &nbsp;·&nbsp; 8 patches &nbsp;·&nbsp; <code>com.fyxtech.muslim</code></summary>
+<summary><img src="assets/icons/com.fyxtech.muslim.png" width="16" height="16" alt=""> <b>WeMuslim</b> &nbsp;·&nbsp; 11 patches &nbsp;·&nbsp; <code>com.fyxtech.muslim</code></summary>
 
 Verified on: `3.5.5`
 
@@ -1562,11 +1570,39 @@ Verified on: `3.5.5`
 | 🚫 **Disable ads** | Removes all ads. Opt-in rewarded ads keep working. | ✅ |
 | 🛡️ **Disable telemetry** | Disables analytics and crash reporting. | ✅ |
 | 🧩 **Fix native encryption check** | Fixes the app not starting after patching. | ✅ |
+| 🧩 **Hide Ad-Free button** | Hides the Ad-Free button at the top of the Home and Prayer screens. | ➖ |
+| 🧩 **Hide Me tab extras** | Hides the friends, badge and shortcut cards on the Me tab. | ➖ |
+| 🧩 **Hide Messages tab** | Hides the Messages tab from the bottom bar. | ➖ |
 | 🧩 **Hide Ummah tab** | Hides the Ummah tab. | ➖ |
 | 🧩 **Hide activity banners** | Hides event banners, the home pop-up and the floating event icon. | ➖ |
 | 🧩 **Hide feed clutter** | Hides the login, Nearby, Feeds, theme store, recharge and watch-ad reward units. | ✅ |
 | 💎 **Hide premium banners** | Hides the membership banners and pop-ups. | ✅ |
 | 🧩 **Hide shortcut promotions** | Hides the Egg and Rebates shortcuts. | ➖ |
+
+</details>
+
+#### 🎮 Games
+
+<details>
+<summary><b>My Talking Tom</b> &nbsp;·&nbsp; 3 patches &nbsp;·&nbsp; <code>com.outfit7.mytalkingtomfree</code></summary>
+
+Verified on: `26.5.4.9664`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Removes the interstitial, banner and splash ads. | ✅ |
+| 🧩 **Free purchases** | Makes everything you buy with coins, diamonds and tickets free. | ➖ |
+| 🧩 **Freeze pet meters** | Keeps the pet's food, fun, sleep and toilet meters where they are. | ➖ |
+
+</details>
+<details>
+<summary><b>My Talking Tom 2</b> &nbsp;·&nbsp; 1 patch &nbsp;·&nbsp; <code>com.outfit7.mytalkingtom2</code></summary>
+
+Verified on: `26.5.2.29411`
+
+| Patch | What it does | Default |
+|---|---|:-:|
+| 🚫 **Disable ads** | Removes the interstitial, banner and splash ads. | ✅ |
 
 </details>
 
