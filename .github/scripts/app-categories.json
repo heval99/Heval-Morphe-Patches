@@ -180,6 +180,14 @@
         "com.ace.ex.file.manager",
         "com.samsung.android.honeyboard"
       ]
+    },
+    {
+      "name": "Games",
+      "emoji": "🎮",
+      "packages": [
+        "com.outfit7.mytalkingtomfree",
+        "com.outfit7.mytalkingtom2"
+      ]
     }
   ]
 }
