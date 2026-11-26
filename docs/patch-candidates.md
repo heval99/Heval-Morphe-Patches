@@ -93,7 +93,7 @@ Triaged 2026-10-12; status per row.
 
 | App | Package | Notes |
 |---|---|---|
-| Microsoft Teams | `com.microsoft.teams` | **Queued 2026-11-26, not triaged.** Added by the owner. Triage first (normal new-app flow): fetch the arm64 build from Google Play and record the signer, look for a licence/anti-tamper shield, ads, telemetry (Microsoft 1DS / App Center / Firebase), nags and any client-side gate. Sign-in goes through Microsoft's broker and Play Integrity, so check whether a re-signed build can sign in at all before building patches. |
+| Microsoft Teams | `com.microsoft.teams` | **Screened 2026-11-26.** Fetched 1416/1.0.0.2026203802 (versionCode 2026203825, Play arm64 split set merged, 146 MB; signer CN=Microsoft Teams for Android, cert SHA-256 `d49b848e...5985`). React Native, 12 dex, 549k methods; Intune MAM (607 classes), OneAuth (`libOneAuth.so`) and `libSkyLib.so` with Aria/OneCollector/1DS telemetry. App Center (74 classes) and Firebase Analytics are bundled but never started (no `AppCenter.start`/`FirebaseAnalytics.getInstance` callers), so there is no Java telemetry surface. No ad SDK (zero GMA/AppLovin/Unity/Meta), no PairIP and no app-level signature check (only Intune MAM `getPackageInfo` wrappers). Teams Premium is server-side; no client-side premium gate. Sign-in uses the OneAuth broker with PoP tokens (`TOKEN_TYPE_POP`) and Intune conditional access, so a re-signed work/school build is unlikely to authenticate. Only surface would be native telemetry, so under the telemetry-only rule this is not worth shipping; recorded in the blocklist. Runtime NOT_RUN. |
 
 ## Recommended first batch
 
