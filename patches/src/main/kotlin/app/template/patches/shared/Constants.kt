@@ -5916,7 +5916,7 @@ object Constants {
     // INFERRED, runtime NOT_RUN. startFetchingNativeAd is already an empty stub in both apps.
     // Facts: no PairIP; the LVL string belongs to the Singular attribution SDK; the
     // remove-ads entitlement is a Java preference (PaidUser.isAdsFreeUser) mirrored natively and is
-    // NOT touched; cheats are not in scope (native state).
+    // NOT touched by Disable ads (the opt-in cheats below are native byte patches).
     // Telemetry: present, deferred ("Disable telemetry" is not shipped yet; ads is the primary
     // value, owner to accept ads-only). Present: Bugsnag (Java/NDK/ANR) started from
     // ErrorReportingInitProvider, whose Felis wrapper (FelisErrorReporting) calls the client from
@@ -5926,6 +5926,32 @@ object Constants {
     // redirecting or neutering them was not attempted or verified (needs a runtime run). Firebase
     // Analytics is already off by manifest. Ads verified by MyTalkingTomSmokeTest and a CLI run
     // without -f; runtime NOT_RUN (no emulator check approved).
+    // 2026-11-26 owner-requested local cheats, both OPT-IN (default off), Tom 1 only (Tom 2 is not
+    // covered): byte patches to lib/arm64-v8a/libil2cpp.so (rawResourcePatch, 48,897,552 bytes, sha256
+    // d783a253...afd1), found by static analysis only (capstone + REA). "Free purchases": the
+    // non-generic CurrencyAccount.Debit (RVA 0x21ef45c, file offset 0x21eb45c) becomes `ret` and
+    // CanDebit (RVA 0x21ef478) always answers true (`cbz x1` -> `b` to its `mov w0,#1; ret` tail), so
+    // coin/diamond/ticket spending costs 0. Debit has two direct callers (the spend function 0x17a7c30
+    // and the signed adjust 0x17a7cdc, which calls Debit(-amount) for a negative amount), so any
+    // negative adjustment (e.g. a backend correction) is skipped too. "Freeze pet meters":
+    // MainGameLogic.RecalculateMeters (RVA 0x23bccf8, offset 0x23b8cf8; calls CalculateDeltaTime
+    // 0x23bd8a0, early exits return false) returns false at once. Its callees (0x23bda30, 0x23bdcf8,
+    // 0x23bddcc, 0x23bdfac) are only called from it and also do the time-based recovery and auto-wake,
+    // so the freeze means: no recovery over time while asleep or on the toilet, Tom never wakes by
+    // himself, away time is ignored, must-eat/must-sleep events never fire, and a later unpatched
+    // build applies the whole frozen gap at once (SetLastTimeCalculation is never advanced). The
+    // meter names food/fun/sleep/toilet are INFERRED from the four meter fields 0xac/0xb0/0xb4/0xb8
+    // (structure verified); what the player sees is INFERRED. Build pin: the library must have the
+    // stock length, each window must hit exactly once (the meters one is a 60-byte window with the
+    // adrp/ldr-offset/tbnz/bl fields masked, since its 16-byte prologue is shared by 135 functions) and
+    // the hit must sit at the documented file offset, else the patch throws before writing anything;
+    // the offset check is what makes -f safe. Local single-player values only: purchase receipts,
+    // Play billing, BackendUserEntity.Purchase/ReceiptData, video rewards and Play Games rewards are
+    // untouched. UNVERIFIED: runtime NOT_RUN; the backend may detect or reset cheated state
+    // (BackendStateManager ApplyAdjustment, ForcingOverwriteAsRestored and cloud restore were not
+    // disassembled); the analytics currency event still reports negative amounts; shop buttons that
+    // read the balance directly may still grey out at a zero balance; offsets and codegen change
+    // every release.
     val COMPATIBILITY_MY_TALKING_TOM = Compatibility(
         name = "My Talking Tom",
         packageName = "com.outfit7.mytalkingtomfree",
