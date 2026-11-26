@@ -399,6 +399,7 @@ switches: each switch is registered only when its anchor exists in the app. Swit
 | `sofascore.turn_off_video_autoplay` | Turn off video autoplay | off (Manager patch, default off) | no | the embedded player's load-or-cue helper: its autoPlay argument goes through a `(Z)Z` value helper that answers false while on, so the video is cued, not loaded |
 | `sofascore.hide_promo_<id>` (10 Remote Config keys) | Hide promo sections | off | yes | Remote Config boolean getter (`hidePromoSection`) |
 | `sofascore.hide_betting_content` | Hide betting content | on | no | its forced values |
+| `sofascore.hide_gambling_popup` | Hide gambling warning pop-up | off (Manager patch, default off) | no | the Spanish responsible-gambling dialog's show method (static void(Context), index 0, `hevalReturnEarly`); opt-in because it is a regulatory notice (2026-11-26, issue #189) |
 | `sofascore.block_marketing_notifications` | Block marketing notifications | on | no | its dismiss, keep-gone and in-app message sites |
 | `sofascore.disable_rating_prompts` | Disable rating prompts | on | no | its forced value |
 | `sofascore.animations_off` | Animation speed | off | yes | `AnimationSpeed.init` first in ReleaseApp.onCreate, every app call to `Settings.Global.getFloat` (`AnimationSpeed.getFloat`) |
