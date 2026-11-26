@@ -49,12 +49,17 @@ private const val STRING = "Ljava/lang/String;"
 private const val OBJECT = "Ljava/lang/Object;"
 private const val ARRAY_LIST = "Ljava/util/ArrayList;"
 
-/** The switch: the long-press entry and the filter. */
+/**
+ * The switch: the long-press entry and the filter. Off by default (owner 2026-11-23, quick-hide
+ * actions must be off by default): a long press on a match row stays stock until the user turns it
+ * on. The registered default only reaches users with no saved choice.
+ */
 internal val HIDE_COMPETITIONS = HevalFeature(
     id = "flashscore.hide_competitions",
     name = "Hide competitions",
-    description = "Long-press a match in a list to hide its competition.",
+    description = "Adds \"Hide this competition\" to the long-press dialog of a match.",
     category = FlashscoreControlsCategory.LEAGUES,
+    default = false,
     icon = "eye_off",
 )
 
@@ -62,7 +67,8 @@ internal val HIDE_COMPETITIONS = HevalFeature(
 internal val HIDDEN_COMPETITIONS = HevalListFeature(
     id = "flashscore.hidden_competitions",
     name = "Hidden competitions",
-    description = "Remove a competition here to show its matches again.",
+    // Inactive until "Hide competitions" is on (it starts off), so the text says so.
+    description = "Remove a competition to show its matches again (needs \"Hide competitions\" on).",
     category = FlashscoreControlsCategory.LEAGUES,
     icon = "eye_off",
     dependencies = listOf(HIDE_COMPETITIONS.id),

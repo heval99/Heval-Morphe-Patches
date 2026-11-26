@@ -302,7 +302,8 @@ class TruecallerSmokeTest {
         // records are compared as a set.
         val expected = HEVAL_FEATURES.map { (name, id, rest) ->
             val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
-            HevalFeature(id, name, patch.description!!, rest.first, default = true, restartRequired = rest.second)
+            // Swap call buttons registers off (owner 2026-11-23: a swap nobody asked for can cost a call).
+            HevalFeature(id, name, patch.description!!, rest.first, default = id != SWAP_CALL_BUTTONS, restartRequired = rest.second)
         } + OPT_IN_FEATURES.map { (name, id, category) ->
             val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
             HevalFeature(id, name, patch.description!!, category, default = false)
@@ -424,10 +425,13 @@ class TruecallerSmokeTest {
         assertReferralGate(classes)
         assertFeedbackCardGates(classes)
         assertSurveyGate(classes)
+        assertCallerIdBannerGate(classes)
         assertHiddenTabs(classes)
         assertHideMessagesTab(classes)
         assertHiddenSettingsRows(classes)
         assertToggleOverrides(classes)
+        assertHideAfterCallConfigGetters(classes)
+        assertHideAfterCallSavedContacts(classes, byType)
         assertClassicCallLogSwipe(classes, byType)
         assertUseSmsVerification(classes)
         assertFixT9ContactSearch(classes, byType)
@@ -443,8 +447,82 @@ class TruecallerSmokeTest {
         assertHidePoorNetworkWarning(classes, apk)
         assertHideProfileMenuItems(classes, byType, allPatches, apk)
         // onGetCredential tests isAvailableOnDevice(int) in this build, so the routing applies.
-        assertGmsCoreSupport(classes, workDir, PKG, TRUECALLER_INIT, SIGNATURE_SHA1, expectCredentialRouting = true)
+        // The contact editor's account type sites keep "com.google" (#187); assertContactEditorKeepsGoogleAccountType
+        // pins exactly which methods those are.
+        assertGmsCoreSupport(
+            classes, workDir, PKG, TRUECALLER_INIT, SIGNATURE_SHA1, expectCredentialRouting = true,
+            keepsGoogleAccountType = { _, m ->
+                val strings = m.strings()
+                "phoneAccount" in strings || ("account_type" in strings && "account_name" in strings) ||
+                    (m.returnType == "Ljava/util/ArrayList;" && m.parameterTypes.isEmpty() &&
+                        m.instructions().any { it.call()?.name == "getAccountsByType" })
+            },
+        )
         assertSpoofSignature(classes, PKG, SIGNATURE_SHA1)
+        assertContactEditorKeepsGoogleAccountType(classes)
+    }
+
+    /**
+     * #187: the shared GmsCore string rewrite turns the exact "com.google" account type into
+     * "app.revanced". The contact editor's "Save to" list (getAccountsByType("com.google") returning an
+     * ArrayList) and its default-account mapper ("phoneAccount" next to "com.google") must keep the real
+     * Google account type, or no Google account is found and saving can fail. Every other
+     * getAccountsByType caller (Google sign-in, backup) keeps the rewrite. On a build where the rewrite
+     * hit the contact editor, the two exempt methods would hold "app.revanced" and no "com.google", so
+     * these checks fail there.
+     */
+    private fun assertContactEditorKeepsGoogleAccountType(classes: List<ClassDef>) {
+        fun Method.callsGetAccountsByType() = instructions().any {
+            it.call()?.let { c -> c.definingClass == "Landroid/accounts/AccountManager;" && c.name == "getAccountsByType" } == true
+        }
+        val vendor = "app.revanced"
+
+        // 1. The list builder keeps "com.google" and still calls getAccountsByType.
+        val (listClass, list) = classes.singleMethod("contact editor Google accounts list") { _, m ->
+            m.returnType == "Ljava/util/ArrayList;" && m.parameterTypes.isEmpty() && m.callsGetAccountsByType() &&
+                m.strings().any { it == "com.google" || it == vendor }
+        }
+        val listLabel = "${listClass.type}.${list.name}"
+        check("com.google" in list.strings() && vendor !in list.strings()) {
+            "$listLabel (contact editor accounts) lost its \"com.google\" account type: ${list.strings()}"
+        }
+
+        // 2. The default-account mapper sits in the same class (it also holds "phoneAccount") and keeps it.
+        val (mapperClass, mapper) = classes.singleMethod("contact editor default account mapper") { _, m ->
+            m.returnType == "Ljava/lang/Object;" && "phoneAccount" in m.strings() &&
+                m.strings().any { it == "com.google" || it == vendor }
+        }
+        check(mapperClass.type == listClass.type) { "the default account mapper is in ${mapperClass.type}, not ${listClass.type}" }
+        check("com.google" in mapper.strings() && vendor !in mapper.strings()) {
+            "${mapperClass.type}.${mapper.name} (default account mapper) lost its \"com.google\": ${mapper.strings()}"
+        }
+
+        // 3. The contact details loader (a merged coroutine case that reads the contacts provider's
+        // account_type / account_name columns) keeps it too.
+        val (readerClass, reader) = classes.singleMethod("contact account type reader") { _, m ->
+            m.returnType == "Ljava/lang/Object;" && "account_type" in m.strings() && "account_name" in m.strings() &&
+                m.strings().any { it == "com.google" || it == vendor }
+        }
+        check("com.google" in reader.strings() && vendor !in reader.strings()) {
+            "${readerClass.type}.${reader.name} (contact account reader) lost its \"com.google\": ${reader.strings()}"
+        }
+
+        // 4. The sign-in / backup lookups (GET_ACCOUNTS permission check, then getAccountsByType) are
+        // still rewritten: at least one exists, every one holds the vendor type and none "com.google".
+        val signIn = classes.methodsWhere { _, m ->
+            "android.permission.GET_ACCOUNTS" in m.strings() && m.callsGetAccountsByType()
+        }
+        check(signIn.isNotEmpty()) { "no GET_ACCOUNTS + getAccountsByType site found" }
+        for ((cls, m) in signIn) {
+            check(vendor in m.strings() && "com.google" !in m.strings()) {
+                "${cls.type}.${m.name} (sign-in/backup account lookup) is not rewritten to $vendor: ${m.strings()}"
+            }
+        }
+        // 5. No other getAccountsByType caller still holds "com.google" (library sites are rewritten too).
+        val leftovers = classes.methodsWhere { cls, m ->
+            !(cls.type == listClass.type && m == list) && m.callsGetAccountsByType() && "com.google" in m.strings()
+        }
+        check(leftovers.isEmpty()) { "getAccountsByType callers still holding \"com.google\": ${leftovers.map { (c, m) -> "${c.type}.${m.name}" }}" }
     }
 
     /**
@@ -1111,6 +1189,31 @@ class TruecallerSmokeTest {
         check(feedback.instructions().none { it.call()?.definingClass == HEVAL_SETTINGS_CLASS }) { "shouldShowFeedback must stay stock" }
     }
 
+    private fun assertCallerIdBannerGate(classes: List<ClassDef>) {
+        // Disable nags (#166): the Settings banner picker (the only method returning the kept BannerType;
+        // its first call is a ()Z check on its own class, right before the CALLER_ID constant) calls a
+        // check that starts with the feature's gate whose patched path answers false, then keeps its
+        // stock code (the RoleManager-backed tests).
+        val bannerType = "Lcom/truecaller/settings/impl/ui/categories/banner/BannerType;"
+        val (pickerClass, picker) = classes.singleMethod("banner picker") { _, m ->
+            m.returnType == bannerType && m.params().isEmpty() && m.implementation != null
+        }
+        val insns = picker.instructions()
+        val callerId = insns.indexOfFirst { it.field()?.let { f -> f.definingClass == bannerType && f.name == "CALLER_ID" } == true }
+        check(callerId > 0) { "${pickerClass.type}.${picker.name} does not load BannerType.CALLER_ID" }
+        val call = insns.subList(0, callerId).firstNotNullOfOrNull { it.call() }
+        check(call != null && call.returnType == "Z" && call.params().isEmpty() && call.definingClass == pickerClass.type) {
+            "${pickerClass.type}.${picker.name} does not start with its own ()Z check; got $call"
+        }
+        val gate = pickerClass.methods.single { it.name == call.name && it.parameters.isEmpty() && it.returnType == "Z" }
+        val label = "${pickerClass.type}.${gate.name}() (default caller ID check)"
+        val stock = assertGate(gate, DISABLE_NAGS, label)
+        val body = gate.instructions()
+        check(stock == 6 && body.subList(4, stock).isReturnZero()) { "$label does not answer false after the Disable nags gate" }
+        check(body.drop(stock).count { it.call() != null } >= 3) { "$label lost its stock code" }
+        check(body.count { it.call()?.definingClass == HEVAL_SETTINGS_CLASS } == 1) { "$label has more than one Heval Controls gate" }
+    }
+
     private fun assertSurveyGate(classes: List<ClassDef>) {
         // Hide surveys: the survey eligibility check (Z, (R8 state, ContactSurveyEntity, SurveyConfig)),
         // found by its kept parameter types as the patch finds it, starts with the feature's gate whose
@@ -1323,6 +1426,134 @@ class TruecallerSmokeTest {
         }
     }
 
+    private fun assertHideAfterCallConfigGetters(classes: List<ClassDef>) {
+        // Hide after-call screen for contacts, issue #181: the seven phonebook getters of the server-driven
+        // FullscreenAcsConfig pass their field value through a static helper on the config class that
+        // gates on the feature and answers FacsBehavior.DO_NOTHING; every other getter (the *PbMissed
+        // ones included) keeps its two stock instructions.
+        val facs = "Lcom/truecaller/acs/util/FacsBehavior;"
+        val cls = classes.single { it.type == "Lcom/truecaller/incallui/utils/FullscreenAcsConfig;" }
+        val patched = setOf(
+            "getUnlockedPbIncomingAccept", "getUnlockedPbIncomingDismiss", "getUnlockedPbIncomingDismissNotification",
+            "getUnlockedPbOutgoing", "getLockedPbIncomingAccept", "getLockedPbIncomingDismiss", "getLockedPbOutgoing",
+        )
+        val getters = cls.methods.filter { it.name.startsWith("get") && it.parameters.isEmpty() && it.returnType == facs }
+        check(getters.map { it.name }.containsAll(patched + setOf("getUnlockedPbMissed", "getLockedPbMissed"))) {
+            "FullscreenAcsConfig getters not found: ${getters.map { it.name }}"
+        }
+        var helperRef: MethodReference? = null
+        for (getter in getters) {
+            val insns = getter.instructions()
+            if (getter.name !in patched) {
+                check(insns.size == 2 && insns[0].opcode == Opcode.IGET_OBJECT && insns[1].opcode == Opcode.RETURN_OBJECT) {
+                    "${getter.name} must stay stock; got ${insns.map { it.opcode }}"
+                }
+                continue
+            }
+            check(insns.size == 4 && insns[0].opcode == Opcode.IGET_OBJECT && insns[2].opcode == Opcode.MOVE_RESULT_OBJECT &&
+                insns[3].opcode == Opcode.RETURN_OBJECT && insns[1].opcode == Opcode.INVOKE_STATIC_RANGE
+            ) { "${getter.name} does not pass its field through the helper; got ${insns.map { it.opcode }}" }
+            val field = (insns[0] as OneRegisterInstruction).registerA
+            val call = insns[1] as RegisterRangeInstruction
+            check(call.startRegister == field && call.registerCount == 1 && (insns[2] as OneRegisterInstruction).registerA == field) {
+                "${getter.name}: the helper call does not use the field register"
+            }
+            val ref = call.call()!!
+            check(ref.definingClass == cls.type && ref.returnType == facs && ref.parameterTypes.map(CharSequence::toString) == listOf(facs)) {
+                "${getter.name}: unexpected helper $ref"
+            }
+            check(helperRef == null || (helperRef.name == ref.name)) { "the getters use different helpers" }
+            helperRef = ref
+        }
+        val helper = cls.methods.single { it.name == helperRef!!.name && it.parameterTypes.map(CharSequence::toString) == listOf(facs) }
+        val label = "${cls.type}.${helper.name}"
+        val stock = assertGate(helper, HIDE_AFTER_CALL_CONTACTS, label)
+        val insns = helper.instructions()
+        val doNothing = insns[4]
+        check(doNothing.opcode == Opcode.SGET_OBJECT && doNothing.field()?.let { it.definingClass == facs && it.name == "DO_NOTHING" } == true &&
+            insns[stock].opcode == Opcode.RETURN_OBJECT && stock == 5
+        ) { "$label does not answer FacsBehavior.DO_NOTHING while the feature is on" }
+    }
+
+    private fun assertHideAfterCallSavedContacts(classes: List<ClassDef>, byType: Map<String, ClassDef>) {
+        // Hide after-call screen for contacts, issue #181 (second part): a number that Android's contacts
+        // lookup finds counts as a saved contact too. Each Contact.k0() test (kl.b twice, bf.c's first)
+        // runs its result through the static helper HistoryEvent.morpheOrSaved (added by the patch, so
+        // absent in the stock APK) at the join where the null-contact path meets it, so a null contact
+        // is covered and the branch from the invoke now lands on the helper call.
+        val history = "Lcom/truecaller/data/entity/HistoryEvent;"
+        val contact = "Lcom/truecaller/data/entity/Contact;"
+        val extension = "Lapp/template/extension/truecaller/AfterCallSavedContacts;"
+        check(extension in byType) { "the AfterCallSavedContacts extension class is not merged" }
+        val helper = byType.getValue(history).methods.single { it.name == "morpheOrSaved" }
+        // Public: the rules and behaviour methods are other classes (a private helper would throw IllegalAccessError).
+        check(AccessFlags.PUBLIC.isSet(helper.accessFlags) && AccessFlags.STATIC.isSet(helper.accessFlags) &&
+            helper.returnType == "Z" && helper.params() == listOf("Z", history)
+        ) {
+            "unexpected helper signature ${helper.params()}${helper.returnType}"
+        }
+        val helperCode = helper.instructions()
+        check(helperCode.map { it.opcode } == listOf(
+            Opcode.IF_NEZ, Opcode.IGET_OBJECT, Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.RETURN,
+        )) { "unexpected helper body ${helperCode.map { it.opcode }}" }
+        val extensionCall = helperCode[3].call()!!
+        check(extensionCall.definingClass == extension && extensionCall.name == "isSaved" &&
+            extensionCall.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", "Ljava/lang/String;") &&
+            extensionCall.returnType == "Z"
+        ) { "the helper does not call AfterCallSavedContacts.isSaved(String, String)" }
+        val fields = listOf(helperCode[1], helperCode[2]).map { it.field()!! }
+        check(fields.all { it.definingClass == history && it.type == "Ljava/lang/String;" } && fields[0].name != fields[1].name) {
+            "the helper does not read two String fields of HistoryEvent"
+        }
+
+        fun Instruction.isHelperCall() = opcode == Opcode.INVOKE_STATIC && call()?.let {
+            it.definingClass == history && it.name == "morpheOrSaved"
+        } == true
+
+        fun assertSites(label: String, method: Method, expected: Int) {
+            val insns = method.instructions()
+            val tests = insns.withIndex().filter { (_, insn) ->
+                insn.opcode == Opcode.INVOKE_VIRTUAL && insn.call()?.let {
+                    it.definingClass == contact && it.returnType == "Z" && it.parameterTypes.isEmpty()
+                } == true
+            }.map { it.index }
+            check(tests.size == 2) { "$label: expected 2 Contact boolean tests, found ${tests.size}" }
+            val hooks = insns.withIndex().filter { it.value.isHelperCall() }.map { it.index }
+            check(hooks.size == expected) { "$label: expected $expected helper calls, found ${hooks.size}" }
+            for ((site, hook) in hooks.withIndex()) {
+                val test = tests[site]
+                val result = (insns[test + 1] as OneRegisterInstruction).registerA
+                check(insns[test + 1].opcode == Opcode.MOVE_RESULT) { "$label: no move-result after the Contact test" }
+                // The invoke's own branch lands on the helper call, not past it.
+                check(insns[test + 2].opcode in setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32) && insns.branchTarget(test + 2) == hook) {
+                    "$label: the Contact test at $test does not jump to the helper call at $hook"
+                }
+                // The null-contact path falls into the helper call after writing the register.
+                check((insns[hook - 1] as? OneRegisterInstruction)?.registerA == result && hook - 1 > test + 2) {
+                    "$label: the null-contact path does not write v$result right before the helper call"
+                }
+                val call = insns[hook] as FiveRegisterInstruction
+                check(call.registerCount == 2 && call.registerC == result) { "$label: the helper call does not take the test result first" }
+                val moved = insns[hook + 1]
+                check(moved.opcode == Opcode.MOVE_RESULT && (moved as OneRegisterInstruction).registerA == result) {
+                    "$label: the helper call is not followed by move-result v$result"
+                }
+                check(call.registerD <= 15 && call.registerC <= 15) { "$label: helper call register above v15" }
+            }
+        }
+
+        val rules = classes.methodsWhere { _, method ->
+            method.returnType == "Z" && method.params().let { it.size == 4 && it[0] == history } &&
+                method.strings().any { it.startsWith("ACS for phonebook contacts is disabled or ACS for all incoming") }
+        }.single().second
+        assertSites("caller-ID rules", rules, 2)
+        val behavior = classes.methodsWhere { _, method ->
+            method.returnType == "Lcom/truecaller/acs/util/FacsBehavior;" && method.params().let { it.size == 4 && it[0] == history } &&
+                method.strings().contains("afterCallForPbContacts")
+        }.single().second
+        assertSites("after-call behaviour", behavior, 1)
+    }
+
     private fun assertToggleOverrides(classes: List<ClassDef>) {
         // Every toggle resolver isEnabled(key, FeatureState) (three in 26.42.5: the SharedPreferences
         // store, the Firebase experiments and a default-only one) starts with one
@@ -1330,8 +1561,8 @@ class TruecallerSmokeTest {
         // finally to the stock code. Hide family button and Restore classic call log add one each,
         // Disable ads five (incl. the Offer Hub), Hide business media the seven verified business
         // campaign toggles, Disable contact upload the Call Assistant number sync and the contact
-        // editor name suggestion, Disable auto-launch one, Disable nags ten, Hide promotions four
-        // plus the Firebase experiment "DisableWVMNotifications_65487" (on), Hide after-call
+        // editor name suggestion, Disable auto-launch one, Disable nags ten, Hide promotions six
+        // (incl. the Verified Business / priority call awareness announcements) plus the Firebase experiment "DisableWVMNotifications_65487" (on), Hide after-call
         // screen for contacts two, Disable Who viewed me one and Disable telemetry four
         // (installed-apps and app process heartbeats, telecom operator name upload, CleverTap
         // notification tracking).
@@ -1371,6 +1602,8 @@ class TruecallerSmokeTest {
             "featureReferralNavDrawer" to 0,
             "featureRedeemPromo" to 0,
             "featureGoldPremiumGift" to 0,
+            "featureVerifiedBusinessAwareness" to 0,
+            "featureBizPriorityCallAwareness" to 0,
             "featureShowACSAllIncoming" to 0,
             "featureShowACSAllOutgoing" to 0,
             "DisableWVMNotifications_65487" to 1,
@@ -1396,7 +1629,7 @@ class TruecallerSmokeTest {
             "featureRatingsAndReviewsSurveys", "featureBlockSurveyFlow", "featureFeedbackSurvey",
         ).associateWith { DISABLE_NAGS } + listOf(
             "featurePersonalSafetyPromo", "featureAcsWhoViewedMeBanner", "featureReferralNavDrawer", "featureRedeemPromo",
-            "featureGoldPremiumGift",
+            "featureGoldPremiumGift", "featureVerifiedBusinessAwareness", "featureBizPriorityCallAwareness",
         ).associateWith { HIDE_PROMOTIONS } + listOf(
             "featureShowACSAllIncoming", "featureShowACSAllOutgoing",
         ).associateWith { HIDE_AFTER_CALL_CONTACTS }
@@ -1406,7 +1639,10 @@ class TruecallerSmokeTest {
         // The keys added on 26.43.5 are also checked at register level: some method loads the key and
         // passes that very register as the key argument of a resolver call (a key that only shares a
         // method with another key's resolver read would pass assertResolverReads).
-        for (key in listOf("featureInvalidProfileNotification", "featureWhoViewedMe") + TELEMETRY_TOGGLE_KEYS) {
+        for (key in listOf(
+            "featureInvalidProfileNotification", "featureWhoViewedMe", "featureVerifiedBusinessAwareness",
+            "featureBizPriorityCallAwareness",
+        ) + TELEMETRY_TOGGLE_KEYS) {
             assertPassesKeyToResolver(classes, resolvers, key)
         }
     }

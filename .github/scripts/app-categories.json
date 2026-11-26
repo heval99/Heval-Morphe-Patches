@@ -133,7 +133,8 @@
         "easynotes.notes.notepad.notebook.privatenotes.note",
         "com.appgenix.bizcal",
         "com.alarmclock.xtreme.free",
-        "com.gmail.jmartindev.timetune"
+        "com.gmail.jmartindev.timetune",
+        "com.l"
       ]
     },
     {
@@ -178,6 +179,14 @@
         "com.soosu.notialarm",
         "com.ace.ex.file.manager",
         "com.samsung.android.honeyboard"
+      ]
+    },
+    {
+      "name": "Games",
+      "emoji": "🎮",
+      "packages": [
+        "com.outfit7.mytalkingtomfree",
+        "com.outfit7.mytalkingtom2"
       ]
     }
   ]

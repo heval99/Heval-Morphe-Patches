@@ -12,6 +12,8 @@ permissions:
 
 jobs:
   pull-request:
+    # Triggered by pushes to dev and by manual dispatch; a dispatch from any other ref is skipped.
+    if: github.ref == 'refs/heads/dev'
     name: Open pull request
     runs-on: ubuntu-latest
     steps:

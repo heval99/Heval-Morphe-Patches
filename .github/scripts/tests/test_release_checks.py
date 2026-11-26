@@ -14,6 +14,9 @@ import sys
 import tempfile
 import unittest
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import verify_stable_metadata  # noqa: E402
+
 
 ROOT = Path(__file__).resolve().parents[3]
 BASH = next(
@@ -54,29 +57,6 @@ gh() {
   printf '%s\n' "$AUDIT_REMOTE_DIGEST"
 }
 '''
-
-STABLE_MOCKS = r'''
-jq() {
-  case "$2" in
-    '.version // ""') field=version ;;
-    '.download_url // ""') field=download_url ;;
-    *) echo "unexpected jq call: $*" >&2; return 99 ;;
-  esac
-  "$AUDIT_PYTHON" -c 'import json,sys; print(json.load(sys.stdin).get(sys.argv[1]) or "")' "$field"
-}
-gh() {
-  case "$1 $2" in
-    'api '*) printf '%s\n' "$AUDIT_METADATA" ;;
-    'release view') printf '%s\n' "$AUDIT_PRERELEASE" ;;
-    *) echo "unexpected gh call: $*" >&2; return 99 ;;
-  esac
-}
-curl() {
-  printf '%s\n' "$*" > curl-called.txt
-  return "$AUDIT_DOWNLOAD_STATUS"
-}
-'''
-
 
 @unittest.skipUnless(BASH, "Bash is required for offline workflow checks")
 class ReleaseChecksTest(unittest.TestCase):
@@ -153,44 +133,62 @@ class ReleaseChecksTest(unittest.TestCase):
         self.assertNotIn("published=true", output)
         self.assertIn("::error::", result.stdout)
 
-    def stable(self, version="1.2.3", download=None, prerelease="false", download_status="0"):
-        metadata = {"version": version,
-                    "download_url": download or "https://github.com/audit/repo/releases/download/v1.2.3/patches-1.2.3.mpp"}
-        return self.run_block(
-            "verify-stable-metadata.yml", "Check main's patches-bundle.json", STABLE_MOCKS,
-            {"AUDIT_METADATA": json.dumps(metadata), "AUDIT_PRERELEASE": prerelease,
-             "AUDIT_DOWNLOAD_STATUS": download_status},
-        )
 
-    def test_stable_download_is_checked(self):
-        result, _, downloaded = self.stable()
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertTrue(downloaded)
+class StableMetadataTest(unittest.TestCase):
+    REPO = "audit/repo"
+    URL = "https://github.com/audit/repo/releases/download/v1.2.3/patches-1.2.3.mpp"
+
+    def release(self, **overrides):
+        release = {"tag_name": "v1.2.3", "prerelease": False, "draft": False,
+                   "assets": [{"name": "patches-1.2.3.mpp", "browser_download_url": self.URL,
+                               "digest": "sha256:" + "a" * 64}]}
+        release.update(overrides)
+        return release
+
+    def run_check(self, version="1.2.3", download=None, release="default"):
+        metadata = {"version": version, "download_url": download or self.URL}
+        rel = self.release() if release == "default" else release
+        return verify_stable_metadata.check(metadata, rel, self.REPO)
+
+    def test_exact_url_passes(self):
+        errors, notes = self.run_check()
+        self.assertEqual(errors, [])
+        self.assertTrue(any("digest" in n for n in notes))
 
     def test_prerelease_version_is_rejected(self):
-        result, _, downloaded = self.stable(version="1.2.3-dev.1")
-        self.assertNotEqual(result.returncode, 0)
-        self.assertFalse(downloaded)
+        self.assertTrue(self.run_check(version="1.2.3-dev.1")[0])
 
     def test_missing_version_is_rejected(self):
-        result, _, downloaded = self.stable(version=None)
-        self.assertNotEqual(result.returncode, 0)
-        self.assertFalse(downloaded)
+        self.assertTrue(self.run_check(version="")[0])
 
-    def test_wrong_asset_version_is_rejected(self):
-        result, _, downloaded = self.stable(download="https://example.invalid/patches-9.9.9.mpp")
-        self.assertNotEqual(result.returncode, 0)
-        self.assertFalse(downloaded)
+    def test_unrelated_origin_is_rejected(self):
+        url = "https://example.invalid/audit/repo/releases/download/v1.2.3/patches-1.2.3.mpp"
+        self.assertTrue(self.run_check(download=url)[0])
+
+    def test_other_repository_is_rejected(self):
+        url = "https://github.com/evil/repo/releases/download/v1.2.3/patches-1.2.3.mpp"
+        self.assertTrue(self.run_check(download=url)[0])
+
+    def test_filename_suffix_or_substring_variants_are_rejected(self):
+        for url in (self.URL + ".evil", self.URL + "?x=1", "https://evil.test/#" + self.URL,
+                    self.URL.replace("patches-1.2.3.mpp", "x-patches-1.2.3.mpp")):
+            with self.subTest(url=url):
+                self.assertTrue(self.run_check(download=url)[0])
 
     def test_github_prerelease_flag_is_rejected(self):
-        result, _, downloaded = self.stable(prerelease="true")
-        self.assertNotEqual(result.returncode, 0)
-        self.assertFalse(downloaded)
+        self.assertTrue(self.run_check(release=self.release(prerelease=True))[0])
 
-    def test_missing_asset_fails_check(self):
-        result, _, downloaded = self.stable(download_status="22")
-        self.assertNotEqual(result.returncode, 0)
-        self.assertTrue(downloaded)
+    def test_missing_release_or_asset_is_rejected(self):
+        self.assertTrue(self.run_check(release=None)[0])
+        self.assertTrue(self.run_check(release=self.release(assets=[]))[0])
+
+    def test_asset_with_a_different_download_url_is_rejected(self):
+        asset = {"name": "patches-1.2.3.mpp", "browser_download_url": self.URL + "x"}
+        self.assertTrue(self.run_check(release=self.release(assets=[asset]))[0])
+
+    def test_workflow_runs_the_script(self):
+        text = (ROOT / ".github/workflows/verify-stable-metadata.yml").read_text(encoding="utf-8")
+        self.assertIn("verify_stable_metadata.py", text)
 
 
 if __name__ == "__main__":

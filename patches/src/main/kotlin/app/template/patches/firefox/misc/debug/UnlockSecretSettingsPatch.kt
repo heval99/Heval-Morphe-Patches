@@ -32,7 +32,8 @@ val unlockSecretSettingsPatch = bytecodePatch(
         // ── 2. The custom add-on collection works on release ────────────────────────────────
         //  FeatureFlags.<clinit> stores "Nightly, Beta or debug" into customExtensionCollectionFeature;
         //  right after that store, true is stored over it. The store's register is reused, so
-        //  no later instruction may name it (158.0: v1, unused after the store).
+        //  the next instruction naming it must write it (158.0: v1, never named again; 161.0: v1,
+        //  rewritten by the move-result of the next isDebug() call).
         val clinit = concreteMethod(FEATURE_FLAGS, "<clinit>", emptyList())
         val insns = clinit.insns()
         val stores = insns.indices.filter {
@@ -41,8 +42,21 @@ val unlockSecretSettingsPatch = bytecodePatch(
         val store = stores.singleOrNull()
             ?: throw PatchException("$FEATURE_FLAGS.<clinit> stores customExtensionCollectionFeature ${stores.size} times, expected 1")
         val register = (insns[store] as OneRegisterInstruction).registerA
-        if (insns.drop(store + 1).any { register in it.registers() }) {
-            throw PatchException("$FEATURE_FLAGS.<clinit> uses v$register after the customExtensionCollectionFeature store")
+        // Straight-line code after the store: the first instruction naming the register must
+        // overwrite it (a move-result or const), otherwise the forced value could be read.
+        val after = insns.drop(store + 1)
+        val firstUse = after.indexOfFirst { register in it.registers() }
+        if (firstUse >= 0) {
+            val straight = after.take(firstUse).none {
+                it.opcode.name.startsWith("IF_") || it.opcode.name.startsWith("GOTO") ||
+                    it.opcode.name.contains("SWITCH") || it.opcode.name.startsWith("RETURN")
+            }
+            val use = after[firstUse]
+            val overwrites = use.opcode == Opcode.MOVE_RESULT || use.opcode == Opcode.MOVE_RESULT_OBJECT ||
+                use.opcode == Opcode.CONST_4 || use.opcode == Opcode.CONST_16 || use.opcode == Opcode.CONST
+            if (!straight || !overwrites) {
+                throw PatchException("$FEATURE_FLAGS.<clinit> uses v$register after the customExtensionCollectionFeature store")
+            }
         }
         clinit.requireNoBranchTargetAt(store + 1, "forcing customExtensionCollectionFeature")
         clinit.addInstructionsChecked(

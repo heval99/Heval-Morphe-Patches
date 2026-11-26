@@ -191,14 +191,21 @@ val hideSportsPatch = bytecodePatch(
 
         // Validate every site before the first edit.
         // 1. The rows (List<DbSportOrder>): the Matches sport strip and the reorder dialog.
-        val rowsQuery = methodsHolding(SPORT_ORDER_ROWS_QUERY).singleOrNull()
-            ?: throw PatchException("Expected one method holding \"$SPORT_ORDER_ROWS_QUERY\"")
-        val rowsLoad = rowsQuery.stringIndices(SPORT_ORDER_ROWS_QUERY).single()
-        val rowsReturn = rowsQuery.queryListReturn(rowsLoad, SPORT_ORDER_ROWS_QUERY)
+        //    Since 26.11.16 two lambda classes hold the rows query (one DAO method per caller), so
+        //    every holder is a site.
+        val rowsHolders = methodsHolding(SPORT_ORDER_ROWS_QUERY)
         // The database's prepare call, the instruction right after the SQL load.
-        val prepare = (rowsQuery.getInstruction(rowsLoad + 1) as? ReferenceInstruction)?.reference as? MethodReference
+        val prepare = (rowsHolders.first().let { it.getInstruction(it.stringIndices(SPORT_ORDER_ROWS_QUERY).first() + 1) }
+            as? ReferenceInstruction)?.reference as? MethodReference
             ?: throw PatchException("\"$SPORT_ORDER_ROWS_QUERY\" is not prepared right after its load")
-
+        val rowsSites = rowsHolders.map { method ->
+            val load = method.stringIndices(SPORT_ORDER_ROWS_QUERY).single()
+            val callRef = (method.getInstruction(load + 1) as? ReferenceInstruction)?.reference as? MethodReference
+            if (callRef == null || callRef.name != prepare.name || callRef.definingClass != prepare.definingClass) {
+                throw PatchException("\"$SPORT_ORDER_ROWS_QUERY\" is not prepared right after its load in ${method.definingClass}")
+            }
+            method to method.queryListReturn(load, SPORT_ORDER_ROWS_QUERY)
+        }
         // 2. The names (List<String>): the sport repository's list (feed, favourites, start screen,
         //    notification settings). Up to 26.11.03 two lambda classes held the same query.
         //    Up to 26.11.03 each lambda loaded the SQL right before its ArrayList; in 26.11.09 one
@@ -270,7 +277,7 @@ val hideSportsPatch = bytecodePatch(
         // so every insert of a method is made from its last index to its first, which keeps the
         // earlier indices valid.
         data class Edit(val method: MutableMethod, val index: Int, val helper: String, val signature: String)
-        val edits = listOf(Edit(rowsQuery, rowsReturn, "filterSportOrders", "(Ljava/util/List;)Ljava/util/List;")) +
+        val edits = rowsSites.map { (method, ret) -> Edit(method, ret, "filterSportOrders", "(Ljava/util/List;)Ljava/util/List;") } +
             namesSites.flatMap { (method, returns) ->
                 returns.map { Edit(method, it, "filterSportNames", "(Ljava/util/List;)Ljava/util/List;") }
             } +

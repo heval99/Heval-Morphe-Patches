@@ -313,8 +313,8 @@ public final class CountryFilter {
         return hidden.contains(key);
     }
 
-    /** The baked country name of {@code key}, or null. */
-    private static String seedLabel(String key) {
+    /** The baked country name of {@code key}, or null (also used by QuickHide). */
+    static String seedLabel(String key) {
         if (!seeded) init();
         return seedLabels.get(key);
     }

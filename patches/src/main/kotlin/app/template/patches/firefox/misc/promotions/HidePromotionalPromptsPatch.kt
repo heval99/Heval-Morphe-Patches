@@ -48,9 +48,9 @@ val hidePromotionalPromptsPatch = bytecodePatch(
 
     execute {
         // ── 1. Nimbus messages (home cards, notifications): there is never a next message ───
-        //  getNextMessage(surface, messages) is the public entry every surface asks; its
+        //  getNextMessage(surface, messages, attributes) is the public entry every surface asks; its
         //  private 4-argument overload is only called from it. The result is nullable.
-        concreteMethod(NIMBUS_MESSAGING_STORAGE, "getNextMessage", listOf("Ljava/lang/String;", "Ljava/util/List;"))
+        concreteMethod(NIMBUS_MESSAGING_STORAGE, "getNextMessage", listOf("Ljava/lang/String;", "Ljava/util/List;", "Ljava/util/Map;"))
             .returnNull()
 
         // ── 2. Microsurveys read as switched off ────────────────────────────────────────────

@@ -16,4 +16,6 @@ val spoofSignaturePatch = spoofSignaturePatch(
     fromPackageName = "com.sofascore.results",
     certificateBase64 = SOFASCORE_CERTIFICATE,
     compatibility = COMPATIBILITY_SOFASCORE,
+    default = true,
+    description = "Needed for match notifications and Google sign-in.",
 )

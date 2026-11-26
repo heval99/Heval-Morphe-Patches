@@ -74,11 +74,12 @@ def clean_subject(text, repo):
     return text
 
 
-def parse_commits(subjects):
+def parse_commits(subjects, keep_version_updates=False):
     """User-facing commits as dicts {label, scopes, subject}, deduplicated, in the given order.
 
     Skips merge/revert commits, non-conventional subjects, types other than feat/fix/perf, and
-    "updated to version ..." commits (the Updated apps table covers those).
+    "updated to version ..." commits (the Updated apps table covers those),
+    unless keep_version_updates is set (the plain fallback has no such table).
     """
     commits, seen = [], set()
     for line in subjects:
@@ -88,7 +89,9 @@ def parse_commits(subjects):
             continue
         label = USER_FACING.get(match.group("type").lower())
         subject = match.group("subject").strip()
-        if not label or not subject or UPDATED_TO_VERSION_RE.match(subject):
+        if not label or not subject:
+            continue
+        if UPDATED_TO_VERSION_RE.match(subject) and not keep_version_updates:
             continue
         scopes = [s.strip() for s in (match.group("scope") or "").split(",") if s.strip()]
         key = (label, tuple(normalize(s) for s in scopes), subject.lower().rstrip("."))
@@ -469,7 +472,8 @@ def render_notes(old_list, new_list, subjects, repo, version, date, dir_index=No
 
 def render_fallback(subjects, repo, version, date, credits=None, breaking=None):
     """Plain notes: every user-facing commit, used when a patch list is missing."""
-    commits = parse_commits(subjects)
+    # No Updated apps table here, so version-update commits are the only record of those changes.
+    commits = parse_commits(subjects, keep_version_updates=True)
     body = (
         "\n".join(["### Changes"] + [commit_line(c, repo, with_scope=True) for c in commits])
         if commits else "No user-facing changes."

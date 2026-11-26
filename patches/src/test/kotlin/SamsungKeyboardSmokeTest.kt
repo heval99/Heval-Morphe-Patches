@@ -108,6 +108,23 @@ class SamsungKeyboardSmokeTest {
 
     private fun Element.all(tag: String) = getElementsByTagName(tag).let { list -> (0 until list.length).map { list.item(it) as Element } }
 
+    /** The keyboard's own checks return early for the keyboard itself: [helper] first, its answer, a branch, a return. */
+    fun assertEarlySelfCheck(method: Method, helper: String, label: String) {
+        val code = method.instructions()
+        val call = code[0].call()
+        assertTrue(
+            call != null && call.definingClass == "${EXT}LocalClipboard;" && call.name == helper,
+            "$label does not call LocalClipboard.$helper first: $call",
+        )
+        assertEquals(Opcode.MOVE_RESULT, code[1].opcode, "$label does not keep the helper's answer")
+        assertEquals(Opcode.IF_EQZ, code[2].opcode, "$label has no branch on the helper's answer")
+        assertEquals(Opcode.RETURN, code[3].opcode, "$label does not return early when the helper says yes")
+        assertEquals(
+            (code[1] as OneRegisterInstruction).registerA, (code[3] as OneRegisterInstruction).registerA,
+            "$label returns a different register than the helper's answer",
+        )
+    }
+
     @Test
     fun `Samsung Keyboard patches emit the ported bytecode, manifest and resources`() {
         val root = repoRoot()
@@ -326,21 +343,6 @@ class SamsungKeyboardSmokeTest {
         assertTrue(stickerCalls.none { it.name == "startActivity" }, "the sticker store click still calls startActivity directly")
 
         // --- Clipboard caller check and provider signature checks return early for the keyboard itself ---
-        fun assertEarlySelfCheck(method: Method, helper: String, label: String) {
-            val code = method.instructions()
-            val call = code[0].call()
-            assertTrue(
-                call != null && call.definingClass == "${EXT}LocalClipboard;" && call.name == helper,
-                "$label does not call LocalClipboard.$helper first: $call",
-            )
-            assertEquals(Opcode.MOVE_RESULT, code[1].opcode, "$label does not keep the helper's answer")
-            assertEquals(Opcode.IF_EQZ, code[2].opcode, "$label has no branch on the helper's answer")
-            assertEquals(Opcode.RETURN, code[3].opcode, "$label does not return early when the helper says yes")
-            assertEquals(
-                (code[1] as OneRegisterInstruction).registerA, (code[3] as OneRegisterInstruction).registerA,
-                "$label returns a different register than the helper's answer",
-            )
-        }
         val callerChecks = app.methodsWhere {
             it.returnType == "Z" && it.params() == listOf(STRING) && ") can't access to clipboard." in it.strings()
         }
@@ -669,5 +671,73 @@ class SamsungKeyboardSmokeTest {
         assertTrue(drawables.any { it.name.endsWith(".xml") && it.readText().contains("<vector") }, "no converted vector drawable found")
         val spr = byteArrayOf('S'.code.toByte(), 'P'.code.toByte(), 'R'.code.toByte(), 0)
         assertTrue(drawables.none { f -> f.length() >= 4 && f.inputStream().use { it.readNBytes(4) }.contentEquals(spr) }, "an SPR drawable is left")
+
+        // --- Change package name alone: the rename-dependent fixes do not need Enable non-One UI ROM support ---
+        val renameDir = java.nio.file.Files.createTempDirectory("sk-rename").toFile()
+        try {
+            assertRenameAloneCarriesFixes(root, apk, renameDir)
+        } finally {
+            renameDir.deleteRecursively()
+        }
+    }
+
+    /** Change package name alone (Enable non-One UI ROM support off) brings the clipboard, provider and dialog fixes. */
+    private fun assertRenameAloneCarriesFixes(root: File, apk: File, renameDir: File) {
+        val classes = applyPatches(
+            apk = apk,
+            workDir = renameDir,
+            pkg = PKG,
+            version = "5.9.40.75",
+            versionCode = 594075300,
+            patchNames = setOf("Change package name"),
+            allPatches = loadAllPatches(newestPatchBundle(root)),
+        )
+        val byType = classes.associateBy { it.type }
+        val stock = patchedApkClasses(apk).mapTo(HashSet()) { it.type }
+        val app = classes.filter { it.type in stock }
+
+        // The stock APK has none of it: the same checks start with the keyboard's own code, and Window.setType is called directly.
+        val stockClasses = patchedApkClasses(apk)
+        val stockChecks = stockClasses.methodsWhere {
+            (it.returnType == "Z" && it.params() == listOf(STRING) && ") can't access to clipboard." in it.strings()) ||
+                (it.returnType == "Z" && it.params() == listOf("Landroid/content/Context;", STRING) && "certification failed" in it.strings())
+        }
+        assertTrue(stockChecks.isNotEmpty() && stockChecks.none { m -> m.instructions().take(4).any { it.call()?.definingClass == "${EXT}LocalClipboard;" } },
+            "the stock checks already call LocalClipboard")
+        assertTrue(
+            stockClasses.flatMap { c -> c.methods.flatMap { m -> m.instructions().mapNotNull { it.call() } } }
+                .any { it.definingClass == "Landroid/view/Window;" && it.name == "setType" },
+            "the stock APK has no direct Window.setType call",
+        )
+        val callerChecks = app.methodsWhere {
+            it.returnType == "Z" && it.params() == listOf(STRING) && ") can't access to clipboard." in it.strings()
+        }
+        assertTrue(callerChecks.isNotEmpty(), "clipboard caller check not found")
+        callerChecks.forEach { assertEarlySelfCheck(it, "isSelfPackage", "clipboard caller check ${it.definingClass}.${it.name}") }
+        val signatureChecks = app.methodsWhere {
+            it.returnType == "Z" && it.params() == listOf("Landroid/content/Context;", STRING) &&
+                "certification failed" in it.strings() && "valid signature : " in it.strings()
+        }
+        assertTrue(signatureChecks.size >= 2, "provider signature checks: ${signatureChecks.map { "${it.definingClass}.${it.name}" }}")
+        signatureChecks.forEach { assertEarlySelfCheck(it, "isSelf", "signature check ${it.definingClass}.${it.name}") }
+
+        // Dialogs: no Window.setType / setFlags call is left in the app, they go through OneUi (which attaches the dialog).
+        val invokes = app.flatMap { c -> c.methods.flatMap { m -> m.instructions().mapNotNull { it.call() } } }
+        val windowCalls = invokes.filter { it.definingClass == "${EXT}OneUi;" && (it.name == "setType" || it.name == "setFlags") }
+        assertTrue(windowCalls.size >= 15, "only ${windowCalls.size} Window.setType/setFlags calls go through OneUi")
+        assertTrue(
+            invokes.none { it.definingClass == "Landroid/view/Window;" && (it.name == "setType" || it.name == "setFlags") },
+            "a direct Window.setType/setFlags call is left",
+        )
+        val onCreate = byType.getValue(SERVICE).method("onCreate", emptyList())
+        assertTrue(
+            onCreate.instructions().take(2).any { it.call()?.let { c -> c.definingClass == "${EXT}OneUi;" && c.name == "keyboardCreated" } == true },
+            "HoneyBoardService.onCreate does not call OneUi.keyboardCreated at its start",
+        )
+        // The resource table moved with the package: lookups under the stock name go through OneUi.getIdentifier.
+        assertTrue(invokes.any { it.definingClass == "${EXT}OneUi;" && it.name == "getIdentifier" }, "getIdentifier lookups are not redirected")
+
+        // Nothing of the non-One UI shims comes along: no sem* redirects, no Samsung service stand-ins.
+        assertTrue(invokes.none { it.definingClass == "${EXT}Sem;" || it.definingClass == "${EXT}Services;" }, "One UI member shims were applied")
     }
 }

@@ -251,6 +251,12 @@ class FallbackTest(unittest.TestCase):
         ))
 
 
+    def test_version_update_commits_are_kept_without_an_updated_apps_table(self):
+        text = notes.render_fallback(["fix(brave): updated to version 1.96.2"], REPO, "1.0.1", DATE)
+        self.assertIn("- Fixed: **brave:** Updated to version 1.96.2", text)
+        self.assertNotIn("No user-facing changes.", text)
+
+
 @unittest.skipUnless(shutil.which("git"), "git is required")
 class GitIntegrationTest(unittest.TestCase):
     """End-to-end runs of main() against a temporary repository."""

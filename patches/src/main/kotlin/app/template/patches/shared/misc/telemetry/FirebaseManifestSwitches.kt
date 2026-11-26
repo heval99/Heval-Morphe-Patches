@@ -305,10 +305,22 @@ private fun BytecodePatchContext.forcePerformanceOff(app: String) {
         returnType = BOOLEAN,
         parameters = listOf(),
         custom = { method, _ -> method.references(deactivated) && method.references(enabled) },
-    ).matchAllOrNull().orEmpty()
+    ).matchAllOrNull().orEmpty().ifEmpty {
+        // The unshrunk SDK (Listonic): getIsPerformanceCollectionEnabled calls
+        // getIsPerformanceCollectionDeactivated instead of reading the flag itself, so only the
+        // enabled flag is referenced. Same method, same FALSE answer, found by its kept name.
+        Fingerprint(
+            definingClass = "Lcom/google/firebase/perf/config/ConfigResolver;",
+            name = "getIsPerformanceCollectionEnabled",
+            returnType = BOOLEAN,
+            parameters = listOf(),
+            custom = { method, _ -> method.implementation != null },
+        ).matchAllOrNull().orEmpty()
+    }
     if (readers.size != 1) {
         throw PatchException(
-            "Disable telemetry ($app): expected one Performance collection reader using $deactivated and $enabled, " +
+            "Disable telemetry ($app): expected one Performance collection reader, either one method using both $deactivated and $enabled, " +
+                "or (unshrunk SDK) ConfigResolver.getIsPerformanceCollectionEnabled(), " +
                 "found ${readers.map { it.method.label() }}",
         )
     }

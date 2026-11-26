@@ -47,8 +47,8 @@ jobs:
         run: npm ci --allow-git=root
 
       # Run the tests that need no APK before anything is released: the helper, registry and
-      # bundle-selection tests, the extension unit tests (webviewads, fotmob, sofascore, wemuslim and the
-      # Patch settings core) and the release-script tests. The
+      # bundle-selection tests, the extension unit tests (webviewads, fotmob, sofascore, wemuslim,
+      # bravemonkey, flashscore, scores365, the Patch settings core and the Patch settings UI) and the release-script tests. The
       # per-app smoke tests skip here (their APKs are gitignored), so they stay a local check.
       # A cold compile runs out of memory at Gradle's default heap, hence the explicit sizes.
       # The tests build a bundle with the CURRENT version number. It is deleted afterwards: the release
@@ -61,9 +61,57 @@ jobs:
           ./gradlew -Pkotlin.daemon.jvmargs=-Xmx4g -Dorg.gradle.jvmargs=-Xmx3g --no-daemon \
             :patches:test :extensions:webviewads:testDebugUnitTest :extensions:fotmob:testDebugUnitTest \
             :extensions:sofascore:testDebugUnitTest :extensions:wemuslim:testDebugUnitTest \
-            :extensions:hevalcontrols:core:testDebugUnitTest
+            :extensions:bravemonkey:testDebugUnitTest :extensions:flashscore:testDebugUnitTest \
+            :extensions:scores365:testDebugUnitTest :extensions:truecaller:testDebugUnitTest \
+            :extensions:hevalcontrols:core:testDebugUnitTest :extensions:hevalcontrols:testDebugUnitTest
           python3 -m unittest discover -s .github/scripts/tests
           rm -f patches/build/libs/*.mpp
+
+      # Report how many tests ran and which smoke test classes were skipped (their APK fixtures are
+      # gitignored). A skipped test counts as green, so without this a CI pass says nothing about
+      # patch regressions on a new app version. Never fails the job.
+      - name: Test summary
+        if: ${{ always() }}
+        run: |
+          python3 - <<'PY'
+          import glob, os
+          import xml.etree.ElementTree as ET
+          total = failed = skipped = 0
+          skipped_classes = set()
+          for f in glob.glob('patches/build/test-results/**/*.xml', recursive=True):
+              try:
+                  root = ET.parse(f).getroot()
+              except ET.ParseError:
+                  continue
+              for case in root.iter('testcase'):
+                  total += 1
+                  if case.find('skipped') is not None:
+                      skipped += 1
+                      name = case.get('classname', '')
+                      if name.endswith('SmokeTest'):
+                          skipped_classes.add(name.rsplit('.', 1)[-1])
+                  elif case.find('failure') is not None or case.find('error') is not None:
+                      failed += 1
+          passed = total - failed - skipped
+          lines = [
+              '### Patch tests (:patches:test)',
+              '',
+              '| Total | Passed | Failed | Skipped |',
+              '| --- | --- | --- | --- |',
+              f'| {total} | {passed} | {failed} | {skipped} |',
+              '',
+              f'Skipped smoke test classes: {len(skipped_classes)}',
+          ]
+          if skipped_classes:
+              lines += ['', '<details><summary>Names</summary>', '', ', '.join(sorted(skipped_classes)), '', '</details>']
+          lines += ['', 'Smoke tests that need APK fixtures are skipped in CI; run them locally before a release (see AGENTS.md).']
+          out = '\n'.join(lines) + '\n'
+          print(out)
+          path = os.environ.get('GITHUB_STEP_SUMMARY')
+          if path:
+              with open(path, 'a') as fh:
+                  fh.write(out)
+          PY
 
       # Semantic release runs its own Gradle build command.
       # Only dev and main branch will generate a release as specified by .releaserc

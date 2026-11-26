@@ -70,14 +70,16 @@ class BreventSmokeTest {
                 first.narrowLiteral.toInt() == FORCED_BREFOIL &&
                 insns.getOrNull(1)?.opcode == Opcode.RETURN
             ) {
+                assertChangedFromStock(getter, "Brevent count getter ${cls.type}.$name")
                 forced++
             }
         }
 
+        // The patch forces exactly one getter (the single method holding the mask literal).
         assertTrue(
-            forced >= 1,
-            "none of the count getters summed by the tier gate ($getterRefs) was forced " +
-                "to $FORCED_BREFOIL",
+            forced == 1,
+            "exactly one of the count getters summed by the tier gate ($getterRefs) must be forced " +
+                "to $FORCED_BREFOIL (the patch forces the single mask getter); found $forced",
         )
     }
 }

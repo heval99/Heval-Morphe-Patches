@@ -29,6 +29,9 @@ val hidePromotionsPatch = truecallerControls.featurePatch(
     // "featureGoldPremiumGift" (2026-11-09) is the Gold gift promo: its getter backs the check that
     // decides whether the "gift Gold" promo and its notification worker (GoldGiftNotificationWorker)
     // run, next to the server flag "goldGiftPromoEnabled_31409" that is not touched here.
+    // "featureVerifiedBusinessAwareness" and "featureBizPriorityCallAwareness" (issue #153,
+    // 2026-11-26) gate the "Introducing Verified Business Caller ID" / priority call announcement
+    // bottom sheet ("BusinessAwarenessBottomSheet") and its call log promo card.
     // "featurePersonalSafetyMenuItem" and "featureTruecallerNewsMenuItem" are only in the
     // toggle catalogue (no reads), and "featureChatWithZipZipMenuItem" is the Help "Chat with
     // us" support row, so all three are left alone.
@@ -39,6 +42,8 @@ val hidePromotionsPatch = truecallerControls.featurePatch(
             "featureReferralNavDrawer",
             "featureRedeemPromo",
             "featureGoldPremiumGift",
+            "featureVerifiedBusinessAwareness",
+            "featureBizPriorityCallAwareness",
         ),
         false,
         FEATURE,

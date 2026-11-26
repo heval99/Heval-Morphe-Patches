@@ -75,6 +75,7 @@ Addict, Windy, Hermit, Calimoto, Nova Launcher, Sleep as Android, MiXplorer.
 - Online games on the target device (Jawaker Tarneeb, Racify, UEFA Eurofantasy, Sorare)
   - online-server games: training/economy state is server-authoritative (the same wall
   the UFM 27 mod hit; see `apks/games/UFM 27/MODDING-NOTES.md`). Skip the whole category.
+  Sorare was checked on its own merits 2026-11-23: it is a Trusted Web Activity shell, see the blocklist.
 
 ## Queued by owner (2026-10-11)
 
@@ -87,6 +88,12 @@ Triaged 2026-10-12; status per row.
 | BlueMail | `me.bluemail.mail` | **Shipped 2026-10-12** - "Disable ads" (2.2.408; ads via react-native-google-mobile-ads). Premium/ad-free entitlement is server-side and not patched. Not runtime-tested (ARM-only libs, extractNativeLibs=false; stock also fails on the x86_64 emulator) |
 | PDF Reader | `pdf.pdfreader.viewer.editor.free` | **Pending 2026-10-12** - only APK found is an unverified Aptoide 2.1.6 (Play shows 2.1.5), signed by a self-signed "Jx Clarynx" cert that does not match the Play developer ("QR Code Scanner."). APKMirror and APKPure do not carry it. **2026-10-14: confirmed adware repack** (same signer and injected launcher-activity payload as the fake Futbin "27.5"); quarantined, never use it. Waiting for the genuine Play build from the owner's phone |
 | SmartWOD Timer | `net.smartwod.timer` | **Shipped 2026-10-12** - "Enable Premium" (RNIapModule.getAvailableItemsByType @ReactMethod hooked via `extensions/smartwod` to report lifetime (Premium+) and ad-free as owned; premium is decided in JS from react-native-iap results checking only productId) and "Disable ads" (1.46.9). Runtime-verified on a Play-certified emulator (Premium+ / Lifetime, no ads) |
+
+## Queued by owner (2026-11-26)
+
+| App | Package | Notes |
+|---|---|---|
+| Microsoft Teams | `com.microsoft.teams` | **Queued 2026-11-26, not triaged.** Added by the owner. Triage first (normal new-app flow): fetch the arm64 build from Google Play and record the signer, look for a licence/anti-tamper shield, ads, telemetry (Microsoft 1DS / App Center / Firebase), nags and any client-side gate. Sign-in goes through Microsoft's broker and Play Integrity, so check whether a re-signed build can sign in at all before building patches. |
 
 ## Recommended first batch
 
@@ -161,3 +168,18 @@ From [the issue tracker](https://github.com/heval99/Heval-Morphe-Patches/issues)
 | [#55](https://github.com/heval99/Heval-Morphe-Patches/issues/55) | BoxBox | Bug | "Neither Disable ads nor Enable Premium works" after a clean install. Matches the 5.4.17 breakage fixed in 71bb868 (dev pre-release v1.14.0-dev.5 and later; emulator-verified); stable v1.13.0 still ships the old patches. Confirm the reporter's bundle and BoxBox versions |
 | [#51](https://github.com/heval99/Heval-Morphe-Patches/issues/51) | Duplila - Mirror Screen | Request | **Dropped by the owner 2026-11-12 (quality focus)** (shipped 2026-10-14 (5.1)) - Enable Premium, Disable ads, Disable license check. Not runtime-tested (armeabi-v7a only) |
 | [#58](https://github.com/heval99/Heval-Morphe-Patches/issues/58) | Digi Sport (`ro.rcsrds.digisport`, RCS & RDS) | Request | **Patched 2026-10-16** (1.1.15, vc 75; committed locally, not pushed) - "Disable ads", "Disable live stream ads" (no longer experimental since 2026-11-12: the owner reports DIGI-network users confirm live TV plays; we could not check it, live TV is geo-blocked to DIGI), "Hide betting odds", "Disable telemetry", "Disable update prompts", "Skip ad consent form", "Hide sponsored articles", "Hide promotions". Smoke, CLI decompile and emulator pass (no crash; ads, UMP form and Settings block gone; video plays). Not runtime-verified: live playback, odds (stock showed none), pre-roll (no ad fill), sponsored cards. App code is unobfuscated. The reporter's DAI swap (setMediaSourceForDai → setMediaSourceForPreRoll) would break ssai:// live items, so it was not used |
+
+## Policy notes (owner decisions, 2026-11-24)
+
+- **Telemetry-only apps already shipped are grandfathered.** Ekstra Bladet, TV 2 Play, Blockbuster, Nordisk Film+,
+  Allente, YouSee Play and Via ship only "Disable telemetry". The 2026-11-13 rule (a telemetry-only app is not
+  worth shipping) applies to new apps; these predate it and stay. Do not add new telemetry-only apps.
+- **Opt-in patches on stable targets are deliberate.** Some patches are default off although their target is not
+  marked experimental (Expert Player "Enable Premium", Firefox "Keep background tabs loaded", Brave's
+  experimental-entry patches including "Userscripts", Samsung Keyboard "Stop remote updates" and "Always use
+  GIPHY"). They change behaviour or lack runtime evidence, so users opt in. The experimental-on-default rule is
+  about experimental targets, not about these.
+- **WeMuslim "Fix native encryption"** keeps the values dumped from the app's own native library: the patch cannot
+  work without them. They are readable in the stock APK; the test checks the Google API key by shape only.
+- **Brave "Userscripts"** has smoke-test and bytecode evidence only; run it on the x86_64 emulator (menu row, click,
+  injection, install link) before a stable release.

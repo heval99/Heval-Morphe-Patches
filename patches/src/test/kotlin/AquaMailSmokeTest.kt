@@ -35,7 +35,7 @@ class AquaMailSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "2.8.1",
+            version = "2.8.2",
             patchNames = setOf("Enable Premium"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )

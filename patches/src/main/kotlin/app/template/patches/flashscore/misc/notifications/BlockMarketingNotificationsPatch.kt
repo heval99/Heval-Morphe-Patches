@@ -16,6 +16,8 @@ internal val BLOCK_MARKETING_NOTIFICATIONS = HevalFeature(
     description = "Drops promotional \"INFO\" pushes. Match, news and race alerts are kept.",
     category = FlashscoreControlsCategory.NOTIFICATIONS,
     restartRequired = false,
+    // Part of Calm mode like Sofascore's marketing blocker: a promotional push is noise, not content.
+    calm = true,
 )
 
 /**
@@ -32,7 +34,8 @@ internal val BLOCK_MARKETING_NOTIFICATIONS = HevalFeature(
 val blockMarketingNotificationsPatch = bytecodePatch(
     name = "Block marketing notifications",
     description = "Drops promotional push notifications.",
-    default = false,
+    // On in Manager (owner 2026-11-23): only promotional pushes are dropped, match alerts stay.
+    default = true,
 ) {
     compatibleWith(COMPATIBILITY_FLASHSCORE)
 

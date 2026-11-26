@@ -103,6 +103,11 @@ private val SIGNATURE_SHA1_REGEX = Regex("^[0-9a-f]{40}$")
  *        2 and 3 above are replaced by [GmsCoreScope]'s; no c2dm renames either. Null (default)
  *        keeps the whole-app behaviour.
  * @param description Replaces the whole patch description (then [extraDescription] is not used).
+ * @param keepAccountTypeFingerprints App-specific methods whose exact "com.google" string (the Google
+ *        account type) must stay as it is, because they list or compare the device's real Google
+ *        accounts (for example a contact editor's "Save to" list), which MicroG RE does not provide.
+ *        Everything else in those methods is rewritten as usual. All are mandatory. Empty (default):
+ *        every "com.google" constant is rewritten.
  * @param executeBlock Additional app-specific bytecode changes.
  */
 fun gmsCoreSupportPatch(
@@ -117,6 +122,7 @@ fun gmsCoreSupportPatch(
     extraDescription: String? = null,
     scope: GmsCoreScope? = null,
     description: String? = null,
+    keepAccountTypeFingerprints: Set<Fingerprint> = emptySet(),
     executeBlock: BytecodePatchContext.() -> Unit = {},
 ): BytecodePatch {
     require(PACKAGE_NAME_REGEX.matches(fromPackageName)) { "Invalid package name: $fromPackageName" }
@@ -189,10 +195,12 @@ fun gmsCoreSupportPatch(
             // run's method). clearMatch() only drops the cached match; the next lookup re-resolves.
             mainActivityOnCreateFingerprint.clearMatch()
             earlyReturnFingerprints.forEach { it.clearMatch() }
+            keepAccountTypeFingerprints.forEach { it.clearMatch() }
 
             // Resolve every fingerprint first: several match on the GMS strings rewritten below.
             val mainActivityOnCreate = mainActivityOnCreateFingerprint.method
             val earlyReturnMethods = earlyReturnFingerprints.map { it.method }
+            val keepAccountTypeMethods = keepAccountTypeFingerprints.map { it.method.methodKey() }.toSet()
 
             if (scope != null) {
                 // Login-only: Google Play services stays the provider for everything outside the
@@ -206,7 +214,7 @@ fun gmsCoreSupportPatch(
                 // Both resolve before the rewrite, which renames the anchors they match on.
                 val inScope = gmsCoreScopeFilter(scope)
                 routeScopedGmsClients(scope.serviceActions)
-                rewriteGmsStrings(renamedManifestStrings, inScope)
+                rewriteGmsStrings(renamedManifestStrings, inScope, keepAccountTypeMethods)
                 mainActivityOnCreate.addInstructionChecked(
                     0,
                     "invoke-static/range { p0 .. p0 }, $GMS_CORE_EXTENSION_CLASS->" +
@@ -253,7 +261,7 @@ fun gmsCoreSupportPatch(
 
             earlyReturnMethods.forEach { it.returnEarlyForGmsCore() }
 
-            rewriteGmsStrings(renamedManifestStrings)
+            rewriteGmsStrings(renamedManifestStrings, keepAccountTypeMethods = keepAccountTypeMethods)
 
             // Verify GmsCore is installed and not battery-optimised. p0 = the activity.
             mainActivityOnCreate.addInstructionChecked(
@@ -397,6 +405,12 @@ private fun BytecodePatchContext.routeGoogleIdRequestsToBeginSignIn() {
 /** The Identity Credentials client binds to this Google Play services action (see [ACTIONS]). */
 private const val IDENTITY_CREDENTIALS_SERVICE_ACTION = "com.google.android.gms.identitycredentials.service.START"
 
+/** The Google account type, rewritten to the vendor id like every other exact GmsCore string. */
+private const val GOOGLE_ACCOUNT_TYPE = "com.google"
+
+/** Identifies a method inside one patch run (class, name, parameters, return type). */
+private fun MethodReference.methodKey() = "$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
+
 /**
  * Exact string constants (old to new) that are rewritten anywhere in the dex. Upstream's rules:
  * the "com.google" account type, the "com.google.android.gms" package, and every GmsCore
@@ -435,11 +449,16 @@ internal fun gmsContentUriReplacement(value: String): String? {
 private fun BytecodePatchContext.rewriteGmsStrings(
     extra: Map<String, String>,
     inScope: ((ClassDef, Method) -> Boolean)? = null,
+    // Methods (see [methodKey]) that keep their exact "com.google" account type.
+    keepAccountTypeMethods: Set<String> = emptySet(),
 ) {
     val replacements = gmsStringReplacements(extra)
-    fun replacementFor(instruction: Instruction): String? {
+    fun replacementFor(method: Method, instruction: Instruction): String? {
         if (instruction.opcode != Opcode.CONST_STRING && instruction.opcode != Opcode.CONST_STRING_JUMBO) return null
         val value = ((instruction as ReferenceInstruction).reference as StringReference).string
+        if (value == GOOGLE_ACCOUNT_TYPE && keepAccountTypeMethods.isNotEmpty() && method.methodKey() in keepAccountTypeMethods) {
+            return null
+        }
         return replacements[value] ?: gmsContentUriReplacement(value)
     }
 
@@ -448,7 +467,7 @@ private fun BytecodePatchContext.rewriteGmsStrings(
     classDefForEach { classDef ->
         val matches = classDef.methods.any { method ->
             (inScope == null || inScope(classDef, method)) &&
-                method.implementation?.instructions?.any { replacementFor(it) != null } == true
+                method.implementation?.instructions?.any { replacementFor(method, it) != null } == true
         }
         if (matches) targets += classDef
     }
@@ -460,7 +479,7 @@ private fun BytecodePatchContext.rewriteGmsStrings(
             if (inScope != null && !inScope(mutableClass, method)) continue
             val instructions = method.implementation?.instructions ?: continue
             val edits = instructions.mapIndexedNotNull { index, instruction ->
-                replacementFor(instruction)?.let { Triple(index, instruction, it) }
+                replacementFor(method, instruction)?.let { Triple(index, instruction, it) }
             }
             for ((index, instruction, replacement) in edits) {
                 val register = (instruction as OneRegisterInstruction).registerA

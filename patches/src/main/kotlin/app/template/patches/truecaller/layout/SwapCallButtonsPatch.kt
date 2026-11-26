@@ -169,6 +169,9 @@ val swapCallButtonsPatch = truecallerControls.featurePatch(
         name = "Swap call answer and decline buttons",
         description = "Puts the answer button on the left and the decline button on the right for incoming calls.",
         category = TruecallerControlsCategory.CALL_SCREEN,
+        // Off by default (owner 2026-11-23): swapped buttons nobody asked for can cost a declined or
+        // answered call. Reaches only users with no saved choice; the Manager default is off too.
+        default = false,
     ),
     default = false,
     dependencies = setOf(swapCallNotificationButtonsResourcePatch),

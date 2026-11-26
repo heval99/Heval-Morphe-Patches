@@ -53,6 +53,20 @@ internal object PeriodPointsGraphFingerprint : Fingerprint(
     ),
 )
 
+// The match page's tab builder (26.11.09: g55.a(Object)Object, the EventHeadData observer of
+// EventActivity): it splits the kept EventHeadData model into the Event and its EventHeadFlags,
+// filters the tab enum by the flags and hands the tab list to the pager adapter. The AI tab's
+// preference keys make it unique.
+internal object MatchTabBuilderFingerprint : Fingerprint(
+    returnType = "Ljava/lang/Object;",
+    parameters = listOf("Ljava/lang/Object;"),
+    strings = listOf("DEV_MODE_SHORTEN_AI_RELEVANCE", "PREF_AI_TAB_OPEN_COUNT"),
+    filters = listOf(
+        methodCall(definingClass = "Lcom/sofascore/model/mvvm/model/EventHeadData;", name = "component1"),
+        methodCall(definingClass = "Lcom/sofascore/model/mvvm/model/EventHeadData;", name = "component2"),
+    ),
+)
+
 // The mapper that builds EventRowModel from an Event (26.11.09: mi7.m(IILjava/lang/Object;)Object).
 // Its shape plus three kept model calls make it unique; the only other EventRowModel constructor
 // caller copies a finished row and has a different shape.

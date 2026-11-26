@@ -77,6 +77,8 @@ public final class SpoilerFree {
             if (matchId != null && HevalSettings.isHidden(MATCHES, matchId.trim())) return true;
             return isCompetitionMarked(leagueId) || isCompetitionMarked(parentId);
         } catch (Throwable failure) {
+            // Whether the match is marked is unknown: one error must not hide every score.
+            SpoilerFailures.report("isMarked", FEATURE_ID, failure);
             return false;
         }
     }
@@ -94,14 +96,31 @@ public final class SpoilerFree {
         }
     }
 
-    /** Whether the user keeps final scores of marked matches hidden too ({@value #KEEP_FINAL}). */
+    /**
+     * Whether the user keeps final scores of marked matches hidden too ({@value #KEEP_FINAL}); false
+     * on a failure. Used by the push rule, which never drops a push because of an error; the score
+     * surfaces read it through {@link #markedHides}, which fails closed.
+     */
     private static boolean keepsFinal() {
         try {
             return HevalSettings.isEnabled(KEEP_FINAL);
         } catch (Throwable failure) {
+            SpoilerFailures.report("keepsFinal", NOTIFICATIONS, failure);
             return false;
         }
     }
+
+    /** A setting read, so tests can make it fail. */
+    interface Flag {
+        boolean get();
+    }
+
+    private static final Flag KEEP_FINAL_SWITCH = new Flag() {
+        @Override
+        public boolean get() {
+            return HevalSettings.isEnabled(KEEP_FINAL);
+        }
+    };
 
     /**
      * Patched into PushMessagingService.onMessageReceived, behind the switch: true drops the push
@@ -122,6 +141,8 @@ public final class SpoilerFree {
             boolean marked = isMarked(matchId, leagueId, parentId);
             return SpoilerRules.hides(marked, message.getString("status"), keepsFinal());
         } catch (Throwable failure) {
+            // Never drop a push because of an error.
+            SpoilerFailures.report("blocksPush", NOTIFICATIONS, failure);
             return false;
         }
     }
@@ -190,9 +211,21 @@ public final class SpoilerFree {
      * true makes that code draw the kickoff time or the minute instead of the score.
      */
     private static boolean hides(Object match, String surface) {
-        boolean marked;
         try {
             if (match == null || !HevalSettings.isEnabled(FEATURE_ID) || !HevalSettings.isEnabled(surface)) return false;
+        } catch (Throwable failure) {
+            SpoilerFailures.report("hides.switch", surface, failure);
+            return false;
+        }
+        return isMarkedMatch(match, surface) && markedHides(match, KEEP_FINAL_SWITCH);
+    }
+
+    /**
+     * Whether FotMob's Match {@code match} is marked (by id or competition). A failure answers false
+     * (whether it is marked is unknown: one error must not hide every score) and is logged once.
+     */
+    static boolean isMarkedMatch(Object match, String surface) {
+        try {
             if (matchId == null) {
                 Class<?> type = match.getClass();
                 Field league = field(type, "league");
@@ -205,22 +238,36 @@ public final class SpoilerFree {
             Object league = matchLeague.get(match);
             int competition = league == null ? 0 : leagueId.getInt(league);
             int parent = league == null ? 0 : leagueParentId.getInt(league);
-            marked = isMarked(id == null ? null : id.toString(), competition, parent);
+            return isMarked(id == null ? null : id.toString(), competition, parent);
         } catch (Throwable failure) {
+            SpoilerFailures.report("hides.marks", surface, failure);
             return false;
         }
-        // A marked match whose status cannot be read counts as live: it stays hidden.
-        return SpoilerRules.hides(marked, marked ? statusName(match) : null, keepsFinal());
     }
 
-    /** Match.StatusOfMatch's enum constant name ("SecondHalf", "Finished"), null when unreadable. */
-    private static String statusName(Object match) {
+    /**
+     * The decision for a match already known to be marked: hidden while live, or always with
+     * {@value #KEEP_FINAL}. A status that cannot be read counts as live, and any failure here hides
+     * the score (fails closed: the user asked for no score).
+     */
+    static boolean markedHides(Object match, Flag keepFinal) {
+        try {
+            return SpoilerRules.hides(true, statusName(match), keepFinal.get());
+        } catch (Throwable failure) {
+            SpoilerFailures.report("hides.marked", FEATURE_ID, failure);
+            return true;
+        }
+    }
+
+    /** Match.StatusOfMatch's enum constant name ("SecondHalf", "Finished"), null when unreadable (hides). */
+    static String statusName(Object match) {
         try {
             Field status = matchStatus;
             if (status == null) matchStatus = status = field(match.getClass(), "StatusOfMatch");
             Object value = status.get(match);
             return value instanceof Enum ? ((Enum<?>) value).name() : null;
         } catch (Throwable failure) {
+            SpoilerFailures.report("statusName", FEATURE_ID, failure);
             return null;
         }
     }

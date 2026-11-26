@@ -19,9 +19,13 @@ internal val HIDE_MATCH_POLLS = HevalFeature(
     restartRequired = true,
 )
 
-/** The app's own match-poll switch answers false while the Patch settings switch is on. */
+/**
+ * The app's own match-poll switch answers false while the Patch settings switch is on. Manager
+ * default off (owner 2026-11-23): the polls stay unless the user picks the patch; the registered
+ * default stays on, so the switch starts on once the patch is selected.
+ */
 @Suppress("unused")
-val hideMatchPollsPatch = flashscoreControls.featurePatch(HIDE_MATCH_POLLS) {
+val hideMatchPollsPatch = flashscoreControls.featurePatch(HIDE_MATCH_POLLS, default = false) {
     forceRemoteConfigValues(
         patchName = "Hide match polls",
         helperName = POLLS_HELPER_NAME,

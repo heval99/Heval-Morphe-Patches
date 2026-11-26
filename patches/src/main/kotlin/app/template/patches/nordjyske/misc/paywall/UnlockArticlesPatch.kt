@@ -25,7 +25,7 @@ private const val STORY = "Lcom/kaldorgroup/pugpigbolt/domain/Story;"
 @Suppress("unused")
 val unlockArticlesPatch = bytecodePatch(
     name = "Unlock articles",
-    description = "Treats every article as entitled, so the paywall is not shown.",
+    description = "Treats every article as entitled and shows what the app downloaded.",
 ) {
     compatibleWith(COMPATIBILITY_NORDJYSKE, COMPATIBILITY_FYENS, COMPATIBILITY_STIFTEN, COMPATIBILITY_JYDSKEVESTKYSTEN)
 

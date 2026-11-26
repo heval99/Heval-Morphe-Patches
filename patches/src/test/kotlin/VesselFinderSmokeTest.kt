@@ -28,7 +28,7 @@ class VesselFinderSmokeTest {
         assumeTrue(apk.exists(), "skipping: base.apk not present at ${apk.path}")
 
         val classes = applyPatches(
-            apk = apk, workDir = workDir, pkg = PKG, version = "6.7.8",
+            apk = apk, workDir = workDir, pkg = PKG, version = "6.8.0",
             patchNames = setOf("Disable license check", "Disable ads"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
