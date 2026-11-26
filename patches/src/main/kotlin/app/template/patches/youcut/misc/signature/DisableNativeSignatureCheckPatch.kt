@@ -3,6 +3,7 @@ package app.template.patches.youcut.misc.signature
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.rawResourcePatch
 import app.template.patches.shared.Constants.COMPATIBILITY_YOUCUT
+import java.util.logging.Logger
 
 private const val LIB_ARM64 = "lib/arm64-v8a/libisvideoengine.so"
 private const val LIB_V7A = "lib/armeabi-v7a/libisvideoengine.so"
@@ -32,8 +33,9 @@ private fun ByteArray.indexOfSequence(sequence: ByteArray, start: Int = 0): Int 
  *
  * The anchor is the SIGKILL setup, `mov w1, #9; bl <kill>`, which is unique in the library for
  * this version. If the sequence is missing or ambiguous the patch fails instead of shipping a
- * build that still kills itself. Only the arm64 split is distributed by Google Play for the
- * verified target; an APK that also carries armeabi-v7a is rejected rather than half-patched.
+ * build that still kills itself. Only the arm64 library is patched; an APK that also carries
+ * armeabi-v7a copies (APKMirror bundles) is accepted and those copies are left as they are,
+ * since a 64-bit device never loads them. 32-bit-only devices are unsupported.
  */
 @Suppress("unused")
 val disableNativeSignatureCheckPatch = rawResourcePatch(
@@ -43,10 +45,13 @@ val disableNativeSignatureCheckPatch = rawResourcePatch(
     compatibleWith(COMPATIBILITY_YOUCUT)
 
     execute {
+        // Multi-ABI bundles (#190) also carry armeabi-v7a copies. A 64-bit device loads the arm64
+        // directory only, so those copies are left untouched (never loaded there). 32-bit-only
+        // devices would still hit the kill and stay unsupported.
         val v7a = runCatching { get(LIB_V7A) }.getOrNull()
         if (v7a != null && v7a.exists()) {
-            throw PatchException(
-                "$LIB_V7A is present but this patch only handles arm64. Patch the arm64 split.",
+            Logger.getLogger("YouCut").info(
+                "$LIB_V7A left unpatched: only $LIB_ARM64 is patched, 32-bit-only devices are unsupported.",
             )
         }
 

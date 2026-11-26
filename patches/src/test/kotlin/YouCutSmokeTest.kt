@@ -5,12 +5,15 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.nio.file.FileSystems
+import java.nio.file.Files
 import java.util.zip.ZipFile
 
 private const val PKG = "com.camerasideas.trimmer"
 private const val VERSION = "1.730.1226"
 private const val VERSION_CODE = 1226
 private const val LIB_ARM64 = "lib/arm64-v8a/libisvideoengine.so"
+private const val LIB_V7A = "lib/armeabi-v7a/libisvideoengine.so"
 
 private val PATCHES = setOf(
     "Disable native signature check",
@@ -172,5 +175,46 @@ class YouCutSmokeTest {
                 .contentEquals(stockLib.copyOfRange(killOffset + 8, stockLib.size)),
             "bytes after the kill site changed",
         )
+
+        multiAbiBundleIsAccepted(root, apk, stockLib, killOffset)
+    }
+
+    /**
+     * #190: an APKMirror bundle also carries armeabi-v7a copies. Synthetic input = the arm64 APK
+     * plus a dummy v7a library; the patch must not throw, must NOP the arm64 kill site only, and
+     * must leave the v7a entry byte-for-byte as it was.
+     */
+    private fun multiAbiBundleIsAccepted(root: File, apk: File, stockLib: ByteArray, killOffset: Int) {
+        val dir = File(workDir, "multiabi").also { it.mkdirs() }
+        val multi = File(dir, "multi-abi.apk")
+        apk.copyTo(multi, overwrite = true)
+        val dummyV7a = byteArrayOf(0x7F, 0x45, 0x4C, 0x46, 1, 2, 3, 4, 5, 6, 7, 8)
+        FileSystems.newFileSystem(multi.toPath(), null as ClassLoader?).use { fs ->
+            val entry = fs.getPath(LIB_V7A)
+            Files.createDirectories(entry.parent)
+            Files.write(entry, dummyV7a)
+        }
+
+        var patchedApk: File? = null
+        applyPatches(
+            apk = multi,
+            workDir = File(dir, "work"),
+            pkg = PKG,
+            version = VERSION,
+            // The harness needs a bytecode patch next to the native one (it asserts patched dex files).
+            patchNames = setOf("Disable native signature check", "Disable telemetry"),
+            allPatches = loadAllPatches(newestPatchBundle(root)),
+            versionCode = VERSION_CODE,
+            onPatchedApk = { patchedApk = it },
+        )
+        val (arm64, v7a) = ZipFile(patchedApk ?: error("no patched APK")).use { zip ->
+            fun read(name: String) = zip.getInputStream(zip.getEntry(name) ?: error("$name missing")).use { it.readBytes() }
+            read(LIB_ARM64) to read(LIB_V7A)
+        }
+        assertEquals(stockLib.size, arm64.size, "the arm64 library changed size")
+        assertTrue(arm64.sigkillCalls().isEmpty(), "multi-ABI: the arm64 SIGKILL call is still present")
+        val expected = stockLib.copyOf().also { NOP.copyInto(it, killOffset + 4) }
+        assertTrue(arm64.contentEquals(expected), "multi-ABI: arm64 library differs from stock by more than the NOP")
+        assertTrue(v7a.contentEquals(dummyV7a), "multi-ABI: the armeabi-v7a copy was modified")
     }
 }
