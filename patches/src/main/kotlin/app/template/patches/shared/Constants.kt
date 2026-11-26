@@ -5901,4 +5901,52 @@ object Constants {
         signatures = setOf("a466547928e013613e4d99bb06743c45a45bc4dfdeb51aee8974e9d99a859d9b"), // CN=Listonic
         targets = listOf(AppTarget(version = "9.25.2", versionCode = 240092502))
     )
+
+    // 2026-11-26 (GitHub #180): My Talking Tom 26.5.4.9664 (merged Play splits, arm64; signer
+    // CN=Marko Stamcar, O=Outfit7 Ltd., checked against the original base split). Disable ads
+    // anchors: the kept interface com.outfit7.engine.inventory.InventoryBinding (its one concrete
+    // implementer is R8-renamed, Af.n here) for isAdsEnabled (false), loadInterstitialAd and
+    // showInterstitialAd (return-void) and setBannerAdVisible(Z) (return-void); and the kept log
+    // literal "Load splash ad" (splash loader coroutine; its "ads removed" billing check is forced
+    // true so no splash is requested). Deliberately untouched: rewarded video (opt-in "watch for
+    // coins"), promo news, dream bubble, and Outfit7's own cross-promotion (CrossPromoBindingImpl
+    // game wall / hub) and video gallery, which are first-party features that were not
+    // patched. Rewarded ads are untouched on the Java side, but Unity is told _OnAdsEnabled=false
+    // (through the ads-free listener), so rewarded availability could change at runtime:
+    // INFERRED, runtime NOT_RUN. startFetchingNativeAd is already an empty stub in both apps.
+    // Facts: no PairIP; the LVL string belongs to the Singular attribution SDK; the
+    // remove-ads entitlement is a Java preference (PaidUser.isAdsFreeUser) mirrored natively and is
+    // NOT touched; cheats are not in scope (native state).
+    // Telemetry: present, deferred ("Disable telemetry" is not shipped yet; ads is the primary
+    // value, owner to accept ads-only). Present: Bugsnag (Java/NDK/ANR) started from
+    // ErrorReportingInitProvider, whose Felis wrapper (FelisErrorReporting) calls the client from
+    // many places, so skipping start looks unsafe; Singular; apminsight (Pangle); Tom 2 also has
+    // an AppLovin native crash reporter. Candidate anchors exist (the Singular endpoint string
+    // "singular.net", the Bugsnag endpoint strings "sessions.bugsnag" / "bugsnag.com"), but
+    // redirecting or neutering them was not attempted or verified (needs a runtime run). Firebase
+    // Analytics is already off by manifest. Ads verified by MyTalkingTomSmokeTest and a CLI run
+    // without -f; runtime NOT_RUN (no emulator check approved).
+    val COMPATIBILITY_MY_TALKING_TOM = Compatibility(
+        name = "My Talking Tom",
+        packageName = "com.outfit7.mytalkingtomfree",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xF5A623,
+        signatures = setOf("64d775b87675e4fcb9e6466efa2e38d6fe1c9dc75d74967880c48763c89f83d3"), // CN=Marko Stamcar, O=Outfit7 Ltd.
+        targets = listOf(AppTarget(version = "26.5.4.9664", versionCode = 202605042))
+    )
+
+    // 2026-11-26 (GitHub #180): My Talking Tom 2 26.5.2.29411 (merged Play splits, arm64; signer
+    // O=Outfit7 Limited). Same Felis layer and the same Disable ads steps as My Talking Tom (the
+    // InventoryBinding implementer is Jf.m here; isAdsEnabled is `ads.k != null && !billing.U()`);
+    // see COMPATIBILITY_MY_TALKING_TOM for the anchors, what is left untouched and the telemetry
+    // finding (Tom 2 adds an AppLovin native crash reporter; telemetry is deferred). Verified by
+    // MyTalkingTom2SmokeTest and a CLI run without -f; runtime NOT_RUN.
+    val COMPATIBILITY_MY_TALKING_TOM_2 = Compatibility(
+        name = "My Talking Tom 2",
+        packageName = "com.outfit7.mytalkingtom2",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xF5A623,
+        signatures = setOf("45307b7ee00c3bd28f9c30b01a5bb446ba569bd3993831db8c053edb2227e7ce"), // O=Outfit7 Limited
+        targets = listOf(AppTarget(version = "26.5.2.29411", versionCode = 202605020))
+    )
 }
