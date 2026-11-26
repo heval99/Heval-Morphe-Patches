@@ -53,6 +53,8 @@ internal fun assertGmsCoreSupport(
     // False when R8 removed ensurePlayServicesAvailable and only the exception constructor keeps
     // its message (Shazam); then no void method may hold the message outside a constructor.
     expectServiceCheck: Boolean = true,
+    // Methods that must keep the exact "com.google" account type (Truecaller's contact editor, #187).
+    keepsGoogleAccountType: (ClassDef, com.android.tools.smali.dexlib2.iface.Method) -> Boolean = { _, _ -> false },
 ) {
     val byType = classes.associateBy { it.type }
     // The extension is merged, and the launch activity's onCreate calls it first with p0.
@@ -103,7 +105,8 @@ internal fun assertGmsCoreSupport(
     val leftovers = classes.flatMap { cls ->
         cls.methods.flatMap { m ->
             m.instructions().mapNotNull { it.stringOrNull() }
-                .filter { it in replacements || gmsContentUriReplacement(it) != null }
+                .filter { (it in replacements || gmsContentUriReplacement(it) != null) &&
+                    !(it == "com.google" && keepsGoogleAccountType(cls, m)) }
                 .map { "${cls.type}.${m.name}: $it" }
         }
     }

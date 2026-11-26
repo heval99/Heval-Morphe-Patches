@@ -29,4 +29,10 @@ val gmsCoreSupportPatch = gmsCoreSupportPatch(
     // Truecaller's backup goes to the user's Google Drive through Google sign-in, so it only works
     // with this patch and MicroG RE; there is no client-side way around that.
     extraDescription = "Needed for Google Drive backup.",
+    // The contact editor lists the device's real Google accounts (#187): keep their account type.
+    keepAccountTypeFingerprints = setOf(
+        ContactEditorGoogleAccountsFingerprint,
+        ContactEditorDefaultAccountFingerprint,
+        ContactAccountTypeReaderFingerprint,
+    ),
 )
