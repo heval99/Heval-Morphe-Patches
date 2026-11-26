@@ -1884,7 +1884,7 @@ object Constants {
     //     signing certificate and checks for a debugger at load time and calls
     //     kill(getpid(), SIGKILL) when either fails. The single "mov w1, #9; bl kill@plt" call
     //     (unique in the library) is replaced with a NOP, so the gate returns 1 instead of
-    //     killing the process. arm64 only; an APK carrying armeabi-v7a is rejected.
+    //     killing the process. Only the arm64 library is patched (see the 2026-11-26 note).
     //   - Enable Premium: client-side. store/billing/d.d(Context)Z reads the "SubscribePro" /
     //     "com.camerasideas.trimmer.vip" preferences, User.expireType and the fup/redeem package
     //     flags; 82 call sites use it (editor gates, export watermark, template locks, ads). It
@@ -1907,6 +1907,10 @@ object Constants {
     // "mov w1, #9; bl kill" site in libisvideoengine.so. The Pro gate moved from store/billing/d
     // to store/billing/c (same d(Context)Z, 82 callers); the Disable ads anchor now matches any
     // static boolean(Context) in the billing package instead of the class name.
+    // 2026-11-26 (#190): multi-ABI APKs (APKMirror bundle with armeabi-v7a copies) are now
+    // accepted; only the arm64 library is patched and the v7a copy is left as is (a 64-bit device
+    // never loads it). 32-bit-only devices are unsupported. Runtime NOT_RUN; the multi-ABI case
+    // is verified with a synthetic APK (arm64 base + dummy v7a entry), not the real APKMirror bundle.
     val COMPATIBILITY_YOUCUT = Compatibility(
         name = "YouCut",
         packageName = "com.camerasideas.trimmer",
