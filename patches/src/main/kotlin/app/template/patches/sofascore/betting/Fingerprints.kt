@@ -55,6 +55,17 @@ internal object Bet365SignUpLinkFingerprint : Fingerprint(
     ),
 )
 
+// static void(Context): shows the Spanish responsible-gambling pop-up (kept DialogFragment
+// SpainGamblingMessageDialog). It returns early unless the region, age and fragment checks pass,
+// then bumps SPAIN_GAMBLING_MESSAGE_INDEX and calls DialogFragment.show with the dialog's tag.
+// It is the only method holding both strings and the only creator of the dialog.
+internal object SpainGamblingWarningFingerprint : Fingerprint(
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "V",
+    parameters = listOf(CONTEXT),
+    strings = listOf("SpainGamblingMessageDialog", "SPAIN_GAMBLING_MESSAGE_INDEX"),
+)
+
 // EventHeadFlags is a kept @Serializable model; its getters are the only readers of these
 // flags outside the class (the match page's tab builders).
 internal val EVENT_HEAD_ODDS_FLAGS = listOf(

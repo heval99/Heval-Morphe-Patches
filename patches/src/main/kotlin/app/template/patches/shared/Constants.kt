@@ -519,6 +519,14 @@ object Constants {
             // VunglePrivacySettings.setGDPRStatus + Thread.start calls) and Hide sports (the rows
             // query is held by two lambda classes, the selected-sport query by one). Smoke test (real
             // matcher) and CLI patch without -f checked on it; not run on a device.
+            // 2026-11-26 on 26.11.16 (issue #189, static only, runtime NOT_RUN): new opt-in Patch settings
+            // switch "Hide gambling warning pop-up" (sofascore.hide_gambling_popup, default off): the show
+            // method of the Spanish responsible-gambling dialog (kept class SpainGamblingMessageDialog) is
+            // found as the only static void(Context) holding "SpainGamblingMessageDialog" and
+            // "SPAIN_GAMBLING_MESSAGE_INDEX" and returns at index 0 while the switch is on; the smoke test
+            // (real matcher) asserts the gate and that the stock method has none. Spain only: other countries
+            // get inline footers. INFERRED, unresolved: the dialog's static flag q means once per process
+            // in the code, but the reporter sees it per match.
             AppTarget(
                 version = "26.11.16",
                 versionCode = 261116002

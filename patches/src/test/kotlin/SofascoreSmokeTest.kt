@@ -20,6 +20,7 @@ import app.template.patches.sofascore.misc.popups.PROMO_POPUP_FEATURES
 import app.template.patches.sofascore.misc.rating.DISABLE_RATING_PROMPTS
 import app.template.patches.sofascore.misc.notifications.BLOCK_MARKETING_NOTIFICATIONS
 import app.template.patches.sofascore.betting.HIDE_BETTING_CONTENT
+import app.template.patches.sofascore.betting.HIDE_GAMBLING_WARNING
 import app.template.patches.sofascore.misc.promo.PROMO_SECTION_FEATURES
 import app.template.patches.sofascore.misc.animations.ANIMATION_FEATURES
 import app.template.patches.sofascore.misc.widget.SLOWER_WIDGET_REFRESH
@@ -122,6 +123,7 @@ private val SOFASCORE_PATCHES = setOf(
     "Hide betting content",
     "Hide competitions",
     "Hide countries",
+    "Hide gambling warning pop-up",
     "Hide main tabs",
     "Hide match chat",
     "Hide match tabs",
@@ -161,6 +163,7 @@ private val HEVAL_FEATURES: List<HevalFeature> = listOf(HIDE_AI_INSIGHTS) +
     DISABLE_RATING_PROMPTS +
     BLOCK_MARKETING_NOTIFICATIONS +
     HIDE_BETTING_CONTENT +
+    HIDE_GAMBLING_WARNING +
     PROMO_POPUP_FEATURES.map { it.second } +
     PROMO_SECTION_FEATURES.map { it.second } +
     ANIMATION_FEATURES +
@@ -917,6 +920,30 @@ class SofascoreSmokeTest {
 
         // Hide from pages (2026-11-23): the Leagues tab's country row hook (the page gates are in assertSpoilerFree).
         assertQuickHideRow(classes, stockClasses)
+
+        // Hide gambling warning pop-up (2026-11-26, issue #189): the Spanish responsible-gambling
+        // dialog's show method is found like the fingerprint (static void(Context) holding both strings),
+        // starts with the gate and returns void while the switch is on; the stock code is untouched after it.
+        fun gamblingShow(from: List<ClassDef>) = from.flatMap { it.methods }.filter { m ->
+            m.isStatic() && m.returnType == "V" && m.params() == listOf(CONTEXT) &&
+                "SpainGamblingMessageDialog" in m.strings() && "SPAIN_GAMBLING_MESSAGE_INDEX" in m.strings()
+        }
+        val gamblingShows = gamblingShow(classes)
+        assertTrue(gamblingShows.size == 1, "expected one Spain gambling dialog show method, found ${gamblingShows.size}")
+        val gamblingShow = gamblingShows.single()
+        assertGatedPath(gamblingShow, HIDE_GAMBLING_WARNING.id, "Spain gambling dialog show method", listOf(Opcode.RETURN_VOID))
+        val stockGamblingShow = gamblingShow(stockClasses).single {
+            it.definingClass == gamblingShow.definingClass && it.name == gamblingShow.name
+        }
+        assertTrue(
+            stockGamblingShow.instructions().none { it.stringOrNull() == HIDE_GAMBLING_WARNING.id },
+            "the stock show method already has the gate",
+        )
+        assertTrue(
+            gamblingShow.instructions().drop(5).map { it.opcode }.filter { it != Opcode.NOP } ==
+                stockGamblingShow.instructions().map { it.opcode }.filter { it != Opcode.NOP },
+            "the Spain gambling dialog show method changed after the gate",
+        )
 
         // AMOLED black (2026-11-09): the night cards and elevated surfaces are near black.
         assertAmoledBlack()
