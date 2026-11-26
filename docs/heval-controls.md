@@ -345,6 +345,12 @@ invalid-profile reminder ("featureInvalidProfileNotification"). Disable Who view
 starts off: it reads "featureWhoViewedMe" as off, which stops the app reporting your views of other
 profiles and removes the feature; "No profile view notifications" only silences the notification.
 
+Added 2026-11-26 (Truecaller 26.45.5, smoke test and CLI only; no new switch): Disable nags also hides the
+Settings banner "Set Truecaller as your default caller ID app" (#166) by making the banner picker's
+default caller ID check answer false, so the other banners show as stock; Hide promotions also reads
+"featureVerifiedBusinessAwareness" and "featureBizPriorityCallAwareness" as off, which removes the
+"Introducing Verified Business Caller ID" announcement sheet and its call log card (#153).
+
 Hide inbox cards (#150, 2026-11-12, Truecaller 26.44.6, smoke test and CLI only) is opt-in and
 starts off, category Promotions & nags, no restart. The Messages inbox is a Compose list whose
 builder emits the fraud onboarding, override category and "filtering messages" banners, then one

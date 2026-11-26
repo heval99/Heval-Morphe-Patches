@@ -425,6 +425,7 @@ class TruecallerSmokeTest {
         assertReferralGate(classes)
         assertFeedbackCardGates(classes)
         assertSurveyGate(classes)
+        assertCallerIdBannerGate(classes)
         assertHiddenTabs(classes)
         assertHideMessagesTab(classes)
         assertHiddenSettingsRows(classes)
@@ -1114,6 +1115,31 @@ class TruecallerSmokeTest {
         check(feedback.instructions().none { it.call()?.definingClass == HEVAL_SETTINGS_CLASS }) { "shouldShowFeedback must stay stock" }
     }
 
+    private fun assertCallerIdBannerGate(classes: List<ClassDef>) {
+        // Disable nags (#166): the Settings banner picker (the only method returning the kept BannerType;
+        // its first call is a ()Z check on its own class, right before the CALLER_ID constant) calls a
+        // check that starts with the feature's gate whose patched path answers false, then keeps its
+        // stock code (the RoleManager-backed tests).
+        val bannerType = "Lcom/truecaller/settings/impl/ui/categories/banner/BannerType;"
+        val (pickerClass, picker) = classes.singleMethod("banner picker") { _, m ->
+            m.returnType == bannerType && m.params().isEmpty() && m.implementation != null
+        }
+        val insns = picker.instructions()
+        val callerId = insns.indexOfFirst { it.field()?.let { f -> f.definingClass == bannerType && f.name == "CALLER_ID" } == true }
+        check(callerId > 0) { "${pickerClass.type}.${picker.name} does not load BannerType.CALLER_ID" }
+        val call = insns.subList(0, callerId).firstNotNullOfOrNull { it.call() }
+        check(call != null && call.returnType == "Z" && call.params().isEmpty() && call.definingClass == pickerClass.type) {
+            "${pickerClass.type}.${picker.name} does not start with its own ()Z check; got $call"
+        }
+        val gate = pickerClass.methods.single { it.name == call.name && it.parameters.isEmpty() && it.returnType == "Z" }
+        val label = "${pickerClass.type}.${gate.name}() (default caller ID check)"
+        val stock = assertGate(gate, DISABLE_NAGS, label)
+        val body = gate.instructions()
+        check(stock == 6 && body.subList(4, stock).isReturnZero()) { "$label does not answer false after the Disable nags gate" }
+        check(body.drop(stock).count { it.call() != null } >= 3) { "$label lost its stock code" }
+        check(body.count { it.call()?.definingClass == HEVAL_SETTINGS_CLASS } == 1) { "$label has more than one Heval Controls gate" }
+    }
+
     private fun assertSurveyGate(classes: List<ClassDef>) {
         // Hide surveys: the survey eligibility check (Z, (R8 state, ContactSurveyEntity, SurveyConfig)),
         // found by its kept parameter types as the patch finds it, starts with the feature's gate whose
@@ -1461,8 +1487,8 @@ class TruecallerSmokeTest {
         // finally to the stock code. Hide family button and Restore classic call log add one each,
         // Disable ads five (incl. the Offer Hub), Hide business media the seven verified business
         // campaign toggles, Disable contact upload the Call Assistant number sync and the contact
-        // editor name suggestion, Disable auto-launch one, Disable nags ten, Hide promotions four
-        // plus the Firebase experiment "DisableWVMNotifications_65487" (on), Hide after-call
+        // editor name suggestion, Disable auto-launch one, Disable nags ten, Hide promotions six
+        // (incl. the Verified Business / priority call awareness announcements) plus the Firebase experiment "DisableWVMNotifications_65487" (on), Hide after-call
         // screen for contacts two, Disable Who viewed me one and Disable telemetry four
         // (installed-apps and app process heartbeats, telecom operator name upload, CleverTap
         // notification tracking).
@@ -1502,6 +1528,8 @@ class TruecallerSmokeTest {
             "featureReferralNavDrawer" to 0,
             "featureRedeemPromo" to 0,
             "featureGoldPremiumGift" to 0,
+            "featureVerifiedBusinessAwareness" to 0,
+            "featureBizPriorityCallAwareness" to 0,
             "featureShowACSAllIncoming" to 0,
             "featureShowACSAllOutgoing" to 0,
             "DisableWVMNotifications_65487" to 1,
@@ -1527,7 +1555,7 @@ class TruecallerSmokeTest {
             "featureRatingsAndReviewsSurveys", "featureBlockSurveyFlow", "featureFeedbackSurvey",
         ).associateWith { DISABLE_NAGS } + listOf(
             "featurePersonalSafetyPromo", "featureAcsWhoViewedMeBanner", "featureReferralNavDrawer", "featureRedeemPromo",
-            "featureGoldPremiumGift",
+            "featureGoldPremiumGift", "featureVerifiedBusinessAwareness", "featureBizPriorityCallAwareness",
         ).associateWith { HIDE_PROMOTIONS } + listOf(
             "featureShowACSAllIncoming", "featureShowACSAllOutgoing",
         ).associateWith { HIDE_AFTER_CALL_CONTACTS }
@@ -1537,7 +1565,10 @@ class TruecallerSmokeTest {
         // The keys added on 26.43.5 are also checked at register level: some method loads the key and
         // passes that very register as the key argument of a resolver call (a key that only shares a
         // method with another key's resolver read would pass assertResolverReads).
-        for (key in listOf("featureInvalidProfileNotification", "featureWhoViewedMe") + TELEMETRY_TOGGLE_KEYS) {
+        for (key in listOf(
+            "featureInvalidProfileNotification", "featureWhoViewedMe", "featureVerifiedBusinessAwareness",
+            "featureBizPriorityCallAwareness",
+        ) + TELEMETRY_TOGGLE_KEYS) {
             assertPassesKeyToResolver(classes, resolvers, key)
         }
     }
