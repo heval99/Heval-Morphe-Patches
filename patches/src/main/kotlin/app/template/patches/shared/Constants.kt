@@ -3155,6 +3155,14 @@ object Constants {
     //   AfterCallSavedContacts.isSaved(normalizedNumber, rawNumber) (HistoryEvent fields found through its
     //   toString labels), which needs READ_CONTACTS. Verified: bytecode only (smoke test + CLI without -f);
     //   runtime NOT_RUN.
+    // 2026-11-26 (#166, #153, 26.45.5): Disable nags also hides the Settings banner "Set Truecaller as your
+    //   default caller ID app": the banner picker (the only method returning the kept BannerType enum; its
+    //   first ()Z call before the CALLER_ID constant) asks a check of its own class (SDK 30+, CALL_SCREENING
+    //   role available and not held) that now answers false behind the Disable nags gate, so the picker
+    //   falls through to the other banners; role state and call handling are untouched. Hide promotions
+    //   also overrides "featureVerifiedBusinessAwareness" and "featureBizPriorityCallAwareness" (the
+    //   "Introducing Verified Business Caller ID" bottom sheet and its call log card) to off through the
+    //   toggle resolvers. Verified: bytecode only (smoke test + CLI without -f); runtime NOT_RUN.
     val COMPATIBILITY_TRUECALLER = Compatibility(
         name = "Truecaller",
         packageName = "com.truecaller",
