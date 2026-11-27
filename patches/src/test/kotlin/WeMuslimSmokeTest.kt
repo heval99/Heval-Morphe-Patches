@@ -73,6 +73,7 @@ class WeMuslimSmokeTest {
                 "Hide shortcut promotions",
                 "Hide Messages tab",
                 "Hide Me tab extras",
+                "Hide Me tab rows",
                 "Hide Ad-Free button",
             ),
             allPatches = loadAllPatches(newestPatchBundle(root)),
@@ -483,12 +484,54 @@ class WeMuslimSmokeTest {
             "${dotBind.label()} does not hide the dot with ViewHider.gone right after reading it",
         )
 
+        // Hide Me tab rows, step 1: the Me menu view model constructor (found by its three router paths,
+        // not by name) keeps exactly one ArrayList.add, the one after "me/setting" (stock has eight).
+        val menuRows = allMethods.singleOrNull {
+            it.name == "<init>" && it.implementation != null && it.params().isEmpty() &&
+                listOf("me/setting", "miniapp/list", "wallet/donation").all { route -> it.referencesString(route) }
+        } ?: error("Me menu view model constructor (me/setting + miniapp/list + wallet/donation) not found or not unique")
+        val menuInsns = menuRows.instructions()
+        val menuAdds = menuInsns.indices.filter { index ->
+            (menuInsns[index] as? ReferenceInstruction)?.reference.let {
+                it is MethodReference && it.definingClass == "Ljava/util/ArrayList;" && it.name == "add"
+            }
+        }
+        val settingsRoute = menuInsns.indexOfFirst {
+            ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == "me/setting"
+        }
+        assertTrue(
+            menuAdds.size == 1 && settingsRoute in 0 until menuAdds.single(),
+            "${menuRows.label()} must keep only the ArrayList.add after \"me/setting\"; adds at $menuAdds, route at $settingsRoute",
+        )
+        // The dropped rows' titles are still constructed but never listed; the Settings title stays.
+        assertTrue(menuRows.referencesString("me/setting"), "${menuRows.label()} lost the Settings row")
+
+        // Step 3: the "Log in" prompt card is removed from its parent as the binding is built: the
+        // MeFragmentMainBinding constructor starts with ViewHider.remove(<its one CardView parameter>).
+        val meBinding = cls("Lcom/fyxtech/muslim/bizme/databinding/MeFragmentMainBinding;")
+        val bindingCtor = meBinding.methods.single {
+            it.name == "<init>" && it.implementation != null && it.params().count { p -> p == "Landroidx/cardview/widget/CardView;" } == 1
+        }
+        val bindingFirst = bindingCtor.instructions().first()
+        val removeRef = (bindingFirst as? ReferenceInstruction)?.reference as? MethodReference
+        val cardParam = bindingCtor.params().indexOf("Landroidx/cardview/widget/CardView;")
+        val cardRegister = bindingCtor.implementation!!.registerCount - bindingCtor.params().size + cardParam
+        val rangeStart = (bindingFirst as? com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction)?.startRegister
+        assertTrue(
+            bindingFirst.opcode == Opcode.INVOKE_STATIC_RANGE &&
+                removeRef?.definingClass == "Lapp/template/extension/wemuslim/ViewHider;" && removeRef.name == "remove" &&
+                rangeStart == cardRegister,
+            "${bindingCtor.label()} does not start with ViewHider.remove(cvLoginPrompt); first is ${bindingFirst.opcode} $removeRef $rangeStart/$cardRegister",
+        )
+
         // Hide Me tab extras: each of the three views forces GONE in setVisibility and hides itself in
         // every constructor (the same shape as the VipCardView check above; stock has no setVisibility).
         for (type in listOf(
             "Lcom/fyxtech/muslim/about/module/main/FriendsNumberView;",
             "Lcom/fyxtech/muslim/about/point/card/MeMainBadgeCardView;",
             "Lcom/fyxtech/muslim/about/module/main/ImportantFuncView;",
+            // Hide Me tab rows: the login / profile header container (userLoginContainer).
+            "Lcom/fyxtech/muslim/about/widget/CollapsingMeasureHeightConstraintLayout;",
             // Hide Ad-Free button: the same shape on the Home/Prayer top-bar pill.
             "Lcom/fyxtech/muslim/worship/dailygolds/DailyGoldsView;",
         )) {

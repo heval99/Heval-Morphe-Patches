@@ -3629,8 +3629,19 @@ object Constants {
     // FAQ stay. New opt-in "Hide Ad-Free button": DailyGoldsView (kept FrameLayout, @id/daily_golds_view in the
     // Home and Prayer layouts, no branch ever hides it) is forced GONE with the same forceViewGone helper;
     // cost: for paying members the crown, member-detail link and Giving Box claim chip go too (the Giving Box
-    // stays reachable through the Me row). NOT examined: the Me menu row list (recyclerviewContent,
-    // me_main_content_*), the "Messages" row on the Me tab (left as the way to messages), and the runtime.
+    // stays reachable through the Me row). New opt-in "Hide Me tab rows" (#135, 2026-11-27, 3.5.5 static): the Me
+    // tab's menu rows come from one list built in the Me view model constructor (found by its router paths
+    // me/setting + miniapp/list + wallet/donation, one ArrayList.add per row; the list is only searched by row
+    // type; the Me binding has no Messages row); every add to the list stored in the view model's ArrayList field
+    // except the one after "me/setting" is removed, and the login / profile header container
+    // (CollapsingMeasureHeightConstraintLayout, only used by me_fragment_main) is forced GONE with forceViewGone, which
+    // also keeps the collapsed header (collapsedUserLoginContainer) from ever showing. The "Log in" prompt card
+    // (cvLoginPrompt, re-shown by account-state code) is removed from its parent in MeFragmentMainBinding's constructor
+    // through extensions/wemuslim ViewHider.remove. It also pulls in "Hide Me tab extras". It does NOT hide VipCardView
+    // (only "Hide premium banners" does). Cost: the toolbar keeps a status bar + 44dp spacer. A "Me tab opens
+    // Settings" variant was assessed and not built: Settings is an Activity, tab clicks and programmatic
+    // selection (deep link, state restore) share one MainBottomNavigationLayout dispatch method, and the label
+    // sits in the obfuscated tab model. NOT examined: the runtime.
     val COMPATIBILITY_WEMUSLIM = Compatibility(
         name = "WeMuslim",
         packageName = "com.fyxtech.muslim",
