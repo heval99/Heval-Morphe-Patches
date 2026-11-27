@@ -150,12 +150,15 @@ fun gmsCoreSupportPatch(
     // Permissions and provider authorities renamed in the manifest (old to new). The bytecode
     // part rewrites string constants that hard-code them.
     val renamedManifestStrings = mutableMapOf<String, String>()
+    // The renamed provider authorities alone (old to new), for `content://<authority>/...` strings.
+    val renamedAuthorities = mutableMapOf<String, String>()
 
     val resourcePatch = gmsCoreSupportResourcePatch(
         fromPackageName,
         spoofedPackageSignature,
         packageNameOption,
         renamedManifestStrings,
+        renamedAuthorities,
         rewriteC2dm = scope == null,
     )
 
@@ -214,7 +217,7 @@ fun gmsCoreSupportPatch(
                 // Both resolve before the rewrite, which renames the anchors they match on.
                 val inScope = gmsCoreScopeFilter(scope)
                 routeScopedGmsClients(scope.serviceActions)
-                rewriteGmsStrings(renamedManifestStrings, inScope, keepAccountTypeMethods)
+                rewriteGmsStrings(renamedManifestStrings, renamedAuthorities, inScope, keepAccountTypeMethods)
                 mainActivityOnCreate.addInstructionChecked(
                     0,
                     "invoke-static/range { p0 .. p0 }, $GMS_CORE_EXTENSION_CLASS->" +
@@ -261,7 +264,7 @@ fun gmsCoreSupportPatch(
 
             earlyReturnMethods.forEach { it.returnEarlyForGmsCore() }
 
-            rewriteGmsStrings(renamedManifestStrings, keepAccountTypeMethods = keepAccountTypeMethods)
+            rewriteGmsStrings(renamedManifestStrings, renamedAuthorities, keepAccountTypeMethods = keepAccountTypeMethods)
 
             // Verify GmsCore is installed and not battery-optimised. p0 = the activity.
             mainActivityOnCreate.addInstructionChecked(
@@ -442,12 +445,31 @@ internal fun gmsContentUriReplacement(value: String): String? {
 }
 
 /**
+ * Rewrites a `content://` URI whose authority is one of the clone's [renamedAuthorities]: the value
+ * must continue after the authority with the end of the string, '/', '?' or '#'. Null otherwise.
+ */
+internal fun renamedAuthorityUriReplacement(value: String, renamedAuthorities: Map<String, String>): String? {
+    if (renamedAuthorities.isEmpty() || !value.startsWith("content://")) return null
+    for ((authority, renamed) in renamedAuthorities) {
+        val prefix = "content://$authority"
+        if (!value.startsWith(prefix)) continue
+        val next = value.getOrNull(prefix.length)
+        if (next == null || next == '/' || next == '?' || next == '#') {
+            return "content://$renamed" + value.substring(prefix.length)
+        }
+    }
+    return null
+}
+
+/**
  * One pass over every method: replaces each `const-string` / `const-string/jumbo` whose value has
  * a GmsCore replacement, keeping the register and opcode. With [inScope] (scoped mode) only the
  * methods it accepts are rewritten, and a scope that rewrites nothing fails.
  */
 private fun BytecodePatchContext.rewriteGmsStrings(
     extra: Map<String, String>,
+    // Renamed provider authorities of a clone (old to new): `content://<authority>[/?#...]` follows them.
+    renamedAuthorities: Map<String, String>,
     inScope: ((ClassDef, Method) -> Boolean)? = null,
     // Methods (see [methodKey]) that keep their exact "com.google" account type.
     keepAccountTypeMethods: Set<String> = emptySet(),
@@ -459,7 +481,7 @@ private fun BytecodePatchContext.rewriteGmsStrings(
         if (value == GOOGLE_ACCOUNT_TYPE && keepAccountTypeMethods.isNotEmpty() && method.methodKey() in keepAccountTypeMethods) {
             return null
         }
-        return replacements[value] ?: gmsContentUriReplacement(value)
+        return replacements[value] ?: gmsContentUriReplacement(value) ?: renamedAuthorityUriReplacement(value, renamedAuthorities)
     }
 
     // Collect first: mutating classes while iterating them is not allowed.
@@ -505,6 +527,7 @@ private fun gmsCoreSupportResourcePatch(
     spoofedPackageSignature: String,
     packageNameOption: Option<String>?,
     renamedManifestStrings: MutableMap<String, String>,
+    renamedAuthorities: MutableMap<String, String>,
     // False in the scoped mode: push (FCM) keeps using Google Play services.
     rewriteC2dm: Boolean,
 ) = resourcePatch {
@@ -518,8 +541,32 @@ private fun gmsCoreSupportResourcePatch(
 
         document("AndroidManifest.xml").use { document ->
             renamedManifestStrings.clear()
+            renamedAuthorities.clear()
             if (toPackageName != fromPackageName) {
-                renamedManifestStrings += document.changePackageName(fromPackageName, toPackageName)
+                renamedManifestStrings += document.changePackageName(
+                    fromPackageName,
+                    toPackageName,
+                    renamedAuthorities,
+                ) { name, rename ->
+                    // A provider authority given as @string/<name> (365Scores' FileProviders): rewrite
+                    // the value in the default strings.xml and every locale override of it. Files that
+                    // do not define the name are not opened for writing, so no other string is re-encoded.
+                    var found = false
+                    for (path in listDecodableFiles("res/values*/strings.xml")) {
+                        if (!get(path).readText().contains("name=\"$name\"")) continue
+                        document(path).use { strings ->
+                            val nodes = strings.getElementsByTagName("string")
+                            for (i in 0 until nodes.length) {
+                                val node = nodes.item(i) as Element
+                                if (node.getAttribute("name") == name) {
+                                    node.textContent = rename(node.textContent)
+                                    found = true
+                                }
+                            }
+                        }
+                    }
+                    found
+                }
             }
 
             if (rewriteC2dm) document.rewriteGmsManifestReferences()
