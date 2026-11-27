@@ -3385,7 +3385,8 @@ object Constants {
         // EasyLauncherSmokeTest green on the new APK and the CLI without -f applied all six patches
         // (28 changed classes). Spot-disassembled: ads gate returns false, rating prompt gates
         // return false, promo configs and sponsored getters forced. Runtime not run.
-        targets = listOf(AppTarget(version = "1.10.33", versionCode = 11033))
+        // 2026-11-27: updated to 1.10.35 (versionCode 11035, same Play signer); smoke test and CLI without -f verified.
+        targets = listOf(AppTarget(version = "1.10.35", versionCode = 11035))
     )
 
     // Verified 2026-10-13 against in.cricketexchange.app.cricketexchange 26.10.06 (versionCode

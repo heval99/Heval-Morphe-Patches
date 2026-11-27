@@ -86,7 +86,7 @@ class EasyLauncherSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "1.10.33",
+            version = "1.10.35",
             patchNames = EASYLAUNCHER_PATCHES,
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
