@@ -44,7 +44,7 @@ internal val GMS_CORE_QUERY_PACKAGES = listOf(
 /**
  * Makes every known MicroG / GMS variant visible to the package manager.
  */
-internal fun Document.addGmsCorePackageQueries() {
+internal fun Document.addGmsCorePackageQueries(extraPackages: List<String> = emptyList()) {
     val queries = getElementsByTagName("queries").item(0) as? Element
         ?: createElement("queries").also { documentElement.appendChild(it) }
 
@@ -55,7 +55,7 @@ internal fun Document.addGmsCorePackageQueries() {
         }
     }
 
-    GMS_CORE_QUERY_PACKAGES.filter { it !in existing }.forEach { packageName ->
+    (GMS_CORE_QUERY_PACKAGES + extraPackages).filter { it !in existing }.forEach { packageName ->
         queries.appendChild(
             createElement("package").apply { setAttribute("android:name", packageName) },
         )

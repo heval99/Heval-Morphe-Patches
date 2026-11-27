@@ -20,7 +20,9 @@
 // unavailable so Credential Manager uses its Play services provider (and so MicroG RE), and
 // (2026-10-12) its Google ID requests take the BeginSignIn flow instead of the Identity
 // Credentials API, which MicroG RE 7.2.1 does not serve. (2026-11-03) An optional scoped
-// ("login-only") mode, see GmsCoreScope.kt; without a scope the patch is unchanged.
+// ("login-only") mode, see GmsCoreScope.kt; (2026-11-27) it is now the "signInOnly" option of the
+// patch (execute-time, default off) and also reroutes androidx.credentials; with the option off
+// the patch is unchanged.
 
 package app.template.patches.shared.misc.gms
 
@@ -34,6 +36,7 @@ import app.morphe.patcher.patch.Option
 import app.morphe.patcher.patch.Patch
 import app.morphe.patcher.patch.PatchAvailability
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.patch.stringOption
@@ -99,9 +102,12 @@ private val SIGNATURE_SHA1_REGEX = Regex("^[0-9a-f]{40}$")
  *        for apps whose clone cannot install next to the stock app.
  * @param extraDescription An app-specific sentence appended to the patch description, for example
  *        which of the app's features need it.
- * @param scope When set, only the Google Play services this scope names move to MicroG RE and steps
- *        2 and 3 above are replaced by [GmsCoreScope]'s; no c2dm renames either. Null (default)
- *        keeps the whole-app behaviour.
+ * @param signInOnlyScope When set, the patch gets a "signInOnly" option (default off). With it on, only
+ *        the Google Play services this scope names move to MicroG RE and step 2 is replaced by
+ *        [GmsCoreScope]'s (Google Play services is not reported as available, push keeps working
+ *        through the real Google Play services, so there are no c2dm renames either); step 3 still
+ *        runs, because the sign-in the scope routes goes through androidx.credentials. With it off,
+ *        or null (default), the whole-app behaviour is unchanged.
  * @param description Replaces the whole patch description (then [extraDescription] is not used).
  * @param keepAccountTypeFingerprints App-specific methods whose exact "com.google" string (the Google
  *        account type) must stay as it is, because they list or compare the device's real Google
@@ -120,7 +126,7 @@ fun gmsCoreSupportPatch(
     dependencies: Set<Patch> = emptySet(),
     allowClone: Boolean = true,
     extraDescription: String? = null,
-    scope: GmsCoreScope? = null,
+    signInOnlyScope: GmsCoreScope? = null,
     description: String? = null,
     keepAccountTypeFingerprints: Set<Fingerprint> = emptySet(),
     executeBlock: BytecodePatchContext.() -> Unit = {},
@@ -131,7 +137,18 @@ fun gmsCoreSupportPatch(
     }
     // A clone renames the app's own permissions and authorities everywhere in the dex, which the
     // scoped string rewrite would only do inside its scope.
-    require(scope == null || !allowClone) { "The scoped GmsCore mode does not support the clone option" }
+    require(signInOnlyScope == null || !allowClone) { "The sign-in-only GmsCore mode does not support the clone option" }
+
+    val signInOnlyOption = signInOnlyScope?.let {
+        booleanOption(
+            key = "signInOnly",
+            default = false,
+            title = "Push via Google Play services",
+            description = "Only Google sign-in uses MicroG RE; notifications use Google Play services, " +
+                "which must be installed.",
+            required = true,
+        )
+    }
 
     val packageNameOption = if (!allowClone) null else stringOption(
         key = "packageName",
@@ -159,7 +176,8 @@ fun gmsCoreSupportPatch(
         packageNameOption,
         renamedManifestStrings,
         renamedAuthorities,
-        rewriteC2dm = scope == null,
+        // Read when the resource patch runs: the option belongs to the bytecode patch below.
+        rewriteC2dm = { signInOnlyOption?.value != true },
     )
 
     return bytecodePatch(
@@ -184,6 +202,7 @@ fun gmsCoreSupportPatch(
         extendWith("extensions/gmscore.mpe")
 
         packageNameOption?.let { it() }
+        signInOnlyOption?.let { it() }
 
         execute {
             // The two library fingerprints are shared by every app's "GmsCore support" patch.
@@ -205,23 +224,24 @@ fun gmsCoreSupportPatch(
             val earlyReturnMethods = earlyReturnFingerprints.map { it.method }
             val keepAccountTypeMethods = keepAccountTypeFingerprints.map { it.method.methodKey() }.toSet()
 
-            if (scope != null) {
-                // Login-only: Google Play services stays the provider for everything outside the
-                // scope, so its availability check stays real (it checks Google Play services,
-                // which is installed) and androidx.credentials is not rerouted. A Credential
-                // Manager sign-in would need the Identity clients in the scope, so refuse it.
-                if (classDefByOrNull(PLAY_SERVICES_CREDENTIAL_PROVIDER) != null) {
-                    throw PatchException("The scoped GmsCore mode does not route androidx.credentials sign-in")
-                }
+            if (signInOnlyScope != null && signInOnlyOption?.value == true) {
+                // Sign-in only: Google Play services stays the provider for everything outside the
+                // scope (push included), so its availability check stays real (Google Play services
+                // is installed). The two androidx.credentials steps still run: the sign-in the scope
+                // routes is a Credential Manager request, which must not take the framework path to
+                // the real Google Play services and must use the BeginSignIn flow. Both read strings
+                // the scope never rewrites, so they run first.
+                disableFrameworkCredentialProvider()
+                routeGoogleIdRequestsToBeginSignIn()
                 earlyReturnMethods.forEach { it.returnEarlyForGmsCore() }
                 // Both resolve before the rewrite, which renames the anchors they match on.
-                val inScope = gmsCoreScopeFilter(scope)
-                routeScopedGmsClients(scope.serviceActions)
+                val inScope = gmsCoreScopeFilter(signInOnlyScope)
+                routeScopedGmsClients(signInOnlyScope.serviceActions)
                 rewriteGmsStrings(renamedManifestStrings, renamedAuthorities, inScope, keepAccountTypeMethods)
                 mainActivityOnCreate.addInstructionChecked(
                     0,
                     "invoke-static/range { p0 .. p0 }, $GMS_CORE_EXTENSION_CLASS->" +
-                        "checkGmsCore(Landroid/app/Activity;)V",
+                        "checkGmsCoreSignInOnly(Landroid/app/Activity;)V",
                 )
                 executeBlock()
                 return@execute
@@ -528,8 +548,8 @@ private fun gmsCoreSupportResourcePatch(
     packageNameOption: Option<String>?,
     renamedManifestStrings: MutableMap<String, String>,
     renamedAuthorities: MutableMap<String, String>,
-    // False in the scoped mode: push (FCM) keeps using Google Play services.
-    rewriteC2dm: Boolean,
+    // False in the sign-in-only mode: push (FCM) keeps using Google Play services.
+    rewriteC2dm: () -> Boolean,
 ) = resourcePatch {
     execute {
         // No option (allowClone = false): always keep the original package.
@@ -569,8 +589,10 @@ private fun gmsCoreSupportResourcePatch(
                 }
             }
 
-            if (rewriteC2dm) document.rewriteGmsManifestReferences()
-            document.addGmsCorePackageQueries()
+            if (rewriteC2dm()) document.rewriteGmsManifestReferences()
+            // The sign-in-only extension check also looks for Google Play services, which the app
+            // must be allowed to see (Android 11+).
+            document.addGmsCorePackageQueries(if (rewriteC2dm()) emptyList() else listOf("com.google.android.gms"))
             document.addSpoofingMetadata(fromPackageName, spoofedPackageSignature)
         }
     }

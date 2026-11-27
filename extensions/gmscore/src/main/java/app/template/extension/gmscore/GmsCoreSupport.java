@@ -43,6 +43,11 @@ public final class GmsCoreSupport {
     /** MicroG RE. The patch points every Google Play services reference at this package. */
     private static final String MICROG_PACKAGE = "app.revanced.android.gms";
 
+    /** Google Play services, which the sign-in-only mode keeps for everything but Google sign-in. */
+    // Joined at run time so the patch's "com.google.android.gms" string rewrite cannot change it.
+    private static final String GOOGLE_PLAY_SERVICES_PACKAGE =
+            new StringBuilder("com").append(".google").append(".android").append(".gms").toString();
+
     /**
      * Vanced MicroG. It answers under its own package name, which the patched app does not call,
      * so it cannot stand in for MicroG RE.
@@ -68,18 +73,40 @@ public final class GmsCoreSupport {
      * Injection point: start of the main activity's onCreate. Never throws.
      */
     public static void checkGmsCore(Activity activity) {
+        check(activity, false);
+    }
+
+    /**
+     * Injection point of the sign-in-only mode (the "Push via Google Play services" option): only
+     * Google sign-in uses MicroG RE, everything else, notifications included, keeps using Google
+     * Play services. So MicroG RE is needed for sign-in only, and its battery optimisation does
+     * not matter (it runs while the sign-in picker is open). Never throws.
+     */
+    public static void checkGmsCoreSignInOnly(Activity activity) {
+        check(activity, true);
+    }
+
+    private static void check(Activity activity, boolean signInOnly) {
         if (checked || activity == null) return;
         checked = true;
 
         try {
             PackageManager packageManager = activity.getPackageManager();
 
+            if (signInOnly && !isInstalledAndEnabled(packageManager, GOOGLE_PLAY_SERVICES_PACKAGE)) {
+                Log.i(TAG, "Google Play services is not installed or disabled");
+                Toast.makeText(activity.getApplicationContext(),
+                        "Google Play services is not installed. This patched app needs it for notifications.",
+                        Toast.LENGTH_LONG).show();
+            }
+
             if (!isInstalledAndEnabled(packageManager, MICROG_PACKAGE)) {
                 Log.i(TAG, "MicroG RE is not installed or disabled");
 
+                String need = signInOnly ? "Google sign-in" : "Google sign-in and notifications";
                 String message = isInstalledAndEnabled(packageManager, VANCED_MICROG_PACKAGE)
-                        ? "This patched app needs MicroG RE for Google sign-in and notifications. Vanced MicroG does not work with it."
-                        : "MicroG RE is not installed. This patched app needs it for Google sign-in and notifications.";
+                        ? "This patched app needs MicroG RE for " + need + ". Vanced MicroG does not work with it."
+                        : "MicroG RE is not installed. This patched app needs it for " + need + ".";
                 // A toast, not a dialog: it still shows if the app fails to finish starting.
                 Toast.makeText(activity.getApplicationContext(), message, Toast.LENGTH_LONG).show();
                 // The download page opens once; after that only the toast reminds the user, so a
@@ -92,7 +119,7 @@ public final class GmsCoreSupport {
                 return;
             }
 
-            if (isBatteryOptimized(activity) && !getPreferences(activity)
+            if (!signInOnly && isBatteryOptimized(activity) && !getPreferences(activity)
                     .getBoolean(PREFERENCE_SKIP_BATTERY_DIALOG, false)) {
                 Log.i(TAG, "MicroG RE is subject to battery optimisation");
                 runDelayed(() -> showBatteryOptimizationDialog(activity));

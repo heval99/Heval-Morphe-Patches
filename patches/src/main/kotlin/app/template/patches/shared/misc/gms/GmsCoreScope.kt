@@ -23,8 +23,10 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
  * sign-in move to MicroG RE, and everything else (location, push, Maps, ...) keeps using the real
  * Google Play services, which must stay installed.
  *
- * In this mode the builder does not report Google Play services as available, does not rename the
- * c2dm (FCM) manifest entries and does not touch androidx.credentials. It:
+ * In this mode (the builder's "signInOnly" option) the builder does not report Google Play services as
+ * available and does not rename the c2dm (FCM) manifest entries. It first keeps androidx.credentials
+ * on its Play services provider and the BeginSignIn flow (the sign-in is a Credential Manager
+ * request), then:
  * 1. points every BaseGmsClient subclass whose start-service action is in [serviceActions] at
  *    MicroG RE: an override of the client's start-service package getter returns MicroG RE's
  *    package, and an override of its dynamic-lookup getter returns false. BaseGmsClient's own
@@ -109,8 +111,18 @@ internal fun BytecodePatchContext.gmsCoreScopeFilter(scope: GmsCoreScope): (Clas
 private class ServiceGetters(val base: String, val packageGetter: String, val actionGetter: String, val dynamicLookup: String)
 
 /**
+ * Binding config constructors: (String package, String action, boolean dynamicLookup) in FotMob
+ * 242.18410 (checked 2026-11-27), and the five-argument (String, String, boolean, int, boolean) this
+ * matcher was first written against (not seen in an APK since; kept so that shape still matches).
+ */
+private val BINDING_CONFIG_SHAPES = listOf(
+    listOf(STRING, STRING, "Z"),
+    listOf(STRING, STRING, "Z", "I", "Z"),
+)
+
+/**
  * Reads the getter names from BaseGmsClient's connect step: the binding config is built by a
- * constructor taking (String package, String action, boolean, int, boolean dynamicLookup), and the
+ * constructor of one of the [BINDING_CONFIG_SHAPES] (package, action, dynamic lookup last), and the
  * three no-argument calls on the client right before it are, in order, the package getter (String),
  * the action getter (String) and the dynamic-lookup getter (boolean). The other binding config in
  * that method (local start-service action) is built from the app's package name and does not
@@ -126,7 +138,7 @@ private fun BytecodePatchContext.findServiceGetters(): ServiceGetters {
     val matches = instructions.mapIndexedNotNull { index, instruction ->
         val init = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@mapIndexedNotNull null
         if (instruction.opcode != Opcode.INVOKE_DIRECT && instruction.opcode != Opcode.INVOKE_DIRECT_RANGE) return@mapIndexedNotNull null
-        if (init.name != "<init>" || init.parameterTypes.map(CharSequence::toString) != listOf(STRING, STRING, "Z", "I", "Z")) {
+        if (init.name != "<init>" || init.parameterTypes.map(CharSequence::toString) !in BINDING_CONFIG_SHAPES) {
             return@mapIndexedNotNull null
         }
         val calls = instructions.subList(0, index).mapNotNull { previous ->
@@ -210,7 +222,9 @@ private fun MutableClass.override(baseMethod: Method, smali: String) {
     }
     if (own != null) {
         val implementation = own.implementation ?: throw PatchException("$type->${own.name} has no code")
-        if (implementation.registerCount - 1 < 1) throw PatchException("$type->${own.name} has no local register")
+        // The snippet uses v0 and returns at once. R8 often leaves a getter with only p0 (this),
+        // which is v0 then; clobbering it is fine because nothing runs after the return.
+        if (implementation.registerCount < 1) throw PatchException("$type->${own.name} has no register")
         own.addInstructionsChecked(0, smali)
         return
     }

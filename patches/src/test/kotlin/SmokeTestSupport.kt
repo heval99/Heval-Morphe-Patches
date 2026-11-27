@@ -455,11 +455,16 @@ fun applyPatches(
     filterByCompatibility: Boolean = true,
     versionCode: Int? = null,
     onPatchedApk: (File) -> Unit = {},
+    // Patch name to (option key to value), set before the patches run (every other option keeps its default).
+    options: Map<String, Map<String, Any?>> = emptyMap(),
 ): List<ClassDef> {
     val target = allPatches.filter { patch ->
         patch.name in patchNames &&
             (!filterByCompatibility || patch.compatibility.orEmpty().any { it.packageName == pkg })
     }.toList()
+    for (patch in target) {
+        options[patch.name]?.forEach { (key, value) -> patch.options.set(key, value) }
+    }
 
     assertTrue(
         target.map { it.name }.toSet() == patchNames,

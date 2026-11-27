@@ -710,6 +710,17 @@ object Constants {
     // MembershipActivity exists but its "No active subscriptions found" literal is gone. Verified by
     // FotMobSmokeTest, SpoilerRulesTest, FingerprintProbe and a CLI run without -f; runtime NOT run (no
     // emulator check approved).
+    // 2026-11-27 (242.18410, #106/#107): GmsCore support got the "Push via Google Play services"
+    // option (signInOnly, default off): only the Identity sign-in client (action
+    // ...identity.service.signin.START, Lwhg, bound through BaseGmsClient's 3-argument binding config)
+    // goes to MicroG RE; FCM keeps the real Google Play services. Verified by FotMobSignInOnlySmokeTest and
+    // a CLI run without -f (`-e "GmsCore support" -O signInOnly=true`; the CLI binds -O to the preceding
+    // -e); with the option off the patched APK equals the previous bundle's except the dex holding the
+    // gmscore extension class. Emulator 2026-11-27 (owner-approved; API 35 google_apis, Play services
+    // 24.23.35, MicroG RE 7.3.0): c2dm stays stock, FotMob's push check passes in ~3 s with the FCM token
+    // from Google Play services, and Sign in with Google opens MicroG RE's sheet via signin.START (the
+    // sign-in itself was not completed). Stock control: re-signed FotMob without GmsCore support passes
+    // the same push check.
     val COMPATIBILITY_FOTMOB = Compatibility(
         name = "FotMob",
         packageName = "com.mobilefootie.wc2010",
