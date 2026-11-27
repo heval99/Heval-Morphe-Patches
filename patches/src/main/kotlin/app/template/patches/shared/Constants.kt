@@ -4203,7 +4203,8 @@ object Constants {
         appIconColor = 0xFFB700, // The icon's largest stroke (amber; with red and blue, on white).
         signatures = setOf("3df7f89d3b8d1315f05710c914fccbcf3a4e24980afddccb8dcebde90836a390"), // CN=Various Tu
         // 2026-11-13: updated to 7.4.1 (versionCode 20261113); signer unchanged; smoke test passed.
-        targets = listOf(AppTarget(version = "7.4.1", versionCode = 20261113))
+        // 2026-11-27: updated to 7.5.0 (versionCode 20261125); signer unchanged. Smoke test passed; CLI without -f applied every patch. Runtime not run. 7.4.1 dropped.
+        targets = listOf(AppTarget(version = "7.5.0", versionCode = 20261125))
     )
 
     // Added 2026-10-16 against ro.rcsrds.digisport 1.1.15 (versionCode 75, single universal APK;
