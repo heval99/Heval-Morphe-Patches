@@ -28,13 +28,12 @@ import java.util.zip.ZipFile
 
 private const val PKG = "de.transfermarkt.v2"
 private const val EXTENSION = "Lapp/template/extension/transfermarkt/WebViewBlocklistPatch;"
-private const val SYSTEM_WEBVIEW_CLIENT = "Lorg/apache/cordova/engine/SystemWebViewClient;"
-private const val IONIC_SERVER_CLIENT = "Lcom/ionicframework/cordova/webview/IonicWebViewEngine\$ServerClient;"
-private const val IN_APP_BROWSER_CLIENT = "Lorg/apache/cordova/inappbrowser/InAppBrowser\$InAppBrowserClient;"
+private const val SYSTEM_WEBVIEW_ENGINE = "Lorg/apache/cordova/engine/SystemWebViewEngine;"
+private const val IONIC_WEBVIEW_ENGINE = "Lcom/ionicframework/cordova/webview/IonicWebViewEngine;"
+private const val IN_APP_BROWSER_PACKAGE = "Lorg/apache/cordova/inappbrowser/"
 private const val WEB_RESOURCE_RESPONSE = "Landroid/webkit/WebResourceResponse;"
 private const val WEB_RESOURCE_REQUEST = "Landroid/webkit/WebResourceRequest;"
 private const val JSON_OBJECT = "Lorg/json/JSONObject;"
-private const val CALLBACK_CONTEXT = "Lorg/apache/cordova/CallbackContext;"
 private val INTERCEPT_PARAMETERS = listOf("Landroid/webkit/WebView;", WEB_RESOURCE_REQUEST)
 
 class TransfermarktSmokeTest {
@@ -110,7 +109,7 @@ class TransfermarktSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "4.3.3",
+            version = "4.4.0",
             patchNames = setOf("Disable ads", "Disable telemetry"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -131,13 +130,22 @@ class TransfermarktSmokeTest {
 
         // Both patches, step 3 / step 1: every concrete shouldInterceptRequest(WebView, WebResourceRequest)
         // on SystemWebViewClient and its subclasses asks both hooks first (found by hierarchy, like the patch).
+        // R8 renames the clients since 4.4.0: the base is found by shape (a WebViewClient subclass built
+        // from the kept SystemWebViewEngine), the Ionic ServerClient as the client holding IonicWebViewEngine.
+        val systemClients = classes.filter { c ->
+            c.superclass == "Landroid/webkit/WebViewClient;" && c.instanceFields.any { it.type == SYSTEM_WEBVIEW_ENGINE } &&
+                c.methods.any { it.name == "<init>" && it.params() == listOf(SYSTEM_WEBVIEW_ENGINE) } &&
+                c.methods.any { it.shouldInterceptRequest() }
+        }
+        val systemClient = systemClients.singleOrNull()?.type ?: error("expected one SystemWebViewClient, found ${systemClients.size}")
         fun isClient(type: String?): Boolean =
-            type != null && (type == SYSTEM_WEBVIEW_CLIENT || isClient(byType[type]?.superclass))
+            type != null && (type == systemClient || isClient(byType[type]?.superclass))
         val clientMethods = classes.filter { isClient(it.type) }.flatMap { client ->
             client.methods.filter { it.shouldInterceptRequest() }.map { client.type to it }
         }
+        val ionicClient = classes.single { c -> isClient(c.type) && c.instanceFields.any { it.type == IONIC_WEBVIEW_ENGINE } }.type
         assertTrue(
-            clientMethods.map { it.first }.containsAll(listOf(SYSTEM_WEBVIEW_CLIENT, IONIC_SERVER_CLIENT)),
+            clientMethods.map { it.first }.containsAll(listOf(systemClient, ionicClient)),
             "expected shouldInterceptRequest on SystemWebViewClient and the Ionic ServerClient, found ${clientMethods.map { it.first }}",
         )
         for ((type, method) in clientMethods) {
@@ -146,30 +154,49 @@ class TransfermarktSmokeTest {
             assertEquals(2, hooks.size, "$type->shouldInterceptRequest hooks")
         }
         // The InAppBrowser (external pages) is not hooked.
-        classDef(IN_APP_BROWSER_CLIENT).methods.filter { it.shouldInterceptRequest() }.forEach {
-            assertTrue(hooksOf(it, "InAppBrowserClient->shouldInterceptRequest").isEmpty(), "InAppBrowserClient was hooked")
+        val inAppClients = classes.filter { it.type.startsWith(IN_APP_BROWSER_PACKAGE) && it.superclass == "Landroid/webkit/WebViewClient;" }
+        assertTrue(inAppClients.isNotEmpty(), "InAppBrowser client not found")
+        inAppClients.forEach { client ->
+            client.methods.filter { it.shouldInterceptRequest() }.forEach {
+                assertTrue(hooksOf(it, "InAppBrowserClient->shouldInterceptRequest").isEmpty(), "InAppBrowserClient was hooked")
+            }
         }
-
-        // Disable ads 1: the webview-ad lambda (MobileAds.registerWebView + the log) returns at once.
+        // Disable ads 1: the webview-ad lambda (the inlined registerWebView + reload + the log) sits
+        // behind its Boolean guard, which is forced to false right after booleanValue().
         val integrations = classes.flatMap { it.methods }.filter { method ->
-            method.returnType == "V" && method.calls("Lcom/google/android/gms/ads/MobileAds;", "registerWebView") &&
+            method.returnType == "V" && method.calls("Landroid/webkit/WebView;", "reload") &&
                 method.strings().any { it.startsWith("Integrated the WebView API for Ads in ") }
         }
         val integration = integrations.singleOrNull()
             ?: error("expected one WebView API for Ads integration method, found ${integrations.size}")
-        assertReturnsEarlyVoid(integration, "${integration.definingClass}->${integration.name}")
+        val integrationInsns = integration.instructions()
+        val logIndex = integrationInsns.indexOfFirst {
+            ((it as? ReferenceInstruction)?.reference as? StringReference)?.string
+                ?.startsWith("Integrated the WebView API for Ads in ") == true
+        }
+        val guard = (logIndex downTo 0).first { i ->
+            val ref = (integrationInsns[i] as? ReferenceInstruction)?.reference as? MethodReference
+            ref?.definingClass == "Ljava/lang/Boolean;" && ref.name == "booleanValue"
+        }
+        assertEquals(Opcode.MOVE_RESULT, integrationInsns[guard + 1].opcode, "guard move-result")
+        assertEquals(Opcode.CONST_4, integrationInsns[guard + 2].opcode, "forced guard const")
+        assertEquals(0, (integrationInsns[guard + 2] as NarrowLiteralInstruction).narrowLiteral, "guard forced to false")
+        assertEquals(
+            (integrationInsns[guard + 1] as OneRegisterInstruction).registerA,
+            (integrationInsns[guard + 2] as OneRegisterInstruction).registerA, "same register",
+        )
+        assertEquals(Opcode.IF_EQZ, integrationInsns[guard + 3].opcode, "guard branch")
 
         // Disable ads 2 (rule 9): every MobileAds static void returns at once.
         assertMobileAdsStaticsNeutralised(
             classDef("Lcom/google/android/gms/ads/MobileAds;"),
-            GMA_THROWING_STATICS + "registerWebView",
+            listOf("setPlugin"),
         )
-
         // Disable telemetry 2: IdfaPlugin.getInfo (found by shape, like the patch) answers
         // {aaid:"", trackingLimited:true} through CallbackContext.success and returns.
         val getInfos = classes.flatMap { it.methods }.filter { method ->
-            method.returnType == "V" && method.params() == listOf(CALLBACK_CONTEXT) &&
-                method.calls("Lcom/google/android/gms/ads/identifier/AdvertisingIdClient;", "getAdvertisingIdInfo") &&
+            method.returnType == "V" && method.name == "getInfo" && method.params().size == 1 &&
+                method.definingClass == "Lby/chemerisuk/cordova/advertising/IdfaPlugin;" &&
                 method.strings().containsAll(listOf("aaid", "trackingLimited"))
         }
         val getInfo = getInfos.singleOrNull() ?: error("expected one idfa getInfo, found ${getInfos.size}")
@@ -190,7 +217,7 @@ class TransfermarktSmokeTest {
         assertEquals(listOf("Ljava/lang/String;", "Z"), insns[7].methodRef()!!.parameterTypes.map(CharSequence::toString), "trackingLimited put")
         val success = insns[8].methodRef()!!
         assertTrue(
-            success.definingClass == CALLBACK_CONTEXT && success.name == "success" &&
+            success.definingClass == getInfo.params().single() && success.returnType == "V" &&
                 success.parameterTypes.map(CharSequence::toString) == listOf(JSON_OBJECT),
             "idfa getInfo does not call CallbackContext.success(JSONObject): $success",
         )

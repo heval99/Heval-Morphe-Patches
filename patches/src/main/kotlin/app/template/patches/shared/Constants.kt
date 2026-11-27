@@ -4608,7 +4608,13 @@ object Constants {
         // 2026-10-28: updated to 4.3.3 (versionCode 2078, arm64-v8a, same Play signer).
         // Disable ads and Disable telemetry apply unchanged: smoke test green and CLI without -f
         // applied both.
-        targets = listOf(AppTarget(version = "4.3.3", versionCode = 2078))
+        // 2026-11-27: updated to 4.4.0 (versionCode 2080, same Play signer). R8 now renames Cordova's CallbackContext
+        // (org.apache.cordova.d, success(JSONObject) -> f), moved the AdvertisingIdClient call into a wrapper and reshaped the
+        // WebView ad-integration guard, so: Disable ads forces that guard false, neutralises MobileAds.setPlugin and finds the
+        // SystemWebViewClient / Ionic ServerClient by shape; Disable telemetry anchors IdfaPlugin.getInfo by class + name + one
+        // parameter + the "aaid"/"trackingLimited" strings and reads the callback type and success() from the original body.
+        // Smoke test passed; CLI without -f applied both patches. Runtime not run. 4.3.3 dropped.
+        targets = listOf(AppTarget(version = "4.4.0", versionCode = 2080))
     )
 
     // Written 2026-10-18 against org.mozilla.focus 158.0 (versionCode 402802337 for both the

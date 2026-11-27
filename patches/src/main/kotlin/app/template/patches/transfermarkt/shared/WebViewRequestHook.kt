@@ -17,9 +17,8 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 internal const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/template/extension/transfermarkt/WebViewBlocklistPatch;"
 
-internal const val SYSTEM_WEBVIEW_CLIENT = "Lorg/apache/cordova/engine/SystemWebViewClient;"
+internal const val SYSTEM_WEBVIEW_ENGINE = "Lorg/apache/cordova/engine/SystemWebViewEngine;"
 internal const val IONIC_WEBVIEW_ENGINE = "Lcom/ionicframework/cordova/webview/IonicWebViewEngine;"
-internal const val IONIC_SERVER_CLIENT = "Lcom/ionicframework/cordova/webview/IonicWebViewEngine\$ServerClient;"
 internal const val WEB_RESOURCE_RESPONSE = "Landroid/webkit/WebResourceResponse;"
 internal val INTERCEPT_PARAMETERS = listOf("Landroid/webkit/WebView;", "Landroid/webkit/WebResourceRequest;")
 
@@ -40,13 +39,32 @@ internal val webViewBlocklistExtensionPatch = bytecodePatch {
  */
 internal fun BytecodePatchContext.interceptWebViewRequests(hook: String, patchName: String): List<MutableMethod> {
     val superclasses = mutableMapOf<String, String?>()
-    classDefForEach { superclasses[it.type] = it.superclass }
-    if (SYSTEM_WEBVIEW_CLIENT !in superclasses) throw PatchException("$patchName: $SYSTEM_WEBVIEW_CLIENT not found")
+    val ionicClients = mutableSetOf<String>()
+    // Since 4.4.0 R8 renames SystemWebViewClient (and the Ionic ServerClient), so the base client
+    // is found by shape: a direct WebViewClient subclass that holds the kept SystemWebViewEngine
+    // in a field, is built from it and overrides shouldInterceptRequest(WebView, WebResourceRequest).
+    val bases = mutableListOf<String>()
+    classDefForEach { classDef ->
+        superclasses[classDef.type] = classDef.superclass
+        if (classDef.instanceFields.any { it.type == IONIC_WEBVIEW_ENGINE }) ionicClients += classDef.type
+        if (classDef.superclass == "Landroid/webkit/WebViewClient;" &&
+            classDef.instanceFields.any { it.type == SYSTEM_WEBVIEW_ENGINE } &&
+            classDef.methods.any { it.name == "<init>" && it.parameterTypes.map(CharSequence::toString) == listOf(SYSTEM_WEBVIEW_ENGINE) } &&
+            classDef.methods.any {
+                it.name == "shouldInterceptRequest" && it.returnType == WEB_RESOURCE_RESPONSE &&
+                    it.parameterTypes.map(CharSequence::toString) == INTERCEPT_PARAMETERS
+            }
+        ) {
+            bases += classDef.type
+        }
+    }
+    val systemClient = bases.singleOrNull()
+        ?: throw PatchException("$patchName: expected one SystemWebViewClient (WebViewClient subclass built from SystemWebViewEngine), found ${bases.size}")
 
     fun isClient(type: String): Boolean {
         var current: String? = type
         while (current != null) {
-            if (current == SYSTEM_WEBVIEW_CLIENT) return true
+            if (current == systemClient) return true
             current = superclasses[current]
         }
         return false
@@ -64,8 +82,9 @@ internal fun BytecodePatchContext.interceptWebViewRequests(hook: String, patchNa
     }
     // The base class always matches, so also require the live Ionic client when the Ionic engine
     // is there; otherwise the blocklist would silently miss every request.
-    if (IONIC_WEBVIEW_ENGINE in superclasses && hooked.none { it.definingClass == IONIC_SERVER_CLIENT }) {
-        throw PatchException("$patchName: $IONIC_SERVER_CLIENT is no longer a hookable SystemWebViewClient")
+    // (The Ionic ServerClient is the client class holding the IonicWebViewEngine as its outer field.)
+    if (IONIC_WEBVIEW_ENGINE in superclasses && hooked.none { it.definingClass in ionicClients }) {
+        throw PatchException("$patchName: the Ionic ServerClient is no longer a hookable SystemWebViewClient")
     }
 
     hooked.forEach { method ->

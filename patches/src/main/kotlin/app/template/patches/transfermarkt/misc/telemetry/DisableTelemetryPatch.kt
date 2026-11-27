@@ -2,6 +2,8 @@ package app.template.patches.transfermarkt.misc.telemetry
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import app.template.patches.shared.Constants.COMPATIBILITY_TRANSFERMARKT
 import app.template.patches.shared.addInstructionsChecked
 import app.template.patches.transfermarkt.shared.interceptWebViewRequests
@@ -26,6 +28,15 @@ val disableTelemetryPatch = bytecodePatch(
         val getInfo = IdfaGetInfoFingerprint.method
         val locals = getInfo.implementation!!.registerCount - 2
         if (locals < 3) throw PatchException("Disable telemetry: IdfaPlugin.getInfo has $locals locals, the hook needs 3")
+        // CallbackContext is R8-renamed: take its type from the parameter and its success(JSONObject)
+        // from the call the original body makes on it.
+        val callbackType = getInfo.parameterTypes[0].toString()
+        val success = getInfo.implementation!!.instructions
+            .mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
+            .firstOrNull { ref ->
+                ref.definingClass == callbackType && ref.returnType == "V" &&
+                    ref.parameterTypes.map(CharSequence::toString) == listOf("Lorg/json/JSONObject;")
+            } ?: throw PatchException("Disable telemetry: IdfaPlugin.getInfo never calls success(JSONObject) on $callbackType")
         getInfo.addInstructionsChecked(
             0,
             """
@@ -37,7 +48,7 @@ val disableTelemetryPatch = bytecodePatch(
                 const-string v1, "trackingLimited"
                 const/4 v2, 0x1
                 invoke-virtual { v0, v1, v2 }, Lorg/json/JSONObject;->put(Ljava/lang/String;Z)Lorg/json/JSONObject;
-                invoke-virtual { p1, v0 }, Lorg/apache/cordova/CallbackContext;->success(Lorg/json/JSONObject;)V
+                invoke-virtual { p1, v0 }, $callbackType->${success.name}(Lorg/json/JSONObject;)V
                 return-void
             """,
         )
