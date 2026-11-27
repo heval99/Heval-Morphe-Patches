@@ -98,6 +98,9 @@ builds. Do not use user-uploaded stores; modified repackaged APKs have been foun
 - **One app per pull request**, and keep it small.
 - Commit messages follow Conventional Commits. `fix:` and `feat:` produce a release; `docs:`, `test:`,
   `chore:` do not. An update reads `fix(<app>): updated to version X`.
+- The scope names the app (`fix(sofascore): ...`), so the release notes put the change under that
+  app. The subject is what users read: say what changed for them. Optional trailers can reword a
+  line or change its category; see [docs/release-notes.md](docs/release-notes.md).
 - Do not mix patch changes with changes to build files, workflows, scripts or tooling. Those get a
   closer review in a separate pull request.
 - Never commit APKs, keystores, tokens, decompiled sources or local paths.
