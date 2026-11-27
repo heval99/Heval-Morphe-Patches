@@ -3323,7 +3323,9 @@ object Constants {
         // longer turn tracking back on after the app goes to the background. Verified: FingerprintProbe on
         // the real matcher, smoke test, CLI without -f, apkanalyzer disassembly.
         // 2026-11-22: updated to version 3.2.8 (versionCode 3461877, same signer). Smoke test passed; CLI 2.1.1 without -f applied every patch; whole-APK method diff: only the intended methods changed (Hermes bundle isPro getter, two Sentry manifest providers, dex hooks); aapt2 string values unchanged. Runtime not run.
-        targets = listOf(AppTarget(version = "3.2.8", versionCode = 3461877))
+        // 2026-11-27: updated to version 3.3.0 (versionCode 3474951). The Facebook SDK is gone from 3.3.0, so step 3 of
+        // "Block telemetry & trackers" was removed. Smoke test passed; CLI without -f applied every patch. Runtime not run. 3.2.8 dropped.
+        targets = listOf(AppTarget(version = "3.3.0", versionCode = 3474951))
     )
 
     // Verified 2026-10-13 against easy.launcher 1.10.28 (versionCode 11028, the owner's APKMirror
@@ -4211,7 +4213,8 @@ object Constants {
         appIconColor = 0xFFB700, // The icon's largest stroke (amber; with red and blue, on white).
         signatures = setOf("3df7f89d3b8d1315f05710c914fccbcf3a4e24980afddccb8dcebde90836a390"), // CN=Various Tu
         // 2026-11-13: updated to 7.4.1 (versionCode 20261113); signer unchanged; smoke test passed.
-        targets = listOf(AppTarget(version = "7.4.1", versionCode = 20261113))
+        // 2026-11-27: updated to 7.5.0 (versionCode 20261125); signer unchanged. Smoke test passed; CLI without -f applied every patch. Runtime not run. 7.4.1 dropped.
+        targets = listOf(AppTarget(version = "7.5.0", versionCode = 20261125))
     )
 
     // Added 2026-10-16 against ro.rcsrds.digisport 1.1.15 (versionCode 75, single universal APK;
@@ -4615,7 +4618,13 @@ object Constants {
         // 2026-10-28: updated to 4.3.3 (versionCode 2078, arm64-v8a, same Play signer).
         // Disable ads and Disable telemetry apply unchanged: smoke test green and CLI without -f
         // applied both.
-        targets = listOf(AppTarget(version = "4.3.3", versionCode = 2078))
+        // 2026-11-27: updated to 4.4.0 (versionCode 2080, same Play signer). R8 now renames Cordova's CallbackContext
+        // (org.apache.cordova.d, success(JSONObject) -> f), moved the AdvertisingIdClient call into a wrapper and reshaped the
+        // WebView ad-integration guard, so: Disable ads forces that guard false, neutralises MobileAds.setPlugin and finds the
+        // SystemWebViewClient / Ionic ServerClient by shape; Disable telemetry anchors IdfaPlugin.getInfo by class + name + one
+        // parameter + the "aaid"/"trackingLimited" strings and reads the callback type and success() from the original body.
+        // Smoke test passed; CLI without -f applied both patches. Runtime not run. 4.3.3 dropped.
+        targets = listOf(AppTarget(version = "4.4.0", versionCode = 2080))
     )
 
     // Written 2026-10-18 against org.mozilla.focus 158.0 (versionCode 402802337 for both the
@@ -5133,7 +5142,8 @@ object Constants {
         // 2026-11-25: updated to version 1.3.35 (versionCode 350103242, Play arm64, same signer). The two anchors
         // (LicenseClient.checkLicense(Context), AppPreference.isPremiumUser()) were looked up in 1.3.31 and 1.3.35
         // with dexindex; smoke test passed; CLI patched without -f.
-        targets = listOf(AppTarget(version = "1.3.35", versionCode = 350103242))
+        // 2026-11-27: updated to version 1.3.37 (versionCode 350103244). Smoke test passed; CLI without -f applied every patch. Runtime not run. 1.3.35 dropped.
+        targets = listOf(AppTarget(version = "1.3.37", versionCode = 350103244))
     )
 
     // 2026-11-07 (#133): EX File Manager 1.6.2 (versionCode 51), Play arm64 via gplaydl. The Play
@@ -5337,7 +5347,8 @@ object Constants {
         // uniquely; ViaplaySmokeTest passes. 26.44.0 dropped (latest verified version only).
         // 2026-11-25: updated to version 26.46.0 (versionCode 2646000; Google Play, arm64-v8a, same
         // signer); no patch code changed (no separate old-vs-new anchor diff was run: the smoke test and a CLI run without -f matched every anchor). 26.45.0 dropped.
-        targets = listOf(AppTarget(version = "26.46.0", versionCode = 2646000))
+        // 2026-11-27: updated to version 26.47.0 (versionCode 2647000), no patch code changed. Smoke test passed; CLI without -f applied every patch. Runtime not run. 26.46.0 dropped.
+        targets = listOf(AppTarget(version = "26.47.0", versionCode = 2647000))
     )
 
     // Same app, used only by "Skip ads", so Morphe Manager flags it as experimental (2026-10-29,
@@ -5377,7 +5388,8 @@ object Constants {
         // unchanged; smoke-verified. 26.44.0 dropped (latest verified version only).
         // 2026-11-25: updated to version 26.46.0 (versionCode 2646000), no patch code changed (no separate anchor diff; see the main entry);
         // smoke-verified. 26.45.0 dropped.
-        targets = listOf(AppTarget(version = "26.46.0", versionCode = 2646000, isExperimental = true))
+        // 2026-11-27: updated to version 26.47.0 (versionCode 2647000), no patch code changed; smoke-verified and CLI without -f applied "Skip ads". 26.46.0 dropped.
+        targets = listOf(AppTarget(version = "26.47.0", versionCode = 2647000, isExperimental = true))
     )
 
     // Verified 2026-10-29 against dk.bold 6.5.2 (versionCode 261, owner-supplied APKCube .apks

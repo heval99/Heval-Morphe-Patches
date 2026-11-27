@@ -3,11 +3,16 @@ package app.template.patches.transfermarkt.ads
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
-import app.morphe.patcher.util.returnEarly
 import app.template.patches.shared.Constants.COMPATIBILITY_TRANSFERMARKT
+import app.template.patches.shared.addInstructionsChecked
 import app.template.patches.shared.misc.ads.neutraliseMobileAdsStatics
 import app.template.patches.transfermarkt.shared.interceptWebViewRequests
 import app.template.patches.transfermarkt.shared.webViewBlocklistExtensionPatch
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 internal const val INDEX_HTML = "assets/www/index.html"
 internal const val WWW_DIR = "assets/www"
@@ -89,13 +94,39 @@ val disableAdsPatch = bytecodePatch(
     dependsOn(webViewBlocklistExtensionPatch, disableWebAdsPatch)
 
     execute {
-        // 1. The WebView is never registered with Google Mobile Ads (and not reloaded for it).
-        WebViewAdIntegrationFingerprint.method.returnEarly()
+        // 1. The WebView is never registered with Google Mobile Ads (and not reloaded for it). The
+        // lambda is one case of a shared switch lambda, so it is not returned early as a whole:
+        // its enabled flag (the Boolean.booleanValue() result guarding the registration, the
+        // nearest one before the log line) is forced to false instead, so the guard skips the case.
+        WebViewAdIntegrationFingerprint.method.apply {
+            val insns = implementation!!.instructions.toList()
+            val logIndex = insns.indexOfFirst {
+                ((it as? ReferenceInstruction)?.reference as? StringReference)?.string
+                    ?.startsWith("Integrated the WebView API for Ads in ") == true
+            }
+            val getter = (logIndex downTo 0).firstOrNull { i ->
+                val ref = (insns[i] as? ReferenceInstruction)?.reference as? MethodReference
+                ref != null && ref.definingClass == "Ljava/lang/Boolean;" && ref.name == "booleanValue"
+            } ?: throw PatchException("Disable ads: Boolean.booleanValue() guard before the WebView ad log not found")
+            val move = insns.getOrNull(getter + 1)
+            val branch = insns.getOrNull(getter + 2)
+            if (move?.opcode != Opcode.MOVE_RESULT || branch?.opcode != Opcode.IF_EQZ ||
+                (move as OneRegisterInstruction).registerA != (branch as OneRegisterInstruction).registerA
+            ) {
+                throw PatchException("Disable ads: the WebView ad guard is not move-result + if-eqz")
+            }
+            val register = (move as OneRegisterInstruction).registerA
+            addInstructionsChecked(
+                getter + 2,
+                "${if (register < 16) "const/4" else "const/16"} v$register, 0x0",
+            )
+        }
 
-        // 2. Rule 9 backstop: every MobileAds static void returns at once. The web app never
-        // calls admob-plus's start, so nothing waits on initialize's callback.
-        neutraliseMobileAdsStatics("initialize", "registerWebView")
-
+        // 2. Rule 9 backstop: every MobileAds static void returns at once. R8 renamed the SDK's
+        // public statics since 4.4.0 (initialize and registerWebView are inlined away), so only
+        // the kept setPlugin is required. The web app never calls admob-plus's start, so nothing
+        // waits on initialize's callback.
+        neutraliseMobileAdsStatics("setPlugin")
         // 3. Requests to the ad servers get an empty script (see the extension), which also
         // covers ad code the web app loads outside the stubbed AdtagService methods.
         interceptWebViewRequests("blockAds", "Disable ads")
