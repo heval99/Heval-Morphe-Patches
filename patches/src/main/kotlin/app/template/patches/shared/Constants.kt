@@ -3168,6 +3168,19 @@ object Constants {
     //   AfterCallSavedContacts.isSaved(normalizedNumber, rawNumber) (HistoryEvent fields found through its
     //   toString labels), which needs READ_CONTACTS. Verified: bytecode only (smoke test + CLI without -f);
     //   runtime NOT_RUN.
+    // 2026-11-27 (#181, 26.45.5): entry hook in the same rules method: HistoryEvent.morpheSuppressAcs (added;
+    //   reads type/contact/normalizedNumber/rawNumber by toString labels, Contact test found in the rules)
+    //   -> AfterCallSavedContacts.shouldSuppress returns false early for a saved contact; missed calls (type 3)
+    //   only with the opt-in switch "Also hide after-call for missed calls from contacts". Log.d tag
+    //   Morphe-Truecaller, no numbers. The default-dialer full-screen path (FullscreenAcsConfig getUnlockedPbMissed /
+    //   getLockedPbMissed) answers DO_NOTHING through a second config helper only while both switches are on
+    //   (AfterCallSavedContacts.hideMissedBehavior). On that default-dialer path the config picks its
+    //   phonebook branch from Truecaller's own contact match only, so a contact found only by Android's
+    //   lookup can still get the full-screen screen there. Verified: bytecode only; runtime NOT_RUN.
+    // 2026-11-27 (#153, 26.45.5): Disable nags also skips the call-log promo cards "Missed Call Notifications" and
+    //   "Ring silent": the three cooldown reads (const-string key_missed_call_notif_promo_last_time x2 /
+    //   key_dnd_promo_last_time x1 + (String)Z call + move-result, found by shape; the (String)V writers are left)
+    //   pass their result through NagPromos.hideCooldownPromo. Bytecode only; runtime NOT_RUN.
     // 2026-11-26 (#166, #153, 26.45.5): Disable nags also hides the Settings banner "Set Truecaller as your
     //   default caller ID app": the banner picker (the only method returning the kept BannerType enum; its
     //   first ()Z call before the CALLER_ID constant) asks a check of its own class (SDK 30+, CALL_SCREENING

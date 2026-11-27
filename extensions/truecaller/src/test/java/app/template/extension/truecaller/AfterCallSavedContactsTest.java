@@ -89,6 +89,80 @@ public class AfterCallSavedContactsTest {
         assertEquals(Arrays.asList("12345678"), contacts.asked);
     }
 
+    private static boolean suppress(boolean contactsOn, boolean missedToo, FakeContacts contacts, int type, boolean phonebook) {
+        return AfterCallSavedContacts.shouldSuppress(contactsOn, missedToo, contacts, type, phonebook, "+4512345678", "12345678");
+    }
+
+    @Test
+    public void suppressNeedsTheContactsSwitch() {
+        FakeContacts contacts = new FakeContacts().saved("+4512345678");
+        assertFalse(suppress(false, true, contacts, 1, true));
+        assertTrue(contacts.asked.isEmpty());
+    }
+
+    @Test
+    public void phonebookContactIsSuppressedWithoutALookup() {
+        FakeContacts contacts = new FakeContacts();
+        assertTrue(suppress(true, false, contacts, 1, true));
+        assertTrue(suppress(true, false, contacts, 2, true));
+        assertTrue(contacts.asked.isEmpty());
+    }
+
+    @Test
+    public void androidLookupCatchesContactsTruecallerMissed() {
+        FakeContacts contacts = new FakeContacts().saved("12345678");
+        assertTrue(suppress(true, false, contacts, 1, false));
+        assertFalse(suppress(true, false, new FakeContacts(), 2, false));
+    }
+
+    @Test
+    public void missedCallsNeedTheirOwnSwitch() {
+        FakeContacts contacts = new FakeContacts().saved("+4512345678");
+        assertFalse(suppress(true, false, contacts, 3, true));
+        assertTrue(contacts.asked.isEmpty());
+        assertTrue(suppress(true, true, contacts, 3, true));
+        assertTrue(suppress(true, true, contacts, 3, false));
+        assertFalse(suppress(true, true, new FakeContacts(), 3, false));
+    }
+
+    @Test
+    public void otherCallTypesAreLeftToTheStockRules() {
+        FakeContacts contacts = new FakeContacts().saved("+4512345678");
+        assertFalse(suppress(true, true, contacts, 5, true));
+        assertFalse(suppress(true, true, contacts, 0, true));
+    }
+
+    @Test
+    public void missedFullScreenBehaviourNeedsBothSwitches() {
+        assertTrue(AfterCallSavedContacts.hideMissed(true, true));
+        assertFalse(AfterCallSavedContacts.hideMissed(true, false));
+        assertFalse(AfterCallSavedContacts.hideMissed(false, true));
+        assertFalse(AfterCallSavedContacts.hideMissed(false, false));
+    }
+
+    @Test
+    public void lookupMemoKeepsAnAnswerForItsLifetime() {
+        AfterCallSavedContacts.LookupMemo memo = new AfterCallSavedContacts.LookupMemo(5_000, 2);
+        assertEquals(null, memo.get("a", 0));
+        memo.put("a", true, 1_000);
+        assertEquals(Boolean.TRUE, memo.get("a", 5_999));
+        assertEquals(null, memo.get("a", 6_000));
+        assertEquals(null, memo.get("a", 500));
+        memo.put("b", false, 1_000);
+        assertEquals(Boolean.FALSE, memo.get("b", 1_001));
+    }
+
+    @Test
+    public void lookupMemoForgetsTheOldestWhenFull() {
+        AfterCallSavedContacts.LookupMemo memo = new AfterCallSavedContacts.LookupMemo(5_000, 2);
+        memo.put("a", true, 0);
+        memo.put("b", true, 0);
+        memo.put("c", false, 0);
+        assertEquals(null, memo.get("a", 1));
+        assertEquals(Boolean.TRUE, memo.get("b", 1));
+        assertEquals(Boolean.FALSE, memo.get("c", 1));
+    }
+
     @Test
     public void failureIsNotSaved() {
         FakeContacts contacts = new FakeContacts().saved("+4512345678");

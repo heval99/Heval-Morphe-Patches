@@ -307,7 +307,11 @@ class TruecallerSmokeTest {
         } + OPT_IN_FEATURES.map { (name, id, category) ->
             val patch = allPatches.single { p -> p.name == name && p.compatibility.orEmpty().any { it.packageName == PKG } }
             HevalFeature(id, name, patch.description!!, category, default = false)
-        } + PROFILE_MENU_FEATURES + PRIVACY_FEATURES + SHOW_CALLER_NUMBER_CONTACTS
+        } + PROFILE_MENU_FEATURES + PRIVACY_FEATURES + SHOW_CALLER_NUMBER_CONTACTS + HevalFeature(
+            "truecaller.hide_after_call_missed_contacts", "Also hide after-call for missed calls from contacts",
+            "Also hides the after-call screen for missed calls from saved contacts.",
+            "Contacts & business", default = false, dependencies = listOf(HIDE_AFTER_CALL_CONTACTS),
+        )
         val registry = byType.getValue("${HEVAL_EXTENSION}Registry;").methods.single { it.name == "encoded" }.instructions()
         check(registry.getOrNull(0)?.opcode == Opcode.CONST_STRING_JUMBO && registry.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT) {
             "Registry.encoded() was not rewritten"
@@ -432,6 +436,7 @@ class TruecallerSmokeTest {
         assertToggleOverrides(classes)
         assertHideAfterCallConfigGetters(classes)
         assertHideAfterCallSavedContacts(classes, byType)
+        assertPromoCooldownReads(classes)
         assertClassicCallLogSwipe(classes, byType)
         assertUseSmsVerification(classes)
         assertFixT9ContactSearch(classes, byType)
@@ -1429,22 +1434,25 @@ class TruecallerSmokeTest {
     private fun assertHideAfterCallConfigGetters(classes: List<ClassDef>) {
         // Hide after-call screen for contacts, issue #181: the seven phonebook getters of the server-driven
         // FullscreenAcsConfig pass their field value through a static helper on the config class that
-        // gates on the feature and answers FacsBehavior.DO_NOTHING; every other getter (the *PbMissed
-        // ones included) keeps its two stock instructions.
+        // gates on the feature and answers FacsBehavior.DO_NOTHING. The two *PbMissed getters pass through a
+        // second helper that asks the extension (contacts switch AND missed-call switch); every other getter
+        // keeps its two stock instructions.
         val facs = "Lcom/truecaller/acs/util/FacsBehavior;"
         val cls = classes.single { it.type == "Lcom/truecaller/incallui/utils/FullscreenAcsConfig;" }
         val patched = setOf(
             "getUnlockedPbIncomingAccept", "getUnlockedPbIncomingDismiss", "getUnlockedPbIncomingDismissNotification",
             "getUnlockedPbOutgoing", "getLockedPbIncomingAccept", "getLockedPbIncomingDismiss", "getLockedPbOutgoing",
         )
+        val missed = setOf("getUnlockedPbMissed", "getLockedPbMissed")
         val getters = cls.methods.filter { it.name.startsWith("get") && it.parameters.isEmpty() && it.returnType == facs }
-        check(getters.map { it.name }.containsAll(patched + setOf("getUnlockedPbMissed", "getLockedPbMissed"))) {
+        check(getters.map { it.name }.containsAll(patched + missed)) {
             "FullscreenAcsConfig getters not found: ${getters.map { it.name }}"
         }
         var helperRef: MethodReference? = null
+        var missedRef: MethodReference? = null
         for (getter in getters) {
             val insns = getter.instructions()
-            if (getter.name !in patched) {
+            if (getter.name !in patched && getter.name !in missed) {
                 check(insns.size == 2 && insns[0].opcode == Opcode.IGET_OBJECT && insns[1].opcode == Opcode.RETURN_OBJECT) {
                     "${getter.name} must stay stock; got ${insns.map { it.opcode }}"
                 }
@@ -1462,9 +1470,27 @@ class TruecallerSmokeTest {
             check(ref.definingClass == cls.type && ref.returnType == facs && ref.parameterTypes.map(CharSequence::toString) == listOf(facs)) {
                 "${getter.name}: unexpected helper $ref"
             }
-            check(helperRef == null || (helperRef.name == ref.name)) { "the getters use different helpers" }
-            helperRef = ref
+            if (getter.name in missed) {
+                check(missedRef == null || missedRef.name == ref.name) { "the *PbMissed getters use different helpers" }
+                missedRef = ref
+            } else {
+                check(helperRef == null || (helperRef.name == ref.name)) { "the getters use different helpers" }
+                helperRef = ref
+            }
         }
+        check(helperRef != null && missedRef != null && helperRef.name != missedRef.name) {
+            "the *PbMissed getters must use their own helper (${helperRef?.name} / ${missedRef?.name})"
+        }
+        val missedHelper = cls.methods.single { it.name == missedRef.name && it.parameterTypes.map(CharSequence::toString) == listOf(facs) }
+        val missedCode = missedHelper.instructions()
+        check(missedCode.map { it.opcode } == listOf(
+            Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.SGET_OBJECT, Opcode.RETURN_OBJECT,
+        )) { "unexpected *PbMissed helper body ${missedCode.map { it.opcode }}" }
+        val ask = missedCode[0].call()!!
+        check(ask.definingClass == "Lapp/template/extension/truecaller/AfterCallSavedContacts;" && ask.name == "hideMissedBehavior" &&
+            ask.parameterTypes.isEmpty() && ask.returnType == "Z" && missedCode[3].field()?.let { it.definingClass == facs && it.name == "DO_NOTHING" } == true &&
+            missedHelper.instructions().branchTarget(2) == 4
+        ) { "the *PbMissed helper does not answer DO_NOTHING from AfterCallSavedContacts.hideMissedBehavior()" }
         val helper = cls.methods.single { it.name == helperRef!!.name && it.parameterTypes.map(CharSequence::toString) == listOf(facs) }
         val label = "${cls.type}.${helper.name}"
         val stock = assertGate(helper, HIDE_AFTER_CALL_CONTACTS, label)
@@ -1552,6 +1578,78 @@ class TruecallerSmokeTest {
                 method.strings().contains("afterCallForPbContacts")
         }.single().second
         assertSites("after-call behaviour", behavior, 1)
+
+        // Entry hook of the rules (issue #181, missed calls): morpheSuppressAcs(p1) -> return false early.
+        val entry = rules.instructions()
+        val hook = entry.getOrNull(0)
+        check(hook?.opcode == Opcode.INVOKE_STATIC_RANGE && hook.call()?.let {
+            it.definingClass == history && it.name == "morpheSuppressAcs" && it.returnType == "Z" &&
+                it.parameterTypes.map(CharSequence::toString) == listOf(history)
+        } == true && (hook as RegisterRangeInstruction).registerCount == 1) {
+            "the caller-ID rules do not start with HistoryEvent.morpheSuppressAcs(p1); got ${hook?.opcode} ${hook?.call()}"
+        }
+        val verdict = (entry[1] as OneRegisterInstruction).registerA
+        check(entry[1].opcode == Opcode.MOVE_RESULT && entry[2].opcode == Opcode.IF_EQZ &&
+            (entry[2] as OneRegisterInstruction).registerA == verdict && entry[3].opcode == Opcode.CONST_4 &&
+            (entry[3] as OneRegisterInstruction).registerA == verdict && (entry[3] as WideLiteralInstruction).wideLiteral == 0L &&
+            entry[4].opcode == Opcode.RETURN && (entry[4] as OneRegisterInstruction).registerA == verdict &&
+            entry.branchTarget(2) == 5
+        ) { "the entry hook does not return false when the helper says suppress" }
+        val suppressHelper = classes.single { it.type == history }.methods.single { it.name == "morpheSuppressAcs" }
+        val suppressCall = suppressHelper.instructions().single {
+            it.opcode == Opcode.INVOKE_STATIC && it.call()?.name == "shouldSuppress"
+        }.call()!!
+        check(suppressCall.definingClass == extension && suppressCall.returnType == "Z" &&
+            suppressCall.parameterTypes.map(CharSequence::toString) ==
+            listOf("I", "Z", "Ljava/lang/String;", "Ljava/lang/String;")
+        ) { "morpheSuppressAcs does not call AfterCallSavedContacts.shouldSuppress(int, boolean, String, String)" }
+        check(suppressHelper.instructions().count { it.opcode == Opcode.INVOKE_VIRTUAL && it.call()?.definingClass == contact } == 1) {
+            "morpheSuppressAcs does not test the contact once"
+        }
+    }
+
+    private fun assertPromoCooldownReads(classes: List<ClassDef>) {
+        // Disable nags, issue #153: every cooldown read of the Missed Call Notifications and Ring silent
+        // (Do Not Disturb access) promo keys (const-string key, (String)Z call on the same register, move-result)
+        // is followed by NagPromos.hideCooldownPromo(Z)Z on the move-result register. The (String)V writers are
+        // not hooked. Expected: missed-call key 2 reads (legacy picker, banner framework), DND key 1.
+        val extension = "Lapp/template/extension/truecaller/NagPromos;"
+        val keys = setOf("key_missed_call_notif_promo_last_time", "key_dnd_promo_last_time")
+        val found = mutableListOf<String>()
+        for ((cls, method) in classes.methodsWhere { _, m -> m.strings().any { it in keys } }) {
+            val insns = method.instructions()
+            insns.forEachIndexed { index, insn ->
+                val key = insn.stringOrNull()?.takeIf { it in keys } ?: return@forEachIndexed
+                val call = insns[index + 1]
+                val ref = call.call() ?: return@forEachIndexed
+                val label = "${cls.type}.${method.name} $key"
+                if (ref.returnType != "Z") {
+                    check(ref.returnType == "V") { "$label: unexpected call $ref" }
+                    return@forEachIndexed
+                }
+                check(call.opcode == Opcode.INVOKE_VIRTUAL && ref.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;") &&
+                    (call as FiveRegisterInstruction).registerD == (insn as OneRegisterInstruction).registerA
+                ) { "$label: not a (String)Z read of the key" }
+                val result = insns[index + 2]
+                check(result.opcode == Opcode.MOVE_RESULT) { "$label: no move-result" }
+                val register = (result as OneRegisterInstruction).registerA
+                val hook = insns[index + 3]
+                val hookCall = hook.call()
+                check(hook.opcode == Opcode.INVOKE_STATIC_RANGE && hookCall?.definingClass == extension &&
+                    hookCall.name == "hideCooldownPromo" && hookCall.returnType == "Z" &&
+                    hookCall.parameterTypes.map(CharSequence::toString) == listOf("Z") &&
+                    (hook as RegisterRangeInstruction).startRegister == register && hook.registerCount == 1
+                ) { "$label: the read is not followed by NagPromos.hideCooldownPromo(v$register)" }
+                val moved = insns[index + 4]
+                check(moved.opcode == Opcode.MOVE_RESULT && (moved as OneRegisterInstruction).registerA == register) {
+                    "$label: the hook result is not written back to v$register"
+                }
+                found += key
+            }
+        }
+        check(found.sorted() == listOf("key_dnd_promo_last_time", "key_missed_call_notif_promo_last_time", "key_missed_call_notif_promo_last_time")) {
+            "unexpected hooked promo cooldown reads: $found"
+        }
     }
 
     private fun assertToggleOverrides(classes: List<ClassDef>) {

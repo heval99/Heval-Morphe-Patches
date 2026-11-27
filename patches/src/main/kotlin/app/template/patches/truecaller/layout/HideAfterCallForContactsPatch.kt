@@ -42,9 +42,12 @@ val hideAfterCallForContactsPatch = truecallerControls.featurePatch(
 ) {
     // Resolve every hook site before the first edit: a failure leaves the feature neither half-applied nor listed.
     val numberFields = toStringFields(HistoryEventToStringFingerprint.method, HISTORY_EVENT)
-    fun numberField(label: String) = numberFields.filter { (name, field) -> name == label && field.type == "Ljava/lang/String;" }
+    fun historyField(label: String, type: String) = numberFields.filter { (name, field) -> name == label && field.type == type }
         .map { it.second }.singleOrNull()
         ?: throw PatchException("HistoryEvent.$label field not found exactly once")
+    fun numberField(label: String) = historyField(label, "Ljava/lang/String;")
+    val typeField = historyField("type", "I")
+    val contactField = historyField("contact", CONTACT)
     val normalizedField = numberField("normalizedNumber")
     val rawField = numberField("rawNumber")
     val rules = AcsRulesFingerprint.method
@@ -53,11 +56,12 @@ val hideAfterCallForContactsPatch = truecallerControls.featurePatch(
     // test is the isPhonebook flag that wins over its second (non-phonebook identified) one.
     val ruleSites = rules.savedContactSites(2, 2)
     val behaviorSites = behavior.savedContactSites(2, 1)
+    val savedTest = rules.savedContactTest()
 
     // The after-call rules show the screen for a phonebook contact only when the user's
     // "afterCallForPbContacts" setting AND "featureShowACSAllIncoming" (incoming) or
     // "featureShowACSAllOutgoing" (outgoing) are on. Both toggles now read as off, so
-    // contacts never get it. Missed calls, unknown numbers and the user's settings
+    // contacts never get it. Missed calls (see the entry hook below), unknown numbers and the user's settings
     // ("afterCall", "afterCallForPbContacts", "afterCallForNonPbContacts") are untouched.
     overrideReadFeatureToggles(
         listOf("featureShowACSAllIncoming", "featureShowACSAllOutgoing"),
@@ -68,28 +72,32 @@ val hideAfterCallForContactsPatch = truecallerControls.featurePatch(
     // The server-driven FullscreenAcsConfig (Firebase "fullscreenAcsConfig_26137", kept class and getter
     // names) has its own answer for a phonebook contact on a non-missed call; the callers act on it
     // and never reach the rules above unless it is DO_NOTHING (issue #181). Each of the seven
-    // phonebook getters now answers DO_NOTHING while the feature is on; the *PbMissed getters
-    // and the non-phonebook getters stay stock. The getter has no free register, so its result goes
-    // through a static helper on the config class.
+    // phonebook getters now answers DO_NOTHING while the feature is on; the two *PbMissed getters answer
+    // it only while the opt-in missed-call switch is on too (the default-dialer path shows the full-screen
+    // screen for a missed call without reaching the rules); the non-phonebook getters stay stock. A getter
+    // has no free register, so its result goes through a static helper on the config class.
     val config = mutableClassDefBy(FULLSCREEN_ACS_CONFIG)
     val helper = config.addFacsBehaviorHelper()
-    val getters = config.methods.filter { it.name in PB_GETTERS }
-    if (getters.map { it.name }.sorted() != PB_GETTERS.sorted()) {
-        throw PatchException("FullscreenAcsConfig phonebook getters not found exactly once: ${getters.map { it.name }}")
-    }
-    for (getter in getters) {
-        if (getter.returnType != FACS_BEHAVIOR || getter.parameterTypes.isNotEmpty() || getter.implementation == null) {
-            throw PatchException("Unexpected FullscreenAcsConfig getter shape: $getter")
+    val missedHelper = config.addMissedFacsBehaviorHelper()
+    for ((names, hook) in listOf(PB_GETTERS to helper, PB_MISSED_GETTERS to missedHelper)) {
+        val getters = config.methods.filter { it.name in names }
+        if (getters.map { it.name }.sorted() != names.sorted()) {
+            throw PatchException("FullscreenAcsConfig phonebook getters not found exactly once: ${getters.map { it.name }}")
         }
-        // Instruction 1 is the getter's return-object; p0 holds the field value there.
-        val last = getter.implementation!!.instructions.size - 1
-        getter.addInstructionsChecked(
-            last,
-            """
-                invoke-static/range { p0 .. p0 }, $helper
-                move-result-object p0
-            """,
-        )
+        for (getter in getters) {
+            if (getter.returnType != FACS_BEHAVIOR || getter.parameterTypes.isNotEmpty() || getter.implementation == null) {
+                throw PatchException("Unexpected FullscreenAcsConfig getter shape: $getter")
+            }
+            // Instruction 1 is the getter's return-object; p0 holds the field value there.
+            val last = getter.implementation!!.instructions.size - 1
+            getter.addInstructionsChecked(
+                last,
+                """
+                    invoke-static/range { p0 .. p0 }, $hook
+                    move-result-object p0
+                """,
+            )
+        }
     }
 
     // Issue #181 (second part): Truecaller calls a number a saved contact only when its own contact
@@ -109,6 +117,84 @@ val hideAfterCallForContactsPatch = truecallerControls.featurePatch(
             )
         }
     }
+
+    // Issue #181 (third part): a missed call returns true in the rules before any contact check, and the
+    // reporter's app is not the default dialer, so the call-ended handlers reach the rules directly.
+    // Entry hook: while the feature is on and the number is a saved contact (Truecaller's store or
+    // Android's lookup), the rules answer false at once. Missed calls count only with their own switch.
+    val suppress = addSuppressHelper(mutableClassDefBy(HISTORY_EVENT), typeField, contactField, normalizedField, rawField, savedTest)
+    rules.addInstructionsWithLabelsChecked(
+        0,
+        """
+            invoke-static/range { p1 .. p1 }, $suppress
+            move-result v0
+            if-eqz v0, :morphe_continue
+            const/4 v0, 0x0
+            return v0
+            :morphe_continue
+            nop
+        """.trimIndent(),
+    )
+
+    truecallerControls.register(
+        HevalFeature(
+            id = MISSED_FEATURE,
+            name = "Also hide after-call for missed calls from contacts",
+            description = "Also hides the after-call screen for missed calls from saved contacts.",
+            category = TruecallerControlsCategory.CONTACTS,
+            default = false,
+            dependencies = listOf(FEATURE),
+        ),
+    )
+}
+
+private const val MISSED_FEATURE = "truecaller.hide_after_call_missed_contacts"
+private const val SUPPRESS_NAME = "morpheSuppressAcs"
+
+/** The `Contact.<no-arg Z>` the rules call on a HistoryEvent's contact (Contact.k0() in 26.45.5). */
+private fun MutableMethod.savedContactTest(): MethodReference {
+    val calls = implementation!!.instructions.mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
+        .filter { it.definingClass == CONTACT && it.returnType == "Z" && it.parameterTypes.isEmpty() }
+        .map { it.name }.distinct()
+    val name = calls.singleOrNull() ?: throw PatchException("Contact boolean test in the rules not unique: $calls")
+    return ImmutableMethodReference(CONTACT, name, emptyList(), "Z")
+}
+
+/**
+ * Adds `static (HistoryEvent)Z` to HistoryEvent: the extension's shouldSuppress answer for the event's
+ * call type, phonebook flag (Contact test, false for a null contact) and numbers.
+ */
+private fun addSuppressHelper(
+    cls: MutableClass, type: FieldReference, contact: FieldReference,
+    normalized: FieldReference, raw: FieldReference, savedTest: MethodReference,
+): MethodReference {
+    val reference = ImmutableMethodReference(cls.type, SUPPRESS_NAME, listOf(HISTORY_EVENT), "Z")
+    val helper = ImmutableMethod(
+        cls.type, SUPPRESS_NAME, listOf(ImmutableMethodParameter(HISTORY_EVENT, null, null)), "Z",
+        AccessFlags.PUBLIC.value or AccessFlags.STATIC.value or AccessFlags.SYNTHETIC.value,
+        null, null, MutableMethodImplementation(5),
+    ).toMutable()
+    helper.addInstructionsWithLabelsChecked(
+        0,
+        """
+            iget v0, p0, ${type.definingClass}->${type.name}:${type.type}
+            iget-object v1, p0, ${contact.definingClass}->${contact.name}:${contact.type}
+            if-eqz v1, :no_contact
+            invoke-virtual { v1 }, ${savedTest.definingClass}->${savedTest.name}()Z
+            move-result v1
+            goto :decide
+            :no_contact
+            const/4 v1, 0x0
+            :decide
+            iget-object v2, p0, ${normalized.definingClass}->${normalized.name}:${normalized.type}
+            iget-object v3, p0, ${raw.definingClass}->${raw.name}:${raw.type}
+            invoke-static { v0, v1, v2, v3 }, $SAVED_CONTACTS_EXTENSION->shouldSuppress(IZLjava/lang/String;Ljava/lang/String;)Z
+            move-result v0
+            return v0
+        """.trimIndent(),
+    )
+    cls.methods.add(helper)
+    return reference
 }
 
 /** A `Contact.k0()` test: [join] is where the test's result (in [result]) meets the null-contact path. */
@@ -180,14 +266,17 @@ private fun addOrSavedHelper(cls: MutableClass, normalized: FieldReference, raw:
 private const val FULLSCREEN_ACS_CONFIG= "Lcom/truecaller/incallui/utils/FullscreenAcsConfig;"
 private const val FACS_BEHAVIOR = "Lcom/truecaller/acs/util/FacsBehavior;"
 
-// Phonebook-contact behaviours of calls that were answered, dismissed or placed; the *PbMissed ones
-// (missed calls show the screen by design, issue #156) are left out on purpose.
+// Phonebook-contact behaviours of calls that were answered, dismissed or placed. The *PbMissed ones (missed
+// calls show the screen by design, issue #156) are gated by the opt-in missed-call switch instead.
 private val PB_GETTERS = listOf(
     "getUnlockedPbIncomingAccept", "getUnlockedPbIncomingDismiss", "getUnlockedPbIncomingDismissNotification",
     "getUnlockedPbOutgoing", "getLockedPbIncomingAccept", "getLockedPbIncomingDismiss", "getLockedPbOutgoing",
 )
 
+private val PB_MISSED_GETTERS = listOf("getUnlockedPbMissed", "getLockedPbMissed")
+
 private const val HELPER_NAME = "morpheHideAfterCallForContacts"
+private const val MISSED_HELPER_NAME = "morpheHideAfterCallMissedForContacts"
 
 /**
  * Adds `static (FacsBehavior)FacsBehavior`: DO_NOTHING while the feature is on, else the argument.
@@ -201,6 +290,32 @@ private fun MutableClass.addFacsBehaviorHelper(): MethodReference {
     ).toMutable()
     helper.addInstructionsChecked(0, "return-object p0")
     helper.addHevalGate(FEATURE) { "sget-object p0, $FACS_BEHAVIOR->DO_NOTHING:$FACS_BEHAVIOR" }
+    methods.add(helper)
+    return reference
+}
+
+/**
+ * Adds `static (FacsBehavior)FacsBehavior`: DO_NOTHING while both the contacts switch and the missed-call
+ * switch are on (the extension asks), else the argument.
+ */
+private fun MutableClass.addMissedFacsBehaviorHelper(): MethodReference {
+    val reference = ImmutableMethodReference(type, MISSED_HELPER_NAME, listOf(FACS_BEHAVIOR), FACS_BEHAVIOR)
+    val helper = ImmutableMethod(
+        type, MISSED_HELPER_NAME, listOf(ImmutableMethodParameter(FACS_BEHAVIOR, null, null)), FACS_BEHAVIOR,
+        AccessFlags.PRIVATE.value or AccessFlags.STATIC.value or AccessFlags.SYNTHETIC.value,
+        null, null, MutableMethodImplementation(2),
+    ).toMutable()
+    helper.addInstructionsWithLabelsChecked(
+        0,
+        """
+            invoke-static { }, $SAVED_CONTACTS_EXTENSION->hideMissedBehavior()Z
+            move-result v0
+            if-eqz v0, :stock
+            sget-object p0, $FACS_BEHAVIOR->DO_NOTHING:$FACS_BEHAVIOR
+            :stock
+            return-object p0
+        """.trimIndent(),
+    )
     methods.add(helper)
     return reference
 }
