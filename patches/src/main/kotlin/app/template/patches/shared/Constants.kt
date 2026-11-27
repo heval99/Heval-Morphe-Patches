@@ -5329,7 +5329,8 @@ object Constants {
         // uniquely; ViaplaySmokeTest passes. 26.44.0 dropped (latest verified version only).
         // 2026-11-25: updated to version 26.46.0 (versionCode 2646000; Google Play, arm64-v8a, same
         // signer); no patch code changed (no separate old-vs-new anchor diff was run: the smoke test and a CLI run without -f matched every anchor). 26.45.0 dropped.
-        targets = listOf(AppTarget(version = "26.46.0", versionCode = 2646000))
+        // 2026-11-27: updated to version 26.47.0 (versionCode 2647000), no patch code changed. Smoke test passed; CLI without -f applied every patch. Runtime not run. 26.46.0 dropped.
+        targets = listOf(AppTarget(version = "26.47.0", versionCode = 2647000))
     )
 
     // Same app, used only by "Skip ads", so Morphe Manager flags it as experimental (2026-10-29,
@@ -5369,7 +5370,8 @@ object Constants {
         // unchanged; smoke-verified. 26.44.0 dropped (latest verified version only).
         // 2026-11-25: updated to version 26.46.0 (versionCode 2646000), no patch code changed (no separate anchor diff; see the main entry);
         // smoke-verified. 26.45.0 dropped.
-        targets = listOf(AppTarget(version = "26.46.0", versionCode = 2646000, isExperimental = true))
+        // 2026-11-27: updated to version 26.47.0 (versionCode 2647000), no patch code changed; smoke-verified and CLI without -f applied "Skip ads". 26.46.0 dropped.
+        targets = listOf(AppTarget(version = "26.47.0", versionCode = 2647000, isExperimental = true))
     )
 
     // Verified 2026-10-29 against dk.bold 6.5.2 (versionCode 261, owner-supplied APKCube .apks
