@@ -32,16 +32,3 @@ internal object StreamingProviderConstructorFingerprint : Fingerprint(
         "Z",
     ),
 )
-
-// The config parser that builds the provider list (Hn.b.a() in 16.62.0). Its Kotlin null-check
-// messages name the flatbuffer accessors. Used as a cross-check that the provider strings really
-// flow through the hooked constructor.
-internal object StreamingProvidersFromConfigFingerprint : Fingerprint(
-    returnType = "Ljava/util/List;",
-    parameters = listOf(),
-    strings = listOf(
-        string("packageName(...)", StringComparisonType.CONTAINS),
-        string("songUri(...)", StringComparisonType.CONTAINS),
-        string("albumUri(...)", StringComparisonType.CONTAINS),
-    ),
-)

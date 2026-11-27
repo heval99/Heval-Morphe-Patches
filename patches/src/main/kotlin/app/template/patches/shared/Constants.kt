@@ -2296,7 +2296,13 @@ object Constants {
             // without -f applied them.
             // 2026-11-11: updated to 16.67.0-261105 (versionCode 1606700): all fingerprints unique on the real matcher; smoke test passed.
             // 2026-11-18: updated to version 16.68.0-261112 (versionCode 1606800, same signer).
-            AppTarget(version = "16.68.0-261112", versionCode = 1606800),
+            // 2026-11-27: updated to version 17.0.3-261124 (versionCode 1700030, Play arm64 split bundle
+            // merged, same signer). The provider toString/constructor anchors are unchanged in shape
+            // (R8 renames only). The old config-parser cross-check string anchor ("packageName(...)"
+            // etc.) is gone, so the check now finds the parser structurally (the one no-arg method
+            // returning List that does new-instance + <init> of the provider class; exactly one or the
+            // patch fails). Smoke test (default, custom and blank options) + CLI without -f verified.
+            AppTarget(version = "17.0.3-261124", versionCode = 1700030),
         )
     )
 
