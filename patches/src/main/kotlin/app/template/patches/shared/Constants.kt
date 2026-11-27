@@ -5231,13 +5231,19 @@ object Constants {
     // through the signature extension with the original BBC Worldwide cert (SHA-256 fd76b3b8...065dc7,
     // matches the signatures hash above). Cause analysis is static; runtime is NOT_RUN (no owner-approved
     // emulator run).
+    // 2026-11-27: updated to version 2026.11.0 (versionCode 10007114, same signer). R8 now renames and
+    // inlines the Google Mobile Ads SDK (BaseAdView, AdLoader, InterstitialAd, RewardedAd,
+    // RewardedInterstitialAd and AppOpenAd are gone by name), so Disable ads anchors on the kept
+    // AdManagerAdView (its superclass is BaseAdView, loadAd) and on the react-native-google-mobile-ads
+    // modules ReactNativeGoogleMobileAdsFullScreenAdModule.load and ReactNativeGoogleMobileAdsNativeModule.load,
+    // which report no-fill to JS. Smoke test and CLI patch (no -f) checked; bytecode only, no runtime check.
     val COMPATIBILITY_BBCNEWS = Compatibility(
         name = "BBC News",
         packageName = "bbc.mobile.news.ww",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xBB1919, // BBC News red.
         signatures = setOf("fd76b3b8df5fe8fd590957eb0f78a996967dd3c8bd87aff41f47e7799d065dc7"), // O=BBC Worldwide Limited
-        targets = listOf(AppTarget(version = "2026.10.0", versionCode = 10007113))
+        targets = listOf(AppTarget(version = "2026.11.0", versionCode = 10007114))
     )
 
     // Verified 2026-10-29 against dk.dr.webplayer 4.39.0 (versionCode 439000, APKMirror bundle
