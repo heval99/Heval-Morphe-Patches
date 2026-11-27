@@ -1205,7 +1205,9 @@ object Constants {
             // unchanged; smoke + CLI without -f; not run on a device.
             // 2026-11-16: updated to 1.99.57 (versionCode 429905704, same signer); smoke test + CLI verified.
             // 2026-11-22: updated to 1.100.58 (versionCode 430005804, APKMirror arm64-v8a bundle merged, same signer); BraveSmokeTest passes.
-            AppTarget(version = "1.100.58"),
+            // 2026-11-27: updated to 1.100.59 (versionCode 430005904, same signer, Play split merge base + chrome + on_demand + config.en).
+            // Brave/BravePortA/BravePortB/Userscripts smoke tests and the CLI without -f verified; not run on a device.
+            AppTarget(version = "1.100.59"),
         )
     )
 
@@ -1288,7 +1290,11 @@ object Constants {
             // 2026-11-16: updated to 1.99.57 (versionCode 429905704, same signer); smoke test + CLI verified.
             // 2026-11-22: updated to 1.100.58 (versionCode 430005804, same signer) together with the stable entry (APKMirror arm64-v8a bundle merged); BraveSmokeTest passes.
             AppTarget(
-                version = "1.100.58",
+                // 2026-11-27: updated to 1.100.59 (versionCode 430005904, same signer) together with the stable entry; all 11 new experimental
+                // patches, Userscripts and the older ones verified by the four Brave smoke tests and the CLI without -f; not run on a device.
+                // Combined run: all 18 Brave patches enabled at once (incl. Brave Origin) apply in one CLI run without -f, no conflicts.
+                // Brave Origin and Turn off Brave News share BraveNewsPolicyFingerprint (News forces true in finalize); BraveNewsOriginSmokeTest.
+                version = "1.100.59",
                 isExperimental = true,
             ),
         )
@@ -1358,6 +1364,7 @@ object Constants {
     // as the version-diff fixture.
     // 2026-11-13: updated to version 1.2341 (versionCode 2341, same signer, cert SHA-256 unchanged);
     // Enable Pro anchor (ActivityBilling.isPro(Context)) re-verified by the smoke test and a CLI run without -f.
+    // 2026-11-27: updated to version 1.2342 (versionCode 2342, same signer, cert SHA-256 unchanged); smoke test and CLI without -f verified.
     val COMPATIBILITY_FAIREMAIL = Compatibility(
         name = "FairEmail",
         packageName = "eu.faircode.email",
@@ -1365,7 +1372,7 @@ object Constants {
         appIconColor = 0x2196F3,
         signatures = setOf("e02067249f5a350e0ec703fe9df4dd682e0291a09f0c2e041050bbe7c064f5c9"), // O=FairCode
         targets = listOf(
-            AppTarget(version = "1.2341", versionCode = 2341)
+            AppTarget(version = "1.2342", versionCode = 2342)
         )
     )
 
@@ -3381,7 +3388,8 @@ object Constants {
         // EasyLauncherSmokeTest green on the new APK and the CLI without -f applied all six patches
         // (28 changed classes). Spot-disassembled: ads gate returns false, rating prompt gates
         // return false, promo configs and sponsored getters forced. Runtime not run.
-        targets = listOf(AppTarget(version = "1.10.33", versionCode = 11033))
+        // 2026-11-27: updated to 1.10.35 (versionCode 11035, same Play signer); smoke test and CLI without -f verified.
+        targets = listOf(AppTarget(version = "1.10.35", versionCode = 11035))
     )
 
     // Verified 2026-10-13 against in.cricketexchange.app.cricketexchange 26.10.06 (versionCode
@@ -4691,7 +4699,8 @@ object Constants {
         appIconColor = 0x7542E5, // The icon's purple.
         signatures = setOf("6203a473be36d64ee37f87fa500edbc79eab930610ab9b9fa4ca7d5c1f1b4ffc"), // CN=Release Engineering, O=Mozilla Corporation
         // 2026-11-18: updated to version 160.0.1 (versionCode 403201659, same signer).
-        targets = listOf(AppTarget(version = "160.0.1", versionCode = 403201659))
+        // 2026-11-27: updated to version 161.0 (arm64 versionCode 403222205, same signer); smoke tests and CLI without -f verified.
+        targets = listOf(AppTarget(version = "161.0", versionCode = 403222205))
     )
 
     // Written 2026-10-18 against org.mozilla.firefox 158.0 (versionCode 2016189054 for x86_64 and

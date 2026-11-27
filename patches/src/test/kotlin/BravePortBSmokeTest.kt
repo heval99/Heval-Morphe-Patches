@@ -44,7 +44,7 @@ class BravePortBSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = "com.brave.browser",
-            version = "1.100.58",
+            version = "1.100.59",
             patchNames = setOf(
                 "Strip tracking parameters",
                 "Force copy and paste",

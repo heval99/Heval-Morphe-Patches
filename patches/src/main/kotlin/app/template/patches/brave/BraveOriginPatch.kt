@@ -519,9 +519,8 @@ val braveOriginPatch = bytecodePatch(
         }
 
         // News disabled check
-        Fingerprint(
-            strings = listOf(string("brave.news.disabled_by_policy", StringComparisonType.CONTAINS)),
-        ).method.apply {
+        // Shared with "Turn off Brave News", which forces it to true in its finalize step.
+        BraveNewsPolicyFingerprint.method.apply {
             removeInstructions(0, implementation!!.instructions.count())
             addInstructionsChecked(0, gatekeeperSmali("BraveNewsDisabled"))
         }
