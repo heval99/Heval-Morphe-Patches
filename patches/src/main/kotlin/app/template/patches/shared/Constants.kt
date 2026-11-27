@@ -1027,8 +1027,9 @@ object Constants {
         // 2026-11-12: updated to 15.0.1 (versionCode 1501, Play arm64 merged, same signer). Probe: all nine
         // fingerprints OK-unique, all patches apply unchanged; smoke + CLI without -f; not run on a device.
         // 2026-11-22: updated to 15.0.2 (versionCode 1502, Play, same signer). Smoke test passes, no anchor changes. Smoke test, CLI 2.1.1 without -f and a 277-method whole-APK diff (mapped to the intended and rebuilt methods) done; not run on a device.
+        // 2026-11-27: updated to 15.0.3 (versionCode 1503, Play, same signer). Scores365 + clone smoke tests and CLI without -f done; not run on a device.
         targets = listOf(
-            AppTarget(version = "15.0.2", versionCode = 1502)
+            AppTarget(version = "15.0.3", versionCode = 1503)
         )
     )
 

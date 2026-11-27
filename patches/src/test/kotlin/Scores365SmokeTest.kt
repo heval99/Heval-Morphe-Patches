@@ -52,7 +52,7 @@ class Scores365SmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "15.0.2",
+            version = "15.0.3",
             patchNames = setOf(
                 "Disable ads", "Enable Premium", "Disable update prompts", "GmsCore support", "Spoof signature",
                 "Spoiler-free mode", "Patch settings", "Hide competitions", "Hide countries", "AMOLED black",

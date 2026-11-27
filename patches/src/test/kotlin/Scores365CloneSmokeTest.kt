@@ -34,7 +34,7 @@ class Scores365CloneSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "15.0.2",
+            version = "15.0.3",
             patchNames = setOf("GmsCore support"),
             allPatches = patches,
         )
