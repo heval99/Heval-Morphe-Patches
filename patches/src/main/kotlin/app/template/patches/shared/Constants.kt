@@ -5130,7 +5130,8 @@ object Constants {
         // 2026-11-25: updated to version 1.3.35 (versionCode 350103242, Play arm64, same signer). The two anchors
         // (LicenseClient.checkLicense(Context), AppPreference.isPremiumUser()) were looked up in 1.3.31 and 1.3.35
         // with dexindex; smoke test passed; CLI patched without -f.
-        targets = listOf(AppTarget(version = "1.3.35", versionCode = 350103242))
+        // 2026-11-27: updated to version 1.3.37 (versionCode 350103244). Smoke test passed; CLI without -f applied every patch. Runtime not run. 1.3.35 dropped.
+        targets = listOf(AppTarget(version = "1.3.37", versionCode = 350103244))
     )
 
     // 2026-11-07 (#133): EX File Manager 1.6.2 (versionCode 51), Play arm64 via gplaydl. The Play
