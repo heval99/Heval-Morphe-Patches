@@ -2304,7 +2304,13 @@ object Constants {
             // without -f applied them.
             // 2026-11-11: updated to 16.67.0-261105 (versionCode 1606700): all fingerprints unique on the real matcher; smoke test passed.
             // 2026-11-18: updated to version 16.68.0-261112 (versionCode 1606800, same signer).
-            AppTarget(version = "16.68.0-261112", versionCode = 1606800),
+            // 2026-11-27: updated to version 17.0.3-261124 (versionCode 1700030, Play arm64 split bundle
+            // merged, same signer). The provider toString/constructor anchors are unchanged in shape
+            // (R8 renames only). The old config-parser cross-check string anchor ("packageName(...)"
+            // etc.) is gone, so the check now finds the parser structurally (the one no-arg method
+            // returning List that does new-instance + <init> of the provider class; exactly one or the
+            // patch fails). Smoke test (default, custom and blank options) + CLI without -f verified.
+            AppTarget(version = "17.0.3-261124", versionCode = 1700030),
         )
     )
 
@@ -4929,7 +4935,8 @@ object Constants {
         appIconColor = 0x1B1B1B,
         signatures = setOf("30ab0a6a032881270eed4c161fc304d3d5c22f5822dcf4505708f97e6fb6a47a"),
         // 2026-11-22: updated to 1.22.10v238 (versionCode 238, same signer); MinimalistSmokeTest passes, anchors unchanged. APK from APKPure (Play only has 1.22.8v236); smoke test, CLI 2.1.1 without -f and a 2-method whole-APK diff done; not run on a device.
-        targets = listOf(AppTarget(version = "1.22.10v238", versionCode = 238))
+        // 2026-11-27: updated to 2.0.1v242 (versionCode 242, same signer); FullVersion getter/setter anchors unchanged (bump only); smoke test + CLI without -f verified.
+        targets = listOf(AppTarget(version = "2.0.1v242", versionCode = 242))
     )
 
     // Updated 2026-11-13 to 10.0 (versionCode 83; the old 575 was a typo, 8.2 was really 75). Signer

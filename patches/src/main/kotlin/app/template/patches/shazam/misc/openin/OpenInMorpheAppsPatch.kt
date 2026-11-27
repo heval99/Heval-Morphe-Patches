@@ -9,6 +9,7 @@ import app.template.patches.shared.Constants.COMPATIBILITY_SHAZAM
 import app.template.patches.shared.addInstructionsChecked
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import org.w3c.dom.Element
 
@@ -126,16 +127,36 @@ val openInMorpheAppsPatch = bytecodePatch(
             single { it.name == "getSpotifyPackage" }.returnEarly(packages.spotify)
         }
 
-        // Cross-check: the config parser must still build providers through this class,
-        // otherwise hooking its constructor would silently change nothing.
+        // Cross-check: a config parser (no-arg method returning a List, found by shape) must still
+        // build providers through this class (new-instance + its constructor), and there must be
+        // exactly one, otherwise hooking the constructor would silently change nothing.
+        // (17.0.3 dropped the parser's "packageName(...)" null-check strings, so the old string
+        // anchor was replaced by this structural one.)
         val providerType = StreamingProviderToStringFingerprint.classDef.type
-        val parser = StreamingProvidersFromConfigFingerprint.method
-        val buildsProviders = parser.implementation!!.instructions.any { instruction ->
-            instruction.opcode == Opcode.NEW_INSTANCE &&
-                ((instruction as ReferenceInstruction).reference as? TypeReference)?.type == providerType
+        val constructor = StreamingProviderConstructorFingerprint.method
+        var parserCount = 0
+        classDefForEach { classDef ->
+            classDef.methods.forEach { candidate ->
+                if (candidate.returnType != "Ljava/util/List;" || candidate.parameters.isNotEmpty()) return@forEach
+                val instructions = candidate.implementation?.instructions ?: return@forEach
+                val newsProvider = instructions.any { instruction ->
+                    instruction.opcode == Opcode.NEW_INSTANCE &&
+                        ((instruction as ReferenceInstruction).reference as? TypeReference)?.type == providerType
+                }
+                val callsConstructor = instructions.any { instruction ->
+                    (instruction.opcode == Opcode.INVOKE_DIRECT || instruction.opcode == Opcode.INVOKE_DIRECT_RANGE) &&
+                        ((instruction as ReferenceInstruction).reference as? MethodReference)?.let {
+                            it.definingClass == providerType && it.name == "<init>" &&
+                                it.parameterTypes.size == constructor.parameterTypes.size
+                        } == true
+                }
+                if (newsProvider && callsConstructor) parserCount++
+            }
         }
-        if (!buildsProviders) {
-            throw PatchException("$providerType is no longer built by the streaming provider config parser")
+        if (parserCount != 1) {
+            throw PatchException(
+                "Expected exactly one streaming provider config parser building $providerType, found $parserCount",
+            )
         }
 
         // Spotify is one of the same config providers (id "spotify", syncable), so this hook also covers
