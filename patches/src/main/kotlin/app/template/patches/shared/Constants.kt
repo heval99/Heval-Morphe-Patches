@@ -1198,7 +1198,15 @@ object Constants {
     )
 
     // Same app, used by the experimental Brave patches (Disable telemetry, Disable ads, Userscripts,
-    // Hide promotional prompts), so Morphe Manager flags them as experimental. Researched
+    // Hide promotional prompts, Stop promo notifications, Turn off Brave News, Block motion sensors, Stop background
+    // sync wakeups, Preserve last active tab), so Morphe Manager flags them as experimental.
+    // 2026-11-27 (Brave batch A): the last five are new on 1.100.58, all opt-in. Anchors: the retention alarm scheduler by
+    // its strings ("dormant_users_days_14", "notification_type") and shape with any-object parameters (R8 narrows Context
+    // on some builds), the tips opt-in promo by "Chrome.TipsNotifications.OptInShowCount", the News check by
+    // "brave.news.disabled_by_policy", the kept Chromium classes PlatformSensorProvider and
+    // BackgroundSyncBackgroundTaskScheduler, and ChromeTabbedActivity ()Z by "brave_new_tab_page_opening_screen".
+    // Verified: BravePortASmokeTest and the CLI without -f; NOT run on a device.
+    // Original Brave patches: researched
     // 2026-10-07 against 1.96.61 (versionCode 429606104): smoke-tested, CLI-applied and
     // decompile-checked, and runtime-checked on the emulator with the x86_64 1.96.61 build
     // (no crashes; P3A/usage ping off, crash consent false, no promoCode, normal NTP). Anchors
