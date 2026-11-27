@@ -1027,8 +1027,9 @@ object Constants {
         // 2026-11-12: updated to 15.0.1 (versionCode 1501, Play arm64 merged, same signer). Probe: all nine
         // fingerprints OK-unique, all patches apply unchanged; smoke + CLI without -f; not run on a device.
         // 2026-11-22: updated to 15.0.2 (versionCode 1502, Play, same signer). Smoke test passes, no anchor changes. Smoke test, CLI 2.1.1 without -f and a 277-method whole-APK diff (mapped to the intended and rebuilt methods) done; not run on a device.
+        // 2026-11-27: updated to 15.0.3 (versionCode 1503, Play, same signer). Scores365 + clone smoke tests and CLI without -f done; not run on a device.
         targets = listOf(
-            AppTarget(version = "15.0.2", versionCode = 1502)
+            AppTarget(version = "15.0.3", versionCode = 1503)
         )
     )
 
@@ -2626,7 +2627,8 @@ object Constants {
         // 2026-11-11: updated to 2.2.426 (versionCode 48449): all fingerprints unique on the real matcher; smoke test passed.
         // 2026-11-16: updated to version 2.2.432 (versionCode 48659, same signer); smoke test + CLI verified.
         // 2026-11-20: updated to version 2.2.436 (versionCode 48765, same signer). Smoke test + CLI without -f + whole-APK method diff; runtime not run.
-        targets = listOf(AppTarget(version = "2.2.436", versionCode = 48765))
+        // 2026-11-27: updated to version 2.2.440 (versionCode 48923, same signer). Smoke test + CLI without -f done; runtime not run.
+        targets = listOf(AppTarget(version = "2.2.440", versionCode = 48923))
     )
 
     // Verified 2026-10-12 against com.truecaller 26.39.6 (versionCode 2639006, APKMirror bundle
@@ -5086,7 +5088,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xE94122, // The adaptive icon's background colour (ic_launcher_background).
         signatures = setOf("f84527d66a38d0b79dc2a329d9d351bd28fae6efb58d5862a28d08f5c973f3cd"), // CN=Android, O=Google Inc. (Play app-signing key)
-        targets = listOf(AppTarget(version = "9.6", versionCode = 122))
+        // 2026-11-27: updated to version 9.7 (versionCode 123, Google Play arm64 merged, same signer). AddMusicSmokeTest + CLI patch run (no -f) done; bytecode only.
+        targets = listOf(AppTarget(version = "9.7", versionCode = 123))
     )
 
     // Verified 2026-11-05 against com.soosu.notialarm 1.3.29 (versionCode 350103236; Google Play
@@ -5229,13 +5232,19 @@ object Constants {
     // through the signature extension with the original BBC Worldwide cert (SHA-256 fd76b3b8...065dc7,
     // matches the signatures hash above). Cause analysis is static; runtime is NOT_RUN (no owner-approved
     // emulator run).
+    // 2026-11-27: updated to version 2026.11.0 (versionCode 10007114, same signer). R8 now renames and
+    // inlines the Google Mobile Ads SDK (BaseAdView, AdLoader, InterstitialAd, RewardedAd,
+    // RewardedInterstitialAd and AppOpenAd are gone by name), so Disable ads anchors on the kept
+    // AdManagerAdView (its superclass is BaseAdView, loadAd) and on the react-native-google-mobile-ads
+    // modules ReactNativeGoogleMobileAdsFullScreenAdModule.load and ReactNativeGoogleMobileAdsNativeModule.load,
+    // which report no-fill to JS. Smoke test and CLI patch (no -f) checked; bytecode only, no runtime check.
     val COMPATIBILITY_BBCNEWS = Compatibility(
         name = "BBC News",
         packageName = "bbc.mobile.news.ww",
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xBB1919, // BBC News red.
         signatures = setOf("fd76b3b8df5fe8fd590957eb0f78a996967dd3c8bd87aff41f47e7799d065dc7"), // O=BBC Worldwide Limited
-        targets = listOf(AppTarget(version = "2026.10.0", versionCode = 10007113))
+        targets = listOf(AppTarget(version = "2026.11.0", versionCode = 10007114))
     )
 
     // Verified 2026-10-29 against dk.dr.webplayer 4.39.0 (versionCode 439000, APKMirror bundle
