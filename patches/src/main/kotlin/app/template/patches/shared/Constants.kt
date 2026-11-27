@@ -1204,7 +1204,9 @@ object Constants {
             // unchanged; smoke + CLI without -f; not run on a device.
             // 2026-11-16: updated to 1.99.57 (versionCode 429905704, same signer); smoke test + CLI verified.
             // 2026-11-22: updated to 1.100.58 (versionCode 430005804, APKMirror arm64-v8a bundle merged, same signer); BraveSmokeTest passes.
-            AppTarget(version = "1.100.58"),
+            // 2026-11-27: updated to 1.100.59 (versionCode 430005904, same signer, Play split merge base + chrome + on_demand + config.en).
+            // Brave/BravePortA/BravePortB/Userscripts smoke tests and the CLI without -f verified; not run on a device.
+            AppTarget(version = "1.100.59"),
         )
     )
 
@@ -1287,7 +1289,11 @@ object Constants {
             // 2026-11-16: updated to 1.99.57 (versionCode 429905704, same signer); smoke test + CLI verified.
             // 2026-11-22: updated to 1.100.58 (versionCode 430005804, same signer) together with the stable entry (APKMirror arm64-v8a bundle merged); BraveSmokeTest passes.
             AppTarget(
-                version = "1.100.58",
+                // 2026-11-27: updated to 1.100.59 (versionCode 430005904, same signer) together with the stable entry; all 11 new experimental
+                // patches, Userscripts and the older ones verified by the four Brave smoke tests and the CLI without -f; not run on a device.
+                // Combined run: all 18 Brave patches enabled at once (incl. Brave Origin) apply in one CLI run without -f, no conflicts.
+                // Brave Origin and Turn off Brave News share BraveNewsPolicyFingerprint (News forces true in finalize); BraveNewsOriginSmokeTest.
+                version = "1.100.59",
                 isExperimental = true,
             ),
         )

@@ -61,3 +61,12 @@ internal object LocalStatePrefsLoadedFingerprint : Fingerprint(
     returnType = "V",
     parameters = emptyList(),
 )
+
+// Brave's "News is turned off by policy" check, (Profile)Z. One shared object so Brave Origin
+// (rewrites it to read its own pref) and Turn off Brave News (forces true) resolve the SAME
+// method whichever runs first: the match is cached, and Origin's rewrite removes the string.
+internal object BraveNewsPolicyFingerprint : Fingerprint(
+    returnType = "Z",
+    parameters = listOf(PROFILE),
+    strings = listOf(string("brave.news.disabled_by_policy", StringComparisonType.CONTAINS)),
+)

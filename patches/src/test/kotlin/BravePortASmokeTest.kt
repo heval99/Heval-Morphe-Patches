@@ -38,7 +38,7 @@ class BravePortASmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = "com.brave.browser",
-            version = "1.100.58",
+            version = "1.100.59",
             patchNames = setOf(
                 "Stop promo notifications",
                 "Turn off Brave News",

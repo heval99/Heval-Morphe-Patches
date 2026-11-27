@@ -60,7 +60,7 @@ class BraveUserscriptsSmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = "com.brave.browser",
-            version = "1.100.58",
+            version = "1.100.59",
             patchNames = setOf("Userscripts"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
             onPatchedApk = { patchedApk = File(workDir, "kept.apk").also { copy -> it.copyTo(copy, overwrite = true) } },
