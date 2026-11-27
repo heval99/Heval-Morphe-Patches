@@ -1210,8 +1210,9 @@ object Constants {
 
     // Same app, used by the experimental Brave patches (Disable telemetry, Disable ads, Userscripts,
     // Hide promotional prompts, Stop promo notifications, Turn off Brave News, Block motion sensors, Stop background
-    // sync wakeups, Preserve last active tab), so Morphe Manager flags them as experimental.
-    // 2026-11-27 (Brave batch A): the last five are new on 1.100.58, all opt-in. Anchors: the retention alarm scheduler by
+    // sync wakeups, Preserve last active tab, Strip tracking parameters, Force copy and paste, Force picture-in-picture,
+    // Force max refresh rate, Strip menu and settings bloat, AMOLED black theme), so Morphe Manager flags them as experimental.
+    // 2026-11-27 (Brave batch A): Stop promo notifications .. Preserve last active tab are new on 1.100.58, all opt-in. Anchors: the retention alarm scheduler by
     // its strings ("dormant_users_days_14", "notification_type") and shape with any-object parameters (R8 narrows Context
     // on some builds), the tips opt-in promo by "Chrome.TipsNotifications.OptInShowCount", the News check by
     // "brave.news.disabled_by_policy", the kept Chromium classes PlatformSensorProvider and
@@ -1233,6 +1234,20 @@ object Constants {
     // (Context, L, I, I, I, Z)PropertyModel; BraveActivity.onMenuOrKeyboardAction (TimerDialogFragment string).
     // Verified: BraveUserscriptsSmokeTest on 1.100.58 and the CLI without -f. NOT verified: runtime on a device or
     // emulator (menu row look without an icon, click, script injection, install links) - pending.
+    // 2026-11-27 (Brave batch B): six opt-in patches added on 1.100.58, all anchored on kept
+    // names, strings or method shape (no R8 names), extension extensions/brave. "Strip tracking parameters": the
+    // (ClipData)V that calls ClipboardManager.setPrimaryClip, the static Intent builder with the kept
+    // "org.chromium.chrome.browser.share_origin" extra (every return-object) and the two static (Context, String)V
+    // ACTION_SEND text helpers. "Force copy and paste" and "Force picture-in-picture": built-in page scripts run through
+    // the Userscripts load path (the primary-main-frame load callback by shape, one shared hook; enabled from
+    // SplitChromeApplication.onCreate). "Force max refresh rate": WindowAndroid (F)V with the "Refresh rate not
+    // supported" string; the modes list and Window getter are read from its code. "Strip menu and settings bloat": the page
+    // menu builder (Userscripts' anchor) calls its own static (model, int[])V row remover with ids looked up by name
+    // (id/brave_wallet_id ...), and BraveMainPreferencesBase's update method ("features_section") removes the bloat rows
+    // with Brave's own (String)V remover before each return. "AMOLED black theme": the (Context, TypedValue)I color
+    // resolver (code only: color resource names are collapsed in this build, so no resource patch and rule 12 does not
+    // apply). Verified: BravePortBSmokeTest (all six together with Userscripts), extension unit tests and the CLI without
+    // -f. NOT verified at runtime on a device or emulator.
     val COMPATIBILITY_BRAVE_EXPERIMENTAL = Compatibility(
         name = "Brave Browser",
         packageName = "com.brave.browser",
