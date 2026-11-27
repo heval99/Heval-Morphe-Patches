@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Points Shazam's "Open in YouTube Music" / "Open in YouTube" providers at the Morphe-patched
- * apps. The providers come from server config (package name plus intent:// URIs carrying
+ * Points Shazam's "Open in YouTube Music" / "Open in YouTube" / "Open in Spotify" providers at the
+ * Morphe-patched (or modified) apps. The providers come from server config (package name plus intent:// URIs carrying
  * {@code package=<stock>;}); the patch runs every string field of the provider through
  * {@link #remap(String)} when it is constructed.
  */
@@ -21,6 +21,7 @@ public final class OpenInMorpheAppsPatch {
 
     private static final String STOCK_YOUTUBE_MUSIC = "com.google.android.apps.youtube.music";
     private static final String STOCK_YOUTUBE = "com.google.android.youtube";
+    private static final String STOCK_SPOTIFY = "com.spotify.music";
 
     /** How long an installed/not-installed answer is reused. */
     private static final long CACHE_MILLIS = 30_000L;
@@ -43,17 +44,24 @@ public final class OpenInMorpheAppsPatch {
         return "app.morphe.android.youtube";
     }
 
+    /** Replaced by the patch with the "Spotify package" option value (the stock package when empty). */
+    public static String getSpotifyPackage() {
+        return "com.spotify.music";
+    }
+
     /**
      * Injection point: every string of a streaming provider (package name, song/artist/album URI).
      *
-     * @return the value with the stock YouTube (Music) package swapped for the Morphe one when
-     *         that app is installed and enabled, otherwise the value unchanged. Never throws.
+     * @return the value with the stock YouTube Music, YouTube or Spotify package swapped for the
+     *         configured one when that app is installed and enabled, otherwise the value
+     *         unchanged. Never throws.
      */
     public static String remap(String value) {
         if (value == null || value.isEmpty()) return value;
         try {
             String result = swap(value, STOCK_YOUTUBE_MUSIC, getYouTubeMusicPackage());
-            return swap(result, STOCK_YOUTUBE, getYouTubePackage());
+            result = swap(result, STOCK_YOUTUBE, getYouTubePackage());
+            return swap(result, STOCK_SPOTIFY, getSpotifyPackage());
         } catch (Throwable t) {
             Log.w(TAG, "remap failed", t);
             return value;

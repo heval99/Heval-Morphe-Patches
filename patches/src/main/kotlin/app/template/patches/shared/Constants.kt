@@ -2231,6 +2231,19 @@ object Constants {
     // Custom Tab on accounts.spotify.com, Back clears the tab and LoginActivity with Shazam's
     // "Connection failed" toast, an ?error= redirect clears the task back to MainActivity; no
     // crash. A real login (code exchange) was not tested: it needs a Spotify account.
+    // 2026-11-27 (issue #48): "Open in Morphe YouTube apps" gained a third option, "Spotify package"
+    // (empty = stock Spotify), so "Open in Spotify" can open a modified Spotify client. Spotify is one
+    // of the server-config StreamingProviders (id "spotify", next to applemusic in the provider config's
+    // syncable set) built through the
+    // same hooked constructor, so the hook's remap() also swaps com.spotify.music (bare package or
+    // `package=com.spotify.music;` in the intent URIs) when the target is installed; the Spotify auth
+    // SDK, the login patch and the "Connect to Spotify" sheet item (which checks for the stock
+    // package) still talk to the real Spotify. Package options are now trimmed and
+    // checked in execute with a clear PatchException (the old validator made the CLI log a warning and
+    // silently keep the default, and rejected a value with a stray space); one shared resolver feeds
+    // the extension getters and the <queries> entries so blank values agree. Verified statically
+    // (smoke test with non-default and blank options, CLI no -f); the Spotify provider strings come
+    // from the server config, which was not seen at runtime, so the Spotify remap is unproven there.
     val COMPATIBILITY_SHAZAM = Compatibility(
         name = "Shazam",
         packageName = "com.shazam.android",
