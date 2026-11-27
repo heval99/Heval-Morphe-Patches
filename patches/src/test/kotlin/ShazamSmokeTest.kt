@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.w3c.dom.Element
 import java.io.File
+import app.morphe.patcher.patch.Patch
 import javax.xml.parsers.DocumentBuilderFactory
 
 private const val PKG = "com.shazam.android"
@@ -56,6 +57,45 @@ class ShazamSmokeTest {
             patchNames = setOf("Disable telemetry", "Open in Morphe YouTube apps", "Spoof signature", "GmsCore support"),
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
+    }
+
+    private class OpenInRun(val classes: List<ClassDef>, val manifest: String)
+
+    private fun openInRun(name: String, options: Map<String, String>): OpenInRun {
+        val root = repoRoot()
+        val apk = File(root, "apks/shazam/base.apk")
+        val patches: Set<Patch> = loadAllPatches(newestPatchBundle(root))
+        val openIn = patches.single { it.name == "Open in Morphe YouTube apps" }
+        options.forEach { (key, value) -> openIn.options.set(key, value) }
+        // Outside workDir: the other assertions walk workDir for the main run's manifest.
+        val dir = java.nio.file.Files.createTempDirectory("shazam-$name").toFile()
+        try {
+            val classes = applyPatches(
+                apk = apk,
+                workDir = dir,
+                pkg = PKG,
+                version = "16.68.0-261112",
+                patchNames = setOf("Open in Morphe YouTube apps"),
+                allPatches = patches,
+            )
+            val manifest = dir.walkTopDown()
+                .filter { it.name == "AndroidManifest.xml" }
+                .map { it.readText() }
+                .firstOrNull { it.contains("<queries") }
+                ?: error("no decoded AndroidManifest.xml with <queries> under $dir")
+            return OpenInRun(classes, manifest)
+        } finally {
+            dir.deleteRecursively()
+        }
+    }
+
+    private fun assertBakedGetter(classes: List<ClassDef>, getter: String, expected: String) {
+        val extension = classes.first { it.type == OPEN_IN_EXTENSION }
+        val insns = extension.method(getter, emptyList()).instructions()
+        val value = ((insns.getOrNull(0) as? ReferenceInstruction)?.reference as? StringReference)?.string
+        check(insns.getOrNull(0)?.opcode == Opcode.CONST_STRING && value == expected && insns.getOrNull(1)?.opcode == Opcode.RETURN_OBJECT) {
+            "$getter() should return \"$expected\" at once; got ${insns.getOrNull(0)?.opcode} $value"
+        }
     }
 
     @Test
@@ -126,6 +166,8 @@ class ShazamSmokeTest {
         for ((getter, expected) in listOf(
             "getYouTubeMusicPackage" to "app.morphe.android.apps.youtube.music",
             "getYouTubePackage" to "app.morphe.android.youtube",
+            // "Spotify package" is empty by default, so the getter bakes in the stock package and remap() leaves Spotify alone.
+            "getSpotifyPackage" to "com.spotify.music",
         )) {
             val insns = extension.method(getter, emptyList()).instructions()
             val value = ((insns.getOrNull(0) as? ReferenceInstruction)?.reference as? StringReference)?.string
@@ -204,6 +246,53 @@ class ShazamSmokeTest {
         }
         check(manifest.contains("<package android:name=\"com.google.android.apps.youtube.music\"")) {
             "<queries> lost the original stock YouTube Music entry"
+        }
+
+        // --- Open in Morphe YouTube apps: non-default and blank options ---
+
+        // Fresh bundle per run (a patch's fingerprints keep their first match). The custom run uses
+        // values with stray spaces, which the patch trims; the blank run falls back to the defaults.
+        val custom = openInRun(
+            "open-in-custom",
+            mapOf(
+                "youTubeMusicPackage" to "com.example.myytm",
+                "youTubePackage" to " com.example.myyt ",
+                "spotifyPackage" to "com.example.myspoti",
+            ),
+        )
+        for ((getter, expected) in listOf(
+            "getYouTubeMusicPackage" to "com.example.myytm",
+            "getYouTubePackage" to "com.example.myyt",
+            "getSpotifyPackage" to "com.example.myspoti",
+        )) {
+            assertBakedGetter(custom.classes, getter, expected)
+        }
+        // remap() runs the Spotify swap last, after the two YouTube swaps, from the same getter family.
+        val customRemap = custom.classes.first { it.type == OPEN_IN_EXTENSION }.method("remap", listOf(STRING))
+        for (getter in listOf("getYouTubeMusicPackage", "getYouTubePackage", "getSpotifyPackage")) {
+            check(customRemap.instructions().any {
+                ((it as? ReferenceInstruction)?.reference as? MethodReference)?.name == getter
+            }) { "remap() no longer reads $getter()" }
+        }
+        for (pkg in listOf("com.example.myytm", "com.example.myyt", "com.example.myspoti")) {
+            check(custom.manifest.contains("<package android:name=\"$pkg\"")) { "custom run: <queries> is missing $pkg" }
+        }
+
+        val blank = openInRun(
+            "open-in-blank",
+            mapOf("youTubeMusicPackage" to "  ", "youTubePackage" to "", "spotifyPackage" to " "),
+        )
+        for ((getter, expected) in listOf(
+            "getYouTubeMusicPackage" to "app.morphe.android.apps.youtube.music",
+            "getYouTubePackage" to "app.morphe.android.youtube",
+            "getSpotifyPackage" to "com.spotify.music",
+        )) {
+            assertBakedGetter(blank.classes, getter, expected)
+        }
+        // The blank options resolve to the same defaults in the manifest patch, otherwise the
+        // Morphe apps would be invisible to getApplicationInfo and the remap would never apply.
+        for (pkg in listOf("app.morphe.android.apps.youtube.music", "app.morphe.android.youtube")) {
+            check(blank.manifest.contains("<package android:name=\"$pkg\"")) { "blank run: <queries> is missing $pkg" }
         }
 
         // --- GmsCore support ---

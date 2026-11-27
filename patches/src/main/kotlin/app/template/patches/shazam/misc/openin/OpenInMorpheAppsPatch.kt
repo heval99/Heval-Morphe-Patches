@@ -24,7 +24,7 @@ private val youTubeMusicPackageOption = stringOption(
     title = "YouTube Music package",
     description = "Package name of the patched YouTube Music app that \"Open in YouTube Music\" should open.",
     required = true,
-) { it != null && PACKAGE_NAME_REGEX.matches(it) }
+) { true } // Checked (after trimming) in execute, which can say what is wrong.
 
 private val youTubePackageOption = stringOption(
     key = "youTubePackage",
@@ -33,7 +33,43 @@ private val youTubePackageOption = stringOption(
     title = "YouTube package",
     description = "Package name of the patched YouTube app that \"Open in YouTube\" should open.",
     required = true,
-) { it != null && PACKAGE_NAME_REGEX.matches(it) }
+) { true } // Checked (after trimming) in execute, which can say what is wrong.
+
+private val spotifyPackageOption = stringOption(
+    key = "spotifyPackage",
+    default = null,
+    title = "Spotify package",
+    description = "Package name of a modified Spotify app that \"Open in Spotify\" should open. Leave empty for the stock Spotify.",
+    required = false,
+) { true }
+
+private const val STOCK_SPOTIFY_PACKAGE = "com.spotify.music"
+
+/** The option value trimmed, [default] when empty, or a PatchException that names the option. */
+private fun resolvePackage(title: String, value: String?, default: String?): String? {
+    val trimmed = value?.trim().orEmpty()
+    if (trimmed.isEmpty()) return default
+    if (!PACKAGE_NAME_REGEX.matches(trimmed)) {
+        throw PatchException(
+            "\"$title\" is not a valid package name: \"$trimmed\". Use letters, digits and underscores in " +
+                "segments that start with a letter, separated by dots, for example com.example.myspoti."
+        )
+    }
+    return trimmed
+}
+
+private const val DEFAULT_YOUTUBE_MUSIC_PACKAGE = "app.morphe.android.apps.youtube.music"
+private const val DEFAULT_YOUTUBE_PACKAGE = "app.morphe.android.youtube"
+
+/** The three packages the patch uses; the manifest patch and the bytecode patch must both read them from here. */
+private class ResolvedPackages(val youTubeMusic: String, val youTube: String, val spotify: String)
+
+private fun resolvePackages() = ResolvedPackages(
+    youTubeMusic = resolvePackage("YouTube Music package", youTubeMusicPackageOption.value, DEFAULT_YOUTUBE_MUSIC_PACKAGE)!!,
+    youTube = resolvePackage("YouTube package", youTubePackageOption.value, DEFAULT_YOUTUBE_PACKAGE)!!,
+    // Empty means the stock Spotify: the extension then leaves the Spotify provider alone.
+    spotify = resolvePackage("Spotify package", spotifyPackageOption.value, STOCK_SPOTIFY_PACKAGE)!!,
+)
 
 // Shazam targets SDK 36 and its <queries> only lists the stock Google packages, so without these
 // entries getApplicationInfo() cannot see the Morphe apps and the remap never applies.
@@ -52,7 +88,8 @@ private val openInMorpheAppsManifestPatch = resourcePatch {
                 }
             }
 
-            listOfNotNull(youTubeMusicPackageOption.value, youTubePackageOption.value)
+            val packages = resolvePackages()
+            listOf(packages.youTubeMusic, packages.youTube, packages.spotify)
                 .filter { it !in existing }
                 .distinct()
                 .forEach { packageName ->
@@ -67,7 +104,7 @@ private val openInMorpheAppsManifestPatch = resourcePatch {
 @Suppress("unused")
 val openInMorpheAppsPatch = bytecodePatch(
     name = "Open in Morphe YouTube apps",
-    description = "Opens songs in the Morphe YouTube apps when installed.",
+    description = "Opens songs in the Morphe YouTube apps, or a modified Spotify, when installed.",
 ) {
     compatibleWith(COMPATIBILITY_SHAZAM)
 
@@ -77,17 +114,16 @@ val openInMorpheAppsPatch = bytecodePatch(
 
     youTubeMusicPackageOption()
     youTubePackageOption()
+    spotifyPackageOption()
 
     execute {
-        val youTubeMusicPackage = youTubeMusicPackageOption.value
-            ?: throw PatchException("YouTube Music package option is not set")
-        val youTubePackage = youTubePackageOption.value
-            ?: throw PatchException("YouTube package option is not set")
+        val packages = resolvePackages()
 
         // Hand the option values to the extension.
         mutableClassDefBy(EXTENSION_CLASS_DESCRIPTOR).methods.apply {
-            single { it.name == "getYouTubeMusicPackage" }.returnEarly(youTubeMusicPackage)
-            single { it.name == "getYouTubePackage" }.returnEarly(youTubePackage)
+            single { it.name == "getYouTubeMusicPackage" }.returnEarly(packages.youTubeMusic)
+            single { it.name == "getYouTubePackage" }.returnEarly(packages.youTube)
+            single { it.name == "getSpotifyPackage" }.returnEarly(packages.spotify)
         }
 
         // Cross-check: the config parser must still build providers through this class,
@@ -102,6 +138,8 @@ val openInMorpheAppsPatch = bytecodePatch(
             throw PatchException("$providerType is no longer built by the streaming provider config parser")
         }
 
+        // Spotify is one of the same config providers (id "spotify", syncable), so this hook also covers
+        // "Open in Spotify". The Spotify auth SDK is untouched and keeps talking to the real Spotify.
         // Remap packageName, songUri, artistUri and albumUri (p3..p6) before they are stored.
         StreamingProviderConstructorFingerprint.method.addInstructionsChecked(
             0,
