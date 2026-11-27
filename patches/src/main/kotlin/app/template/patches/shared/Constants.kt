@@ -5891,44 +5891,6 @@ object Constants {
         targets = listOf(AppTarget(version = "9.1.0.8", versionCode = 9108))
     )
 
-    // Checked 2026-11-13 against com.beeper.android 4.64.0 (versionCode 1744163566, Google Play
-    // arm64-v8a split set merged with APKEditor; signer CN=Eric Migicovsky, O=Beeper, cert SHA-256
-    // 786f42f5...31f8; Play download). Native Kotlin/Compose app on the Beeper SDK.
-    //   - Enable Premium: the account caps come from the backend. The SDK class holding the
-    //     "max-accounts" / "max-accounts-per-bridge" JSON keys parses them into two Integer flows that
-    //     ChatAccountList turns into ChatAccountListState.canAddAccount and maxAccountsPerBridge, and
-    //     ChatAccountsRepo.chatAccountsState derives the remaining-accounts counters from the same
-    //     "max-accounts" value. Each parsed Integer is replaced by -1, the app's own "unlimited" value
-    //     (anchors: the two JSON keys and the kept coroutine class name). The BeeperPlan getters are
-    //     left alone (they only feed the upgrade-suggestion text). The single freebie consumer
-    //     (incognito / remind-later / scheduled-message / voice-transcription / labels / blasts)
-    //     returns at once, so its local counter never advances: the app does not pre-block a
-    //     free-tier feature and sends no consume request.    //   - Disable telemetry: Sentry's internals are R8-renamed but SentryInitProvider keeps its
-    //     class name and holds the same init call the app's own crash logging uses; that shared
-    //     init returns at once. The stock manifest already sets io.sentry.auto-init=false.
-    //   - Ads/telemetry scan (2026-11-13): no ad SDK at all, and the bundled Firebase is
-    //     Messaging + Installations only (push) - no Analytics, Crashlytics, Sessions or
-    //     measurement - so Sentry is the whole telemetry surface and there is nothing for a
-    //     Disable ads patch to hook.
-    //   - GmsCore support (opt-in, added 2026-11-13): the shared builder with the MicroG RE check
-    //     at the start of MainActivity.onCreate, so push (FCM, BooperFirebaseMessagingService) can
-    //     register through MicroG RE on a re-signed build. The aapt2 string diff against stock is
-    //     empty (4832 string lines, 0 changed).
-    //   Server-side caveat: the backend still owns the plan and the per-feature allowances, so
-    //     operations it validates itself (bridge provisioning, AI transcription) may still be
-    //     refused. Smoke-tested and bytecode-verified; NOT run on a device.
-    val COMPATIBILITY_BEEPER = Compatibility(
-        name = "Beeper",
-        packageName = "com.beeper.android",
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0x1F6FEB,
-        signatures = setOf("786f42f5e93e8a7c111fde4eab018ab490666dedcda7cce4bc7006f52a6f31f8"), // O=Beeper
-        // 2026-11-18: updated to version 4.65.0 (versionCode 1744164584, same signer).
-        // 2026-11-22: updated to version 4.66.2 (versionCode 1744165592, same signer); BeeperSmokeTest passes, anchors unchanged. APK from Play; smoke test, CLI 2.1.1 without -f and a 58-method whole-APK diff (incl. GmsCore support) done; not run on a device.
-        // 2026-11-24: updated to version 4.67.0 (versionCode 1744166574, same signer); anchors (max-accounts keys, ChatAccountsRepo coroutine, freebie consumer, SentryInitProvider, MainActivity) unchanged. APK from Play; smoke test passes, CLI without -f done; runtime NOT_RUN.
-        targets = listOf(AppTarget(version = "4.67.0", versionCode = 1744166574))
-    )
-
     // Checked 2026-11-23 against Listonic 9.25.2 (versionCode 240092502; Google Play arm64-v8a split
     // set merged with APKEditor, unsigned). Signer of the original base split: CN=Listonic, cert
     // SHA-256 a466547928e0...a859d9b (agrees between Play and APKPure; there is no published developer
