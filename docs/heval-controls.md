@@ -301,7 +301,7 @@ with no saved choice for that switch; "Reset all to defaults" applies it, and a 
 | Feature id | Patch | Restart | Gated sites |
 |---|---|---|---|
 | `truecaller.hide_promotions` | Hide promotions | yes | toggle overrides, referral context gate at index 0 (answers false), FeedbackItemView.DisplaySource shouldShowShare / shouldShowInviteFriends at index 0 (answer false, 2026-11-16) |
-| `truecaller.disable_nags` | Disable nags | no | toggle overrides |
+| `truecaller.disable_nags` | Disable nags | no | toggle overrides, the caller ID banner check, and the three cooldown reads of the missed-call and Do Not Disturb call-log promo cards (extension `NagPromos`); description: hides default app, permission, survey and profile reminders and the call log promo cards |
 | `truecaller.disable_who_viewed_me` | Disable Who viewed me (off) | no | toggle override |
 | `truecaller.disable_auto_launch` | Disable auto-launch | no | toggle override |
 | `truecaller.disable_update_prompts` | Disable update prompts | no | gates at index 0 |
@@ -311,7 +311,8 @@ with no saved choice for that switch; "Reset all to defaults" applies it, and a 
 | `truecaller.hide_family_button` | Hide family button | yes | toggle override |
 | `truecaller.show_caller_number` | Show caller number in call log | no | its subtitle helper (stock path) |
 | `truecaller.fix_t9_search` | Fix T9 contact search | yes | its refresh helper (stock path) |
-| `truecaller.hide_after_call_contacts` | Hide after-call screen for contacts | no | toggle overrides, the seven phonebook config getters, and the saved-contact tests of the after-call rules also accept a number Android's contacts lookup finds (needs the Contacts permission) |
+| `truecaller.hide_after_call_contacts` | Hide after-call screen for contacts | no | toggle overrides, the seven phonebook config getters, and the saved-contact tests of the after-call rules also accept a number Android's contacts lookup finds (needs the Contacts permission), plus an entry hook in the after-call rules that answers false for a saved contact (missed calls only with the next switch); the two `*PbMissed` config getters answer DO_NOTHING only with the next switch too |
+| `truecaller.hide_after_call_missed_contacts` | Also hide after-call for missed calls from contacts (off by default; depends on `truecaller.hide_after_call_contacts`) | no | read by the entry hook of the after-call rules and by the two `*PbMissed` config getters (default-dialer full-screen path) |
 | `truecaller.hide_business_media` | Hide business media | no | toggle overrides, screen entry gate, media helper |
 | `truecaller.hide_messages_tab` | Hide Messages tab | yes | its tabs helper, default tab getter, selectTab, bar helper |
 | `truecaller.hide_premium_tab` | Hide Premium tab | yes | its tabs helper, Settings `isPremiumItemVisible` store (value helper) |
