@@ -3314,7 +3314,9 @@ object Constants {
         // longer turn tracking back on after the app goes to the background. Verified: FingerprintProbe on
         // the real matcher, smoke test, CLI without -f, apkanalyzer disassembly.
         // 2026-11-22: updated to version 3.2.8 (versionCode 3461877, same signer). Smoke test passed; CLI 2.1.1 without -f applied every patch; whole-APK method diff: only the intended methods changed (Hermes bundle isPro getter, two Sentry manifest providers, dex hooks); aapt2 string values unchanged. Runtime not run.
-        targets = listOf(AppTarget(version = "3.2.8", versionCode = 3461877))
+        // 2026-11-27: updated to version 3.3.0 (versionCode 3474951). The Facebook SDK is gone from 3.3.0, so step 3 of
+        // "Block telemetry & trackers" was removed. Smoke test passed; CLI without -f applied every patch. Runtime not run. 3.2.8 dropped.
+        targets = listOf(AppTarget(version = "3.3.0", versionCode = 3474951))
     )
 
     // Verified 2026-10-13 against easy.launcher 1.10.28 (versionCode 11028, the owner's APKMirror

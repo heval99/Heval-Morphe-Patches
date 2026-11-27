@@ -61,7 +61,7 @@ class HevySmokeTest {
             apk = apk,
             workDir = workDir,
             pkg = PKG,
-            version = "3.2.8",
+            version = "3.3.0",
             patchNames = HEVY_PATCHES,
             allPatches = loadAllPatches(newestPatchBundle(root)),
         )
@@ -71,18 +71,6 @@ class HevySmokeTest {
         fun klass(type: String) = byType[type] ?: error("$type not found in emitted dexes\n$diagnostics")
         fun method(type: String, name: String, params: List<String>? = null) =
             klass(type).methods.single { it.name == name && (params == null || it.params() == params) }
-        // The renamed SDK methods, found the way the patch's fingerprints find them: by return type,
-        // parameter count and the strings they reference (the patch only prepends instructions).
-        fun byStrings(returnType: String, paramCount: Int, vararg strings: String): Method {
-            val found = classes.flatMap { it.methods }.filter { m ->
-                m.returnType == returnType && m.parameterTypes.size == paramCount &&
-                    m.instructions().mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string }
-                        .toSet().containsAll(strings.toList())
-            }
-            return found.singleOrNull()
-                ?: error("expected one $returnType method with $paramCount params referencing ${strings.toList()}, found ${found.size}\n$diagnostics")
-        }
-
         // Unlock Pro: the patched bundle has the same length and differs from the stock one only
         // in the getter's first 4 bytes, which are now LoadConstTrue r0; Ret r0.
         val patchedFile = workDir.walkTopDown()
@@ -119,13 +107,9 @@ class HevySmokeTest {
         )
         assertResolvesThenReturns(sentryInit, 1, "RNSentryModule.initNativeSdk", diagnostics)
 
-        // 2-3. Adjust queueing/sending and the Facebook app event flushAndWait return at once.
+        // 2. Adjust queueing/sending returns at once (the Facebook SDK is gone since 3.3.0).
         assertReturnsEarlyVoid(method("Lcom/adjust/sdk/PackageHandler;", "addPackage"), "PackageHandler.addPackage", diagnostics)
         assertReturnsEarlyVoid(method("Lcom/adjust/sdk/PackageHandler;", "sendFirstPackage"), "PackageHandler.sendFirstPackage", diagnostics)
-        val flushAndWait = byStrings(
-            "V", 1, "com.facebook.sdk.APP_EVENTS_FLUSHED", "com.facebook.sdk.APP_EVENTS_NUM_EVENTS_FLUSHED",
-        )
-        assertReturnsEarlyVoid(flushAndWait, "AppEventQueue.flushAndWait", diagnostics)
 
         // 4. Amplitude: the CachedInfo constructor (both ad-ID readers inlined) has its "advertising ID
         // enabled" flag (a Z field of the outer provider class, tested by the next conditional

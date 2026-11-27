@@ -2,17 +2,8 @@ package app.template.patches.hevy.misc.telemetry
 
 import app.morphe.patcher.Fingerprint
 
-// Since 3.2.2 R8 renames the Facebook, Amplitude and Branch SDK classes, so these are found by
+// Since 3.2.2 R8 renames the Amplitude and Branch SDK classes, so these are found by
 // stable strings (public intent constants and reflection names), never by class name.
-
-// Facebook AppEventQueue.flushAndWait(FlushReason) (3.2.2: V6.n.n). Every flush path (explicit
-// flush, the 15 s timer, the 100-event threshold) ends here. The extras are public
-// AppEventsLogger constants.
-internal object FacebookFlushAndWaitFingerprint : Fingerprint(
-    returnType = "V",
-    strings = listOf("com.facebook.sdk.APP_EVENTS_FLUSHED", "com.facebook.sdk.APP_EVENTS_NUM_EVENTS_FLUSHED"),
-    custom = { method, _ -> method.parameterTypes.size == 1 },
-)
 
 // Branch SDK constructor (Branch(Context)): loads the tracking-state flag from the public
 // "bnc_tracking_state" preference key into the tracking-state object.

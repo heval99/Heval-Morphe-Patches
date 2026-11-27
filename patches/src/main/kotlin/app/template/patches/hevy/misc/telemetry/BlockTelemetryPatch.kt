@@ -98,9 +98,7 @@ val blockTelemetryPatch = bytecodePatch(
         methods(ADJUST_PACKAGE_HANDLER, "addPackage").forEach { it.returnEarly() }
         methods(ADJUST_PACKAGE_HANDLER, "sendFirstPackage").forEach { it.returnEarly() }
 
-        // 3. Facebook: the app event queue never flushes. AppEventQueue is renamed since 3.2.2, so
-        // flushAndWait, where every flush ends up, is hooked instead of flush.
-        FacebookFlushAndWaitFingerprint.method.returnEarly()
+        // 3. (Facebook app events: the SDK is gone from the app since 3.3.0, so nothing to flush.)
 
         // 4. Amplitude: the ad ID is never read and no ad ID reaches JS; the legacy-database
         // migration finds no events to upload.
