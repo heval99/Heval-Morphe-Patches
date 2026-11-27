@@ -5087,7 +5087,8 @@ object Constants {
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xE94122, // The adaptive icon's background colour (ic_launcher_background).
         signatures = setOf("f84527d66a38d0b79dc2a329d9d351bd28fae6efb58d5862a28d08f5c973f3cd"), // CN=Android, O=Google Inc. (Play app-signing key)
-        targets = listOf(AppTarget(version = "9.6", versionCode = 122))
+        // 2026-11-27: updated to version 9.7 (versionCode 123, Google Play arm64 merged, same signer). AddMusicSmokeTest + CLI patch run (no -f) done; bytecode only.
+        targets = listOf(AppTarget(version = "9.7", versionCode = 123))
     )
 
     // Verified 2026-11-05 against com.soosu.notialarm 1.3.29 (versionCode 350103236; Google Play
