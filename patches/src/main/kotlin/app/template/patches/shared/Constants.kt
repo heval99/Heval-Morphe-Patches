@@ -1363,6 +1363,7 @@ object Constants {
     // as the version-diff fixture.
     // 2026-11-13: updated to version 1.2341 (versionCode 2341, same signer, cert SHA-256 unchanged);
     // Enable Pro anchor (ActivityBilling.isPro(Context)) re-verified by the smoke test and a CLI run without -f.
+    // 2026-11-27: updated to version 1.2342 (versionCode 2342, same signer, cert SHA-256 unchanged); smoke test and CLI without -f verified.
     val COMPATIBILITY_FAIREMAIL = Compatibility(
         name = "FairEmail",
         packageName = "eu.faircode.email",
@@ -1370,7 +1371,7 @@ object Constants {
         appIconColor = 0x2196F3,
         signatures = setOf("e02067249f5a350e0ec703fe9df4dd682e0291a09f0c2e041050bbe7c064f5c9"), // O=FairCode
         targets = listOf(
-            AppTarget(version = "1.2341", versionCode = 2341)
+            AppTarget(version = "1.2342", versionCode = 2342)
         )
     )
 
