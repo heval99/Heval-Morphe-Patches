@@ -5,6 +5,7 @@ import app.morphe.patcher.patch.PatchException
 import app.template.patches.fotmob.misc.signature.spoofSignaturePatch
 import app.template.patches.shared.Constants.COMPATIBILITY_FOTMOB
 import app.template.patches.shared.addInstructionsChecked
+import app.template.patches.shared.misc.gms.GmsCoreScope
 import app.template.patches.shared.misc.gms.gmsCoreSupportPatch
 import app.template.patches.shared.requireNoBranchTargetAt
 import com.android.tools.smali.dexlib2.Opcode
@@ -19,7 +20,8 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 // (google_server_client_id) into Firebase Auth, which Google Play services rejects for the
 // re-signed app, so it needs MicroG RE (issue #64). Facebook and Apple sign-in do not use Play
 // services. Push (FCM) works on a re-signed build without this patch; with it, FCM goes through
-// MicroG RE. Off by default: FotMob works without an account, and the extension asks the user to
+// MicroG RE, unless the "Push via Google Play services" option (signInOnly) keeps push on Google
+// Play services and sends only the sign-in to MicroG RE (#106/#107). Off by default: FotMob works without an account, and the extension asks the user to
 // install MicroG RE on every launch until it is installed. Pulls in "Spoof signature", because
 // Firebase checks the app's certificate too. Also skips the automatic sign-in attempt at first
 // start (see skipOnboardingAutoSignIn).
@@ -37,6 +39,16 @@ val gmsCoreSupportPatch = gmsCoreSupportPatch(
     // under the package name, so the rename keeps them and the clone cannot be installed next
     // to the stock app; the dex also hard-codes content://com.fotmob.widget.* URIs.
     allowClone = false,
+    // Option "Push via Google Play services" (#106/#107): only the Identity sign-in client (action
+    // com.google.android.gms.auth.api.identity.service.signin.START, Lwhg in 242.18410, the only
+    // identity action in the dex) binds to MicroG RE; FCM and everything else keep the real Google
+    // Play services. BeginSignInControllerUtility is in the scope so determineDeviceGMSVersionCode
+    // reads MicroG RE's version, as in the full mode: the BeginSignIn request is shaped by the
+    // version of the service that answers it.
+    signInOnlyScope = GmsCoreScope(
+        serviceActions = setOf("com.google.android.gms.auth.api.identity.service.signin.START"),
+        classPrefixes = setOf("Landroidx/credentials/playservices/controllers/identityauth/beginsignin/BeginSignInControllerUtility"),
+    ),
     // The automatic sign-in at first start is skipped (MicroG RE shows it as an account chooser).
     extraDescription = "Sign in with the Sign in with Google button.",
     executeBlock = { skipOnboardingAutoSignIn() },
