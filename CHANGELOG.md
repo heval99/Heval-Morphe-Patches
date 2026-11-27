@@ -1,3 +1,75 @@
+## 3.3.0-dev.4 (2026-11-27)
+
+> Pre-release on the dev channel. Changes since v3.3.0-dev.3. Stable users get these changes with the next stable release.
+
+In this release: 12 new patches for existing apps, 5 apps with patch changes, 13 compatibility updates, 1 removed app.
+
+### Highlights
+- Beeper patches are removed for now because they no longer work; we will look for a fix and bring them back if we can
+
+### Brave Browser · 1.100.59
+
+**Compatibility:** `1.100.58` → `1.100.59`
+
+- **Brave Browser - Added:** AMOLED black theme — Turns the dark theme's grey backgrounds pure black
+- **Brave Browser - Added:** Block motion sensors — Stops websites from reading the motion and orientation sensors
+- **Brave Browser - Added:** Force copy and paste — Lets you select, copy and paste text on pages that block it
+- **Brave Browser - Added:** Force max refresh rate — Runs Brave at your screen's highest refresh rate
+- **Brave Browser - Added:** Force picture-in-picture — Allows picture-in-picture on videos that disable it
+- **Brave Browser - Added:** Preserve last active tab — Keeps your last open tab on start instead of opening a new tab page after a break
+- **Brave Browser - Added:** Stop background sync wakeups — Stops websites from waking Brave to sync in the background, so offline sync waits until you open them
+- **Brave Browser - Added:** Stop promo notifications — Stops Brave's reminder notifications and the notification opt-in prompt
+- **Brave Browser - Added:** Strip menu and settings bloat — Hides Wallet, Leo, News and VPN from the menu and settings, and Rewards from the menu
+- **Brave Browser - Added:** Strip tracking parameters — Removes tracking parameters from links you copy or share
+- **Brave Browser - Added:** Turn off Brave News — Removes the Brave News feed from the new tab page
+- **Brave Browser - Improved:** Add five opt-in privacy and tab patches
+- **Brave Browser - Improved:** Add six opt-in link, page, display and menu patches
+
+### FotMob · 242.18410.20261117
+
+- **FotMob - Improved:** Add a Push via Google Play services option to GmsCore support
+
+### Shazam · 17.0.3-261124
+
+**Compatibility:** `16.68.0-261112` → `17.0.3-261124`
+
+- **Shazam - Improved:** Add a Spotify package option to Open in Morphe YouTube apps
+
+### Truecaller · 26.45.5
+
+- **Truecaller - Improved:** Hide after-call for missed calls from contacts and the call log promo cards
+
+### WeMuslim · 3.5.5
+
+- **WeMuslim - Added:** Hide Me tab rows — Hides the Me tab's rows, profile header and login prompt, leaving only Settings
+
+### Compatibility updates
+- **365Scores:** `15.0.2` → `15.0.3`
+- **Add Music:** `9.6` → `9.7`
+- **BBC News:** `2026.10.0` → `2026.11.0`
+- **BlueMail:** `2.2.436` → `2.2.440`
+- **Easy Homescreen:** `1.10.33` → `1.10.35`
+- **FairEmail:** `1.2341` → `1.2342`
+- **Firefox Focus:** `160.0.1` → `161.0`
+- **Hevy:** `3.2.8` → `3.3.0`
+- **Minimalist Launcher:** `1.22.10v238` → `2.0.1v242`
+- **NotiAlarm:** `1.3.35` → `1.3.37`
+- **Transfermarkt:** `4.3.3` → `4.4.0`
+- **Via:** `7.4.1` → `7.5.0`
+- **Viaplay:** `26.46.0` → `26.47.0`
+
+### Shared patches
+- **Fixed:** Rename every provider authority in the clone package ([#179](https://github.com/heval99/Heval-Morphe-Patches/issues/179))
+
+### Removed apps
+- Beeper
+
+### Download and verify
+
+[patches-3.3.0-dev.4.mpp](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v3.3.0-dev.4/patches-3.3.0-dev.4.mpp) · [SHA256SUMS.txt](https://github.com/heval99/Heval-Morphe-Patches/releases/download/v3.3.0-dev.4/SHA256SUMS.txt) · [All changes since v3.3.0-dev.3](https://github.com/heval99/Heval-Morphe-Patches/compare/v3.3.0-dev.3...v3.3.0-dev.4)
+
+Build provenance: `gh attestation verify patches-3.3.0-dev.4.mpp -R heval99/Heval-Morphe-Patches`
+
 ## 3.3.0-dev.3 (2026-11-26)
 
 ### 🆕 New apps
